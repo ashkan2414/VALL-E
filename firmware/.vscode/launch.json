@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug (ST-Link)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "servertype": "openocd",
+            "cwd": "${workspaceFolder}",
+
+            // Point to the ELF CMake built
+            // Check your build folder name (build/Debug or just build)
+            "executable": "${workspaceFolder}/build/Debug/VALL-E_Firmware.elf",
+
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/stm32g4x.cfg"
+            ],
+
+            "svdFile": "${workspaceFolder}/firmware/STM32G474.svd",
+            "runToEntryPoint": "main",
+
+            // CRITICAL FOR G4: Crank the speed up.
+            // Default 950kHz is too slow for 20KB+ binaries.
+            "openOCDLaunchCommands": ["adapter speed 4000"]
+        }
+    ]
+}

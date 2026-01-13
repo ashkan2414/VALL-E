@@ -1,0 +1,43 @@
+Language: Cpp
+BasedOnStyle: Google
+
+# --- Indentation ---
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ColumnLimit: 100
+NamespaceIndentation: All
+IndentCaseLabels: true
+AccessModifierOffset: -4
+
+# --- Alignment ---
+# This aligns your = signs and variable names.
+# Looks great, but can create diff noise if you rename one variable.
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+AlignConsecutiveMacros: true
+AlignAfterOpenBracket: Align
+AlignTrailingComments: true
+PointerAlignment: Left  # int* a;
+
+# --- Spacing ---
+SpaceBeforeParens: ControlStatements
+SpaceBeforeAssignmentOperators: true
+SpacesBeforeTrailingComments: 2
+Cpp11BracedListStyle: true
+
+# --- Breaking ---
+BreakBeforeBraces: Allman
+# This puts the : and , at the start of the line for constructor lists.
+# Very good for preventing merge conflicts in embedded C++.
+BreakConstructorInitializers: BeforeComma
+BinPackArguments: false
+BinPackParameters: false
+AllowShortFunctionsOnASingleLine: None
+AlwaysBreakTemplateDeclarations: Yes
+ReflowComments: false
+
+# --- Features ---
+FixNamespaceComments: true
+SortIncludes: true
+SortUsingDeclarations: true

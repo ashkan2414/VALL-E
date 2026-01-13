@@ -1,11 +1,21 @@
-# Prerequisites
-*.d
+# VS Code Specific
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
-# Compiled Object files
+# CMake Build Artifacts
+build/
+*.elf
+*.bin
+*.hex
+*.map
 *.slo
 *.lo
 *.o
 *.obj
+*.d
+compile_commands.json
 
 # Precompiled Headers
 *.gch
