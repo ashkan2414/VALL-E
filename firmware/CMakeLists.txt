@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.22)
 # ==============================================================================
 # APPLICATION SELECTOR
 # ==============================================================================
-# Change "Blinky" by passing -DTARGET_APP=Controller to the command line.
 set(TARGET_APP "hello_world" CACHE STRING "Select App to build: Blinky, Controller, etc.")
 
 # Sanity Check: Ensure the requested App exists

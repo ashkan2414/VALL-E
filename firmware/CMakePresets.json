@@ -6,20 +6,41 @@
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/${presetName}",
-		    "toolchainFile": "${sourceDir}/cmake/gcc-arm-none-eabi.cmake",
+            "toolchainFile": "${sourceDir}/cmake/gcc-arm-none-eabi.cmake",
+            "cacheVariables": {}
+        },
+        {
+            "name": "app-hello",
+            "hidden": true,
             "cacheVariables": {
+                "TARGET_APP": "hello_world"
             }
         },
         {
-            "name": "Debug",
-            "inherits": "default",
+            "name": "app-controller",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "controller"
+            }
+        },
+        {
+            "name": "Hello-Debug",
+            "displayName": "Hello World (Debug)",
+            "inherits": [
+                "default",
+                "app-hello"
+            ],
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
         {
-            "name": "Release",
-            "inherits": "default",
+            "name": "Hello-Release",
+            "displayName": "Hello World (Release)",
+            "inherits": [
+                "default",
+                "app-hello"
+            ],
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release"
             }
@@ -27,12 +48,12 @@
     ],
     "buildPresets": [
         {
-            "name": "Debug",
-            "configurePreset": "Debug"
+            "name": "Hello-Debug",
+            "configurePreset": "Hello-Debug"
         },
         {
-            "name": "Release",
-            "configurePreset": "Release"
+            "name": "Hello-Release",
+            "configurePreset": "Hello-Release"
         }
     ]
 }

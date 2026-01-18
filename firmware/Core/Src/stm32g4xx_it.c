@@ -18,6 +18,8 @@
 #include "main.h"
 #include "stm32g4xx_it.h"
 
+extern TIM_HandleTypeDef htim6;
+
 /******************************************************************************/
 /*           Cortex-M4 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
@@ -98,4 +100,10 @@ __attribute__((weak)) void PendSV_Handler(void)
   */
 __attribute__((weak)) void SysTick_Handler(void)
 {
+}
+
+
+void TIM6_DAC_IRQHandler(void)
+{
+  HAL_TIM_IRQHandler(&htim6);
 }
