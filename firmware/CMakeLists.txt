@@ -7,9 +7,9 @@ set(TARGET_APP "hello_world" CACHE STRING "Select App to build: Blinky, Controll
 
 # Sanity Check: Ensure the requested App exists
 if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Apps/${TARGET_APP}")
-    message(FATAL_ERROR "❌ Error: Application folder 'Apps/${TARGET_APP}' not found! Check spelling or create the folder.")
+    message(FATAL_ERROR "Error: Application folder 'Apps/${TARGET_APP}' not found! Check spelling or create the folder.")
 else()
-    message(STATUS "✅ CONFIGURING FOR TARGET APPLICATION: ${TARGET_APP}")
+    message(STATUS "CONFIGURING FOR TARGET APPLICATION: ${TARGET_APP}")
 endif()
 
 # ==============================================================================
@@ -48,9 +48,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 # Create the final executable artifact
 add_executable(${CMAKE_PROJECT_NAME})
 
-# Add the STM32 Drivers CMake
+# Add the Thirdparty directory
 # This brings in the HAL, the startup code, and the MCU definition flags
-add_subdirectory(Drivers)
+add_subdirectory(Thirdparty)
 
 # ==============================================================================
 # SOURCE FILE MANAGEMENT
@@ -79,7 +79,7 @@ file(GLOB CORE_SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c"
 )
-target_sources(VALL-E_Firmware PRIVATE ${CORE_SOURCES})
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${CORE_SOURCES})
 
 # ==============================================================================
 # INCLUDE DIRECTORIES
@@ -96,12 +96,29 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # Fix for linker error regarding 'libob.a' (Standard ST fix)
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 
-# Link the stm32_drivers generated library (HAL + Drivers) to our executable
-target_link_libraries(${CMAKE_PROJECT_NAME} stm32_drivers)
+# ==============================================================================
+# SUMMARY
+# ==============================================================================
 
 # Print final success message
-message(STATUS "---------------------------------------------------")
-message(STATUS " VALL-E Firmware Configured")
-message(STATUS " Target App: ${TARGET_APP}")
-message(STATUS " Compiler:   ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "---------------------------------------------------")
+set(VALLE_BANNER_LINES
+    "---------------------------------------------------"
+    " VALL-E Firmware"
+    " Target App: ${TARGET_APP}"
+    " Build Type: ${CMAKE_BUILD_TYPE}"
+    " Compiler:   ${CMAKE_CXX_COMPILER_ID}"
+    "---------------------------------------------------"
+)
+
+set(VALLE_BANNER_COMMANDS "")
+
+foreach(line IN LISTS VALLE_BANNER_LINES)
+    message(STATUS "${line}")
+    list(APPEND VALLE_BANNER_COMMANDS COMMAND ${CMAKE_COMMAND} -E echo "${line}")
+endforeach()
+
+add_custom_command(
+    TARGET ${CMAKE_PROJECT_NAME}
+    POST_BUILD
+    ${VALLE_BANNER_COMMANDS}
+)

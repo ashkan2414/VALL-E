@@ -112,10 +112,14 @@ CheckOptions:
   # -------------------------------------------------------------------------
   # Templates (T, tk)
   # -------------------------------------------------------------------------
-  - key:             readability-identifier-naming.TemplateParameterCase
+  - key:             readability-identifier-naming.TypeTemplateParameterPrefixCase
     value:           CamelCase
-  - key:             readability-identifier-naming.TemplateParameterPrefix
+  - key:             readability-identifier-naming.TypeTemplateParameterPrefixPrefix
     value:           T
+  - key:             readability-identifier-naming.ValueTemplateParameterPrefixCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.ValueTemplateParameterPrefixPrefix
+    value:           tk
 
   # -------------------------------------------------------------------------
   # Macros (UPPER_CASE)

@@ -17,13 +17,6 @@
             }
         },
         {
-            "name": "app-controller",
-            "hidden": true,
-            "cacheVariables": {
-                "TARGET_APP": "controller"
-            }
-        },
-        {
             "name": "Hello-Debug",
             "displayName": "Hello World (Debug)",
             "inherits": [
