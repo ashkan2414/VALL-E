@@ -29,18 +29,16 @@ public:
 
     inline void set_gains(const T kp, const T ki, const T kd)
     {
-        m_kp           = kp;
-        m_ki           = ki;
-        m_kd           = kd;
-        this->coeffs() = compute_coeffs(m_kp, m_ki, m_kd, m_Ts);
-        this->reinit();
+        m_kp = kp;
+        m_ki = ki;
+        m_kd = kd;
+        this->set_coeffs(compute_coeffs(m_kp, m_ki, m_kd, m_Ts));
     }
 
     inline void set_sample_time(const T Ts)
     {
-        m_Ts           = Ts;
-        this->coeffs() = compute_coeffs(m_kp, m_ki, m_kd, m_Ts);
-        this->reinit();
+        m_Ts = Ts;
+        this->set_coeffs(compute_coeffs(m_kp, m_ki, m_kd, m_Ts));
     }
 
 private:

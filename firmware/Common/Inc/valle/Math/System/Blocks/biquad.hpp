@@ -220,6 +220,13 @@ public:
     {
     }
 
+    template <typename TCoeffs>
+    void set_coeffs(const TCoeffs& coeffs, T gain = static_cast<T>(1.0))
+    {
+        m_coeffs = BiQuadCoeffsNorm<T>(coeffs) * gain;
+        this->reset();
+    }
+
     T process_impl(T input)
     {
         return calculate_biquad_df1_norm(m_coeffs, m_x, m_y, input);
@@ -256,6 +263,14 @@ public:
         , m_x(Eigen::Vector<T, 2>::Zero())
         , m_y(Eigen::Vector<T, 2>::Zero())
     {
+    }
+
+    template <typename TCoeffs>
+    void set_coeffs(const TCoeffs& coeffs, T gain = static_cast<T>(1.0))
+    {
+        m_coeffs = BiQuadCoeffsNorm<T>(coeffs) * gain;
+        m_a0     = coeffs.a[0];
+        this->reset();
     }
 
     T process_impl(T input)
@@ -296,6 +311,13 @@ public:
     BiQuadDF2Norm(TCoeffs&& coeffs, const T gain = 1.0)
         : m_coeffs(BiQuadCoeffsNorm<T>(coeffs) * gain), m_w(Eigen::Vector<T, 2>::Zero())
     {
+    }
+
+    template <typename TCoeffs>
+    void set_coeffs(const TCoeffs& coeffs, T gain = static_cast<T>(1.0))
+    {
+        m_coeffs = BiQuadCoeffsNorm<T>(coeffs) * gain;
+        this->reset();
     }
 
     T process_impl(T input)
@@ -357,6 +379,13 @@ public:
     BiQuadDF2NonNorm(TCoeffs&& coeffs, const T gain = 1.0)
         : m_coeffs(BiQuadCoeffs<T>(coeffs) * gain), m_w(Eigen::Vector<T, 2>::Zero())
     {
+    }
+
+    template <typename TCoeffs>
+    void set_coeffs(const TCoeffs& coeffs, T gain = static_cast<T>(1.0))
+    {
+        m_coeffs = BiQuadCoeffs<T>(coeffs) * gain;
+        this->reset();
     }
 
     T process_impl(T input)

@@ -10,6 +10,26 @@
             "cacheVariables": {}
         },
         {
+            "name": "debug",
+            "hidden": true,
+            "inherits": [
+                "default"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "hidden": true,
+            "inherits": [
+                "default"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
             "name": "app-hello",
             "hidden": true,
             "cacheVariables": {
@@ -17,36 +37,61 @@
             }
         },
         {
-            "name": "Hello-Debug",
+            "name": "hello-debug",
             "displayName": "Hello World (Debug)",
             "inherits": [
-                "default",
+                "debug",
                 "app-hello"
-            ],
+            ]
+        },
+        {
+            "name": "hello-release",
+            "displayName": "Hello World (Release)",
+            "inherits": [
+                "release",
+                "app-hello"
+            ]
+        },
+        {
+            "name": "app-vca-test",
+            "hidden": true,
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "TARGET_APP": "vca_test"
             }
         },
         {
-            "name": "Hello-Release",
-            "displayName": "Hello World (Release)",
+            "name": "vca-test-debug",
+            "displayName": "VCA Test (Debug)",
             "inherits": [
-                "default",
-                "app-hello"
-            ],
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
-            }
+                "debug",
+                "app-vca-test"
+            ]
+        },
+        {
+            "name": "vca-test-release",
+            "displayName": "VCA Test (Release)",
+            "inherits": [
+                "release",
+                "app-vca-test"
+            ]
         }
     ],
     "buildPresets": [
         {
-            "name": "Hello-Debug",
-            "configurePreset": "Hello-Debug"
+            "name": "hello-debug",
+            "configurePreset": "hello-debug"
         },
         {
-            "name": "Hello-Release",
-            "configurePreset": "Hello-Release"
+            "name": "hello-release",
+            "configurePreset": "hello-release"
+        },
+        {
+            "name": "vca-test-debug",
+            "configurePreset": "vca-test-debug"
+        },
+        {
+            "name": "vca-test-release",
+            "configurePreset": "vca-test-release"
         }
     ]
 }
