@@ -6,18 +6,21 @@
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/Common/Inc",
                 "${workspaceFolder}/Core/Inc",
-                "${workspaceFolder}/Drivers/CMSIS/Include",
-                "${workspaceFolder}/Drivers/CMSIS/Device/ST/STM32G4xx/Include",
-                "${workspaceFolder}/Drivers/STM32G4xx_HAL_Driver/Inc",
-                "${workspaceFolder}/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy"
+                "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/CMSIS/Core/Include",
+                "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/CMSIS/Device/ST/STM32G4xx/Include",
+                "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc",
+                "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy",
+                "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc",
+                "${workspaceFolder}/Thirdparty"
             ],
+            "configurationProvider": "ms-vscode.cmake-tools",
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
             "windowsSdkVersion": "10.0.26100.0",
-            "cStandard": "c17",
+            "cStandard": "c11",
             "cppStandard": "c++20"
         }
     ],

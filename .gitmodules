@@ -1,3 +1,9 @@
 [submodule "firmware/Thirdparty/STM32CubeG4"]
 	path = firmware/Thirdparty/STM32CubeG4
 	url = https://github.com/STMicroelectronics/STM32CubeG4.git
+[submodule "firmware/Thirdparty/eigen"]
+	path = firmware/Thirdparty/eigen
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "firmware/Thirdparty/delegate"]
+	path = firmware/Thirdparty/delegate
+	url = https://github.com/bdiamand/Delegate.git
