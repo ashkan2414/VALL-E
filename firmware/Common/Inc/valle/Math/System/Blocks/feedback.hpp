@@ -93,7 +93,7 @@ public:
     }
 
     explicit inline ExFeedbackSystem(const TOpenLoopSys &open_loop,
-                                     TFeedbackFn       &&feedback_fn,
+                                     TFeedbackFn         feedback_fn,
                                      ValueT              min_tolerance = static_cast<ValueT>(1e-6))
         : m_ol_system(open_loop), m_feedback_fn(std::move(feedback_fn)), m_min_tolerance(min_tolerance)
     {

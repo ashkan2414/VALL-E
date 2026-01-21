@@ -1,4 +1,4 @@
-#include "Valle/Policy/hrtim.hpp"
+#include "Valle/Device/Devices/hrtim.hpp"
 
 #ifdef HAL_HRTIM_MODULE_ENABLED
 
@@ -12,7 +12,7 @@ static inline void hrtim_irq_handler()
     requires(kValidHRTIMIndex<tkIndex>)
 {
     HRTIMIsrRouter<tkIndex>::handle();
-    HRTIMPolicy<tkIndex>::clear_interrupt_flag();
+    HRTIMTimerDevice<tkIndex>::clear_interrupt_flag();
 }
 
 extern "C"
