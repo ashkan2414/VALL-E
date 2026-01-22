@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <atomic>
 
 #include "Valle/Drivers/hrtim_half_bridge.hpp"
 #include "Valle/Math/System/Blocks/feedback.hpp"
@@ -64,7 +65,7 @@ private:
     HRTIMHalfBridgeDriver<THRTIMDevice> m_device;           /// Hardware
     VCAModuleConfig                     m_config;           /// Configuration
     FeedbackSystemT                     m_feedback_system;  /// Feedback System
-    volatile float                      m_setpoint = 0.0f;  /// Current target setpoint (duty or current)
+    std::atomic<float>                  m_setpoint;         /// Current target setpoint (duty or current)
 
 public:
     /**
@@ -81,6 +82,7 @@ public:
                                 skPidP, skPidI, skPidD, 1.0f / static_cast<float>(config.pwm_config.get_int_freq_hz())),
                             std::move(current_feedback_fn),
                             m_config.target_tolerance_amp)
+        , m_setpoint(0.0f)
     {
     }
 
@@ -92,6 +94,28 @@ public:
     VCAControllerModule(DeviceRef<THRTIMDevice> hw, CurrentFeedbackFn current_feedback_fn)
         : VCAControllerModule(std::move(hw), VCAModuleConfig{}, std::move(current_feedback_fn))
     {
+    }
+
+    // Move Constructor
+    VCAControllerModule(VCAControllerModule&& other) noexcept
+        : m_device(std::move(other.m_device))
+        , m_config(other.m_config)
+        , m_feedback_system(std::move(other.m_feedback_system))
+        , m_setpoint(other.m_setpoint.load(std::memory_order_relaxed))
+    {
+    }
+
+    // Move Assignment
+    VCAControllerModule& operator=(VCAControllerModule&& other) noexcept
+    {
+        if (this != &other)
+        {
+            m_device          = std::move(other.m_device);
+            m_config          = other.m_config;
+            m_feedback_system = std::move(other.m_feedback_system);
+            m_setpoint.store(other.m_setpoint.load(std::memory_order_relaxed), std::memory_order_relaxed);
+        }
+        return *this;
     }
 
     // ------------------------------------------------------------------------
@@ -152,7 +176,7 @@ public:
     void set_target_duty(const float duty)
         requires(tkMode == VCAControlMode::kOpenLoopDuty)
     {
-        m_setpoint = duty;
+        m_setpoint.store(duty, std::memory_order_relaxed);
     }
 
     /**
@@ -162,7 +186,8 @@ public:
     void set_target_current(const float amps)
         requires(tkMode == VCAControlMode::kClosedLoopCurrent)
     {
-        m_setpoint = std::clamp(amps, -m_config.max_current_amp, m_config.max_current_amp);
+        m_setpoint.store(std::clamp(amps, -m_config.max_current_amp, m_config.max_current_amp),
+                         std::memory_order_relaxed);
     }
 
     /**
@@ -209,11 +234,11 @@ private:
     {
         if constexpr (tkMode == VCAControlMode::kOpenLoopDuty)
         {
-            return m_setpoint;
+            return m_setpoint.load(std::memory_order_relaxed);
         }
         else
         {
-            return m_feedback_system.process(m_setpoint);
+            return m_feedback_system.process(m_setpoint.load(std::memory_order_relaxed));
         }
     }
 };
