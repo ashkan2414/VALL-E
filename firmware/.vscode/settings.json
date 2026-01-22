@@ -10,8 +10,7 @@
     // Hide build junk from the file explorer
     "files.exclude": {
         "**/.git": true,
-        "**/.DS_Store": true,
-        "**/build": true
+        "**/.DS_Store": true
     },
     "C_Cpp.clang_format_style": "${workspaceFolder}/.clang-format",
     "C_Cpp.codeAnalysis.clangTidy.config": "${workspaceFolder}/.clang-tidy",

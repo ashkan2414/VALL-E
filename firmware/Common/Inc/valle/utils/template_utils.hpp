@@ -4,23 +4,33 @@
 // TYPE LIST
 // ==========================================
 
-// Basic Type List
+// Basic Type TList
 template <typename... Ts>
 struct TypeList
 {
 };
 
 // --- Set Operations (Add, TypeListContains) ---
-
-template <typename T, typename List>
+template <typename T, typename TList>
 struct TypeListContains;
+
 template <typename T, typename... Ts>
-struct TypeListContains<T, TypeList<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)>
+struct TypeListContains<T, TypeList<Ts...>> : std::disjunction<std::is_same<T, Ts>...>
 {
 };
 
-// Append T to List if not present
-template <typename T, typename List>
+// Append T to TList
+template <typename T, typename TList>
+struct TypeListAdd;
+
+template <typename T, typename... Ts>
+struct TypeListAdd<T, TypeList<Ts...>>
+{
+    using type = TypeList<Ts..., T>;
+};
+
+// Append T to TList if not present
+template <typename T, typename TList>
 struct TypeListAddUnique;
 template <typename T, typename... Ts>
 struct TypeListAddUnique<T, TypeList<Ts...>>
@@ -28,26 +38,73 @@ struct TypeListAddUnique<T, TypeList<Ts...>>
     using type = std::conditional_t<TypeListContains<T, TypeList<Ts...>>::value, TypeList<Ts...>, TypeList<Ts..., T>>;
 };
 
-// Merge two lists
-template <typename DestList, typename SourceList>
-struct TypeListMergeUnique;
+template <typename... Lists>
+struct TypeListConcat;
 
-// Base Case: Source is empty -> Return Dest
-template <typename DestList, template <typename...> class List>
-struct TypeListMergeUnique<DestList, List<>>
+// Base: Empty
+template <>
+struct TypeListConcat<>
 {
-    using type = DestList;
+    using type = TypeList<>;
 };
 
-// Recursive Step: Take Head of Source, AddUnique to Dest, Recurse with Tail
-template <typename DestList, template <typename...> class List, typename Head, typename... Tail>
-struct TypeListMergeUnique<DestList, List<Head, Tail...>>
+// Base: Single
+template <typename TList>
+struct TypeListConcat<TList>
 {
-    // Add Head to Dest (if unique)
-    using NextDest = typename TypeListAddUnique<Head, DestList>::type;
+    using type = TList;
+};
 
-    // Recurse
-    using type = typename TypeListMergeUnique<NextDest, List<Tail...>>::type;
+// Merge Two
+template <typename... As, typename... Bs>
+struct TypeListConcat<TypeList<As...>, TypeList<Bs...>>
+{
+    using type = TypeList<As..., Bs...>;
+};
+
+// Merge Three (Optimization)
+template <typename... As, typename... Bs, typename... Cs>
+struct TypeListConcat<TypeList<As...>, TypeList<Bs...>, TypeList<Cs...>>
+{
+    using type = TypeList<As..., Bs..., Cs...>;
+};
+
+// Recursive Split: Process head, merge with result of tail
+// This reduces recursion depth effectively for large packs.
+template <typename L1, typename L2, typename L3, typename... Rest>
+struct TypeListConcat<L1, L2, L3, Rest...>
+{
+    // Merge 3 at a time to reduce depth quickly
+    using Left  = typename TypeListConcat<L1, L2, L3>::type;
+    using Right = typename TypeListConcat<Rest...>::type;
+    using type  = typename TypeListConcat<Left, Right>::type;
+};
+
+// Merge two lists
+template <typename Current, typename New>
+struct TypeListMergeUnique;
+
+template <typename... Cs, typename... Ns>
+struct TypeListMergeUnique<TypeList<Cs...>, TypeList<Ns...>>
+{
+    template <typename Acc, typename TList>
+    struct Helper;
+
+    template <typename Acc>
+    struct Helper<Acc, TypeList<>>
+    {
+        using type = Acc;
+    };
+
+    template <typename Acc, typename H, typename... T>
+    struct Helper<Acc, TypeList<H, T...>>
+    {
+        using NextAcc =
+            std::conditional_t<TypeListContains<H, Acc>::value, Acc, typename TypeListAddUnique<H, Acc>::type>;
+        using type = typename Helper<NextAcc, TypeList<T...>>::type;
+    };
+
+    using type = typename Helper<TypeList<Cs...>, TypeList<Ns...>>::type;
 };
 
 template <typename... Lists>
@@ -60,11 +117,11 @@ struct TypeListMergeUniqueMulti<>
     using type = TypeList<>;
 };
 
-// Base Case: 1 List
-template <typename List>
-struct TypeListMergeUniqueMulti<List>
+// Base Case: 1 TList
+template <typename TList>
+struct TypeListMergeUniqueMulti<TList>
 {
-    using type = List;
+    using type = TList;
 };
 
 // Recursive Step: Merge First+Second, then Merge Result+Rest
@@ -75,8 +132,8 @@ struct TypeListMergeUniqueMulti<List1, List2, Rest...>
     using type     = typename TypeListMergeUniqueMulti<Combined, Rest...>::type;
 };
 
-// Remove T from List
-template <typename Target, typename List>
+// Remove T from TList
+template <typename Target, typename TList>
 struct TypeListRemove;
 
 template <typename Target, typename... Ts>
@@ -90,7 +147,31 @@ struct TypeListRemove<Target, TypeList<Ts...>>
     using type = typename TypeListMergeUniqueMulti<Wrap<Ts>...>::type;
 };
 
-template <typename List>
+// Deduplicate TList (Low Cardinality Optimization)
+template <typename InList, typename OutList = TypeList<>>
+struct TypeListUniqueLowCard;
+
+// Base: Done
+template <typename Out>
+struct TypeListUniqueLowCard<TypeList<>, Out>
+{
+    using type = Out;
+};
+
+// Recursive Step
+template <typename Head, typename... Tail, typename Out>
+struct TypeListUniqueLowCard<TypeList<Head, Tail...>, Out>
+{
+    // Check if seen (Fast lookup in small Out list)
+    static constexpr bool kSeen = TypeListContains<Head, Out>::value;
+
+    // Add if new
+    using NextOut = std::conditional_t<kSeen, Out, typename TypeListAdd<Head, Out>::type>;
+
+    using type = typename TypeListUniqueLowCard<TypeList<Tail...>, NextOut>::type;
+};
+
+template <typename TList>
 struct TypeListToTuple;
 
 template <typename... Ts>
@@ -151,33 +232,21 @@ concept CTupleAllElementsSatisfy = CIsTuple<T> && detail::TupleCheckImpl<T, Type
 
 // --- Helper: Find Index of Type T in TTuple ---
 template <typename T, typename Tuple>
-struct TupleIndexOf;
+struct TupleIndex;
 
 template <typename T, typename... Ts>
-struct TupleIndexOf<T, std::tuple<Ts...>>
+struct TupleIndex<T, std::tuple<Ts...>>
 {
-private:
-    template <size_t I, typename Cur, typename... Rest>
-    struct Impl;
-
-    // 1. Recursive Case (At least 2 elements remaining)
-    template <size_t I, typename Cur, typename Next, typename... Rest>
-    struct Impl<I, Cur, Next, Rest...>
+    // Simple linear scan using inheritance for speed
+    template <typename U, typename... Us>
+    static constexpr size_t find()
     {
-        static constexpr size_t value = std::is_same_v<T, Cur> ? I : Impl<I + 1, Next, Rest...>::value;
-    };
-
-    // 2. Base Case (Last element remaining)
-    template <size_t I, typename Cur>
-    struct Impl<I, Cur>
-    {
-        // If match, return I. If not match, return -1 (huge number) to trigger index-out-of-bounds error in std::get
-        static constexpr size_t value = std::is_same_v<T, Cur> ? I : static_cast<size_t>(-1);
-    };
-
-public:
-    static_assert(sizeof...(Ts) > 0, "TupleIndexOf called on empty tuple!");
-    static constexpr size_t value = Impl<0, Ts...>::value;
+        if constexpr (std::is_same_v<T, typename U::DeviceT>)
+            return 0;
+        else
+            return 1 + TupleIndex<T, std::tuple<Us...>>::template find<Us...>();
+    }
+    static constexpr size_t value = find<Ts...>();
 };
 
 // --- Helper: Remove Type T from TTuple (Return new TTuple) ---

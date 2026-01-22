@@ -459,25 +459,25 @@ auto operator*(std::reference_wrapper<TLHS> lhs, std::reference_wrapper<TRHS> rh
 template <typename T, CSystem TLHS, CSystem TRHS>
 auto operator+(std::reference_wrapper<TLHS> lhs, const ISystemBlock<TRHS, T> &rhs)
 {
-    return TLHS::combine_parallel<1>(lhs, rhs);
+    return TLHS::template combine_parallel<1>(lhs, rhs);
 }
 
 template <CSystem TLHS, CSystem TRHS>
 auto operator+(std::reference_wrapper<TLHS> lhs, std::reference_wrapper<TRHS> rhs)
 {
-    return TLHS::combine_parallel<1>(lhs, rhs);
+    return TLHS::template combine_parallel<1>(lhs, rhs);
 }
 
 template <typename T, typename TLHS, typename TRHS>
 auto operator-(std::reference_wrapper<TLHS> lhs, const ISystemBlock<TRHS, T> &rhs)
 {
-    return TLHS::combine_parallel<-1>(lhs, rhs);
+    return TLHS::template combine_parallel<-1>(lhs, rhs);
 }
 
 template <CSystem TLHS, CSystem TRHS>
 auto operator-(std::reference_wrapper<TLHS> lhs, std::reference_wrapper<TRHS> rhs)
 {
-    return TLHS::combine_parallel<-1>(lhs, rhs);
+    return TLHS::template combine_parallel<-1>(lhs, rhs);
 }
 
 //==============================================================================

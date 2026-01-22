@@ -3,6 +3,7 @@
 #include <Eigen/Dense>
 #include <array>
 #include <cmath>
+#include <ranges>
 #include <type_traits>
 
 #include "Valle/Math/System/block.hpp"

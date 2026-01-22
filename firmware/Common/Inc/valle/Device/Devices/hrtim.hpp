@@ -175,16 +175,13 @@ public:
     {
     };
 
-    using InjectDevices             = TypeList<HRTIMDevice>;
+    using DependDevices             = TypeList<HRTIMDevice>;
     using TraitsT                   = HRTIMTraits<tkIndex>;
     static constexpr size_t skIndex = tkIndex;
     friend class HRTIMDevice;
 
-private:
-    DeviceRef<HRTIMDevice> m_device;
-
 public:
-    HRTIMTimerDevice(DeviceRef<HRTIMDevice>&& device) : m_device(device)
+    HRTIMTimerDevice()
     {
     }
 

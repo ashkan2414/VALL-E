@@ -10,53 +10,71 @@ namespace detail
     // GRAPH DISCOVERY & SORTING
     // ==========================================
 
-    // --- Step 1: Transitive Closure (Discover all deps) ---
-    // Keep expanding the list until size stops growing
-    // Forward Declaration
-    template <typename CurrentList>
-    struct ExpandDeps;
+    template <typename T>
+    using DependT = typename GetDependDevices<T>::type;
 
-    // Helper 1: Lazy Recurse (Only instantiated if selected)
-    template <typename List>
-    struct ExpandDepsRecurse
+    template <typename TList>
+    struct DirectDeps
     {
-        using type = typename ExpandDeps<List>::type;
+        // Flatten all direct dependencies of current items into one giant list
+        //    (e.g., [ADC1, ADC1, ADC1, GPIOA, GPIOB, ADC1...])
+        //    We use a wrapper to unpack the list into Concat.
+        template <typename L>
+        struct FlattenHelper;
+        template <typename... Ts>
+        struct FlattenHelper<TypeList<Ts...>>
+        {
+            using type = typename TypeListMergeUniqueMulti<DependT<Ts>...>::type;
+        };
+
+        using type = typename FlattenHelper<TList>::type;
     };
 
-    // Helper 2: Lazy Stop (Just returns the list)
-    template <typename List>
-    struct ExpandDepsStop
+    // Helper to wrap the result to stop recursion
+    template <typename T>
+    struct Identity
     {
-        using type = List;
+        using type = T;
     };
 
-    template <typename... Ts>
-    struct ExpandDeps<TypeList<Ts...>>
+    template <typename TCurrentList>
+    struct ExpandDepsImpl
     {
-        // Alias Current List
-        using Current = TypeList<Ts...>;
+        using AllDirectDeps = typename DirectDeps<TCurrentList>::type;
 
-        // Calculate Next List (Merge dependencies)
-        using Next = typename TypeListMergeUniqueMulti<Current, typename GetInjectDevices<Ts>::type...>::type;
+        // Combine + Deduplicate
+        using CombinedRaw = typename TypeListConcat<TCurrentList, AllDirectDeps>::type;
+        using NextUnique  = typename TypeListUniqueLowCard<CombinedRaw, TypeList<>>::type;
 
-        // Lazy Selection
-        // We select the *Struct* (Recurse vs Stop), but we do NOT access ::type yet.
-        using SelectedBranch = std::conditional_t<std::is_same_v<Current, Next>,  // If List didn't grow...
-                                                  ExpandDepsStop<Current>,        // Select Stop
-                                                  ExpandDepsRecurse<Next>         // Select Recurse
-                                                  >;
+        // Check for Steady State
+        static constexpr bool kChanged = !std::is_same_v<TCurrentList, NextUnique>;
 
-        // Evaluate Result
-        // Now it's safe to access ::type, because SelectedBranch is fully defined.
-        using type = typename SelectedBranch::type;
+        // LAZY Selection
+        // If Changed: Select ExpandDepsImpl<NextUnique> (Struct, not ::type yet!)
+        // If Same:    Select Identity<TCurrentList>
+        using SelectedStruct = std::conditional_t<kChanged, ExpandDepsImpl<NextUnique>, Identity<TCurrentList>>;
+
+        // Access ::type safely
+        using type = typename SelectedStruct::type;
     };
 
-    // --- Step 2: Check if Ready (All deps in Sorted) ---
+    template <>
+    struct ExpandDepsImpl<TypeList<>>
+    {
+        using type = TypeList<>;
+    };
+
+    template <typename T>
+    struct ExpandDeps
+    {
+        using type = typename ExpandDepsImpl<T>::type;
+    };
+
     template <typename T, typename SortedList>
     struct IsReady
     {
-        using Deps = typename GetInjectDevices<T>::type;
-        // T is ready if all types in Deps are found in SortedList
+        using Deps = typename GetDependDevices<T>::type;
+
         template <typename... Ds>
         static constexpr bool check(TypeList<Ds...>)
         {
@@ -65,63 +83,54 @@ namespace detail
         static constexpr bool value = check(Deps{});
     };
 
-    // --- Step 3: Topological Sort ---
-    // Move ready items from Pending to Sorted
-    template <typename Pending, typename Sorted>
+    // Forward Declaration
+    template <typename TPending, typename TSorted>
     struct TopoSort;
 
-    // Base: Pending empty -> Done
-    template <typename Sorted>
-    struct TopoSort<TypeList<>, Sorted>
+    // BASE CASE: Pending is empty -> Return Sorted
+    template <typename TSorted>
+    struct TopoSort<TypeList<>, TSorted>
     {
-        using type = Sorted;
+        using type = TSorted;
     };
 
-    // Recursive Step
-    template <typename... Ps, typename Sorted>
-    struct TopoSort<TypeList<Ps...>, Sorted>
+    template <typename... Ps, typename TSorted>
+    struct TopoSort<TypeList<Ps...>, TSorted>
     {
-        // Split Pending into (Ready) and (NotReady)
-        // We use a simplified partitioning: Find FIRST ready item, move it, recurse.
-        // Efficient enough for typical hardware lists.
+        using PendingT = TypeList<Ps...>;
 
+        // Helper: Find first item in Pending that is ready
         template <typename List>
-        struct FindReady
-        {
-            using type = void;
-        };
+        struct FindReady;
 
+        // Internal Search
         template <typename Head, typename... Tail>
         struct FindReady<TypeList<Head, Tail...>>
         {
             using type =
-                std::conditional_t<IsReady<Head, Sorted>::value, Head, typename FindReady<TypeList<Tail...>>::type>;
+                std::conditional_t<IsReady<Head, TSorted>::value, Head, typename FindReady<TypeList<Tail...>>::type>;
+        };
+        // Not Found Case (End of recursion)
+        template <typename... Empty>
+        struct FindReady<TypeList<Empty...>>
+        {
+            using type = void;
         };
 
-        using ReadyType = typename FindReady<TypeList<Ps...>>::type;
+        using ReadyT = typename FindReady<PendingT>::type;
 
-        static_assert(!std::is_void_v<ReadyType>, "Cyclic Dependency or Missing Dependency detected!");
+        // Assertion: If Pending is not empty, we MUST find a ReadyT.
+        // If ReadyT is void, it means we have a cycle or missing dependency.
+        static_assert(!std::is_void_v<ReadyT>,
+                      "Cyclic Dependency or Missing Dependency detected! Graph cannot be resolved.");
 
-        using NextPending = typename TypeListRemove<ReadyType, TypeList<Ps...>>::type;
-        using NextSorted  = typename TypeListAddUnique<ReadyType, Sorted>::type;
+        // Move ReadyT from Pending to Sorted
+        using NextPendingT = typename TypeListRemove<ReadyT, PendingT>::type;
+        using NextSortedT  = typename TypeListAddUnique<ReadyT, TSorted>::type;
 
-        using type = typename TopoSort<NextPending, NextSorted>::type;
+        // Recurse or Finish
+        using type = typename TopoSort<NextPendingT, NextSortedT>::type;
     };
-
-    // Logic: Should we keep 'Res' in the registry given that 'Requests' were just consumed?
-    template <typename TResDeviceRef, typename TRequestTuple>
-    constexpr bool should_keep()
-    {
-        // Extract raw hardware type T from HwRef<T>
-        using DeviceT = typename TResDeviceRef::DeviceT;
-
-        bool is_requested = TupleContains<DeviceT, TRequestTuple>::value;
-        bool is_shared    = CSharedDevice<DeviceT>;
-
-        // Drop ONLY if Requested AND Unique
-        if (is_requested && !is_shared) return false;
-        return true;
-    }
 
     // ============================================
     // REFERENCE POOL
@@ -154,98 +163,117 @@ namespace detail
     template <typename T>
     concept CDeviceRefTuple = CTupleAllElementsSatisfy<T, CheckDeviceRef>;
 
-    template <CDeviceRef TTargetRef, CDeviceRefTuple TRefTuple>
-    struct AtomicClaimer
+    template <typename TRegistryTuple, typename TNeedsList>
+    struct BatchClaimer
     {
-        static auto run(TRefTuple&& registry)
+        static constexpr size_t kRegSize = std::tuple_size_v<TRegistryTuple>;
+
+        // Identify INDICES of required devices
+        template <typename... TNeeds>
+        static constexpr auto get_indices(TypeList<TNeeds...>)
         {
-            // Check Policy
-            using DeviceT = typename TTargetRef::DeviceT;
+            return std::array<size_t, sizeof...(TNeeds)>{TupleIndex<TNeeds, TRegistryTuple>::value...};
+        }
 
-            // Find Item in Registry
-            // (We know it exists because we check requirements before calling this)
-            constexpr size_t Idx = TupleIndexOf<TTargetRef, std::remove_cvref_t<TRefTuple>>::value;
+        static constexpr auto kIndices = get_indices(TNeedsList{});
 
-            if constexpr (CSharedDevice<DeviceT>)
+        // Logic: Should we KEEP the item at tkRegIndex in the new registry?
+        // We keep it if:
+        //   A. It is NOT in the requested list.
+        //   B. It IS in the requested list, BUT it is a SharedDevice.
+        template <size_t tkRegIndex>
+        static constexpr bool should_keep()
+        {
+            // Check if tkRegIndex is in kIndices
+            bool is_requested = false;
+            for (auto idx : kIndices)
             {
-                // CASE A: SHARED
-                // Action: Copy ref out. Keep registry exactly as is.
+                if (idx == tkRegIndex) is_requested = true;
+            }
 
-                TTargetRef ref = std::get<Idx>(registry);  // Copy construction
+            if (!is_requested) return true;
 
-                return std::make_pair(ref,
-                                      std::forward<TRefTuple>(registry)  // Return registry untouched (moved whole)
-                );
+            // It is requested. Check if shared.
+            using RefType = std::tuple_element_t<tkRegIndex, TRegistryTuple>;
+            using DeviceT = typename RefType::DeviceT;
+
+            return CSharedDevice<DeviceT>;
+        }
+
+        // Logic: Extracting the dependencies
+        // Returns a tuple of references (copies or moves)
+        template <typename... TNeeds>
+        static auto extract_deps(TRegistryTuple& reg, TypeList<TNeeds...>)
+        {
+            return std::make_tuple(extract_one<TNeeds>(reg)...);
+        }
+
+        template <typename Need, typename Reg>
+        static auto extract_one(Reg& reg)
+        {
+            constexpr size_t idx = TupleIndex<Need, Reg>::value;
+            // Move if Unique, Copy if Shared
+            if constexpr (CSharedDevice<Need>)
+            {
+                return std::get<idx>(reg);  // Copy Ref
             }
             else
             {
-                // CASE B: UNIQUE
-                // Action: Move ref out. Rebuild registry WITHOUT this type.
-
-                // Extract (Move)
-                // Note: We use get<Idx>(move(registry)) which casts the element to r-value
-                TTargetRef ref = std::move(std::get<Idx>(registry));
-
-                // 2. Rebuild Registry (Remove Type)
-                // We pass the *moved-from* registry.
-                // This is safe because 'remove_item_from_tuple' iterates all elements.
-                // The element at 'Idx' was just moved, but 'remove_item' skips index 'Idx' (by type),
-                // so we never touch the zombie element. All valid elements are moved to new registry.
-                auto next_registry = remove_item_from_tuple<TTargetRef>(std::move(registry));
-
-                return std::make_pair(std::move(ref), std::move(next_registry));
+                return std::move(std::get<idx>(reg));  // Move Ref
             }
         }
-    };
 
-    // Signature: run(Registry) -> pair<ExtractedTuple, FinalRegistry>
-    template <typename TNeedsTuple, typename TRefTuple>
-    struct RecursiveClaimer;
-
-    // Base Case: No Needs
-    template <typename TRefTuple>
-    struct RecursiveClaimer<std::tuple<>, TRefTuple>
-    {
-        static auto run(TRefTuple&& registry)
+        template <size_t Index>
+        static auto get_if_kept(TRegistryTuple& reg)
         {
-            // Return empty extracted list, pass through registry
-            return std::make_pair(std::tuple<>{}, std::forward<TRefTuple>(registry));
+            if constexpr (should_keep<Index>())
+            {
+                // Keep: Return a tuple containing the element
+                return std::make_tuple(std::move(std::get<Index>(reg)));
+            }
+            else
+            {
+                // Drop: Return an empty tuple
+                return std::tuple<>{};
+            }
         }
-    };
 
-    // Recursive Step
-    template <typename HeadNeed, typename... TailNeeds, typename TRefTuple>
-    struct RecursiveClaimer<std::tuple<HeadNeed, TailNeeds...>, TRefTuple>
-    {
-        static auto run(TRefTuple&& registry)
+        // Logic: Building the new Registry
+        // We iterate 0..N, check should_keep(), and build a new tuple.
+        template <size_t... Is>
+        static auto build_new_registry(TRegistryTuple&& reg, std::index_sequence<Is...>)
         {
-            // Process Head, Returns { Ref, NewRegistryType }
-            auto [head_ref, new_registry] = AtomicClaimer<HeadNeed, TRefTuple>::run(std::move(registry));
+            // Expand using the helper and concat results
+            return std::tuple_cat(get_if_kept<Is>(reg)...);
+        }
 
-            using NextRefTupleT = decltype(new_registry);
+        static auto run(TRegistryTuple&& reg)
+        {
+            // Extract Dependencies
+            auto deps = extract_deps(reg, TNeedsList{});
 
-            // Recurse for Tail (using the New Registry)
-            auto [remaining_extracted, final_registry] =
-                RecursiveClaimer<std::tuple<TailNeeds...>, NextRefTupleT>::run(std::move(new_registry));
+            // Build Remaining Registry
+            // Note: We pass 'reg' as r-value.
+            // Unique items extracted in step A are moved-from.
+            // Unique items NOT filtered in B would be an error (but logical impossibility).
+            // Items kept in B are moved to the new tuple.
+            auto new_reg = build_new_registry(std::move(reg), std::make_index_sequence<kRegSize>{});
 
-            // Combine Results, Extracted = (Head, Tail...)
-            auto full_extracted = std::tuple_cat(std::make_tuple(std::move(head_ref)), std::move(remaining_extracted));
-
-            // Return { (Head, Tail...), FinalRegistry }
-            return std::make_pair(std::move(full_extracted), std::move(final_registry));
+            return std::make_pair(std::move(deps), std::move(new_reg));
         }
     };
 
 }  // namespace detail
 
-template <CDeviceRef... CurrentRefs>
+template <CDeviceRef... TCurrentRefs>
 struct DeviceRefRegistry
 {
     using DeviceRefRegistryTag = void;
+    using TRegistryTuple       = std::tuple<TCurrentRefs...>;
 
-    std::tuple<CurrentRefs...> refs;
+    TRegistryTuple refs;
 
-    constexpr explicit DeviceRefRegistry(std::tuple<CurrentRefs...>&& r) : refs(std::move(r))
+    constexpr explicit DeviceRefRegistry(TRegistryTuple&& r) : refs(std::move(r))
     {
     }
 
@@ -263,7 +291,7 @@ struct DeviceRefRegistry
         auto new_tuple = std::tuple_cat(std::move(refs), std::make_tuple(DeviceRef<T>(instance)));
 
         // Return new TRegistry Type
-        return DeviceRefRegistry<CurrentRefs..., DeviceRef<T>>(std::move(new_tuple));
+        return DeviceRefRegistry<TCurrentRefs..., DeviceRef<T>>(std::move(new_tuple));
     }
 
     /**
@@ -273,32 +301,21 @@ struct DeviceRefRegistry
     constexpr auto add(T& instance) & = delete;
 
     /**
-         * @brief Claims dependencies for 'Consumer' from the registry.
+         * @brief Claims dependencies for 'TConsumer' from the registry.
          * @note This consumes the DeviceRefRegistry (it is an r-value method). Shared resources copy ref, unique resources are consumed.
          *
-         * @tparam Consumer Device type requesting dependencies.
+         * @tparam TConsumer Device type requesting dependencies.
          * @return pair<Tuple<Deps...>, DeviceRefRegistry<Remaining...>>
          */
-    template <CHasInjectDevices Consumer>
+    template <CHasInjectDevices TConsumer>
     constexpr auto claim() &&
     {
-        // Identify Requirements
-        using RawNeeds = typename TypeListToTuple<typename GetInjectDevices<Consumer>::type>::type;
-        using RefNeeds = typename detail::MapTupleToRefs<RawNeeds>::type;
+        using NeedsT = typename GetInjectDevices<TConsumer>::type;
 
-        // Compile-Time Existence Check
-        // (Optional but good for errors: Check if RefNeeds are in 'refs')
-        // static_assert(...)
+        // Use the BatchClaimer to do everything in one pass
+        auto result = detail::BatchClaimer<TRegistryTuple, NeedsT>::run(std::move(refs));
 
-        // Run Recursive Logic
-        // Input: Current Refs. Output: { Tuple<Deps...>, Tuple<Remaining...> }
-        auto result = detail::RecursiveClaimer<RefNeeds, decltype(refs)>::run(std::move(refs));
-
-        // Return
-        return std::pair{
-            std::move(result.first),                   // The Dependencies
-            make_from_tuple(std::move(result.second))  // The New Registry
-        };
+        return std::pair{std::move(result.first), make_from_tuple(std::move(result.second))};
     }
 
     /**
@@ -310,14 +327,13 @@ struct DeviceRefRegistry
         requires(!CHasInjectDevices<T>)
     constexpr auto claim() &&
     {
-        // No dependencies -> Return empty tuple and same registry
         return std::make_pair(std::tuple<>{}, std::move(*this));
     }
 
     /**
          * @brief Deleted l-value overload for claim to prevent claiming from l-value DeviceRefRegistry.
          */
-    template <CHasInjectDevices Consumer>
+    template <CHasInjectDevices TConsumer>
     constexpr auto claim() & = delete;
 
     /**
@@ -333,27 +349,14 @@ struct DeviceRefRegistry
         std::apply(
             [&](auto&&... args)
             {
-                // Helper lambda to check policy and invoke visitor
                 auto try_visit = [&](auto&& ref)
                 {
                     using RefT = std::remove_cvref_t<decltype(ref)>;
-
-                    // Sanity check: Is it a valid ref?
-                    if constexpr (CDeviceRef<RefT>)
+                    if constexpr (CDeviceRef<RefT> && CSharedDevice<typename RefT::DeviceT>)
                     {
-                        using DeviceT = typename RefT::DeviceT;
-
-                        // Only visit SHARED devices
-                        if constexpr (CSharedDevice<DeviceT>)
-                        {
-                            // Invoke: Pass the DEVICE REFERENCE (T&) not the wrapper
-                            // Assumes SharedDeviceRef has .get() returning T&
-                            visitor(ref.get());
-                        }
+                        visitor(ref.get());
                     }
                 };
-
-                // Fold expression: Run try_visit on every element in the tuple
                 (try_visit(args), ...);
             },
             refs);
@@ -380,67 +383,87 @@ DeviceRefRegistry() -> DeviceRefRegistry<>;
 template <typename T>
 concept CDeviceRefRegistry = requires { typename T::DeviceRefRegistryTag; };
 
+// ============================================================================
+// STORAGE & CONSTRUCTION SYSTEM
+// ============================================================================
+
 namespace detail
 {
-    // ==========================================
-    // STORAGE & CONSTRUCTION SYSTEM
-    // ==========================================
-
     template <CDevice... Ts>
     struct DeviceStorageImpl;
-
-    // Base Case
     template <>
     struct DeviceStorageImpl<>
     {
         template <CDeviceRefRegistry TRegistry>
-        explicit DeviceStorageImpl(TRegistry&& registry)
+        explicit DeviceStorageImpl(TRegistry&&)
         {
-        }  // End of chain
-
+        }
         auto export_registry(auto registry)
         {
             return registry;
         }
     };
 
-    // Recursive Case
     template <CDevice Head, CDevice... Tail>
     struct DeviceStorageImpl<Head, Tail...>
     {
         Head                       item;
         DeviceStorageImpl<Tail...> next;
 
-        // --- Constructor ---
-        // We take a DeviceRefRegistry, claim deps for 'Head', construct 'Head',
-        // add 'Head' to registry, pass to 'Next'.
+        /**
+         * @brief Constructor that builds the device storage by claiming devices from the registry.
+         *
+         * @tparam TRegistry Type of the device reference registry.
+         * @param registry Device reference registry to claim dependencies from.
+         */
         template <CDeviceRefRegistry TRegistry>
         explicit DeviceStorageImpl(TRegistry&& registry) : DeviceStorageImpl(std::move(registry).template claim<Head>())
         {
         }
 
+        /**
+         * @brief Default constructor that initializes the device storage with an empty registry.
+         * @note This constructor is only valid if all devices can be constructed without dependencies.
+         */
         explicit DeviceStorageImpl() : DeviceStorageImpl(DeviceRefRegistry<>(std::tuple<>{}))
         {
         }
 
+        /**
+         * @brief Exports the device reference registry after adding the current device.
+         *
+         * @tparam TRegistry Type of the device reference registry.
+         * @param registry Device reference registry to add the current device to.
+         * @return New DeviceRefRegistry with the current device added.
+         */
         template <CDeviceRefRegistry TRegistry>
         auto export_registry(TRegistry&& registry)
         {
-            auto [_, filtered_registry] = std::move(registry).template claim<Head>();
-            auto next_registry          = std::move(filtered_registry).add(item);
-            return next.export_registry(std::move(next_registry));
+            auto [_, filtered] = std::move(registry).template claim<Head>();
+            return next.export_registry(std::move(filtered).add(item));
         }
 
+        /**
+         * @brief Exports the device reference registry starting from an empty registry.
+         *
+         * @return auto New DeviceRefRegistry with all devices added.
+         */
         auto export_registry()
         {
             return export_registry(DeviceRefRegistry<>(std::tuple<>{}));
         }
 
     private:
-        template <typename TDeps, CDeviceRefRegistry TFilteredRegistry>
-        explicit DeviceStorageImpl(std::pair<TDeps, TFilteredRegistry>&& args)
-            : item(std::make_from_tuple<Head>(std::move(args.first)))  // 1. Construct Item in-place
-            , next(std::move(args.second).add(item))                   // 2. Add reference of MEMBER item to registry
+        /**
+         * @brief Construct a new Device Storage Impl object
+         *
+         * @tparam TDeps Type of the dependencies tuple.
+         * @tparam TFiltered Type of the filtered device reference registry.
+         * @param args Pair of dependencies tuple and filtered device reference registry.
+         */
+        template <typename TDeps, CDeviceRefRegistry TFiltered>
+        explicit DeviceStorageImpl(std::pair<TDeps, TFiltered>&& args)
+            : item(std::make_from_tuple<Head>(std::move(args.first))), next(std::move(args.second).add(item))
         {
         }
     };
@@ -458,13 +481,10 @@ namespace detail
 template <CDevice... TDevices>
 class DeviceStorage
 {
-private:
-    using Devices     = DeviceList<TDevices...>;
-    using DeviceGraph = typename Devices::Devices;
-    using FullList    = typename detail::ExpandDeps<DeviceGraph>::type;
-    using SortedList  = typename detail::TopoSort<FullList, TypeList<>>::type;
-    using Storage     = typename detail::MakeDeviceStorage<SortedList>::type;
-
+    using Devices    = TypeList<TDevices...>;
+    using FullList   = typename detail::ExpandDeps<Devices>::type;
+    using SortedList = typename detail::TopoSort<FullList, TypeList<>>::type;
+    using Storage    = typename detail::MakeDeviceStorage<SortedList>::type;
     Storage m_storage;
 
 public:
@@ -472,11 +492,35 @@ public:
     {
     }
 
-    auto create_registry()
+    [[nodiscard]] auto create_registry()
     {
         return m_storage.export_registry();
     }
 };
+
+namespace detail
+{
+    template <CDevice... TDevices>
+    [[nodiscard]] inline DeviceStorage<TDevices...> device_storage_builder_helper(TypeList<TDevices...>)
+    {
+        return DeviceStorage<TDevices...>{};
+    }
+}  // namespace detail
+
+template <CHasDependDevices... TDrivers>
+[[nodiscard]] inline auto build_device_storage_from_drivers()
+{
+    using Drivers    = TypeList<TDrivers...>;
+    using DirectDeps = typename detail::DirectDeps<Drivers>::type;
+    return detail::device_storage_builder_helper(DirectDeps{});
+}
+
+template <CDevice... TDevices>
+[[nodiscard]] inline auto build_device_storage_from_device_tree()
+{
+    using DeviceGraph = typename DeviceList<TDevices...>::Devices;
+    return detail::device_storage_builder_helper(DeviceGraph{});
+}
 
 template <CDeviceRefRegistry TDeviceRefRegistry, typename TDriverTuple = std::tuple<>>
 class DriverBuilder
@@ -556,7 +600,7 @@ public:
      *
      * @return auto
      */
-    auto yield() &&
+    [[nodiscard]] inline auto yield() &&
     {
         return std::tuple_cat(std::make_tuple(std::move(m_registry)), std::move(m_drivers));
     }
@@ -564,7 +608,7 @@ public:
 };
 
 template <typename TDeviceStorage>
-inline constexpr auto boot_driver_builder(TDeviceStorage& storage)
+[[nodiscard]] inline constexpr auto boot_driver_builder(TDeviceStorage& storage)
 {
     auto registry = storage.create_registry();
     return DriverBuilder<decltype(registry)>(std::move(registry));

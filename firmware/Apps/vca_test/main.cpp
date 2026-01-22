@@ -8,8 +8,11 @@ float current_sensor_reading()
 {
     return 0.0f;
 }
+
+auto g_storage = build_device_storage_from_drivers<VCAControllerModule<HRTIMTimerDeviceA>>();
+
 auto [g_device_ref_pool, g_vca] =
-    boot_driver_builder()
+    boot_driver_builder(g_storage)
         .install<VCAControllerModule<HRTIMTimerDeviceA>>(delegate::Delegate<float>(&current_sensor_reading))
         .yield();
 

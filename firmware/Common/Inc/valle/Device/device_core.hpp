@@ -5,25 +5,35 @@
 #include "Valle/Utils/template_utils.hpp"
 
 template <bool tkShared = false>
-class DeviceDescriptor
+struct DeviceDescriptor
 {
-public:
     constexpr static bool skIsShared = tkShared;
 };
 
 using UniqueDeviceDescriptor = DeviceDescriptor<false>;
 using SharedDeviceDescriptor = DeviceDescriptor<true>;
 
-template <typename T>
-concept CDevice = requires {
-    typename T::Descriptor;
-    { T::Descriptor::skIsShared } -> std::convertible_to<bool>;
+struct InterfaceDeviceDescriptor
+{
+    using InterfaceDeviceDescriptorTag = void;
 };
+
+struct NullDeviceDescriptor
+{
+    using NullDeviceDescriptorTag = void;
+};
+
+template <typename T>
+concept CDevice = requires { typename T::Descriptor; };
 
 template <typename T>
 concept CUniqueDevice = CDevice<T> && !T::Descriptor::skIsShared;
 template <typename T>
 concept CSharedDevice = CDevice<T> && T::Descriptor::skIsShared;
+template <typename T>
+concept CInterfaceDevice = CDevice<T> && requires { typename T::Descriptor::InterfaceDeviceDescriptorTag; };
+template <typename T>
+concept CNullDevice = CDevice<T> && requires { typename T::Descriptor::NullDeviceDescriptorTag; };
 
 template <typename T>
 concept CHasChildrenDevices = CDevice<T> && requires { typename T::Descriptor::Children; };
@@ -165,9 +175,20 @@ public:
     }
 };
 
+template <typename TDevice>
+class NullDeviceRef
+{
+public:
+    explicit NullDeviceRef(TDevice& device)
+    {
+    }
+};
+
 template <CDevice TDevice>
 using DeviceRef =
-    std::conditional_t<TDevice::Descriptor::skIsShared, SharedDeviceRef<TDevice>, UniqueDeviceRef<TDevice>>;
+    std::conditional_t<CNullDevice<TDevice>,
+                       NullDeviceRef<TDevice>,
+                       std::conditional_t<CSharedDevice<TDevice>, SharedDeviceRef<TDevice>, UniqueDeviceRef<TDevice>>>;
 
 template <typename T>
 concept CSharedDeviceRef = requires { typename T::SharedDeviceRefTag; };
@@ -176,7 +197,10 @@ template <typename T>
 concept CUniqueDeviceRef = requires { typename T::UniqueDeviceRefTag; };
 
 template <typename T>
-concept CDeviceRef = CSharedDeviceRef<T> || CUniqueDeviceRef<T>;
+concept CNullDeviceRef = requires { typename T::NullDeviceRefTag; };
+
+template <typename T>
+concept CDeviceRef = CSharedDeviceRef<T> || CUniqueDeviceRef<T> || CNullDeviceRef<T>;
 
 template <typename... Ts>
 class DeviceList;
@@ -189,7 +213,8 @@ namespace detail
     struct DeviceFlattener
     {
         // Base Case: T is a leaf resource (no Children Devices, not a Registry)
-        using type = TypeList<T>;
+        // Exclude interface devices
+        using type = std::conditional_t<CInterfaceDevice<T>, TypeList<>, TypeList<T>>;
     };
 
     // Case 2: T is a DeviceList<Ts...>
@@ -210,8 +235,11 @@ namespace detail
         using ChildrenRaw  = typename T::Descriptor::Children;  // This is a DeviceList<...>
         using ChildrenFlat = typename DeviceFlattener<ChildrenRaw>::type;
 
-        // Merge Parent + Children
-        using type = typename TypeListMergeUniqueMulti<TypeList<T>, ChildrenFlat>::type;
+        // Interface device: take only children
+        // Non-interface device: take T + children
+        using type = std::conditional_t<CInterfaceDevice<T>,
+                                        ChildrenFlat,
+                                        typename TypeListMergeUniqueMulti<TypeList<T>, ChildrenFlat>::type>;
     };
 
 }  // namespace detail
@@ -227,7 +255,7 @@ public:
 template <typename T>
 concept CHasInjectDevices = requires { typename T::InjectDevices; };
 
-// Helper to get dependencies as a tuple type
+// Helper to get injection dependencies as a tuple type
 template <typename T>
 struct GetInjectDevices
 {
@@ -238,4 +266,39 @@ template <CHasInjectDevices T>
 struct GetInjectDevices<T>
 {
     using type = typename T::InjectDevices;
+};
+
+// Helper concept to check for additional dependencies
+template <typename T>
+concept CHasAdditionalDependDevices = requires { typename T::DependDevices; };
+
+// Helper to get dependencies as a tuple type
+template <typename T>
+struct GetAdditionalDependDevices
+{
+    using type = TypeList<>;
+};
+
+template <CHasAdditionalDependDevices T>
+struct GetAdditionalDependDevices<T>
+{
+    using type = typename T::DependDevices;
+};
+
+// Helper concept to check for dependencies
+template <typename T>
+concept CHasDependDevices = CHasAdditionalDependDevices<T> || CHasInjectDevices<T>;
+
+// Helper to get dependencies as a tuple type
+template <typename T>
+struct GetDependDevices
+{
+    using type = TypeList<>;
+};
+
+template <CHasDependDevices T>
+struct GetDependDevices<T>
+{
+    using type = typename TypeListMergeUnique<typename GetAdditionalDependDevices<T>::type,
+                                              typename GetInjectDevices<T>::type>::type;
 };

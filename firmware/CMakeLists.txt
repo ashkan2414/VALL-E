@@ -43,7 +43,7 @@ enable_language(C CXX ASM)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 # ==============================================================================
-# 3. STM32 Driver INTEGRATION
+# STM32 Driver INTEGRATION
 # ==============================================================================
 # Create the final executable artifact
 add_executable(${CMAKE_PROJECT_NAME})
@@ -89,6 +89,11 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/Common/Inc                # Your Common library headers (PID.h)
     ${CMAKE_CURRENT_SOURCE_DIR}/Apps/${TARGET_APP}        # The specific App's local headers
 )
+
+# ==============================================================================
+# COMPILER FLAGS
+# ==============================================================================
+target_precompile_headers(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/Common/Inc/Valle/pch.hpp")
 
 # ==============================================================================
 # LINKING
