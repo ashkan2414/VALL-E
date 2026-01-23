@@ -40,28 +40,42 @@ namespace valle::system
     {
         g_device_ref_registry.foreach_shared(Overloaded{
             [](ADCPeripheralDevice<1>& dev)
-            {
-                dev.init(ADCPeripheralConfig{
-                    .resolution     = ADCResolution::k12Bit,
-                    .data_alignment = ADCDataAlignment::kRight,
-                    .low_power      = ADCLowPowerMode::kNone,
-                    .inj =
-                        ADCInjectGroupConfig{
-                            .trigger_source = ADCInjectGroupTriggerSource::kSoftware,
-                            .trigger_edge   = ADCInjectGroupTriggerEdge::kRising,
-                        },
-                    .reg          = ADCRegularGroupConfig{.trigger_source    = ADCRegularGroupTriggerSource::kSoftware,
-                                                          .trigger_edge      = ADCRegularGroupTriggerEdge::kRising,
-                                                          .dma_transfer      = ADCRegularGroupDMATransfer::kUnlimited,
-                                                          .overrun           = ADCRegularGroupOverrunBehavior::kOverwrite,
-                                                          .conversion_mode   = ADCRegularGroupConversionMode::kSingleShot,
-                                                          .oversampling_mode = ADCRegularGroupOversamplingMode::kDiscontinuous},
-                    .oversampling = std::nullopt  // No oversampling by default
-                });
-            },
+        {
+            dev.init(ADCPeripheralConfig{
+                .resolution     = ADCResolution::k12Bit,
+                .data_alignment = ADCDataAlignment::kRight,
+                .low_power      = ADCLowPowerMode::kNone,
+                .inj =
+                    ADCInjectGroupConfig{
+                        .trigger_source = ADCInjectGroupTriggerSource::kSoftware,
+                        .trigger_edge   = ADCInjectGroupTriggerEdge::kRising,
+                    },
+                .reg          = ADCRegularGroupConfig{.trigger_source = ADCRegularGroupTriggerSource::kSoftware,
+                                                      .trigger_edge   = ADCRegularGroupTriggerEdge::kRising,
+                                                      .dma =
+                                                 ADCRegularGroupDMAConfig{
+                                                              .priority      = DMAPriority::kHigh,
+                                                              .circular_mode = true,
+                                                              .interrupts =
+                                                         DMAInterruptConfig{
+                                                                      .priority  = 5,
+                                                                      .enable_tc = true,
+                                                                      .enable_ht = false,
+                                                                      .enable_te = true,
+                                                         },
+                                                 },
+                                                      .overrun           = ADCRegularGroupOverrunBehavior::kOverwrite,
+                                                      .conversion_mode   = ADCRegularGroupConversionMode::kSingleShot,
+                                                      .oversampling_mode = ADCRegularGroupOversamplingMode::kDiscontinuous},
+                .oversampling = std::nullopt  // No oversampling by default
+            });
+        },
+
+            [](DMA1ControllerDevice& dev) { dev.init(); },
             [](GPIOPortADevice& dev) { dev.init(); },
             [](HRTIMDevice& dev) { dev.init(); },
-        });
+        }  // namespace valle::system
+        );
     }
 
     /**
@@ -86,6 +100,7 @@ namespace valle::system
     {
         g_device_ref_registry.foreach_shared(Overloaded{
             [](ADCPeripheralDevice<1>& dev) { dev.post_init(true, false); },
+            [](DMA1ControllerDevice& dev) { dev.post_init(); },
             [](GPIOPortADevice& dev) { dev.post_init(); },
             [](HRTIMDevice& dev) { dev.post_init(); },
         });

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <atomic>
+#include <concepts>
+
 #include "Valle/Device/Devices/adc.hpp"
 #include "Valle/Math/converters.hpp"
 

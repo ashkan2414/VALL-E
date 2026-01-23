@@ -172,6 +172,21 @@ struct TypeListUniqueLowCard<TypeList<Head, Tail...>, Out>
 };
 
 template <typename TList>
+struct TypeListSize;
+
+template <typename... Ts>
+struct TypeListSize<TypeList<Ts...>>
+{
+    static constexpr size_t value = sizeof...(Ts);
+};
+
+template <>
+struct TypeListSize<TypeList<>>
+{
+    static constexpr size_t value = 0;
+};
+
+template <typename TList>
 struct TypeListToTuple;
 
 template <typename... Ts>
@@ -258,21 +273,20 @@ static constexpr inline auto remove_item_from_tuple(TTuple&& t)
 {
     return std::apply(
         [&](auto&&... args)
+    {
+        return std::tuple_cat([&](auto&& arg)
         {
-            return std::tuple_cat(
-                [&](auto&& arg)
-                {
-                    using ArgT = std::remove_cvref_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<ArgT, TRemove>)
-                    {
-                        return std::tuple<>{};  // Drop it
-                    }
-                    else
-                    {
-                        return std::make_tuple(std::forward<decltype(arg)>(arg));  // Keep/Move it
-                    }
-                }(std::forward<decltype(args)>(args))...);
-        },
+            using ArgT = std::remove_cvref_t<decltype(arg)>;
+            if constexpr (std::is_same_v<ArgT, TRemove>)
+            {
+                return std::tuple<>{};  // Drop it
+            }
+            else
+            {
+                return std::make_tuple(std::forward<decltype(arg)>(arg));  // Keep/Move it
+            }
+        }(std::forward<decltype(args)>(args))...);
+    },
         std::forward<TTuple>(t));
 }
 
@@ -287,3 +301,20 @@ struct Overloaded : Ts...
 };
 template <class... Ts>
 Overloaded(Ts...) -> Overloaded<Ts...>;
+
+// ==========================================
+// Inspect Type Helper for Debugging
+// ==========================================
+
+/**
+ * @brief Triggers a compiler error that prints the deduced type T.
+ * Usage: inspect_type<MyComplexType>{};
+ */
+template <typename... TInspect>
+struct inspect_type;  // No definition!
+
+template <size_t N>
+struct inspect_value
+{
+    static_assert(N < 0, "Inspect Value: Triggered intentional compile-time error to inspect value.");
+};

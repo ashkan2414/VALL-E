@@ -253,7 +253,8 @@ public:
 };
 
 template <typename T>
-concept CHasInjectDevices = requires { typename T::InjectDevices; };
+concept CHasInjectDevices =
+    requires { typename T::InjectDevices; } && TypeListSize<typename T::InjectDevices>::value > 0;
 
 // Helper to get injection dependencies as a tuple type
 template <typename T>
@@ -270,7 +271,8 @@ struct GetInjectDevices<T>
 
 // Helper concept to check for additional dependencies
 template <typename T>
-concept CHasAdditionalDependDevices = requires { typename T::DependDevices; };
+concept CHasAdditionalDependDevices =
+    requires { typename T::DependDevices; } && TypeListSize<typename T::DependDevices>::value > 0;
 
 // Helper to get dependencies as a tuple type
 template <typename T>

@@ -9,26 +9,23 @@ template <uint8_t tkADCIdx>
     requires(kValidADCIndex<tkADCIdx>)
 static inline void adc_irq_handler()
 {
-    ADC_TypeDef* adc = ADCTraits<tkADCIdx>::skInstance;
+    using ADCPeripheralDeviceT = ADCPeripheralDevice<tkADCIdx>;
 
     // --------------------------------------------------------------------
-    // SAFETY FIRST: Analog Watchdog (AWD)
+    // SAFETY FIRST: Analog Watchdog (AWD) (overvoltage/undervoltage)
     // --------------------------------------------------------------------
-    if (LL_ADC_IsActiveFlag_AWD1(adc) && LL_ADC_IsEnabledIT_AWD1(adc))
+    if (ADCPeripheralDeviceT::awd1_int_pending())
     {
-        // Clear flag immediately to prevent infinite loop
-        LL_ADC_ClearFlag_AWD1(adc);
-
-        // Handle Analog Watchdog event (overvoltage/undervoltage)
+        ADCPeripheralDeviceT::ack_awd1_int();
         ADCIsrRouter<tkADCIdx, ADCInterruptType::kAnalogWatchdog>::handle();
     }
 
     // --------------------------------------------------------------------
     // CRITICAL: End of Injected Sequence (JEOS)
     // --------------------------------------------------------------------
-    if (LL_ADC_IsActiveFlag_JEOS(adc) && LL_ADC_IsEnabledIT_JEOS(adc))
+    if (ADCPeripheralDeviceT::inject_eos_int_pending())
     {
-        LL_ADC_ClearFlag_JEOS(adc);
+        ADCPeripheralDeviceT::ack_inject_eos_int();
         ADCIsrRouter<tkADCIdx, ADCInterruptType::kEndOfInjectSequence>::handle();
     }
 
@@ -36,19 +33,18 @@ static inline void adc_irq_handler()
     // BACKGROUND: End of Regular Sequence (EOS)
     // --------------------------------------------------------------------
     // Usually handled by DMA TC interrupt, but if using IT:
-    if (LL_ADC_IsActiveFlag_EOS(adc) && LL_ADC_IsEnabledIT_EOS(adc))
+    if (ADCPeripheralDeviceT::regular_eos_int_pending())
     {
-        LL_ADC_ClearFlag_EOS(adc);
+        ADCPeripheralDeviceT::ack_regular_eos_int();
         ADCIsrRouter<tkADCIdx, ADCInterruptType::kEndOfRegularSequence>::handle();
     }
 
     // --------------------------------------------------------------------
     // ERROR: Overrun (OVR)
     // --------------------------------------------------------------------
-    if (LL_ADC_IsActiveFlag_OVR(adc) && LL_ADC_IsEnabledIT_OVR(adc))
+    if (ADCPeripheralDeviceT::ovr_int_pending())
     {
-        // Clear it so we can resume
-        LL_ADC_ClearFlag_OVR(adc);
+        ADCPeripheralDeviceT::ack_ovr_int();
         ADCIsrRouter<tkADCIdx, ADCInterruptType::kOverrun>::handle();
     }
 }

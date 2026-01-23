@@ -360,17 +360,17 @@ struct DeviceRefRegistry
     {
         std::apply(
             [&](auto&&... args)
+        {
+            auto try_visit = [&](auto&& ref)
             {
-                auto try_visit = [&](auto&& ref)
+                using RefT = std::remove_cvref_t<decltype(ref)>;
+                if constexpr (CDeviceRef<RefT> && CSharedDevice<typename RefT::DeviceT>)
                 {
-                    using RefT = std::remove_cvref_t<decltype(ref)>;
-                    if constexpr (CDeviceRef<RefT> && CSharedDevice<typename RefT::DeviceT>)
-                    {
-                        visitor(ref.get());
-                    }
-                };
-                (try_visit(args), ...);
-            },
+                    visitor(ref.get());
+                }
+            };
+            (try_visit(args), ...);
+        },
             refs);
     }
 
