@@ -157,6 +157,11 @@ public:
         while (LL_HRTIM_IsActiveFlag_DLLRDY(HRTIM1) == 0);
     }
 
+    static inline void post_init()
+    {
+        // Do nothing for now
+    }
+
     static inline void init_output_channel(const uint32_t output, const HRTIMOutputChannelConfig& config)
     {
         LL_HRTIM_OUT_SetPolarity(HRTIM1, output, static_cast<uint32_t>(config.polarity));

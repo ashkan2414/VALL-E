@@ -7,7 +7,7 @@
 #include <type_traits>
 
 #include "Valle/Math/System/block.hpp"
-#include "Valle/Utils/math_utils.hpp"
+#include "Valle/Math/matrix.hpp"
 
 template <typename T>
 struct BiQuadCoeffs

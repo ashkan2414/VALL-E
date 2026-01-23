@@ -143,8 +143,6 @@ public:
 
         // Update PID sample time based on PWM frequency
         m_feedback_system.open_loop().set_sample_time(1.0f / static_cast<float>(get_ctrl_loop_freq_hz()));
-
-        enable();
     }
 
     /**
@@ -242,15 +240,3 @@ private:
         }
     }
 };
-
-/**
- * @brief Binds a Hardware Timer Index to a specific C++ Object Instance.
- *
- * @param INSTANCE     The global/static instance of your VCAControllerModule
- */
-#define BIND_VCA_ISR(INSTANCE)                                       \
-    template <>                                                      \
-    void HRTIMIsrRouter<decltype(INSTANCE)::skDeviceIndex>::handle() \
-    {                                                                \
-        INSTANCE.run_ctrl_loop();                                    \
-    }

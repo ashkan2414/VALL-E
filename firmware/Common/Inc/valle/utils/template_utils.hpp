@@ -232,16 +232,18 @@ concept CTupleAllElementsSatisfy = CIsTuple<T> && detail::TupleCheckImpl<T, Type
 
 // --- Helper: Find Index of Type T in TTuple ---
 template <typename T, typename Tuple>
+    requires(TupleContains<T, Tuple>::value)
 struct TupleIndex;
 
 template <typename T, typename... Ts>
+    requires(TupleContains<T, std::tuple<Ts...>>::value)
 struct TupleIndex<T, std::tuple<Ts...>>
 {
     // Simple linear scan using inheritance for speed
     template <typename U, typename... Us>
     static constexpr size_t find()
     {
-        if constexpr (std::is_same_v<T, typename U::DeviceT>)
+        if constexpr (std::is_same_v<T, U>)
             return 0;
         else
             return 1 + TupleIndex<T, std::tuple<Us...>>::template find<Us...>();

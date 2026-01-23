@@ -172,7 +172,7 @@ namespace detail
         template <typename... TNeeds>
         static constexpr auto get_indices(TypeList<TNeeds...>)
         {
-            return std::array<size_t, sizeof...(TNeeds)>{TupleIndex<TNeeds, TRegistryTuple>::value...};
+            return std::array<size_t, sizeof...(TNeeds)>{TupleIndex<DeviceRef<TNeeds>, TRegistryTuple>::value...};
         }
 
         static constexpr auto kIndices = get_indices(TNeedsList{});
@@ -209,9 +209,9 @@ namespace detail
         }
 
         template <typename Need, typename Reg>
-        static auto extract_one(Reg& reg)
+        static DeviceRef<Need> extract_one(Reg& reg)
         {
-            constexpr size_t idx = TupleIndex<Need, Reg>::value;
+            constexpr size_t idx = TupleIndex<DeviceRef<Need>, Reg>::value;
             // Move if Unique, Copy if Shared
             if constexpr (CSharedDevice<Need>)
             {
@@ -342,6 +342,14 @@ struct DeviceRefRegistry
     template <typename T>
         requires(!CHasInjectDevices<T>)
     constexpr auto claim() & = delete;
+
+    template <CSharedDevice TDevice>
+    [[nodiscard]] TDevice& get()
+    {
+        constexpr size_t   idx = TupleIndex<DeviceRef<TDevice>, TRegistryTuple>::value;
+        DeviceRef<TDevice> ref = std::get<idx>(refs);
+        return ref.get();
+    }
 
     template <typename Visitor>
     void foreach_shared(Visitor&& visitor)
