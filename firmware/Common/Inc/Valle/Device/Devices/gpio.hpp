@@ -88,8 +88,8 @@ struct GPIOPortTraits;
 template <>
 struct GPIOPortTraits<GPIOPort::kA>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOA;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOA;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOA_CLK_ENABLE();
     }
@@ -97,8 +97,8 @@ struct GPIOPortTraits<GPIOPort::kA>
 template <>
 struct GPIOPortTraits<GPIOPort::kB>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOB;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOB;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOB_CLK_ENABLE();
     }
@@ -106,8 +106,8 @@ struct GPIOPortTraits<GPIOPort::kB>
 template <>
 struct GPIOPortTraits<GPIOPort::kC>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOC;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOC;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOC_CLK_ENABLE();
     }
@@ -115,8 +115,8 @@ struct GPIOPortTraits<GPIOPort::kC>
 template <>
 struct GPIOPortTraits<GPIOPort::kD>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOD;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOD;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOD_CLK_ENABLE();
     }
@@ -124,8 +124,8 @@ struct GPIOPortTraits<GPIOPort::kD>
 template <>
 struct GPIOPortTraits<GPIOPort::kE>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOE;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOE;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOE_CLK_ENABLE();
     }
@@ -133,8 +133,8 @@ struct GPIOPortTraits<GPIOPort::kE>
 template <>
 struct GPIOPortTraits<GPIOPort::kF>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOF;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOF;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOF_CLK_ENABLE();
     }
@@ -142,8 +142,8 @@ struct GPIOPortTraits<GPIOPort::kF>
 template <>
 struct GPIOPortTraits<GPIOPort::kG>
 {
-    static inline const GPIO_TypeDef* skInstance = GPIOG;
-    static inline void                enable_clock()
+    static inline GPIO_TypeDef* skInstance = GPIOG;
+    static inline void          enable_clock()
     {
         __HAL_RCC_GPIOG_CLK_ENABLE();
     }
@@ -228,6 +228,14 @@ public:
     }
 };
 
+using GPIOPortADevice = GPIOPortDevice<GPIOPort::kA>;
+using GPIOPortBDevice = GPIOPortDevice<GPIOPort::kB>;
+using GPIOPortCDevice = GPIOPortDevice<GPIOPort::kC>;
+using GPIOPortDDevice = GPIOPortDevice<GPIOPort::kD>;
+using GPIOPortEDevice = GPIOPortDevice<GPIOPort::kE>;
+using GPIOPortFDevice = GPIOPortDevice<GPIOPort::kF>;
+using GPIOPortGDevice = GPIOPortDevice<GPIOPort::kG>;
+
 // ============================================================================
 // THE PIN (Unique Device)
 // ============================================================================
@@ -264,8 +272,8 @@ public:
     using Traits        = GPIOPortTraits<tkPort>;
 
     // Hardware Constants exposed for Drivers
-    static constexpr GPIO_TypeDef* skPort    = Traits::skInstance;
-    static constexpr uint16_t      skPinMask = (1UL << tkPinIdx);
+    static inline GPIO_TypeDef* skPort    = Traits::skInstance;
+    static constexpr uint16_t   skPinMask = (1UL << tkPinIdx);
 
 public:
     static inline void init(const GPIOPinConfig& config = GPIOPinConfig::default_config())

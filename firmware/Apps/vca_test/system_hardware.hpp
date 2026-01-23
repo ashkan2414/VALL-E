@@ -8,7 +8,7 @@
 // ============================================================================
 // Drivers/Modules Type Definitions
 // ============================================================================
-using CurrentSensorADCChannel = ADCInjectChannelDevice1<1, ADCChannelId::kChannel1>;
+using CurrentSensorADCChannel = ADCInjectChannelDevice1<1, ADCChannelId::kChannel3>;
 using CurrentSensorT          = ACS724Module<CurrentSensorADCChannel, ACS724Model::k2P5AB>;
 using CurrentSensorADCP       = CurrentSensorADCChannel::ChannelT::PeripheralT;
 

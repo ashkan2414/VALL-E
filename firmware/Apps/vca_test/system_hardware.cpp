@@ -59,6 +59,7 @@ namespace valle::system
                     .oversampling = std::nullopt  // No oversampling by default
                 });
             },
+            [](GPIOPortADevice& dev) { dev.init(); },
             [](HRTIMDevice& dev) { dev.init(); },
         });
     }
@@ -85,6 +86,7 @@ namespace valle::system
     {
         g_device_ref_registry.foreach_shared(Overloaded{
             [](ADCPeripheralDevice<1>& dev) { dev.post_init(true, false); },
+            [](GPIOPortADevice& dev) { dev.post_init(); },
             [](HRTIMDevice& dev) { dev.post_init(); },
         });
     }
