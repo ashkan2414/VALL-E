@@ -271,6 +271,10 @@ struct DeviceRefRegistry
     using DeviceRefRegistryTag = void;
     using TRegistryTuple       = std::tuple<TCurrentRefs...>;
 
+    template <CHasInjectDevices TConsumer>
+    using DeviceRefRegistryAfterClaim =
+        decltype(std::declval<DeviceRefRegistry<TCurrentRefs...>>().template claim<TConsumer>().second);
+
     TRegistryTuple refs;
 
     constexpr explicit DeviceRefRegistry(TRegistryTuple&& r) : refs(std::move(r))
@@ -391,6 +395,31 @@ DeviceRefRegistry() -> DeviceRefRegistry<>;
 template <typename T>
 concept CDeviceRefRegistry = requires { typename T::DeviceRefRegistryTag; };
 
+namespace detail
+{
+
+    template <CDeviceRefRegistry TRegistry, CHasInjectDevices... TConsumers>
+    struct DeviceRefRegistryAfterClaimsHelper;
+
+    template <CDeviceRefRegistry TRegistry, CHasInjectDevices TFirst, CHasInjectDevices... TRest>
+    struct DeviceRefRegistryAfterClaimsHelper<TRegistry, TFirst, TRest...>
+    {
+        using NextRegistry = typename TRegistry::template DeviceRefRegistryAfterClaim<TFirst>;
+        using type         = typename DeviceRefRegistryAfterClaimsHelper<NextRegistry, TRest...>::type;
+    };
+
+    template <CDeviceRefRegistry TRegistry>
+    struct DeviceRefRegistryAfterClaimsHelper<TRegistry>
+    {
+        using type = TRegistry;
+    };
+
+}  // namespace detail
+
+template <CDeviceRefRegistry TRegistry, CHasInjectDevices... TConsumers>
+using DeviceRefRegistryAfterClaims =
+    typename detail::DeviceRefRegistryAfterClaimsHelper<TRegistry, TConsumers...>::type;
+
 // ============================================================================
 // STORAGE & CONSTRUCTION SYSTEM
 // ============================================================================
@@ -493,9 +522,12 @@ class DeviceStorage
     using FullList   = typename detail::ExpandDeps<Devices>::type;
     using SortedList = typename detail::TopoSort<FullList, TypeList<>>::type;
     using Storage    = typename detail::MakeDeviceStorage<SortedList>::type;
+
     Storage m_storage;
 
 public:
+    using RegistryT = decltype(std::declval<Storage>().export_registry());
+
     DeviceStorage() : m_storage()
     {
     }
@@ -508,6 +540,15 @@ public:
 
 namespace detail
 {
+    template <typename TDeviceList>
+    struct DeviceStorageBuilderHelper;
+
+    template <typename... TDevices>
+    struct DeviceStorageBuilderHelper<TypeList<TDevices...>>
+    {
+        using type = DeviceStorage<TDevices...>;
+    };
+
     template <CDevice... TDevices>
     [[nodiscard]] inline DeviceStorage<TDevices...> device_storage_builder_helper(TypeList<TDevices...>)
     {
@@ -516,7 +557,11 @@ namespace detail
 }  // namespace detail
 
 template <CHasDependDevices... TDrivers>
-[[nodiscard]] inline auto build_device_storage_from_drivers()
+using DeviceStorageFromDrivers =
+    typename detail::DeviceStorageBuilderHelper<typename detail::DirectDeps<TypeList<TDrivers...>>::type>::type;
+
+template <CHasDependDevices... TDrivers>
+[[nodiscard]] inline DeviceStorageFromDrivers<TDrivers...> build_device_storage_from_drivers()
 {
     using Drivers    = TypeList<TDrivers...>;
     using DirectDeps = typename detail::DirectDeps<Drivers>::type;
@@ -524,7 +569,11 @@ template <CHasDependDevices... TDrivers>
 }
 
 template <CDevice... TDevices>
-[[nodiscard]] inline auto build_device_storage_from_device_tree()
+using DeviceStorageFromDeviceTree =
+    typename detail::DeviceStorageBuilderHelper<typename DeviceList<TDevices...>::Devices>::type;
+
+template <CDevice... TDevices>
+[[nodiscard]] inline DeviceStorageFromDeviceTree<TDevices...> build_device_storage_from_device_tree()
 {
     using DeviceGraph = typename DeviceList<TDevices...>::Devices;
     return detail::device_storage_builder_helper(DeviceGraph{});
