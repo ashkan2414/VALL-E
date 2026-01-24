@@ -36,8 +36,8 @@ struct LinearConverter
 {
     struct Config
     {
-        float scale  = 1.0f;
-        float offset = 0.0f;
+        float scale  = 1.0F;
+        float offset = 0.0F;
     };
     using InputT     = T;
     using ConvertedT = float;

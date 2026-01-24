@@ -3,7 +3,7 @@
 using namespace valle;
 
 template <>
-struct ADCIsrRouter<CurrentSensorT::ChannelT::skADCIdx, ADCInterruptType::kEndOfInjectSequence>
+struct ADCIsrRouter<CurrentSensorT::ChannelT::skControllerID, ADCInterruptType::kEndOfInjectSequence>
 {
     static_assert(CurrentSensorT::ChannelT::skGroup == ADCChannelGroup::kInject,
                   "ADCIsrRouter specialization used for non-inject channel");

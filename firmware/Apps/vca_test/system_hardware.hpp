@@ -10,10 +10,10 @@
 // ============================================================================
 
 constexpr uint8_t      kCurrentSensorADC          = 1;
-constexpr ADCChannelId kCurrentSensorADCChannelId = ADCChannelId::kChannel3;
+constexpr ADCChannelID kCurrentSensorADCChannelId = ADCChannelID::kChannel3;
 
 template <>
-struct ADCPeripheralCTConfigTraits<kCurrentSensorADC>
+struct ADCControllerCTConfigTraits<kCurrentSensorADC>
 {
     static constexpr uint8_t skDMAIdx        = 1;
     static constexpr uint8_t skDMAChannelIdx = 1;
@@ -21,9 +21,9 @@ struct ADCPeripheralCTConfigTraits<kCurrentSensorADC>
 
 using CurrentSensorADCChannel = ADCInjectChannelDevice1<kCurrentSensorADC, kCurrentSensorADCChannelId>;
 using CurrentSensorT          = ACS724Module<CurrentSensorADCChannel, ACS724Model::k2P5AB>;
-using CurrentSensorADCP       = CurrentSensorADCChannel::ChannelT::PeripheralT;
+using CurrentSensorADCP       = CurrentSensorADCChannel::ChannelT::ControllerT;
 
-using VCAControllerT = VCAControllerModule<HRTIMTimerDeviceA>;
+using VCAControllerT = VCAControllerModule<HRTIM1TimerADevice>;
 
 // ============================================================================
 // Global Device Storage and Registry

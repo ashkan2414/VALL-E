@@ -49,12 +49,12 @@ private:
     TConverter m_converter;
 
 public:
-    constexpr inline void init(const Config& config)
+    constexpr void init(const Config& config)
     {
         m_converter.init(config);
     }
 
-    [[nodiscard]] constexpr inline ConvertedT convert(const float voltage) const
+    [[nodiscard]] constexpr ConvertedT convert(const float voltage) const
     {
         return m_converter.convert(static_cast<typename TConverter::InputT>(voltage));
     }
@@ -73,12 +73,12 @@ private:
     TConverter m_converter;
 
 public:
-    constexpr inline void init(const Config& config)
+    constexpr void init(const Config& config)
     {
         m_converter.init(config);
     }
 
-    [[nodiscard]] constexpr inline ConvertedT convert(const float normalized) const
+    [[nodiscard]] constexpr ConvertedT convert(const float normalized) const
     {
         return m_converter.convert(static_cast<typename TConverter::InputT>(normalized));
     }
@@ -92,14 +92,8 @@ concept CADCConverter = requires {
 template <CADCConverter TConverter = ADCRawValueConverter<IdentityConverter<ADCValue>>>
 struct ADCSensorDriverConfig
 {
-    ADCChannelConfig            channel_config;
-    typename TConverter::Config converter_config;
-
-    [[nodiscard]] static ADCSensorDriverConfig default_config()
-    {
-        return ADCSensorDriverConfig{.channel_config   = ADCChannelConfig::default_config(),
-                                     .converter_config = typename TConverter::Config{}};
-    }
+    ADCChannelConfig            channel_config   = {};
+    typename TConverter::Config converter_config = {};
 };
 
 template <CDevice TADCChannel, CADCConverter TConverter = ADCRawValueConverter<IdentityConverter<ADCValue>>>
@@ -116,6 +110,8 @@ private:
     std::atomic<ConvertedT> m_last_value;
 
 public:
+    ADCSensorDriver() = delete;
+
     ADCSensorDriver(DeviceRef<ChannelT>&& channel)
         : m_channel(std::move(channel)), m_last_value(static_cast<ConvertedT>(0))
     {

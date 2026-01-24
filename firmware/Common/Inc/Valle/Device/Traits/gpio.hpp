@@ -7,7 +7,7 @@
 // CONSTANTS & CHECKS
 // =============================================================================
 
-enum class GPIOPort
+enum class GPIOPortID
 {
     kA,
     kB,
@@ -18,77 +18,87 @@ enum class GPIOPort
     kG,
 };
 
-template <GPIOPort tkPort, uint8_t tkPinIdx>
-constexpr bool kValidGPIOPin = (tkPinIdx < 16);
+using GPIOPinID = uint8_t;
+
+template <GPIOPortID tkPortID, GPIOPinID tkPinID>
+constexpr bool kValidGPIOPinID = (tkPinID < 16);
 
 // ============================================================================
 // HARDWARE TRAITS
 // ============================================================================
-template <GPIOPort tkPort>
+template <GPIOPortID tkPortID>
 struct GPIOPortTraits;
 
 template <>
-struct GPIOPortTraits<GPIOPort::kA>
+struct GPIOPortTraits<GPIOPortID::kA>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOA;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOA;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOA_CLK_ENABLE();
     }
 };
+
 template <>
-struct GPIOPortTraits<GPIOPort::kB>
+struct GPIOPortTraits<GPIOPortID::kB>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOB;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOB;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOB_CLK_ENABLE();
     }
 };
 template <>
-struct GPIOPortTraits<GPIOPort::kC>
+struct GPIOPortTraits<GPIOPortID::kC>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOC;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOC;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOC_CLK_ENABLE();
     }
 };
 template <>
-struct GPIOPortTraits<GPIOPort::kD>
+struct GPIOPortTraits<GPIOPortID::kD>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOD;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOD;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOD_CLK_ENABLE();
     }
 };
 template <>
-struct GPIOPortTraits<GPIOPort::kE>
+struct GPIOPortTraits<GPIOPortID::kE>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOE;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOE;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOE_CLK_ENABLE();
     }
 };
 template <>
-struct GPIOPortTraits<GPIOPort::kF>
+struct GPIOPortTraits<GPIOPortID::kF>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOF;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOF;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOF_CLK_ENABLE();
     }
 };
 template <>
-struct GPIOPortTraits<GPIOPort::kG>
+struct GPIOPortTraits<GPIOPortID::kG>
 {
-    static inline GPIO_TypeDef* skInstance = GPIOG;
-    static inline void          enable_clock()
+    static inline GPIO_TypeDef* const skInstance = GPIOG;
+    static void                       enable_clock()
     {
         __HAL_RCC_GPIOG_CLK_ENABLE();
     }
+};
+
+template <GPIOPortID tkPortID, GPIOPinID tkPinID>
+    requires(kValidGPIOPinID<tkPortID, tkPinID>)
+struct GPIOPinTraits
+{
+    static constexpr uint16_t skPinMask = (1UL << tkPinID);  // NOLINT(hicpp-signed-bitwise)
 };
 
 // =============================================================================

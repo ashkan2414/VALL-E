@@ -26,18 +26,14 @@ enum class VCAControlMode
  */
 struct VCAModuleConfig
 {
-    HRTIMHalfBridgeConfig pwm_config;            /// PWM Configuration
-    float                 max_current_amp;       /// Maximum current in Amps
-    float                 target_tolerance_amp;  /// Target current tolerance in Amps
+    // PWM Configuration
+    HRTIMHalfBridgeConfig pwm_config = {};
 
-    [[nodiscard]] static constexpr inline VCAModuleConfig default_config()
-    {
-        return VCAModuleConfig{
-            .pwm_config           = HRTIMHalfBridgeConfig::default_config(),
-            .max_current_amp      = 5.0f,
-            .target_tolerance_amp = 0.01f,
-        };
-    }
+    /// Maximum current in Amps
+    float max_current_amp = 5.0F;  // NOLINT(readability-magic-numbers)
+
+    /// Target current tolerance in Amps
+    float target_tolerance_amp = 0.01F;  // NOLINT(readability-magic-numbers)
 };
 
 /**
@@ -58,9 +54,9 @@ private:
     using CurrentFeedbackFn   = delegate::Delegate<float>;
     using FeedbackSystemT     = ExFeedbackSystem<OpenLoopControllerT, CurrentFeedbackFn>;
 
-    constexpr static float skPidP = 0.5f;
-    constexpr static float skPidI = 1.0f;
-    constexpr static float skPidD = 0.0f;
+    constexpr static float skPidP = 0.5F;
+    constexpr static float skPidI = 1.0F;
+    constexpr static float skPidD = 0.0F;
 
     HRTIMHalfBridgeDriver<THRTIMDevice> m_device;           /// Hardware
     VCAModuleConfig                     m_config;           /// Configuration
@@ -68,6 +64,8 @@ private:
     std::atomic<float>                  m_setpoint;         /// Current target setpoint (duty or current)
 
 public:
+    VCAControllerModule() = delete;
+
     /**
      * @brief Construct a new VCAControllerModule object
      *
@@ -79,10 +77,10 @@ public:
         : m_device(std::move(hw))
         , m_config(config)
         , m_feedback_system(OpenLoopControllerT(
-                                skPidP, skPidI, skPidD, 1.0f / static_cast<float>(config.pwm_config.get_int_freq_hz())),
+                                skPidP, skPidI, skPidD, 1.0F / static_cast<float>(config.pwm_config.get_int_freq_hz())),
                             std::move(current_feedback_fn),
                             m_config.target_tolerance_amp)
-        , m_setpoint(0.0f)
+        , m_setpoint(0.0F)
     {
     }
 
@@ -142,7 +140,7 @@ public:
         }
 
         // Update PID sample time based on PWM frequency
-        m_feedback_system.open_loop().set_sample_time(1.0f / static_cast<float>(get_ctrl_loop_freq_hz()));
+        m_feedback_system.open_loop().set_sample_time(1.0F / static_cast<float>(get_ctrl_loop_freq_hz()));
     }
 
     /**
@@ -218,7 +216,7 @@ public:
 
         // Convert (-1.0 to 1.0) -> (0.05 to 0.95 Duty)
         // Locked Anti-Phase logic handled here
-        const float pwm_reg_val = (output_duty + 1.0f) * 0.5f;
+        const float pwm_reg_val = (output_duty + 1.0F) * 0.5F;
         m_device.set_duty_cycle(pwm_reg_val);
     }
 

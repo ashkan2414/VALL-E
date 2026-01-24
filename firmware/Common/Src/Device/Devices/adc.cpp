@@ -3,50 +3,29 @@
 /**
  * @brief ADC Interrupt Handler Router
  *
- * @tparam tkADCIdx ADC Index (1-5)
+ * @tparam tkControllerID ADC Index (1-5)
  */
-template <uint8_t tkADCIdx>
-    requires(kValidADCIndex<tkADCIdx>)
+template <ADCControllerID tkControllerID>
+    requires(kValidADCControllerID<tkControllerID>)
 static inline void adc_irq_handler()
 {
-    using ADCPeripheralDeviceT = ADCPeripheralDevice<tkADCIdx>;
-
-    // --------------------------------------------------------------------
-    // SAFETY FIRST: Analog Watchdog (AWD) (overvoltage/undervoltage)
-    // --------------------------------------------------------------------
-    if (ADCPeripheralDeviceT::awd1_int_pending())
-    {
-        ADCPeripheralDeviceT::ack_awd1_int();
-        ADCIsrRouter<tkADCIdx, ADCInterruptType::kAnalogWatchdog>::handle();
+#define HANDLE_ADC_INT(tkIntType)                                              \
+    if constexpr (CBoundIsrHandler<ADCIsrRouter<tkControllerID, (tkIntType)>>) \
+    {                                                                          \
+        if (ADCInterruptTraits<tkControllerID, tkIntType>::is_pending())       \
+        {                                                                      \
+            ADCInterruptTraits<tkControllerID, tkIntType>::ack();              \
+            ADCIsrRouter<tkControllerID, tkIntType>::handle();                 \
+        }                                                                      \
     }
 
-    // --------------------------------------------------------------------
-    // CRITICAL: End of Injected Sequence (JEOS)
-    // --------------------------------------------------------------------
-    if (ADCPeripheralDeviceT::inject_eos_int_pending())
-    {
-        ADCPeripheralDeviceT::ack_inject_eos_int();
-        ADCIsrRouter<tkADCIdx, ADCInterruptType::kEndOfInjectSequence>::handle();
-    }
-
-    // --------------------------------------------------------------------
-    // BACKGROUND: End of Regular Sequence (EOS)
-    // --------------------------------------------------------------------
-    // Usually handled by DMA TC interrupt, but if using IT:
-    if (ADCPeripheralDeviceT::regular_eos_int_pending())
-    {
-        ADCPeripheralDeviceT::ack_regular_eos_int();
-        ADCIsrRouter<tkADCIdx, ADCInterruptType::kEndOfRegularSequence>::handle();
-    }
-
-    // --------------------------------------------------------------------
-    // ERROR: Overrun (OVR)
-    // --------------------------------------------------------------------
-    if (ADCPeripheralDeviceT::ovr_int_pending())
-    {
-        ADCPeripheralDeviceT::ack_ovr_int();
-        ADCIsrRouter<tkADCIdx, ADCInterruptType::kOverrun>::handle();
-    }
+    HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog1);
+    HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog2);
+    HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog3);
+    HANDLE_ADC_INT(ADCInterruptType::kEndOfRegularSequence);
+    HANDLE_ADC_INT(ADCInterruptType::kEndOfInjectSequence);
+    HANDLE_ADC_INT(ADCInterruptType::kOverrun);
+#undef HANDLE_ADC_INT
 }
 
 extern "C"

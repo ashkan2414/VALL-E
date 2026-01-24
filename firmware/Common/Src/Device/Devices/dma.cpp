@@ -7,41 +7,27 @@
 /**
  * @brief DMA Interrupt Handler Router
  *
- * @tparam tkDmaIdx DMA Controller Index (1 or 2)
- * @tparam tkChannelIdx DMA Channel Index (1-8)
+ * @tparam tkControllerID DMA Controller Index (1 or 2)
+ * @tparam tkChannelID DMA Channel Index (1-8)
  */
-template <uint8_t tkDmaIdx, uint8_t tkChannelIdx>
-    requires(kValidDMAIndex<tkDmaIdx> && kValidDMAChannel<tkChannelIdx>)
+template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
+    requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
 static inline void dma_irq_handler()
 {
-    using DMAChannelT = DMAChannelDevice<tkDmaIdx, tkChannelIdx>;
-
-    // --------------------------------------------------------------------
-    // ERROR: Transfer Error (TE) - Highest Priority
-    // --------------------------------------------------------------------
-    if (DMAChannelT::te_int_pending())
-    {
-        DMAChannelT::ack_te_int();
-        DMAIsrRouter<tkDmaIdx, tkChannelIdx, DMAInterruptType::kTransferError>::handle();
+#define HANDLE_DMA_INT(tkIntType)                                                           \
+    if constexpr (CBoundIsrHandler<DMAIsrRouter<tkControllerID, tkChannelID, (tkIntType)>>) \
+    {                                                                                       \
+        if (DMAInterruptTraits<tkControllerID, tkChannelID, tkIntType>::is_pending())       \
+        {                                                                                   \
+            DMAInterruptTraits<tkControllerID, tkChannelID, tkIntType>::ack();              \
+            DMAIsrRouter<tkControllerID, tkChannelID, tkIntType>::handle();                 \
+        }                                                                                   \
     }
 
-    // --------------------------------------------------------------------
-    // EVENT: Half Transfer (HT)
-    // --------------------------------------------------------------------
-    if (DMAChannelT::ht_int_pending())
-    {
-        DMAChannelT::ack_ht_int();
-        DMAIsrRouter<tkDmaIdx, tkChannelIdx, DMAInterruptType::kHalfTransfer>::handle();
-    }
-
-    // --------------------------------------------------------------------
-    // EVENT: Transfer Complete (TC)
-    // --------------------------------------------------------------------
-    if (DMAChannelT::tc_int_pending())
-    {
-        DMAChannelT::ack_tc_int();
-        DMAIsrRouter<tkDmaIdx, tkChannelIdx, DMAInterruptType::kTransferComplete>::handle();
-    }
+    HANDLE_DMA_INT(DMAInterruptType::kTransferError);
+    HANDLE_DMA_INT(DMAInterruptType::kHalfTransfer);
+    HANDLE_DMA_INT(DMAInterruptType::kTransferComplete);
+#undef HANDLE_DMA_INT
 }
 
 // ============================================================================

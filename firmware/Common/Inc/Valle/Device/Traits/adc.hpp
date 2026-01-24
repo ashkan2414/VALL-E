@@ -8,10 +8,14 @@ static constexpr size_t kADCMaxRegChannels = 16;
 static constexpr size_t kADCMaxInjChannels = 4;
 static constexpr size_t kADCMaxChannelId   = 20;
 
-template <uint8_t tkADCIdx>
-constexpr bool kValidADCIndex = (1 <= tkADCIdx && tkADCIdx <= 5);
+using ADCValue = uint16_t;
 
-enum class ADCChannelId : uint32_t
+using ADCControllerID = uint8_t;
+
+template <ADCControllerID tkControllerID>
+constexpr bool kValidADCControllerID = (1 <= tkControllerID && tkControllerID <= 5);
+
+enum class ADCChannelID : uint32_t
 {
     kChannel0              = LL_ADC_CHANNEL_0,
     kChannel1              = LL_ADC_CHANNEL_1,
@@ -45,64 +49,69 @@ enum class ADCChannelId : uint32_t
     kChannelVOPAmp6        = LL_ADC_CHANNEL_VOPAMP6,
 };
 
-template <uint8_t tkADCIdx, ADCChannelId tkChannel>
-constexpr bool kValidADCChannel = kValidADCIndex<tkADCIdx>;  // TODO: Add channel validation per ADC if needed
+template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+constexpr bool kValidADCChannelID =
+    kValidADCControllerID<tkControllerID>;  // TODO: Add channel validation per ADC if needed
 
-template <uint8_t tkRank>
+using ADCInjectChannelRank = uint8_t;
+
+template <ADCInjectChannelRank tkRank>
 constexpr bool kValidADCInjectRank = (tkRank >= 1 && tkRank <= 4);
 
-template <uint8_t tkRank>
+using ADCRegularChannelRank = uint8_t;
+
+template <ADCRegularChannelRank tkRank>
 constexpr bool kValidADCRegularRank = (tkRank >= 1 && tkRank <= 16);
 
 // ============================================================================
 // HARDWARE TRAITS
 // ============================================================================
-template <uint8_t tkADCIdx>
-    requires(kValidADCIndex<tkADCIdx>)
+template <ADCControllerID tkControllerID>
+    requires(kValidADCControllerID<tkControllerID>)
 struct ADCTraits;
 
 template <>
 struct ADCTraits<1>
 {
-    static inline ADC_TypeDef*              skInstance     = ADC1;
+    static inline ADC_TypeDef* const        skInstance     = ADC1;
     static constexpr uint32_t               skClock        = LL_AHB2_GRP1_PERIPH_ADC12;
     static inline const ADC_Common_TypeDef* skCommon       = ADC12_COMMON;
-    static inline constexpr DMARequestId    skDMARequestId = DMARequestId::kADC1;
+    static inline constexpr DMARequestID    skDMARequestId = DMARequestID::kADC1;
 };
 template <>
 struct ADCTraits<2>
 {
-    static inline ADC_TypeDef*              skInstance     = ADC2;
+    static inline ADC_TypeDef* const        skInstance     = ADC2;
     static constexpr uint32_t               skClock        = LL_AHB2_GRP1_PERIPH_ADC12;
-    static inline const ADC_Common_TypeDef* skCommon       = ADC12_COMMON;
-    static inline constexpr DMARequestId    skDMARequestId = DMARequestId::kADC2;
+    static inline ADC_Common_TypeDef* const skCommon       = ADC12_COMMON;
+    static inline constexpr DMARequestID    skDMARequestId = DMARequestID::kADC2;
 };
 
 template <>
 struct ADCTraits<3>
 {
-    static inline ADC_TypeDef*              skInstance     = ADC3;
+    static inline ADC_TypeDef* const        skInstance     = ADC3;
     static constexpr uint32_t               skClock        = LL_AHB2_GRP1_PERIPH_ADC345;
-    static inline const ADC_Common_TypeDef* skCommon       = ADC345_COMMON;
-    static inline constexpr DMARequestId    skDMARequestId = DMARequestId::kADC3;
+    static inline ADC_Common_TypeDef* const skCommon       = ADC345_COMMON;
+    static inline constexpr DMARequestID    skDMARequestId = DMARequestID::kADC3;
 };
 
 template <>
 struct ADCTraits<4>
 {
-    static inline ADC_TypeDef*              skInstance     = ADC4;
+    static inline ADC_TypeDef* const        skInstance     = ADC4;
     static constexpr uint32_t               skClock        = LL_AHB2_GRP1_PERIPH_ADC345;
-    static inline const ADC_Common_TypeDef* skCommon       = ADC345_COMMON;
-    static inline constexpr DMARequestId    skDMARequestId = DMARequestId::kADC4;
+    static inline ADC_Common_TypeDef* const skCommon       = ADC345_COMMON;
+    static inline constexpr DMARequestID    skDMARequestId = DMARequestID::kADC4;
 };
 
 template <>
 struct ADCTraits<5>
 {
-    static inline ADC_TypeDef*              skInstance     = ADC5;
+    static inline ADC_TypeDef* const        skInstance     = ADC5;
     static constexpr uint32_t               skClock        = LL_AHB2_GRP1_PERIPH_ADC345;
-    static inline const ADC_Common_TypeDef* skCommon       = ADC345_COMMON;
-    static inline constexpr DMARequestId    skDMARequestId = DMARequestId::kADC5;
+    static inline ADC_Common_TypeDef* const skCommon       = ADC345_COMMON;
+    static inline constexpr DMARequestID    skDMARequestId = DMARequestID::kADC5;
 };
 
 // ============================================================================
@@ -114,11 +123,11 @@ struct ADCInjectGroupTraits
     static constexpr std::array<uint32_t, 4> skRankIdxToRankReg = {
         LL_ADC_INJ_RANK_1, LL_ADC_INJ_RANK_2, LL_ADC_INJ_RANK_3, LL_ADC_INJ_RANK_4};
 
-    static inline uint32_t get_sequencer_length(uint32_t count)
+    static uint32_t get_sequencer_length(uint32_t count)
     {
         switch (count)
         {
-            case 1:
+            case 1:  // NOLINT(bugprone-branch-clone)
                 return LL_ADC_INJ_SEQ_SCAN_DISABLE;
             case 2:
                 return LL_ADC_INJ_SEQ_SCAN_ENABLE_2RANKS;
@@ -131,12 +140,12 @@ struct ADCInjectGroupTraits
         }
     }
 
-    static inline constexpr uint32_t rank_to_rank_reg(uint8_t rank)
+    static constexpr uint32_t rank_to_rank_reg(uint8_t rank)
     {
         return skRankIdxToRankReg[rank - 1];
     }
 
-    static inline constexpr uint8_t rank_reg_to_rank(const uint32_t rank_reg)
+    static constexpr uint8_t rank_reg_to_rank(const uint32_t rank_reg)
     {
         switch (rank_reg)
         {
@@ -173,11 +182,12 @@ struct ADCRegularGroupTraits
                                                                     LL_ADC_REG_RANK_15,
                                                                     LL_ADC_REG_RANK_16};
 
-    static inline constexpr uint32_t get_sequencer_length(const uint32_t count)
+    static constexpr uint32_t get_sequencer_length(const uint32_t count)
     {
+        // NOLINTBEGIN(readability-magic-numbers)
         switch (count)
         {
-            case 1:
+            case 1:  // NOLINT(bugprone-branch-clone)
                 return LL_ADC_REG_SEQ_SCAN_DISABLE;
             case 2:
                 return LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS;
@@ -212,15 +222,17 @@ struct ADCRegularGroupTraits
             default:
                 return LL_ADC_REG_SEQ_SCAN_DISABLE;
         }
+        // NOLINTEND(readability-magic-numbers)
     }
 
-    static inline constexpr uint32_t rank_to_rank_reg(uint8_t rank)
+    static constexpr uint32_t rank_to_rank_reg(uint8_t rank)
     {
         return skRankIdxToRankReg[rank - 1];
     }
 
-    static inline constexpr uint8_t rank_reg_to_rank(uint32_t rank)
+    static constexpr uint8_t rank_reg_to_rank(uint32_t rank)
     {
+        // NOLINTBEGIN(readability-magic-numbers)
         switch (rank)
         {
             case LL_ADC_REG_RANK_1:
@@ -258,6 +270,8 @@ struct ADCRegularGroupTraits
             default:
                 return 0;
         }
+
+        // NOLINTEND(readability-magic-numbers)
     }
 };
 
@@ -278,61 +292,61 @@ struct ADCRegularRankTraits
 // =============================================================================
 // PIN MAPPINGS
 // =============================================================================
-template <uint8_t tkAdcIdx, ADCChannelId tkChannel>
+template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
 struct ADCPinMap
 {
     using NullPinTag = void;
 };
 
-#define DECLARE_ADC_PIN_MAP(tkAdcIdx, tkChannel, port, pin) \
-    template <>                                             \
-    struct ADCPinMap<tkAdcIdx, tkChannel>                   \
-    {                                                       \
-        constexpr static GPIOPort skPort = port;            \
-        constexpr static uint8_t  skPin  = pin;             \
+#define DECLARE_ADC_PIN_MAP(tkControllerID, tkChannelID, port, pin) \
+    template <>                                                     \
+    struct ADCPinMap<tkControllerID, tkChannelID>                   \
+    {                                                               \
+        constexpr static GPIOPortID skPort = port;                  \
+        constexpr static uint8_t    skPin  = pin;                   \
     };
 
 // ADC1
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel3, GPIOPort::kA, 2);    // PA2
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel4, GPIOPort::kA, 3);    // PA3
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel5, GPIOPort::kB, 14);   // PB14
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel10, GPIOPort::kF, 0);   // PF0 (OSC_IN - Check SB)
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel11, GPIOPort::kB, 12);  // PB12
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel12, GPIOPort::kB, 1);   // PB1
-DECLARE_ADC_PIN_MAP(1, ADCChannelId::kChannel15, GPIOPort::kB, 0);   // PB0
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel3, GPIOPortID::kA, 2);    // PA2
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel4, GPIOPortID::kA, 3);    // PA3
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel5, GPIOPortID::kB, 14);   // PB14
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel10, GPIOPortID::kF, 0);   // PF0 (OSC_IN - Check SB)
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel11, GPIOPortID::kB, 12);  // PB12
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel12, GPIOPortID::kB, 1);   // PB1
+DECLARE_ADC_PIN_MAP(1, ADCChannelID::kChannel15, GPIOPortID::kB, 0);   // PB0
 
 // ADC2
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel3, GPIOPort::kA, 6);    // PA6
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel4, GPIOPort::kA, 7);    // PA7
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel5, GPIOPort::kC, 4);    // PC4
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel10, GPIOPort::kF, 1);   // PF1 (OSC_OUT - Check SB)
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel11, GPIOPort::kC, 5);   // PC5
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel12, GPIOPort::kB, 2);   // PB2
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel13, GPIOPort::kA, 5);   // PA5
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel15, GPIOPort::kB, 15);  // PB15
-DECLARE_ADC_PIN_MAP(2, ADCChannelId::kChannel17, GPIOPort::kA, 4);   // PA4
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel3, GPIOPortID::kA, 6);    // PA6
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel4, GPIOPortID::kA, 7);    // PA7
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel5, GPIOPortID::kC, 4);    // PC4
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel10, GPIOPortID::kF, 1);   // PF1 (OSC_OUT - Check SB)
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel11, GPIOPortID::kC, 5);   // PC5
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel12, GPIOPortID::kB, 2);   // PB2
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel13, GPIOPortID::kA, 5);   // PA5
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel15, GPIOPortID::kB, 15);  // PB15
+DECLARE_ADC_PIN_MAP(2, ADCChannelID::kChannel17, GPIOPortID::kA, 4);   // PA4
 
 // ADC3
-DECLARE_ADC_PIN_MAP(3, ADCChannelId::kChannel1, GPIOPort::kB, 1);   // PB1
-DECLARE_ADC_PIN_MAP(3, ADCChannelId::kChannel2, GPIOPort::kE, 9);   // PE9
-DECLARE_ADC_PIN_MAP(3, ADCChannelId::kChannel3, GPIOPort::kE, 13);  // PE13
-DECLARE_ADC_PIN_MAP(3, ADCChannelId::kChannel4, GPIOPort::kE, 7);   // PE7
-DECLARE_ADC_PIN_MAP(3, ADCChannelId::kChannel5, GPIOPort::kB, 13);  // PB13
-DECLARE_ADC_PIN_MAP(3, ADCChannelId::kChannel12, GPIOPort::kB, 0);  // PB0
+DECLARE_ADC_PIN_MAP(3, ADCChannelID::kChannel1, GPIOPortID::kB, 1);   // PB1
+DECLARE_ADC_PIN_MAP(3, ADCChannelID::kChannel2, GPIOPortID::kE, 9);   // PE9
+DECLARE_ADC_PIN_MAP(3, ADCChannelID::kChannel3, GPIOPortID::kE, 13);  // PE13
+DECLARE_ADC_PIN_MAP(3, ADCChannelID::kChannel4, GPIOPortID::kE, 7);   // PE7
+DECLARE_ADC_PIN_MAP(3, ADCChannelID::kChannel5, GPIOPortID::kB, 13);  // PB13
+DECLARE_ADC_PIN_MAP(3, ADCChannelID::kChannel12, GPIOPortID::kB, 0);  // PB0
 
 // ADC4
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel1, GPIOPort::kE, 14);  // PE14
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel2, GPIOPort::kE, 15);  // PE15
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel3, GPIOPort::kB, 12);  // PB12
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel4, GPIOPort::kB, 14);  // PB14
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel5, GPIOPort::kB, 15);  // PB15
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel12, GPIOPort::kD, 8);  // PD8
-DECLARE_ADC_PIN_MAP(4, ADCChannelId::kChannel13, GPIOPort::kD, 9);  // PD9
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel1, GPIOPortID::kE, 14);  // PE14
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel2, GPIOPortID::kE, 15);  // PE15
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel3, GPIOPortID::kB, 12);  // PB12
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel4, GPIOPortID::kB, 14);  // PB14
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel5, GPIOPortID::kB, 15);  // PB15
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel12, GPIOPortID::kD, 8);  // PD8
+DECLARE_ADC_PIN_MAP(4, ADCChannelID::kChannel13, GPIOPortID::kD, 9);  // PD9
 // ADC5
-DECLARE_ADC_PIN_MAP(5, ADCChannelId::kChannel1, GPIOPort::kA, 8);   // PA8
-DECLARE_ADC_PIN_MAP(5, ADCChannelId::kChannel2, GPIOPort::kA, 9);   // PA9
-DECLARE_ADC_PIN_MAP(5, ADCChannelId::kChannel12, GPIOPort::kD, 8);  // PD8
-DECLARE_ADC_PIN_MAP(5, ADCChannelId::kChannel13, GPIOPort::kD, 9);  // PD9
+DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel1, GPIOPortID::kA, 8);   // PA8
+DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel2, GPIOPortID::kA, 9);   // PA9
+DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel12, GPIOPortID::kD, 8);  // PD8
+DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel13, GPIOPortID::kD, 9);  // PD9
 
 template <typename T>
 concept CNullADCPinMap = requires { typename T::NullPinTag; };

@@ -1,0 +1,33 @@
+{
+	"folders": [
+		{
+			"path": "..",
+			"name": "root"
+		},
+		{
+			"path": "../firmware",
+			"name": "firmware"
+		}
+	],
+	"settings": {
+		// Auto-Format on Save (Keeps code clean)
+		"editor.formatOnSave": true,
+		"C_Cpp.clang_format_style": "${workspaceFolder}/.clang-format",
+		"C_Cpp.codeAnalysis.clangTidy.config": "${workspaceFolder}/.clang-tidy",
+		"C_Cpp.codeAnalysis.clangTidy.enabled": true,
+		"C_Cpp.codeAnalysis.clangTidy.args": [
+			"-std=c++20"
+		],
+		"clang-tidy.compilerArgs": [
+			"-std=c++20"
+		],
+		"clang-tidy.blacklist": [
+			"Thirdparty"
+		],
+		"clang-tidy.buildPath": "${workspaceFolder}/firmware/build/vca-test-debug",
+		"C_Cpp.formatting": "clangFormat",
+		"[cpp]": {
+			"editor.defaultFormatter": "xaver.clang-format",
+		}
+	}
+}

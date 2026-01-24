@@ -12,7 +12,7 @@ void app_entry(void)
 
     while (1)
     {
-        system::g_vca.set_target_current(static_cast<float>(rand()) / RAND_MAX * 0.6f -
-                                         0.3f);  // Set random target between -0.3 to 0.3 Amps
+        system::g_vca.set_target_current(static_cast<float>(rand()) / RAND_MAX * 0.6F -
+                                         0.3F);  // Set random target between -0.3 to 0.3 Amps
     }
 }

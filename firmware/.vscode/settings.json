@@ -2,8 +2,6 @@
     // Point IntelliSense to the CMake output
     "C_Cpp.default.compileCommands": "${workspaceFolder}/build/Debug/compile_commands.json",
     "C_Cpp.default.compilerPath": "arm-none-eabi-g++",
-    // Auto-Format on Save (Keeps code clean)
-    "editor.formatOnSave": true,
     // CMake Setup
     "cmake.configureOnOpen": true,
     "cmake.sourceDirectory": "${workspaceFolder}",
@@ -12,8 +10,4 @@
         "**/.git": true,
         "**/.DS_Store": true
     },
-    "C_Cpp.clang_format_style": "${workspaceFolder}/.clang-format",
-    "C_Cpp.codeAnalysis.clangTidy.config": "${workspaceFolder}/.clang-tidy",
-    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
-    "C_Cpp.errorSquiggles": "disabled"
 }

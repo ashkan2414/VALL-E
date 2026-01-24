@@ -1,24 +1,47 @@
 #pragma once
 
+#include "stm32g4xx_ll_bus.h"
 #include "stm32g4xx_ll_hrtim.h"
 
 // ============================================================================
 // CONSTANTS & CHECKS
 // ============================================================================
 
-template <uint8_t tkIndex>
-constexpr bool kValidHRTIMIndex = (0 <= tkIndex && tkIndex <= 5);
+using HRTIMControllerID = uint8_t;
+
+template <HRTIMControllerID tkControllerID>
+constexpr bool kValidHRTIMID = (tkControllerID == 1);
+
+enum class HRTIMTimerID : uint8_t
+{
+    kA = 0,
+    kB = 1,
+    kC = 2,
+    kD = 3,
+    kE = 4,
+    kF = 5,
+};
 
 // ============================================================================
-// HARDWARE TRAITS (Map tkIndex -> Registers)
+// HARDWARE TRAITS (Map tkHRTIMTimerID -> Registers)
 // ============================================================================
-template <uint8_t tkIndex>
-    requires(kValidHRTIMIndex<tkIndex>)
-struct HRTIMTraits;
+template <HRTIMControllerID tkControllerID>
+    requires(kValidHRTIMID<tkControllerID>)
+struct HRTIMControllerTraits;
 
-// Timer A (tkIndex 0)
 template <>
-struct HRTIMTraits<0>
+struct HRTIMControllerTraits<1>
+{
+    static inline HRTIM_TypeDef* const skInstance = HRTIM1;
+    static constexpr uint32_t          skClock    = LL_APB2_GRP1_PERIPH_HRTIM1;
+};
+
+template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
+struct HRTIMTimerTraits;
+
+// HRTIM1 Timer A (tkHRTIMTimerID 0)
+template <>
+struct HRTIMTimerTraits<1, HRTIMTimerID::kA>
 {
     static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_A;
     static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TA1;
@@ -26,9 +49,9 @@ struct HRTIMTraits<0>
     static constexpr IRQn_Type skIRQn     = HRTIM1_TIMA_IRQn;
 };
 
-// Timer B (tkIndex 1)
+// HRTIM1 Timer B
 template <>
-struct HRTIMTraits<1>
+struct HRTIMTimerTraits<1, HRTIMTimerID::kB>
 {
     static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_B;
     static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TB1;
@@ -36,9 +59,9 @@ struct HRTIMTraits<1>
     static constexpr IRQn_Type skIRQn     = HRTIM1_TIMB_IRQn;
 };
 
-// Timer C (tkIndex 2)
+// HRTIM1 Timer C
 template <>
-struct HRTIMTraits<2>
+struct HRTIMTimerTraits<1, HRTIMTimerID::kC>
 {
     static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_C;
     static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TC1;
@@ -46,9 +69,9 @@ struct HRTIMTraits<2>
     static constexpr IRQn_Type skIRQn     = HRTIM1_TIMC_IRQn;
 };
 
-// Timer D (tkIndex 3)
+// HRTIM1 Timer D
 template <>
-struct HRTIMTraits<3>
+struct HRTIMTimerTraits<1, HRTIMTimerID::kD>
 {
     static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_D;
     static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TD1;
@@ -56,9 +79,9 @@ struct HRTIMTraits<3>
     static constexpr IRQn_Type skIRQn     = HRTIM1_TIMD_IRQn;
 };
 
-// Timer E (tkIndex 4)
+// HRTIM1 Timer E
 template <>
-struct HRTIMTraits<4>
+struct HRTIMTimerTraits<1, HRTIMTimerID::kE>
 {
     static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_E;
     static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TE1;
@@ -66,9 +89,9 @@ struct HRTIMTraits<4>
     static constexpr IRQn_Type skIRQn     = HRTIM1_TIME_IRQn;
 };
 
-// Timer F (tkIndex 5)
+// HRTIM1 Timer F
 template <>
-struct HRTIMTraits<5>
+struct HRTIMTimerTraits<1, HRTIMTimerID::kF>
 {
     static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_F;
     static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TF1;

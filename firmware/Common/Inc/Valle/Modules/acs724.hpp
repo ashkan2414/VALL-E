@@ -31,81 +31,81 @@ template <>
 struct ACS724Traits<ACS724Model::k2P5AB>
 {
     static constexpr bool  skBiDirectional = true;
-    static constexpr float skRangeAmps     = 5.0f;
-    static constexpr float skMinAmps       = -2.5f;
-    static constexpr float skMaxAmps       = 2.5f;
+    static constexpr float skRangeAmps     = 5.0F;
+    static constexpr float skMinAmps       = -2.5F;
+    static constexpr float skMaxAmps       = 2.5F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k05AU>
 {
     static constexpr bool  skBiDirectional = false;
-    static constexpr float skRangeAmps     = 5.0f;
-    static constexpr float skMinAmps       = 0.0f;
-    static constexpr float skMaxAmps       = 5.0f;
+    static constexpr float skRangeAmps     = 5.0F;
+    static constexpr float skMinAmps       = 0.0F;
+    static constexpr float skMaxAmps       = 5.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k05AB>
 {
     static constexpr bool  skBiDirectional = true;
-    static constexpr float skRangeAmps     = 10.0f;
-    static constexpr float skMinAmps       = -5.0f;
-    static constexpr float skMaxAmps       = 5.0f;
+    static constexpr float skRangeAmps     = 10.0F;
+    static constexpr float skMinAmps       = -5.0F;
+    static constexpr float skMaxAmps       = 5.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k10AU>
 {
     static constexpr bool  skBiDirectional = false;
-    static constexpr float skRangeAmps     = 10.0f;
-    static constexpr float skMinAmps       = 0.0f;
-    static constexpr float skMaxAmps       = 10.0f;
+    static constexpr float skRangeAmps     = 10.0F;
+    static constexpr float skMinAmps       = 0.0F;
+    static constexpr float skMaxAmps       = 10.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k10AB>
 {
     static constexpr bool  skBiDirectional = true;
-    static constexpr float skRangeAmps     = 20.0f;
-    static constexpr float skMinAmps       = -10.0f;
-    static constexpr float skMaxAmps       = 10.0f;
+    static constexpr float skRangeAmps     = 20.0F;
+    static constexpr float skMinAmps       = -10.0F;
+    static constexpr float skMaxAmps       = 10.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k20AU>
 {
     static constexpr bool  skBiDirectional = false;
-    static constexpr float skRangeAmps     = 20.0f;
-    static constexpr float skMinAmps       = 0.0f;
-    static constexpr float skMaxAmps       = 20.0f;
+    static constexpr float skRangeAmps     = 20.0F;
+    static constexpr float skMinAmps       = 0.0F;
+    static constexpr float skMaxAmps       = 20.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k20AB>
 {
     static constexpr bool  skBiDirectional = true;
-    static constexpr float skRangeAmps     = 40.0f;
-    static constexpr float skMinAmps       = -20.0f;
-    static constexpr float skMaxAmps       = 20.0f;
+    static constexpr float skRangeAmps     = 40.0F;
+    static constexpr float skMinAmps       = -20.0F;
+    static constexpr float skMaxAmps       = 20.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k30AU>
 {
     static constexpr bool  skBiDirectional = false;
-    static constexpr float skRangeAmps     = 30.0f;
-    static constexpr float skMinAmps       = 0.0f;
-    static constexpr float skMaxAmps       = 30.0f;
+    static constexpr float skRangeAmps     = 30.0F;
+    static constexpr float skMinAmps       = 0.0F;
+    static constexpr float skMaxAmps       = 30.0F;
 };
 
 template <>
 struct ACS724Traits<ACS724Model::k30AB>
 {
     static constexpr bool  skBiDirectional = true;
-    static constexpr float skRangeAmps     = 60.0f;
-    static constexpr float skMinAmps       = -30.0f;
-    static constexpr float skMaxAmps       = 30.0f;
+    static constexpr float skRangeAmps     = 60.0F;
+    static constexpr float skMinAmps       = -30.0F;
+    static constexpr float skMaxAmps       = 30.0F;
 };
 
 // ============================================================================

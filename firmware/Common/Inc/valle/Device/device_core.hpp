@@ -49,6 +49,8 @@ private:
     std::reference_wrapper<DeviceT> m_Device;
 
 public:
+    UniqueDeviceRef() = delete;
+
     explicit UniqueDeviceRef(DeviceT& Device) : m_Device(Device)
     {
     }
@@ -114,6 +116,8 @@ private:
     std::reference_wrapper<DeviceT> m_Device;
 
 public:
+    SharedDeviceRef() = delete;
+
     explicit SharedDeviceRef(DeviceT& Device) : m_Device(Device)
     {
     }
@@ -304,3 +308,11 @@ struct GetDependDevices<T>
     using type = typename TypeListMergeUnique<typename GetAdditionalDependDevices<T>::type,
                                               typename GetInjectDevices<T>::type>::type;
 };
+
+// ISR Router
+
+template <typename T>
+concept CUnboundIsrHandler = requires { typename T::UnboundIsrHandlerTag; };
+
+template <typename T>
+concept CBoundIsrHandler = !CUnboundIsrHandler<T>;
