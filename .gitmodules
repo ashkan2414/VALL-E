@@ -7,3 +7,4 @@
 [submodule "firmware/Thirdparty/delegate"]
 	path = firmware/Thirdparty/delegate
 	url = https://github.com/bdiamand/Delegate.git
+
