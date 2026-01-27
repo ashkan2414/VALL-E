@@ -17,6 +17,7 @@ Checks: >
   performance-unnecessary-value-param,
   performance-for-range-copy,
   -readability-convert-member-functions-to-static
+  -bugprone-easily-swappable-parameters
 
 WarningsAsErrors: >
   bugprone-*,
@@ -102,6 +103,18 @@ CheckOptions:
     value:           CamelCase
   - key:             readability-identifier-naming.ClassConstantPrefix
     value:           sk
+  - key:             readability-identifier-naming.ClassConstantIgnoredRegexp
+    value:           value
+
+  # -------------------------------------------------------------------------
+  # Static Member Constexpr (sk)
+  # -------------------------------------------------------------------------
+  - key:             readability-identifier-naming.ClassConstexprCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.ClassConstexprPrefix
+    value:           sk
+  - key:             readability-identifier-naming.ClassConstexprIgnoredRegexp
+    value:           value
 
   # -------------------------------------------------------------------------
   # Functions (lower_case)
@@ -157,6 +170,8 @@ CheckOptions:
   - key:             readability-identifier-naming.ConceptPrefix
     value:           C
 
+  # -------------------------------------------------------------------------
+  # Magic Numbers
   # -------------------------------------------------------------------------
   - key:             readability-magic-numbers.IgnoredFloatingPointValues
     value:           '-1.0;0.0;1.0'

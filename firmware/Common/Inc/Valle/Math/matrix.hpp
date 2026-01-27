@@ -2,16 +2,21 @@
 
 #include <Eigen/Dense>
 
-template <typename T>
-T precise_dot(const Eigen::Vector2<T>& a, const Eigen::Vector2<T>& b)
+namespace valle
 {
-    if constexpr (std::is_floating_point_v<T>)
+
+    template <typename T>
+    T precise_dot(const Eigen::Vector2<T>& vec1, const Eigen::Vector2<T>& vec2)
     {
-        // Force fma: a[0]*b[0] + (a[1]*b[1])
-        return std::fma(a[0], b[0], a[1] * b[1]);
+        if constexpr (std::is_floating_point_v<T>)
+        {
+            // Force fma: vec1[0]*vec2[0] + (vec1[1]*vec2[1])
+            return std::fma(vec1[0], vec2[0], vec1[1] * vec2[1]);
+        }
+        else
+        {
+            return vec1.dot(vec2);
+        }
     }
-    else
-    {
-        return a.dot(b);
-    }
-}
+
+}  // namespace valle

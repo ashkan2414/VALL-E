@@ -1,26 +1,17 @@
-#include "system_hardware.hpp"
+#include "app.hpp"
 
-namespace valle::system
+namespace valle::app
 {
-
+    // Forward declaration
     float read_vca_current();
 
-    // Make Device Storage
-    DeviceStorageT g_storage = build_device_storage_from_drivers<CurrentSensorT, VCAControllerT>();
-
-    // Install drivers
-    namespace dont_use_me
+    DriverBuilderReturnT install_drivers(DriverBuilderT&& builder)
     {
-        static auto g_installed_devices = boot_driver_builder(g_storage)
-                                              .install<CurrentSensorT>()
-                                              .install<VCAControllerT>(delegate::Delegate<float>(&read_vca_current))
-                                              .yield();
+        return std::move(builder)
+            .template install<CurrentSensorT>()
+            .template install<VCAControllerT>(delegate::Delegate<float>(&read_vca_current))
+            .yield();
     }
-
-    // Create Device Reference Registry and Drivers (for global use)
-    DeviceRefRegistryT g_device_ref_registry = std::move(std::get<0>(dont_use_me::g_installed_devices));
-    CurrentSensorT     g_current_sensor      = std::move(std::get<1>(dont_use_me::g_installed_devices));
-    VCAControllerT     g_vca                 = std::move(std::get<2>(dont_use_me::g_installed_devices));
 
     /**
      * @brief Read current sensor helper function. Used as feedback for VCA controller.
@@ -29,7 +20,7 @@ namespace valle::system
      */
     float read_vca_current()
     {
-        return g_current_sensor.read_amps();
+        return g_drivers.current_sensor.read_amps();
     }
 
     /**
@@ -38,7 +29,7 @@ namespace valle::system
      */
     static void init_shared()
     {
-        g_device_ref_registry.foreach_shared(Overloaded{
+        g_ref_registry.foreach_shared(Overloaded{
             [](ADCControllerDevice<1>& dev)
             {
                 dev.init(ADCControllerConfig{
@@ -74,7 +65,7 @@ namespace valle::system
             [](DMA1ControllerDevice& dev) { dev.init(); },
             [](GPIOPortADevice& dev) { dev.init(); },
             [](HRTIM1ControllerDevice& dev) { dev.init(); },
-        }  // namespace valle::system
+        }  // namespace valle
         );
     }
 
@@ -84,12 +75,12 @@ namespace valle::system
      */
     static void init_drivers()
     {
-        g_vca.init();
-        g_current_sensor.init(ACS724Config{.channel_config = ADCChannelConfig{
-                                               .sampling_time = ADCChannelSampleTime::k12Cycles5,
-                                               .input_mode    = ADCChannelInputMode::kSingleEnded,
-                                               .offset        = std::nullopt,
-                                           }});
+        g_drivers.vca.init();
+        g_drivers.current_sensor.init(ACS724Config{.channel_config = ADCChannelConfig{
+                                                       .sampling_time = ADCChannelSampleTime::k12Cycles5,
+                                                       .input_mode    = ADCChannelInputMode::kSingleEnded,
+                                                       .offset        = std::nullopt,
+                                                   }});
     }
 
     /**
@@ -98,7 +89,7 @@ namespace valle::system
      */
     static void post_init_shared()
     {
-        g_device_ref_registry.foreach_shared(Overloaded{
+        g_ref_registry.foreach_shared(Overloaded{
             [](ADCControllerDevice<1>& dev) { dev.post_init(true, false); },
             [](DMA1ControllerDevice& dev) { dev.post_init(); },
             [](GPIOPortADevice& dev) { dev.post_init(); },
@@ -119,8 +110,8 @@ namespace valle::system
 
     void start_vca_controller()
     {
-        g_device_ref_registry.template get<CurrentSensorADCP>().start_inject();
-        g_vca.enable();
+        g_ref_registry.template get<CurrentSensorADCControllerT>().start_inject();
+        g_drivers.vca.enable();
     }
 
-}  // namespace valle::system
+}  // namespace valle::app

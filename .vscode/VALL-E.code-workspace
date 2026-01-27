@@ -25,6 +25,7 @@
 			"Thirdparty"
 		],
 		"clang-tidy.buildPath": "${workspaceFolder}/firmware/build/vca-test-debug",
+		"clang-tidy.lintOnSave": true,
 		"C_Cpp.formatting": "clangFormat",
 		"[cpp]": {
 			"editor.defaultFormatter": "xaver.clang-format",

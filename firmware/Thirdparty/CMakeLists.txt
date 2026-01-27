@@ -92,3 +92,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME} Eigen3::Eigen)
 add_library(delegate INTERFACE)
 target_include_directories(delegate SYSTEM INTERFACE ${THIRDPARTY_DIRECTORY})
 target_link_libraries(${CMAKE_PROJECT_NAME} delegate)
+
+# ==============================================================================
+# PortableBitfields Integration
+# ==============================================================================
+add_library(portable_bitfields INTERFACE)
+target_include_directories(portable_bitfields SYSTEM INTERFACE ${THIRDPARTY_DIRECTORY}/src)
+target_link_libraries(${CMAKE_PROJECT_NAME} portable_bitfields)
