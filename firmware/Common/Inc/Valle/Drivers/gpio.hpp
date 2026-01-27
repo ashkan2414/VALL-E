@@ -28,8 +28,8 @@ namespace valle
         using InjectDevices = TypeList<TGpioPin>;
 
     private:
-        DeviceRef<TGpioPin> m_pin;
-        bool                m_inverted;
+        [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
+        bool                                      m_inverted;
 
     public:
         /**
@@ -92,8 +92,8 @@ namespace valle
         using InjectDevices = TypeList<TGpioPin>;
 
     private:
-        DeviceRef<TGpioPin> m_pin;
-        bool                m_inverted;
+        [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
+        bool                                      m_inverted;
 
     public:
         GPIODigitalInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
@@ -147,7 +147,7 @@ namespace valle
         using InjectDevices = TypeList<TGpioPin>;
 
     private:
-        DeviceRef<TGpioPin> m_pin;
+        [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
 
     public:
         GPIOAnalogInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
@@ -192,7 +192,7 @@ namespace valle
         using InjectDevices = TypeList<TGpioPin>;
 
     private:
-        DeviceRef<TGpioPin> m_pin;
+        [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
 
     public:
         GPIOAlternativeFunctionDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))

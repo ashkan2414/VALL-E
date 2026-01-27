@@ -108,9 +108,9 @@ namespace valle
         using ConvertedT    = typename TConverter::ConvertedT;
 
     private:
-        DeviceRef<ChannelT>     m_channel;
-        TConverter              m_converter;
-        std::atomic<ConvertedT> m_last_value;
+        [[no_unique_address]] DeviceRef<ChannelT> m_channel;
+        TConverter                                m_converter;
+        std::atomic<ConvertedT>                   m_last_value;
 
     public:
         ADCSensorDriver() = delete;
