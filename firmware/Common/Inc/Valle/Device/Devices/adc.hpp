@@ -348,7 +348,7 @@ namespace valle
         uint8_t m_reg_cidx_to_rank_map[kADCMaxChannelId];  // Ch -> Rank (1-16) (rank-1 for dma idx)
         uint8_t m_inj_cidx_to_rank_map[kADCMaxChannelId];  // Ch -> Rank (1-4)
 
-        ConditionalDeviceRef<skHasDMA, DMAChannelT>                            m_dma;
+        [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelT>      m_dma;
         std::conditional_t<skHasDMA, ADCRegularGroupDMAConfig, std::monostate> m_dma_config;
 
     public:
@@ -1049,7 +1049,7 @@ namespace valle
         friend class ADCRegularChannelDevice;
 
     private:
-        DeviceRef<ControllerT>                                                 m_adc;
+        [[no_unique_address]] DeviceRef<ControllerT>                           m_adc;
         std::conditional_t<skHasPin, GPIOAnalogInDriver<PinT>, std::monostate> m_pin;
 
     public:
@@ -1307,7 +1307,7 @@ namespace valle
         static constexpr ADCInjectChannelRank skRank         = tkRank;
 
     private:
-        DeviceRef<ChannelT> m_channel;
+        [[no_unique_address]] DeviceRef<ChannelT> m_channel;
 
     public:
         explicit ADCInjectChannelDevice(DeviceRef<ChannelT> channel) : m_channel(std::move(channel))
@@ -1415,7 +1415,7 @@ namespace valle
         static constexpr ADCRegularChannelRank skRank         = tkRank;
 
     private:
-        DeviceRef<ChannelT> m_channel;
+        [[no_unique_address]] DeviceRef<ChannelT> m_channel;
 
     public:
         explicit ADCRegularChannelDevice(DeviceRef<ChannelT>&& channel) : m_channel(std::move(channel))

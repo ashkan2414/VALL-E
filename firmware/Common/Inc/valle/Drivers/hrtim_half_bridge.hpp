@@ -57,8 +57,8 @@ namespace valle
         static constexpr size_t skIndex = HRTIMTimerDeviceT::skIndex;
 
     private:
-        DeviceRef<HRTIMTimerDeviceT> m_device;
-        HRTIMHalfBridgeConfig        m_config;
+        [[no_unique_address]] DeviceRef<HRTIMTimerDeviceT> m_device;
+        HRTIMHalfBridgeConfig                              m_config;
 
     public:
         HRTIMHalfBridgeDriver() = delete;
