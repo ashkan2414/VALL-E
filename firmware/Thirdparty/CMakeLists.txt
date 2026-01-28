@@ -99,3 +99,9 @@ target_link_libraries(${CMAKE_PROJECT_NAME} delegate)
 add_library(portable_bitfields INTERFACE)
 target_include_directories(portable_bitfields SYSTEM INTERFACE ${THIRDPARTY_DIRECTORY}/PortableBitfields/src)
 target_link_libraries(${CMAKE_PROJECT_NAME} portable_bitfields)
+
+# ==============================================================================
+# magic enum Integration
+# ==============================================================================
+add_subdirectory(${THIRDPARTY_DIRECTORY}/magic_enum)
+target_link_libraries(${CMAKE_PROJECT_NAME} magic_enum::magic_enum)
