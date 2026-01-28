@@ -153,7 +153,7 @@ namespace valle
         /**
          * @brief Channel Error Indicator
          * Indicates which channel has generated an error condition.
-         * Once flaged, any reported error is latched and maintained until either
+         * Once flagged, any reported error is latched and maintained until either
          * the STATUS or DATAx register corresponding to the channel is read.
          *
          * 0b00: Channel 0 is the source of the error
@@ -396,7 +396,7 @@ namespace valle
         static constexpr DeviceID       skDeviceID                            = 0x3055;
 
         // From Section 8.1.5, table 42
-        static constexpr std::array<uint16_t, 32> skIDriveTableuA = {
+        static constexpr std::array<uint16_t, 32> skIDriveTableUA = {
             16,  18,  20,  23,  28,  32,  40,  46,  52,  59,  72,  82,  95,   110,  127,  146,
             169, 195, 212, 244, 297, 342, 424, 489, 551, 635, 763, 880, 1017, 1173, 1355, 1563};
 
@@ -477,16 +477,16 @@ namespace valle
             // Find the first current in the table that is EQUAL to or GREATER than
             // our target. This ensures we have enough current to maintain oscillation.
             const auto it = std::lower_bound(
-                LDC161XTraits::skIDriveTableuA.begin(), LDC161XTraits::skIDriveTableuA.end(), target_i_ua);
+                LDC161XTraits::skIDriveTableUA.begin(), LDC161XTraits::skIDriveTableUA.end(), target_i_ua);
 
-            if (it == LDC161XTraits::skIDriveTableuA.end())
+            if (it == LDC161XTraits::skIDriveTableUA.end())
             {
                 return LDC161XIDriveCurrent::from_raw(
                     LDC161XTraits::skMaxIDrive);  // Calculated current exceeds standard IDRIVE range
             }
 
             return LDC161XIDriveCurrent::from_raw(
-                static_cast<uint8_t>(std::distance(LDC161XTraits::skIDriveTableuA.begin(), it)));
+                static_cast<uint8_t>(std::distance(LDC161XTraits::skIDriveTableUA.begin(), it)));
         }
     };
 
@@ -1051,6 +1051,8 @@ namespace valle
                 raw_config.rcount.at<LDC161XRCountRegFields::kRCount>() = rcount;
                 assert(rcount >= LDC161XTraits::skMinRCount && "Calculated rcount is less than allowed minimum");
             }
+
+            return results;
         }
 
         [[nodiscard]] static constexpr LDC161XSensorConfigRaw<tkNumChannels> get_raw_config(
