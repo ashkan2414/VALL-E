@@ -20,3 +20,6 @@ namespace valle
     };
 
 }  // namespace valle
+
+// Bind I2C Command Buffer Device ISRs
+VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(app::g_ref_registry.template get<app::PositionSensorI2CControllerT>());
