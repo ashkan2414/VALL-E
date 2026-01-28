@@ -10,3 +10,6 @@
 [submodule "firmware/Thirdparty/PortableBitfields"]
 	path = firmware/Thirdparty/PortableBitfields
 	url = https://github.com/KKoovalsky/PortableBitfields.git
+[submodule "firmware/Thirdparty/magic_enum"]
+	path = firmware/Thirdparty/magic_enum
+	url = https://github.com/Neargye/magic_enum.git
