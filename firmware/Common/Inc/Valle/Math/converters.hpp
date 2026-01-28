@@ -34,18 +34,28 @@ namespace valle
     // LINEAR (Scale + Offset)
     // ========================================================================
     // Formula: y = (x * scale) + offset
-    template <typename T>
+    template <typename T, std::floating_point TConverted = float>
     struct LinearConverter
     {
         struct Config
         {
-            float scale  = 1.0F;
-            float offset = 0.0F;
+            TConverted scale  = 1.0F;
+            TConverted offset = 0.0F;
         };
         using InputT     = T;
-        using ConvertedT = float;
+        using ConvertedT = TConverted;
 
         Config m_cfg;
+
+        LinearConverter() = default;
+
+        LinearConverter(TConverted scale, TConverted offset) : m_cfg{scale, offset}
+        {
+        }
+
+        LinearConverter(const Config& cfg) : m_cfg(cfg)
+        {
+        }
 
         void init(const Config& cfg)
         {

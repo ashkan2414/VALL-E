@@ -292,12 +292,12 @@ namespace valle
         }
 
         /**
-     * @brief Configure memory addresses and start the transfer.
-     * @param src_addr Source Address (Peripheral or Memory)
-     * @param dst_addr Destination Address (Peripheral or Memory)
-     * @param length   Number of data items (not bytes, but items based on data_width)
-     */
-        static void start(uint32_t src_addr, uint32_t dst_addr, uint32_t length)
+         * @brief Configure memory addresses and start the transfer.
+         * @param src_addr Source Address (Peripheral or Memory)
+         * @param dst_addr Destination Address (Peripheral or Memory)
+         * @param length   Number of data items (not bytes, but items based on data_width)
+         */
+        static void start(const uint32_t src_addr, const uint32_t dst_addr, const uint32_t length)
         {
             // Note: LL_DMA_ConfigAddresses logic depends on direction.
             // For PeriphToMem: Src=Periph, Dst=Mem
@@ -307,6 +307,9 @@ namespace valle
 
             // However, a safer raw way that works for generic transfers is setting registers directly
             // or using the LL helper which assumes (Periph, Mem, Direction).
+
+            assert(src_addr != 0 && "Source address must not be null");
+            assert(dst_addr != 0 && "Destination address must not be null");
 
             uint32_t direction =
                 LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
@@ -331,6 +334,43 @@ namespace valle
         static void stop()
         {
             LL_DMA_DisableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+
+            if constexpr (tkChannelID == 1)
+            {
+                LL_DMA_ClearFlag_GI1(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 2)
+            {
+                LL_DMA_ClearFlag_GI2(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 3)
+            {
+                LL_DMA_ClearFlag_GI3(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 4)
+            {
+                LL_DMA_ClearFlag_GI4(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 5)
+            {
+                LL_DMA_ClearFlag_GI5(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 6)
+            {
+                LL_DMA_ClearFlag_GI6(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 7)
+            {
+                LL_DMA_ClearFlag_GI7(ControllerTraitsT::skInstance);
+            }
+            else if constexpr (tkChannelID == 8)
+            {
+                LL_DMA_ClearFlag_GI8(ControllerTraitsT::skInstance);
+            }
+            else
+            {
+                static_assert(false, "Invalid DMA Channel ID");
+            }
         }
 
         static void reconfigure(const DMAChannelConfig& config)
@@ -340,26 +380,37 @@ namespace valle
         }
 
         /**
-     * @brief Enable interrupts for this channel.
-     * @param config Configuration for DMA Interrupts.
-     */
+         * @brief Enable interrupts for this channel.
+         * @param config Configuration for DMA Interrupts.
+         */
         static void enable_interrupts(const DMAInterruptConfig& config)
         {
-            if (config.enable_tc) LL_DMA_EnableIT_TC(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
-            if (config.enable_ht) LL_DMA_EnableIT_HT(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
-            if (config.enable_te) LL_DMA_EnableIT_TE(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+            if (config.enable_tc)
+            {
+                DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferComplete>::enable();
+            }
+            if (config.enable_ht)
+            {
+                DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kHalfTransfer>::enable();
+            }
+
+            if (config.enable_te)
+            {
+                DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferError>::enable();
+            }
+
             NVIC_SetPriority(ChannelTraitsT::skIRQn, config.priority);
             NVIC_EnableIRQ(ChannelTraitsT::skIRQn);
         }
 
         /**
-     * @brief Disable interrupts for this channel.
-     */
+         * @brief Disable interrupts for this channel.
+         */
         static void disable_interrupts()
         {
-            LL_DMA_DisableIT_TC(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
-            LL_DMA_DisableIT_HT(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
-            LL_DMA_DisableIT_TE(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+            DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferComplete>::disable();
+            DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kHalfTransfer>::disable();
+            DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferError>::disable();
             NVIC_DisableIRQ(ChannelTraitsT::skIRQn);
         }
     };
