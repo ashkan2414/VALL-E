@@ -369,7 +369,7 @@ namespace valle
             }
             else
             {
-                static_assert(false, "Invalid DMA Channel ID");
+                static_assert(tkChannelID != tkChannelID, "Invalid DMA Channel ID");
             }
         }
 
