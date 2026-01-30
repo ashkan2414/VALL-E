@@ -59,7 +59,7 @@ namespace valle
         {                                                      \
             static void output(const std::string_view message) \
             {                                                  \
-                (instance).output(message);                    \
+                (instance).output_async(message);              \
             }                                                  \
         };                                                     \
     }

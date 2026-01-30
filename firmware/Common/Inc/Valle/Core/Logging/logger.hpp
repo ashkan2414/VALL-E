@@ -41,6 +41,13 @@ namespace valle
                 func_name = func_name.substr(0, paren_pos);
             }
 
+            // Find first space to remove return type
+            size_t space_pos = func_name.rfind(' ');
+            if (space_pos != std::string_view::npos)
+            {
+                func_name = func_name.substr(space_pos + 1);
+            }
+
             // Find last "::" to get only the function name
             size_t last_colon = func_name.rfind("::");
             if (last_colon != std::string_view::npos)
@@ -168,32 +175,48 @@ namespace valle
             {
                 // Fixed-size buffer to avoid dynamic allocation
                 std::array<char, LoggingConfig::skConfig.kMaxMessageLength> buffer{};
-                auto current_buffer = std::span<char>(buffer.data(), buffer.size());
+                auto                                                        current_buffer =
+                    std::span<char>(buffer.data(), buffer.size() - 1);  // Reserve space for null terminator
 
                 // Format location
                 if constexpr (LoggingConfig::skConfig.kPrintSourceLocation)
                 {
-                    auto location_format_result = fmt::format_to_n(current_buffer.data(),
-                                                                   current_buffer.size(),
-                                                                   "[{}:{}:{}:{}]",
-                                                                   format.loc.file_name,
-                                                                   format.loc.function_name,
-                                                                   format.loc.line,
-                                                                   format.loc.column);
+                    if (current_buffer.size() > 1)
+                    {
+                        auto location_format_result = fmt::format_to_n(current_buffer.data(),
+                                                                       current_buffer.size() - 1,
+                                                                       "[{} in {}:{}:{}]",
+                                                                       format.loc.function_name,
+                                                                       format.loc.file_name,
+                                                                       format.loc.line,
+                                                                       format.loc.column);
 
-                    current_buffer = current_buffer.subspan(location_format_result.size);
+                        current_buffer = current_buffer.subspan(location_format_result.size);
+                    }
                 }
 
                 // Format level
-                auto level_format_result =
-                    fmt::format_to_n(current_buffer.data(), current_buffer.size(), "[{}]: ", log_level_name(tkLevel));
-                current_buffer = current_buffer.subspan(level_format_result.size);
+                if (current_buffer.size() > 1)
+                {
+                    auto level_format_result = fmt::format_to_n(
+                        current_buffer.data(), current_buffer.size() - 1, "[{}]: ", log_level_name(tkLevel));
+                    current_buffer = current_buffer.subspan(level_format_result.size);
+                }
 
                 // Format main message
-                auto message_format_result = fmt::format_to_n(
-                    current_buffer.data(), current_buffer.size(), format.format, std::forward<TArgs...>(args)...);
+                if (current_buffer.size() > 1)
+                {
+                    auto message_format_result = fmt::format_to_n(current_buffer.data(),
+                                                                  current_buffer.size() - 1,
+                                                                  format.format,
+                                                                  std::forward<TArgs...>(args)...);
 
-                current_buffer = current_buffer.subspan(message_format_result.size);
+                    current_buffer = current_buffer.subspan(message_format_result.size);
+                }
+
+                // Append newline (there should always be space for this)
+                current_buffer[0] = '\n';
+                current_buffer    = current_buffer.subspan(1);
 
                 LoggingOutputHandler<>::output(std::string_view(buffer.data(), buffer.size() - current_buffer.size()));
             }
