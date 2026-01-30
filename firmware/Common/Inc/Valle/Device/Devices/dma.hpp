@@ -296,33 +296,31 @@ namespace valle
          * @param src_addr Source Address (Peripheral or Memory)
          * @param dst_addr Destination Address (Peripheral or Memory)
          * @param length   Number of data items (not bytes, but items based on data_width)
+         * 
+         * @warning Parameter interpretation depends on configured direction:
+         *          - PeriphToMem: src_addr=Peripheral, dst_addr=Memory
+         *          - MemToPeriph: src_addr=Memory, dst_addr=Peripheral
+         * 
+         * @deprecated Consider using start_periph_to_mem() or start_mem_to_periph() for clarity.
          */
         static void start(const uint32_t src_addr, const uint32_t dst_addr, const uint32_t length)
         {
-            // Note: LL_DMA_ConfigAddresses logic depends on direction.
-            // For PeriphToMem: Src=Periph, Dst=Mem
-            // For MemToPeriph: Src=Mem, Dst=Periph
-            // LL_DMA_ConfigAddresses takes (PeriphAddr, MemAddr, Direction).
-            // We need to be careful with the argument order based on direction.
-
-            // However, a safer raw way that works for generic transfers is setting registers directly
-            // or using the LL helper which assumes (Periph, Mem, Direction).
-
             assert(src_addr != 0 && "Source address must not be null");
             assert(dst_addr != 0 && "Destination address must not be null");
 
             uint32_t direction =
                 LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
 
+            // CRITICAL FIX: Clarified logic - LL_DMA_ConfigAddresses always takes (PeriphAddr, MemAddr, Direction)
             if (direction == LL_DMA_DIRECTION_MEMORY_TO_PERIPH)
             {
-                // Src is Mem, Dst is Periph
+                // src_addr is Memory, dst_addr is Peripheral
                 LL_DMA_ConfigAddresses(
                     ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, dst_addr, src_addr, direction);
             }
             else
             {
-                // Src is Periph (or MemToMem), Dst is Mem
+                // src_addr is Peripheral, dst_addr is Memory (or MemToMem)
                 LL_DMA_ConfigAddresses(
                     ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, src_addr, dst_addr, direction);
             }
@@ -331,10 +329,59 @@ namespace valle
             LL_DMA_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
         }
 
+        /**
+         * @brief Start DMA transfer from peripheral to memory (clearer API).
+         * @param periph_addr Peripheral register address
+         * @param mem_addr Memory buffer address
+         * @param length Number of data items
+         */
+        static void start_periph_to_mem(const uint32_t periph_addr, const uint32_t mem_addr, const uint32_t length)
+        {
+            assert(periph_addr != 0 && "Peripheral address must not be null");
+            assert(mem_addr != 0 && "Memory address must not be null");
+
+            uint32_t direction =
+                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+            assert(direction == LL_DMA_DIRECTION_PERIPH_TO_MEMORY && "DMA not configured for PeriphToMem");
+
+            LL_DMA_ConfigAddresses(
+                ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, periph_addr, mem_addr, direction);
+            LL_DMA_SetDataLength(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, length);
+            LL_DMA_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+        }
+
+        /**
+         * @brief Start DMA transfer from memory to peripheral (clearer API).
+         * @param mem_addr Memory buffer address
+         * @param periph_addr Peripheral register address
+         * @param length Number of data items
+         */
+        static void start_mem_to_periph(const uint32_t mem_addr, const uint32_t periph_addr, const uint32_t length)
+        {
+            assert(mem_addr != 0 && "Memory address must not be null");
+            assert(periph_addr != 0 && "Peripheral address must not be null");
+
+            uint32_t direction =
+                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+            assert(direction == LL_DMA_DIRECTION_MEMORY_TO_PERIPH && "DMA not configured for MemToPeriph");
+
+            LL_DMA_ConfigAddresses(
+                ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, periph_addr, mem_addr, direction);
+            LL_DMA_SetDataLength(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, length);
+            LL_DMA_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+        }
+
         static void stop()
         {
+            // PITFALL FIX: Wait for DMA channel to actually disable
+            // RM0440 Section 12.4.4: Software must wait until EN bit reads 0
             LL_DMA_DisableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
 
+            // Wait for disable to complete (typically 1-2 AHB cycles)
+            while (LL_DMA_IsEnabledChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID))
+                ;
+
+            // Now safe to clear all flags
             if constexpr (tkChannelID == 1)
             {
                 LL_DMA_ClearFlag_GI1(ControllerTraitsT::skInstance);

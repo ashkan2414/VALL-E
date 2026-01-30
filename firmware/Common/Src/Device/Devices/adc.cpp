@@ -39,6 +39,10 @@ namespace valle
     {
         void ADC1_2_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
+            // CRITICAL NOTE: ADC1 and ADC2 share this IRQ vector (RM0440 Section 21.4.20).
+            // Each ADC has separate flag registers (ADC1->ISR, ADC2->ISR), so no race condition exists.
+            // DO NOT add shared volatile state between ADC1 and ADC2 handlers without proper synchronization!
+            
             // We must check BOTH devices because they share the line.
             // The adc_irq_handler() function does a quick register check,
             // so it's cheap to call even if the ADC isn't active.

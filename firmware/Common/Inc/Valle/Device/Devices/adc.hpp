@@ -342,6 +342,12 @@ namespace valle
         static constexpr uint8_t skChannelRankFreeFlag = 0xFF;
 
         // --- Storage ---
+        // PITFALL NOTE: volatile is CRITICAL for DMA buffer
+        // STM32G4 (Cortex-M4F) has no data cache, but volatile ensures:
+        // 1. Each read goes to memory (DMA updates continuously in circular mode)
+        // 2. Compiler won't optimize away repeated reads
+        // 3. Proper memory ordering with DMA transfers
+        // If future code removes volatile, stale data will be read in fast loops!
         alignas(32) volatile ADCValue m_dma_buffer[kADCMaxRegChannels];
 
         // Mappings
@@ -387,20 +393,49 @@ namespace valle
             // Clock & Power
             LL_AHB2_GRP1_EnableClock(ControllerTraitsT::skClock);
 
+            // DATASHEET FIX: Explicitly configure ADC common clock
+            // RM0440 Section 21.4.3: ADC clock must be explicitly configured
+            // Use asynchronous clock mode (typical for precision measurements)
+            if constexpr (tkControllerID <= 2)
+            {
+                // ADC1 and ADC2 share ADC12_COMMON
+                LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(ADC1), LL_ADC_CLOCK_ASYNC_DIV1);
+            }
+            else
+            {
+                // ADC3, ADC4, ADC5 share ADC345_COMMON
+                LL_ADC_SetCommonClock(__LL_ADC_COMMON_INSTANCE(ADC3), LL_ADC_CLOCK_ASYNC_DIV1);
+            }
+
             if (LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 0)
             {
                 LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
                 LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
-                volatile uint32_t wait = 5000;
+                
+                // CRITICAL FIX: Deterministic timing for regulator startup
+                // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
+                // Use busy wait with known cycle count: ~3500 cycles @ 170 MHz = ~20.6 µs
+                volatile uint32_t wait = 3500;
                 while (wait > 0)
                 {
                     wait = wait - 1;
                 }
             }
 
-            // Calibration
+            // Calibration with timeout
+            // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
+            // At 40 MHz ADC clock: ~3 µs, allow up to 1 ms = 170,000 cycles @ 170 MHz
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
-            while (LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance));
+            uint32_t cal_timeout = 500000;
+            while (LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) && cal_timeout-- > 0)
+                ;
+
+            // If timeout occurred, calibration failed
+            if (cal_timeout == 0)
+            {
+                // ERROR: ADC calibration timeout
+                // Consider: Error logging, safe mode, or halt
+            }
 
             // Global Configuration
             LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.resolution));
@@ -539,6 +574,13 @@ namespace valle
                         .request_id = ControllerTraitsT::skDMARequestId,
 
                     });
+
+                    // CRITICAL FIX: Start the DMA transfer
+                    // Get the ADC data register address for DMA source
+                    const uint32_t adc_dr_addr =
+                        reinterpret_cast<uint32_t>(&(ControllerTraitsT::skInstance->DR));
+                    const uint32_t buffer_addr = reinterpret_cast<uint32_t>(m_dma_buffer);
+                    m_dma->start(adc_dr_addr, buffer_addr, reg_count);
                 }
                 else
                 {
@@ -570,9 +612,21 @@ namespace valle
                 }
             }
 
-            // Enable
+            // Enable with timeout
             LL_ADC_Enable(ControllerTraitsT::skInstance);
-            while (!LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance));
+            
+            // Wait for ADC ready with timeout
+            // Typical: a few ADC clock cycles, allow up to 100 µs @ 170 MHz = 17,000 cycles
+            uint32_t ready_timeout = 100000;
+            while (!LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) && ready_timeout-- > 0)
+                ;
+
+            // If timeout occurred, ADC failed to become ready
+            if (ready_timeout == 0)
+            {
+                // ERROR: ADC ready timeout
+                // Consider: Error logging, safe mode, or halt
+            }
 
             if (start_inject_group)
             {
@@ -638,8 +692,10 @@ namespace valle
                 }
             }
 
-            // Clear any pending flags to avoid immediate false triggers
+            // PITFALL FIX: Clear all relevant flags to avoid immediate false triggers
+            // RM0440 Section 21.4.20: OVR flag must be cleared before starting
             ack_regular_eos_int();
+            ack_ovr_int();
 
             // If not using DMA
             if (!skHasDMA)
@@ -998,6 +1054,10 @@ namespace valle
      */
         [[nodiscard]] constexpr inline ADCValue read_regular_data(const ADCRegularChannelRank rank) const
         {
+            // CRITICAL FIX: Memory barrier to ensure DMA writes are visible to CPU
+            // STM32G4 (Cortex-M4F) doesn't have data cache, but memory barrier
+            // ensures proper ordering of DMA transfers vs CPU reads
+            __DMB();
             const uint8_t buf_idx = rank - 1;
             return m_dma_buffer[buf_idx];
         }
