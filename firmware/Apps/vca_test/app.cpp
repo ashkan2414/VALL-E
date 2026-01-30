@@ -1,5 +1,7 @@
 #include "app.hpp"
 
+VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
+
 namespace valle::app
 {
     // Forward declaration

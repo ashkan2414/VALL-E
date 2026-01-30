@@ -1,6 +1,9 @@
 #pragma once
 
+#include <optional>
+
 #include "Valle/Device/Devices/hrtim.hpp"
+
 
 namespace valle
 {

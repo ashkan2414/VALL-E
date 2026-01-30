@@ -11,7 +11,11 @@
                 "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc",
                 "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy",
                 "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc",
-                "${workspaceFolder}/Thirdparty"
+                "${workspaceFolder}/Thirdparty",
+                "${workspaceFolder}/Thirdparty/fmt/include",
+                "${workspaceFolder}/Thirdparty/eigen",
+                "${workspaceFolder}/Thirdparty/magic_enum/include",
+                "${workspaceFolder}/Thirdparty/PortableBitfields/"
             ],
             "configurationProvider": "ms-vscode.cmake-tools",
             "defines": [

@@ -51,17 +51,13 @@ namespace valle
 }  // namespace valle
 
 // Put this in app_log_config.hpp to bind the logger instance
-#define VALLE_BIND_UART_LOGGER_HANDLER(instance)               \
-    namespace valle                                            \
-    {                                                          \
-        template <>                                            \
-        struct LoggingOutputHandler<void>                      \
-        {                                                      \
-            static void output(const std::string_view message) \
-            {                                                  \
-                (instance).output_async(message);              \
-            }                                                  \
-        };                                                     \
+#define VALLE_DEFINE_UART_LOGGER_HANDLER(instance)              \
+    namespace valle                                             \
+    {                                                           \
+        void log_output_handler(const std::string_view message) \
+        {                                                       \
+            (instance).output_async(message);                   \
+        }                                                       \
     }
 
 // Put these in app_isr_bindings.hpp to bind your instance
