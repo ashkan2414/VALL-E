@@ -27,6 +27,12 @@ namespace valle
     {
         float rise_ns = 0.0F;  // Rising deadtime in nanoseconds
         float fall_ns = 0.0F;  // Falling deadtime in nanoseconds
+        
+        // DATASHEET FIX: Make lock optional
+        // RM0440 Section 29.3.12: DTFLK/DTRLK bits can only be written once after reset
+        // Once set, they cannot be cleared until MCU reset
+        // Default true for safety, but allow dynamic deadtime adjustment if needed
+        bool lock_registers = true;
     };
 
     struct HRTIMRepIntConfig
@@ -341,8 +347,15 @@ namespace valle
             LL_HRTIM_DT_SetPrescaler(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, prescaler_val);
             LL_HRTIM_DT_SetRisingValue(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, rising_counts);
             LL_HRTIM_DT_SetFallingValue(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, falling_counts);
-            LL_HRTIM_DT_LockFalling(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
-            LL_HRTIM_DT_LockRising(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+            
+            // DATASHEET FIX: Conditional locking based on configuration
+            // RM0440 Section 29.3.12: Lock bits are write-once, cannot be cleared without MCU reset
+            if (config.lock_registers)
+            {
+                LL_HRTIM_DT_LockFalling(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+                LL_HRTIM_DT_LockRising(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+            }
+            
             LL_HRTIM_TIM_EnableDeadTime(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
         }
 

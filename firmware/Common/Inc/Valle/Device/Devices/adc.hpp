@@ -29,6 +29,11 @@ namespace valle
 
         // What edge to trigger on (only for external triggers)
         ADCInjectGroupTriggerEdge trigger_edge = ADCInjectGroupTriggerEdge::kRising;
+        
+        // PITFALL FIX: Make auto-trigger configurable
+        // RM0440 Section 21.4.16: Injected group can auto-trigger after regular group
+        // Default false to maintain backward compatibility
+        bool auto_trigger_from_regular = false;
     };
 
     /**
@@ -356,6 +361,9 @@ namespace valle
 
         [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelT>      m_dma;
         std::conditional_t<skHasDMA, ADCRegularGroupDMAConfig, std::monostate> m_dma_config;
+        
+        // Store data alignment for DMA configuration
+        ADCDataAlignment m_data_alignment = ADCDataAlignment::kRight;
 
     public:
         ADCControllerDevice(DeviceRef<DMAChannelT>&& dma_channel)
@@ -389,6 +397,9 @@ namespace valle
             {
                 m_dma_config = config.reg.dma;
             }
+            
+            // Store data alignment for DMA width calculation
+            m_data_alignment = config.data_alignment;
 
             // Clock & Power
             LL_AHB2_GRP1_EnableClock(ControllerTraitsT::skClock);
@@ -425,6 +436,11 @@ namespace valle
             // Calibration with timeout
             // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
             // At 40 MHz ADC clock: ~3 µs, allow up to 1 ms = 170,000 cycles @ 170 MHz
+            // 
+            // PITFALL NOTE: If ADC clock frequency changes at runtime (e.g., entering
+            // low-power mode), calibration must be re-run by calling:
+            //   LL_ADC_StartCalibration(ADCx, LL_ADC_SINGLE_ENDED);
+            //   while (LL_ADC_IsCalibrationOnGoing(ADCx));
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
             uint32_t cal_timeout = 500000;
             while (LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) && cal_timeout-- > 0)
@@ -446,10 +462,15 @@ namespace valle
             LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance,
                                         static_cast<uint32_t>(config.inj.trigger_source));
             LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.inj.trigger_edge));
+            
+            // PITFALL FIX: Configurable auto-trigger mode
+            // RM0440 Section 21.4.16: Injected can auto-trigger from regular group
             LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance,
-                                   LL_ADC_INJ_TRIG_INDEPENDENT);  // Auto trigger not supported
-            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance,
-                                    LL_ADC_INJ_QUEUE_DISABLE);  // Queue mode not supported
+                                   config.inj.auto_trigger_from_regular ? LL_ADC_INJ_TRIG_FROM_GRP_REGULAR
+                                                                        : LL_ADC_INJ_TRIG_INDEPENDENT);
+            
+            // Queue mode: Keep disabled (not commonly used)
+            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance, LL_ADC_INJ_QUEUE_DISABLE);
 
             // Regular Group Configuration
             LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance,
@@ -563,12 +584,26 @@ namespace valle
 
                     static_assert(sizeof(ADCValue) == 2 || sizeof(ADCValue) == 4, "ADCValue must be 2 or 4 bytes");
 
+                    // DATASHEET FIX: Match DMA width to ADC alignment
+                    // RM0440 Section 21.4.20: Left-aligned ADC data requires 32-bit DMA
+                    DMADataWidth dma_width;
+                    if (m_data_alignment == ADCDataAlignment::kLeft)
+                    {
+                        // Left-aligned: Always use 32-bit (word) transfer
+                        dma_width = DMADataWidth::kWord;
+                    }
+                    else
+                    {
+                        // Right-aligned: Use ADCValue size (16-bit or 32-bit)
+                        dma_width = sizeof(ADCValue) == 2 ? DMADataWidth::kHalfWord : DMADataWidth::kWord;
+                    }
+
                     // Configure DMA Channel
                     m_dma->init(DMAChannelConfig{
                         .direction  = DMADirection::kPeriphToMem,
                         .priority   = m_dma_config.priority,
                         .mode       = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
-                        .data_width = sizeof(ADCValue) == 2 ? DMADataWidth::kHalfWord : DMADataWidth::kWord,
+                        .data_width = dma_width,
                         .inc_periph = false,
                         .inc_memory = true,
                         .request_id = ControllerTraitsT::skDMARequestId,
