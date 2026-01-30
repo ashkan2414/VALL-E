@@ -6,10 +6,13 @@
 #include <optional>
 #include <variant>
 
+#include "Valle/Core/Logging/logger.hpp"
 #include "Valle/Device/Devices/dma.hpp"
 #include "Valle/Device/Traits/adc.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Drivers/gpio.hpp"
+#include "Valle/Utils/timing.hpp"
+
 
 namespace valle
 {
@@ -29,6 +32,9 @@ namespace valle
 
         // What edge to trigger on (only for external triggers)
         ADCInjectGroupTriggerEdge trigger_edge = ADCInjectGroupTriggerEdge::kRising;
+
+        // RM0440 Section 21.4.16: Injected group can auto-trigger after regular group
+        bool auto_trigger_from_regular = false;
     };
 
     /**
@@ -127,7 +133,13 @@ namespace valle
      */
     struct ADCChannelConfig
     {
-        // Sampling time
+        /**
+         * @brief Sampling time for the channel.
+         * RM0440 Section 21.4.8, Table 115:
+         * - Internal channels (VREFINT, VBAT, TempSensor): Minimum 12.5 cycles
+         * - External channels with high impedance (> 50 kΩ): Consider longer sampling times
+         * - At 60 MHz ADC clock (max): 12.5 cycles = 0.208 µs
+         */
         ADCChannelSampleTime sampling_time = ADCChannelSampleTime::k24Cycles5;
 
         // Input mode (Single-Ended/Differential)
@@ -367,6 +379,12 @@ namespace valle
         static constexpr uint8_t skChannelRankFreeFlag = 0xFF;
 
         // --- Storage ---
+        // volatile is CRITICAL for DMA buffer
+        // STM32G4 (Cortex-M4F) has no data cache, but volatile ensures:
+        // 1. Each read goes to memory (DMA updates continuously in circular mode)
+        // 2. Compiler won't optimize away repeated reads
+        // 3. Proper memory ordering with DMA transfers
+        // If future code removes volatile, stale data will be read in fast loops!
         alignas(32) volatile ADCValue m_dma_buffer[kADCMaxRegChannels];
 
         // Mappings
@@ -375,6 +393,9 @@ namespace valle
 
         [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelT>      m_dma;
         std::conditional_t<skHasDMA, ADCRegularGroupDMAConfig, std::monostate> m_dma_config;
+
+        // Store data alignment for DMA configuration
+        ADCDataAlignment m_data_alignment = ADCDataAlignment::kRight;
 
     public:
         ADCControllerDevice(DeviceRef<DMAChannelT>&& dma_channel)
@@ -398,34 +419,54 @@ namespace valle
         // --- Initialization (Called by Main/Builder) ---
 
         /**
-     * @brief Initialize ADC Peripheral with given configuration.
-     *
-     * @param config ADC Peripheral Configuration.
-     */
-        void init(const ADCControllerConfig& config)
+         * @brief Initialize ADC Peripheral with given configuration.
+         *
+         * @param config ADC Peripheral Configuration.
+         */
+        [[nodiscard]] bool init(const ADCControllerConfig& config)
         {
             if constexpr (skHasDMA)
             {
                 m_dma_config = config.reg.dma;
             }
 
+            // Store data alignment for DMA width calculation
+            m_data_alignment = config.data_alignment;
+
             // Clock & Power
             LL_AHB2_GRP1_EnableClock(ControllerTraitsT::skClock);
+
+            // Explicitly configure ADC common clock
+            // RM0440 Section 21.4.3: ADC clock must be explicitly configured
+            // Use asynchronous clock mode (typical for precision measurements)
+            LL_ADC_SetCommonClock(ControllerTraitsT::skCommon, LL_ADC_CLOCK_ASYNC_DIV1);
 
             if (LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 0)
             {
                 LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
                 LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
-                volatile uint32_t wait = 5000;
-                while (wait > 0)
-                {
-                    wait = wait - 1;
-                }
+
+                // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
+                // Use busy wait with known cycle count: ~3500 cycles @ 170 MHz = ~20.6 µs
+                delay_us_busy(21u);
             }
 
-            // Calibration
+            // Calibration with precise timeout
+            // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
+            // At 40 MHz ADC clock: ~3 µs typical, allow up to 1 ms for safety
+            //
+            // NOTE: If ADC clock frequency changes at runtime (e.g., entering
+            // low-power mode), calibration must be re-run.
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
-            while (LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance));
+            const bool calibration_success = wait_for_with_timeout_us(
+                []() { return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) == 0; }, 1000u);
+
+            // If timeout occurred, calibration failed
+            if (!calibration_success)
+            {
+                VALLE_LOG_FATAL("ADC calibration timeout");
+                return false;
+            }
 
             // Global Configuration
             LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.resolution));
@@ -436,8 +477,10 @@ namespace valle
             LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance,
                                         static_cast<uint32_t>(config.inj.trigger_source));
             LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.inj.trigger_edge));
-            LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance,
-                                   LL_ADC_INJ_TRIG_INDEPENDENT);  // Auto trigger not supported
+            LL_ADC_INJ_SetTrigAuto(
+                ControllerTraitsT::skInstance,
+                config.inj.auto_trigger_from_regular ? LL_ADC_INJ_TRIG_FROM_GRP_REGULAR : LL_ADC_INJ_TRIG_INDEPENDENT);
+
             LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance,
                                     LL_ADC_INJ_QUEUE_DISABLE);  // Queue mode not supported
 
@@ -460,16 +503,18 @@ namespace valle
                 LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance,
                                               static_cast<uint32_t>(config.reg.oversampling_mode));
             }
+
+            return false;
         }
 
         // --- Registration API (Called by Channel) ---
         /**
-     * @brief Initialize ADC Channel with given configuration and group/rank.
-     *
-     * @tparam tkChannelId Channel ID to initialize.
-     * @tparam tkGroup Channel Group (Regular/Inject).
-     * @tparam tkRank Rank in Sequence.
-     */
+         * @brief Initialize ADC Channel with given configuration and group/rank.
+         *
+         * @tparam tkChannelId Channel ID to initialize.
+         * @tparam tkGroup Channel Group (Regular/Inject).
+         * @tparam tkRank Rank in Sequence.
+         */
         template <ADCChannelID tkChannelId, ADCChannelGroup tkGroup, uint8_t tkRank>
             requires(kValidADCChannelID<tkControllerID, tkChannelId>)
         auto init_channel(const ADCChannelConfig& config)
@@ -489,11 +534,11 @@ namespace valle
         }
 
         /**
-     * @brief Initialize ADC channel as an Inject Channel.
-     *
-     * @tparam tkChannelId Channel ID to initialize.
-     * @tparam tkRank Rank in Inject Sequence (1-4).
-     */
+         * @brief Initialize ADC channel as an Inject Channel.
+         *
+         * @tparam tkChannelId Channel ID to initialize.
+         * @tparam tkRank Rank in Inject Sequence (1-4).
+        */
         template <ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
             requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCInjectRank<tkRank>)
         void init_channel_as_inject(const ADCChannelConfig& cfg)
@@ -503,11 +548,11 @@ namespace valle
         }
 
         /**
-     * @brief Initialize ADC channel as a Regular Channel.
-     *
-     * @tparam tkChannelId Channel ID to initialize.
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     */
+         * @brief Initialize ADC channel as a Regular Channel.
+         *
+         * @tparam tkChannelId Channel ID to initialize.
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         */
         template <ADCChannelID tkChannelId, ADCRegularChannelRank tkRank>
             requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCRegularRank<tkRank>)
         void init_channel_as_regular(const ADCChannelConfig& cfg)
@@ -517,10 +562,10 @@ namespace valle
         }
 
         /**
-     * @brief Post init called after init and channel registration. Sets up sequences and starts ADC.
-     *
-     */
-        void post_init(const bool start_inject_group = false, const bool start_regular_group = false)
+         * @brief Post init called after init and channel registration. Sets up sequences and starts ADC.
+         *
+         */
+        [[nodiscard]] bool post_init(const bool start_inject_group = false, const bool start_regular_group = false)
         {
             const uint8_t reg_count = std::find_if(std::begin(m_reg_cidx_to_rank_map),
                                                    std::end(m_reg_cidx_to_rank_map),
@@ -531,7 +576,7 @@ namespace valle
             if (reg_count > 0)
             {
                 LL_ADC_REG_SetSequencerLength(ControllerTraitsT::skInstance,
-                                              ADCRegularGroupTraits::get_sequencer_length(reg_count));
+                                              ADCRegularGroupTraits::count_to_sequence_length(reg_count));
 
                 for (uint32_t i = 0; i < kADCMaxChannelId; ++i)
                 {
@@ -553,12 +598,26 @@ namespace valle
 
                     static_assert(sizeof(ADCValue) == 2 || sizeof(ADCValue) == 4, "ADCValue must be 2 or 4 bytes");
 
+                    // Match DMA width to ADC alignment
+                    // RM0440 Section 21.4.20: Left-aligned ADC data requires 32-bit DMA
+                    DMADataWidth dma_width;
+                    if (m_data_alignment == ADCDataAlignment::kLeft)
+                    {
+                        // Left-aligned: Always use 32-bit (word) transfer
+                        dma_width = DMADataWidth::kWord;
+                    }
+                    else
+                    {
+                        // Right-aligned: Use ADCValue size (16-bit or 32-bit)
+                        dma_width = sizeof(ADCValue) == 2 ? DMADataWidth::kHalfWord : DMADataWidth::kWord;
+                    }
+
                     // Configure DMA Channel
                     m_dma->init(DMAChannelConfig{
                         .direction  = DMADirection::kPeriphToMem,
                         .priority   = m_dma_config.priority,
                         .mode       = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
-                        .data_width = sizeof(ADCValue) == 2 ? DMADataWidth::kHalfWord : DMADataWidth::kWord,
+                        .data_width = dma_width,
                         .inc_periph = false,
                         .inc_memory = true,
                         .request_id = ControllerTraitsT::skDMARequestId,
@@ -581,7 +640,7 @@ namespace valle
             if (inj_count > 0)
             {
                 LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
-                                              ADCInjectGroupTraits::get_sequencer_length(inj_count));
+                                              ADCInjectGroupTraits::count_to_sequence_length(inj_count));
 
                 for (uint32_t i = 0; i < kADCMaxChannelId; ++i)
                 {
@@ -595,9 +654,19 @@ namespace valle
                 }
             }
 
-            // Enable
+            // Enable with precise timeout
             LL_ADC_Enable(ControllerTraitsT::skInstance);
-            while (!LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance));
+
+            // Wait for ADC ready with precise timeout
+            // RM0440: Typically a few ADC clock cycles, allow up to 100 µs for safety
+            const bool adc_ready = wait_for_with_timeout_us(
+                []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100u);
+
+            if (!adc_ready)
+            {
+                VALLE_LOG_FATAL("ADC enable timeout");
+                return false;
+            }
 
             if (start_inject_group)
             {
@@ -608,6 +677,8 @@ namespace valle
             {
                 start_regular();
             }
+
+            return true;
         }
 
         /**
@@ -616,7 +687,7 @@ namespace valle
      */
         void start_inject()
         {
-            ack_inject_eos_int();
+            ADCInterruptTraits<tkControllerID, ADCInterruptType::kEndOfInjectSequence>::ack();
 
             // Enable Inject End of Sequence Interrupt (JEOS)
             // This allows the Vector Table to jump to ADC1_2_IRQHandler
@@ -661,10 +732,19 @@ namespace valle
                 {
                     m_dma->enable_interrupts(m_dma_config.interrupts.value());
                 }
+
+                // Start DMA Transfer
+                const uint32_t adc_dr_addr = reinterpret_cast<uint32_t>(&(ControllerTraitsT::skInstance->DR));
+                const uint32_t buffer_addr = reinterpret_cast<uint32_t>(m_dma_buffer);
+                const uint32_t reg_count   = ADCRegularGroupTraits::sequence_length_to_count(
+                    LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
+                m_dma->start_periph_to_mem(adc_dr_addr, buffer_addr, reg_count);
             }
 
-            // Clear any pending flags to avoid immediate false triggers
-            ack_regular_eos_int();
+            // Clear all relevant flags to avoid immediate false triggers
+            // RM0440 Section 21.4.20: OVR flag must be cleared before starting
+            ADCInterruptTraits<tkControllerID, ADCInterruptType::kEndOfRegularSequence>::ack();
+            ADCInterruptTraits<tkControllerID, ADCInterruptType::kOverrun>::ack();
 
             // If not using DMA
             if (!skHasDMA)
@@ -681,9 +761,9 @@ namespace valle
         }
 
         /**
-     * @brief Rearm Regular Conversions.
-     *
-     */
+         * @brief Rearm Regular Conversions.
+         *
+         */
         static void trigger_regular()
         {
             // ARM THE TRIGGER (The most important part)
@@ -693,9 +773,9 @@ namespace valle
         }
 
         /**
-     * @brief Stop Regular Conversions.
-     *
-     */
+         * @brief Stop Regular Conversions.
+         *
+         */
         void stop_regular()
         {
             LL_ADC_REG_StopConversion(ControllerTraitsT::skInstance);
@@ -703,116 +783,6 @@ namespace valle
             {
                 m_dma->disable_interrupts();
             }
-        }
-
-        // --- Interrupt Pending Checks ---
-        /**
-     * @brief Check if Analog Watchdog 1 Interrupt is pending.
-     */
-        static bool awd1_int_pending()
-        {
-            return LL_ADC_IsActiveFlag_AWD1(ControllerTraitsT::skInstance) &&
-                   LL_ADC_IsEnabledIT_AWD1(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Check if Analog Watchdog 2 Interrupt is pending.
-     */
-        static bool awd2_int_pending()
-        {
-            return LL_ADC_IsActiveFlag_AWD2(ControllerTraitsT::skInstance) &&
-                   LL_ADC_IsEnabledIT_AWD2(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Check if Analog Watchdog 3 Interrupt is pending.
-     */
-        static bool awd3_int_pending()
-        {
-            return LL_ADC_IsActiveFlag_AWD3(ControllerTraitsT::skInstance) &&
-                   LL_ADC_IsEnabledIT_AWD3(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Check if end of sequence interrupt is pending for the inject group.
-     */
-        static bool inject_eos_int_pending()
-        {
-            return LL_ADC_IsActiveFlag_JEOS(ControllerTraitsT::skInstance) &&
-                   LL_ADC_IsEnabledIT_JEOS(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Check if end of sequence interrupt is pending for the regular group.
-     */
-        static bool regular_eos_int_pending()
-        {
-            return LL_ADC_IsActiveFlag_EOS(ControllerTraitsT::skInstance) &&
-                   LL_ADC_IsEnabledIT_EOS(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Check if Overrun Interrupt is pending.
-     */
-        static bool ovr_int_pending()
-        {
-            return LL_ADC_IsActiveFlag_OVR(ControllerTraitsT::skInstance) &&
-                   LL_ADC_IsEnabledIT_OVR(ControllerTraitsT::skInstance);
-        }
-
-        // --- Interrupt Acknowledgement ---
-        /**
-     * @brief Acknowledge Analog Watchdog 1 Interrupt.
-     *
-     */
-        static void ack_awd1_int()
-        {
-            LL_ADC_ClearFlag_AWD1(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Acknowledge Analog Watchdog 2 Interrupt.
-     *
-     */
-        static void ack_awd2_int()
-        {
-            LL_ADC_ClearFlag_AWD2(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Acknowledge Analog Watchdog 3 Interrupt.
-     *
-     */
-        static void ack_awd3_int()
-        {
-            LL_ADC_ClearFlag_AWD3(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Acknowledge Inject end of sequence Interrupt.
-     *
-     */
-        static void ack_inject_eos_int()
-        {
-            LL_ADC_ClearFlag_JEOS(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Acknowledge Regular end of sequence Interrupt.
-     *
-     */
-        static void ack_regular_eos_int()
-        {
-            LL_ADC_ClearFlag_EOS(ControllerTraitsT::skInstance);
-        }
-
-        /**
-     * @brief Acknowledge Overrun Interrupt.
-     *
-     */
-        static void ack_ovr_int()
-        {
-            LL_ADC_ClearFlag_OVR(ControllerTraitsT::skInstance);
         }
 
         // --- Resolution Info ---
@@ -1023,6 +993,10 @@ namespace valle
      */
         [[nodiscard]] constexpr inline ADCValue read_regular_data(const ADCRegularChannelRank rank) const
         {
+            // Memory barrier to ensure DMA writes are visible to CPU
+            // STM32G4 (Cortex-M4F) doesn't have data cache, but memory barrier
+            // ensures proper ordering of DMA transfers vs CPU reads
+            __DMB();
             const uint8_t buf_idx = rank - 1;
             return m_dma_buffer[buf_idx];
         }

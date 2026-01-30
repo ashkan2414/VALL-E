@@ -13,25 +13,9 @@ namespace valle
         kDebug = 0,
         kInfo,
         kWarn,
-        kError
+        kError,
+        kFatal,
     };
-
-    inline constexpr std::string_view log_level_name(const LogLevel level)
-    {
-        switch (level)
-        {
-            case LogLevel::kDebug:
-                return "DEBUG";
-            case LogLevel::kInfo:
-                return "INFO";
-            case LogLevel::kWarn:
-                return "WARN";
-            case LogLevel::kError:
-                return "ERROR";
-            default:
-                return "UNKNOWN";
-        }
-    }
 
     struct LogConfig
     {
@@ -47,12 +31,5 @@ namespace valle
         static constexpr LogConfig skConfig = config;
     };
 
-    template <typename T = void>
-    struct LoggingOutputHandler
-    {
-        static void output(const std::string_view message)
-        {
-        }
-    };
-
+    void log_output_handler(std::string_view) __attribute__((weak));
 }  // namespace valle

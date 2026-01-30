@@ -78,7 +78,7 @@ namespace valle
     {
         static inline ADC_TypeDef* const        skInstance     = ADC1;
         static constexpr uint32_t               skClock        = LL_AHB2_GRP1_PERIPH_ADC12;
-        static inline const ADC_Common_TypeDef* skCommon       = ADC12_COMMON;
+        static inline ADC_Common_TypeDef* const skCommon       = ADC12_COMMON;
         static inline constexpr DMARequestID    skDMARequestId = DMARequestID::kADC1;
     };
     template <>
@@ -126,7 +126,7 @@ namespace valle
         static constexpr std::array<uint32_t, 4> skRankIdxToRankReg = {
             LL_ADC_INJ_RANK_1, LL_ADC_INJ_RANK_2, LL_ADC_INJ_RANK_3, LL_ADC_INJ_RANK_4};
 
-        static uint32_t get_sequencer_length(uint32_t count)
+        static uint32_t count_to_sequence_length(uint32_t count)
         {
             switch (count)
             {
@@ -185,7 +185,7 @@ namespace valle
                                                                         LL_ADC_REG_RANK_15,
                                                                         LL_ADC_REG_RANK_16};
 
-        static constexpr uint32_t get_sequencer_length(const uint32_t count)
+        static constexpr uint32_t count_to_sequence_length(const uint32_t count)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (count)
@@ -224,6 +224,49 @@ namespace valle
                     return LL_ADC_REG_SEQ_SCAN_ENABLE_16RANKS;
                 default:
                     return LL_ADC_REG_SEQ_SCAN_DISABLE;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        static constexpr uint32_t sequence_length_to_count(const uint32_t sequence_length)
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (sequence_length)
+            {
+                case LL_ADC_REG_SEQ_SCAN_DISABLE:
+                    return 1;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS:
+                    return 2;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS:
+                    return 3;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS:
+                    return 4;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS:
+                    return 5;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS:
+                    return 6;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS:
+                    return 7;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_8RANKS:
+                    return 8;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_9RANKS:
+                    return 9;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_10RANKS:
+                    return 10;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_11RANKS:
+                    return 11;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_12RANKS:
+                    return 12;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_13RANKS:
+                    return 13;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_14RANKS:
+                    return 14;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_15RANKS:
+                    return 15;
+                case LL_ADC_REG_SEQ_SCAN_ENABLE_16RANKS:
+                    return 16;
+                default:
+                    return 1;
             }
             // NOLINTEND(readability-magic-numbers)
         }

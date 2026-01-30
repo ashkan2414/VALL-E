@@ -3,9 +3,11 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "Valle/Core/Logging/logger.hpp"
 #include "Valle/Device/Traits/hrtim.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Utils/hal_utils.hpp"
+#include "Valle/Utils/timing.hpp"
 #include "stm32g4xx_ll_bus.h"
 
 namespace valle
@@ -27,6 +29,11 @@ namespace valle
     {
         float rise_ns = 0.0F;  // Rising deadtime in nanoseconds
         float fall_ns = 0.0F;  // Falling deadtime in nanoseconds
+
+        // RM0440 Section 29.3.12: DTFLK/DTRLK bits can only be written once after reset
+        // Once set, they cannot be cleared until MCU reset
+        // Default true for safety, but allow dynamic deadtime adjustment if needed
+        bool lock_registers = true;
     };
 
     struct HRTIMRepIntConfig
@@ -234,17 +241,42 @@ namespace valle
 
         static constexpr HRTIMControllerID skControllerID = tkControllerID;
 
+    private:
+        static inline bool s_initialized = false;
+
     public:
-        static inline void init()
+        [[nodiscard]] static inline bool init()
         {
+            if (s_initialized)
+            {
+                VALLE_LOG_WARN("HRTIM{} already initialized, skipping re-initialization.", tkControllerID);
+                return true;
+            }
+
             // Enable Bus Clock
             LL_APB2_GRP1_EnableClock(ControllerTraitsT::skClock);
+
+            // Wait for clock to stabilize
+            // RM0440: Allow a few APB2 cycles for clock propagation
+            delay_cycles(10);
 
             // Start DLL Calibration
             LL_HRTIM_StartDLLCalibration(ControllerTraitsT::skInstance);
 
-            // Wait for calibration to finish
-            while (LL_HRTIM_IsActiveFlag_DLLRDY(ControllerTraitsT::skInstance) == 0);
+            // Wait for calibration to finish with precise timeout
+            // RM0440 Section 29.3.15: DLL calibration time = 14 µs typical
+            // Allow up to 100 µs
+            const bool calibration_success = wait_for_with_timeout_us(
+                []() { return LL_HRTIM_IsActiveFlag_DLLRDY(ControllerTraitsT::skInstance) != 0; }, 100);
+
+            if (!calibration_success)
+            {
+                VALLE_LOG_ERROR("HRTIM{} DLL Calibration timed out!", tkControllerID);
+                return false;
+            }
+
+            s_initialized = true;
+            return true;
         }
 
         static inline void post_init()
@@ -302,19 +334,34 @@ namespace valle
 
         static inline void init_deadtime(const HRTIMDeadTimeConfig& config)
         {
+            // Validate deadtime against hardware limits
+            // RM0440 Section 29.3.12: Max deadtime = 511 × tDTG where tDTG = tHRCK × 2^DTPRSC
+            // At 170 MHz with max prescaler (7): 511 × (1/(8×170MHz)) × 128 ≈ 48 µs
+            const uint32_t f_hrtim_hz = get_apb2_timer_clock_freq();
+            const float    max_hw_deadtime_ns =
+                511.0F * 128.0F / (8.0F * static_cast<float>(f_hrtim_hz)) * 1e9F;  // ~48,000 ns @ 170 MHz
+
+            const float max_requested_ns = std::max<float>(config.fall_ns, config.rise_ns);
+
+            // Validate requested deadtime
+            if (max_requested_ns > max_hw_deadtime_ns)
+            {
+                // ERROR: Requested deadtime exceeds hardware capability
+                VALLE_LOG_ERROR("HRTIM{} Timer {} requested deadtime ({} ns) exceeds hardware limit ({} ns)!",
+                                static_cast<int>(tkControllerID),
+                                enum_name(tkTimerID),
+                                max_requested_ns,
+                                max_hw_deadtime_ns);
+            }
+
             uint32_t prescaler_val  = 0;
             uint32_t rising_counts  = 0;
             uint32_t falling_counts = 0;
 
-            const uint32_t f_hrtim_hz = get_apb2_timer_clock_freq();
-
-            // Get the max requested time
-            const float max_ns = std::max<float>(config.fall_ns, config.rise_ns);
-
             // Calculate "Base Counts"
             // This is the number of ticks required if Prescaler = 0 (Freq = 8 * f_HRTIM).
             // Use uint64_t to prevent overflow (Max ns * 170MHz * 8 can be large).
-            uint64_t base_counts = (uint64_t)((max_ns * 8.0F * static_cast<float>(f_hrtim_hz)) / 1e9F);
+            uint64_t base_counts = (uint64_t)((max_requested_ns * 8.0F * static_cast<float>(f_hrtim_hz)) / 1e9F);
 
             // Handle trivial case to avoid clz(0) behavior
             if (base_counts != 0)
@@ -351,8 +398,14 @@ namespace valle
             LL_HRTIM_DT_SetPrescaler(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, prescaler_val);
             LL_HRTIM_DT_SetRisingValue(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, rising_counts);
             LL_HRTIM_DT_SetFallingValue(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, falling_counts);
-            LL_HRTIM_DT_LockFalling(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
-            LL_HRTIM_DT_LockRising(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+
+            // RM0440 Section 29.3.12: Lock bits are write-once, cannot be cleared without MCU reset
+            if (config.lock_registers)
+            {
+                LL_HRTIM_DT_LockFalling(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+                LL_HRTIM_DT_LockRising(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+            }
+
             LL_HRTIM_TIM_EnableDeadTime(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
         }
 
@@ -416,10 +469,46 @@ namespace valle
             // To implement this efficienctly, we can take advantage of the fact that floor(log2(floor(x))) = floor(log2(x))
             // and then we can use __CLZ to compute floor(log2(x)) = 31 - __CLZ(x) for 32-bit integers.
 
+            // Validate input to prevent divide-by-zero and __builtin_clz(0)
+            // RM0440 Section 29.3.6: HRTIM frequency range is ~81 Hz to 5.3 MHz @ 170 MHz
+
+            // Minimum: f_HRTIM / (32 × 65536) = 170 MHz / 2,097,152 ≈ 81 Hz
+            // Maximum: f_HRTIM / 32 = 170 MHz / 32 ≈ 5.3 MHz
+
+            constexpr uint32_t kMinPrescaler = 0;
+            constexpr uint32_t kMaxPrescaler = 7;
+
             const uint32_t f_hrtim_hz = get_hrtim_freq_hz();
-            const uint32_t ratio      = f_hrtim_hz / target_freq_hz;
-            const int8_t   index      = 31 - __builtin_clz(ratio) - 10;
-            return std::clamp<int8_t>(index, 0, 7);
+            const uint32_t kMinFreqHz = 81;
+            const uint32_t kMaxFreqHz = f_hrtim_hz / 32;
+
+            // Validate and clamp target frequency to valid range
+            if (target_freq_hz < kMinFreqHz)
+            {
+                VALLE_LOG_WARN("HRTIM{} Timer {} target frequency {} Hz is too low, clamping to 81 Hz.",
+                               static_cast<int>(tkControllerID),
+                               enum_name(tkTimerID),
+                               target_freq_hz);
+
+                // Too low - use minimum (prescaler 7)
+                return kMaxPrescaler;
+            }
+
+            if (target_freq_hz > kMaxFreqHz)
+            {
+                VALLE_LOG_WARN("HRTIM{} Timer {} target frequency {} Hz is too high, clamping to {} Hz.",
+                               static_cast<int>(tkControllerID),
+                               enum_name(tkTimerID),
+                               target_freq_hz,
+                               kMaxFreqHz);
+
+                // Too high - use maximum (prescaler 0)
+                return kMinPrescaler;
+            }
+
+            const uint32_t ratio = f_hrtim_hz / target_freq_hz;
+            const int8_t   index = 31 - __builtin_clz(ratio) - 10;
+            return std::clamp<int8_t>(index, kMinPrescaler, kMaxPrescaler);
         }
 
         [[nodiscard]] static inline uint32_t get_period_ticks()

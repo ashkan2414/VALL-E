@@ -14,6 +14,7 @@
 #include <type_traits>
 
 #include "Valle/Core/Logging/core.hpp"
+#include "Valle/Utils/enum_utils.hpp"
 
 #if __has_include("app_log_config.hpp")
 #include "app_log_config.hpp"
@@ -26,13 +27,13 @@ namespace valle
 
     namespace detail
     {
-        inline constexpr std::string_view extract_filename(const std::string_view path)
+        static constexpr std::string_view extract_filename(const std::string_view path)
         {
             size_t pos = path.find_last_of("/\"");
             return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
         }
 
-        inline constexpr std::string_view extract_function_name(std::string_view func_name)
+        static constexpr std::string_view extract_function_name(std::string_view func_name)
         {
             // Find first '(' to remove parameters and return type
             size_t paren_pos = func_name.find('(');
@@ -68,12 +69,12 @@ namespace valle
      */
     struct SourceLocationWithData
     {
-        std::string_view file_name;
-        std::string_view function_name;
-        uint32_t         line;
-        uint32_t         column;
+        std::string_view file_name{};
+        std::string_view function_name{};
+        uint32_t         line{};
+        uint32_t         column{};
 
-        inline consteval SourceLocationWithData(std::source_location loc = std::source_location::current())
+        explicit consteval SourceLocationWithData(std::source_location loc = std::source_location::current())
             : file_name(detail::extract_filename(loc.file_name()))
             , function_name(detail::extract_function_name(loc.function_name()))
             , line(loc.line())
@@ -84,7 +85,7 @@ namespace valle
 
     struct EmptySourceLocation
     {
-        inline consteval EmptySourceLocation(std::source_location loc = std::source_location::current())
+        explicit consteval EmptySourceLocation(std::source_location loc = std::source_location::current())
         {
         }
     };
@@ -98,14 +99,14 @@ namespace valle
         template <typename... TArgs>
         struct FormatString
         {
-            fmt::format_string<TArgs...> format;
-            SourceLocation               loc;
+            fmt::format_string<TArgs...> format{};
+            SourceLocation               loc{};
 
             /**
-         * @brief Constructs a log message that contains message and source information.
-         * @param fmt The log message (format string).
-         * @param l The source location of the log.
-         */
+             * @brief Constructs a log message that contains message and source information.
+             * @param fmt The log message (format string).
+             * @param l The source location of the log.
+             */
             template <class T>
                 requires(std::constructible_from<fmt::format_string<TArgs...>, const T&>)
             inline consteval FormatString(const T& fmt, const SourceLocation& l = {}) : format(fmt), loc(l)
@@ -144,7 +145,8 @@ namespace valle
             using BaseT = std::conditional_t<kShouldLog<tkLevel>, FormatString<TArgs...>, EmptyFormatString<TArgs...>>;
             using BaseT::BaseT;
 
-            inline constexpr FormatStringWithLevel(const FormatString<TArgs...>& other) : BaseT(other)
+            // NOLINTNEXTLINE(hicpp-explicit-conversions)
+            constexpr FormatStringWithLevel(const FormatString<TArgs...>& other) : BaseT(other)
             {
             }
         };
@@ -171,7 +173,7 @@ namespace valle
         template <LogLevel tkLevel, typename... TArgs>
         void log(const FormatStringWithLevel<tkLevel, TArgs...>& format, TArgs&&... args)
         {
-            if constexpr (kShouldLog<tkLevel>)
+            if constexpr (LoggingConfig::skConfig.kEnabled && kShouldLog<tkLevel>)
             {
                 // Fixed-size buffer to avoid dynamic allocation
                 std::array<char, LoggingConfig::skConfig.kMaxMessageLength> buffer{};
@@ -199,17 +201,15 @@ namespace valle
                 if (current_buffer.size() > 1)
                 {
                     auto level_format_result = fmt::format_to_n(
-                        current_buffer.data(), current_buffer.size() - 1, "[{}]: ", log_level_name(tkLevel));
+                        current_buffer.data(), current_buffer.size() - 1, "[{}]: ", enum_name(tkLevel));
                     current_buffer = current_buffer.subspan(level_format_result.size);
                 }
 
                 // Format main message
                 if (current_buffer.size() > 1)
                 {
-                    auto message_format_result = fmt::format_to_n(current_buffer.data(),
-                                                                  current_buffer.size() - 1,
-                                                                  format.format,
-                                                                  std::forward<TArgs...>(args)...);
+                    auto message_format_result = fmt::format_to_n(
+                        current_buffer.data(), current_buffer.size() - 1, format.format, std::forward<TArgs>(args)...);
 
                     current_buffer = current_buffer.subspan(message_format_result.size);
                 }
@@ -218,38 +218,44 @@ namespace valle
                 current_buffer[0] = '\n';
                 current_buffer    = current_buffer.subspan(1);
 
-                LoggingOutputHandler<>::output(std::string_view(buffer.data(), buffer.size() - current_buffer.size()));
+                log_output_handler(std::string_view(buffer.data(), buffer.size() - current_buffer.size()));
             }
         }
 
         template <LogLevel tkLevel, typename... TArgs>
-        inline void log(const FormatString<TArgs...>& format, TArgs&&... args)
+        void log(const FormatString<TArgs...>& format, TArgs&&... args)
         {
             log(FormatStringWithLevel<tkLevel, TArgs...>(format), std::forward<TArgs>(args)...);
         }
 
         template <typename... TArgs>
-        inline void debug(const FormatString<TArgs...>& format, TArgs&&... as)
+        void debug(const FormatString<TArgs...>& format, TArgs&&... args)
         {
-            log(FormatStringWithLevel<LogLevel::kDebug, TArgs...>(format), std::forward<TArgs>(as)...);
+            log(FormatStringWithLevel<LogLevel::kDebug, TArgs...>(format), std::forward<TArgs>(args)...);
         }
 
         template <typename... TArgs>
-        inline void info(const FormatString<TArgs...>& format, TArgs&&... as)
+        void info(const FormatString<TArgs...>& format, TArgs&&... args)
         {
-            log(FormatStringWithLevel<LogLevel::kInfo, TArgs...>(format), std::forward<TArgs>(as)...);
+            log(FormatStringWithLevel<LogLevel::kInfo, TArgs...>(format), std::forward<TArgs>(args)...);
         }
 
         template <typename... TArgs>
-        inline void warn(const FormatString<TArgs...>& format, TArgs&&... as)
+        void warn(const FormatString<TArgs...>& format, TArgs&&... args)
         {
-            log(FormatStringWithLevel<LogLevel::kWarn, TArgs...>(format), std::forward<TArgs>(as)...);
+            log(FormatStringWithLevel<LogLevel::kWarn, TArgs...>(format), std::forward<TArgs>(args)...);
         }
 
         template <typename... TArgs>
-        inline void error(const FormatString<TArgs...>& format, TArgs&&... as)
+        void error(const FormatString<TArgs...>& format, TArgs&&... args)
         {
-            log(FormatStringWithLevel<LogLevel::kError, TArgs...>(format), std::forward<TArgs>(as)...);
+            log(FormatStringWithLevel<LogLevel::kError, TArgs...>(format), std::forward<TArgs>(args)...);
+        }
+
+        template <typename... TArgs>
+        void fatal(const FormatString<TArgs...>& format, TArgs&&... args)
+        {
+            log(FormatStringWithLevel<LogLevel::kFatal, TArgs...>(format), std::forward<TArgs>(args)...);
         }
     };
 
@@ -262,3 +268,4 @@ namespace valle
 #define VALLE_LOG_INFO(fmt, ...)   valle::g_logger.info((fmt), ##__VA_ARGS__)
 #define VALLE_LOG_WARN(fmt, ...)   valle::g_logger.warn((fmt), ##__VA_ARGS__)
 #define VALLE_LOG_ERROR(fmt, ...)  valle::g_logger.error((fmt), ##__VA_ARGS__)
+#define VALLE_LOG_FATAL(fmt, ...)  valle::g_logger.fatal((fmt), ##__VA_ARGS__)
