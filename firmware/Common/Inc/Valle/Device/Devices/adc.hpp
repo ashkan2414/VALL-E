@@ -10,6 +10,7 @@
 #include "Valle/Device/Traits/adc.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Drivers/gpio.hpp"
+#include "Valle/utils/timing.hpp"
 
 namespace valle
 {
@@ -429,31 +430,46 @@ namespace valle
                 LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
                 LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
                 
-                // CRITICAL FIX: Deterministic timing for regulator startup
+                // CRITICAL FIX: Precise timing for regulator startup
                 // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
-                // Use busy wait with known cycle count: ~3500 cycles @ 170 MHz = ~20.6 µs
-                volatile uint32_t wait = 3500;
-                while (wait > 0)
-                {
-                    wait = wait - 1;
-                }
+                // Use precise cycle-based delay: 20 µs @ 170 MHz = 3400 cycles
+                delay_us_blocking(20);
             }
 
-            // Calibration with timeout
+            // Calibration with precise timeout
             // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
-            // At 40 MHz ADC clock: ~3 µs, allow up to 1 ms = 170,000 cycles @ 170 MHz
+            // At 40 MHz ADC clock: ~3 µs typical, allow up to 1 ms for safety
             // 
             // PITFALL NOTE: If ADC clock frequency changes at runtime (e.g., entering
             // low-power mode), calibration must be re-run by calling:
             //   LL_ADC_StartCalibration(ADCx, LL_ADC_SINGLE_ENDED);
             //   while (LL_ADC_IsCalibrationOnGoing(ADCx));
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
-            uint32_t cal_timeout = 500000;
-            while (LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) && cal_timeout-- > 0)
-                ;
+
+            // Use precise cycle-based timeout: 1 ms @ 170 MHz = 170,000 cycles
+            constexpr uint32_t cal_timeout_cycles = 170000;
+            const uint32_t     cal_start_cycles   = DWT->CYCCNT;
+
+            // Enable DWT if not already enabled
+            if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+            {
+                CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+                DWT->CYCCNT = 0;
+                DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+            }
+
+            bool calibration_success = false;
+            while ((DWT->CYCCNT - cal_start_cycles) < cal_timeout_cycles)
+            {
+                if (!LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance))
+                {
+                    calibration_success = true;
+                    break;
+                }
+            }
 
             // If timeout occurred, calibration failed
-            if (cal_timeout == 0)
+            if (!calibration_success)
             {
                 // ERROR: ADC calibration timeout
                 // Consider: Error logging, safe mode, or halt
@@ -653,17 +669,35 @@ namespace valle
                 }
             }
 
-            // Enable with timeout
+            // Enable with precise timeout
             LL_ADC_Enable(ControllerTraitsT::skInstance);
             
-            // Wait for ADC ready with timeout
-            // Typical: a few ADC clock cycles, allow up to 100 µs @ 170 MHz = 17,000 cycles
-            uint32_t ready_timeout = 100000;
-            while (!LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) && ready_timeout-- > 0)
-                ;
+            // Wait for ADC ready with precise timeout
+            // RM0440: Typically a few ADC clock cycles, allow up to 100 µs for safety
+            // 100 µs @ 170 MHz = 17,000 cycles
+            constexpr uint32_t ready_timeout_cycles = 17000;
+            const uint32_t     ready_start_cycles   = DWT->CYCCNT;
+
+            // DWT should already be enabled from calibration, but check anyway
+            if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+            {
+                CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+                DWT->CYCCNT = 0;
+                DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+            }
+
+            bool adc_ready = false;
+            while ((DWT->CYCCNT - ready_start_cycles) < ready_timeout_cycles)
+            {
+                if (LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance))
+                {
+                    adc_ready = true;
+                    break;
+                }
+            }
 
             // If timeout occurred, ADC failed to become ready
-            if (ready_timeout == 0)
+            if (!adc_ready)
             {
                 // ERROR: ADC ready timeout
                 // Consider: Error logging, safe mode, or halt

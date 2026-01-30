@@ -5,7 +5,8 @@
 
 #include "Valle/Device/Traits/hrtim.hpp"
 #include "Valle/Device/device_core.hpp"
-#include "Valle/Utils/hal_utils.hpp"
+#include "Valle/utils/hal_utils.hpp"
+#include "Valle/utils/timing.hpp"
 #include "stm32g4xx_ll_bus.h"
 
 namespace valle
@@ -221,21 +222,39 @@ namespace valle
             // Enable Bus Clock
             LL_APB2_GRP1_EnableClock(ControllerTraitsT::skClock);
 
-            // Wait for clock to stabilize (a few APB2 cycles)
-            __NOP(); __NOP(); __NOP(); __NOP();
+            // Wait for clock to stabilize
+            // RM0440: Allow a few APB2 cycles for clock propagation
+            delay_cycles(10);
 
             // Start DLL Calibration
             LL_HRTIM_StartDLLCalibration(ControllerTraitsT::skInstance);
 
-            // Wait for calibration to finish with timeout
-            // Typical: 14 µs, allow up to ~100 µs @ 170 MHz = 17,000 cycles
-            uint32_t timeout = 100000;
-            while (LL_HRTIM_IsActiveFlag_DLLRDY(ControllerTraitsT::skInstance) == 0 && timeout-- > 0)
-                ;
+            // Wait for calibration to finish with precise timeout
+            // RM0440 Section 29.3.15: DLL calibration time = 14 µs typical
+            // Allow up to 100 µs @ 170 MHz = 17,000 cycles
+            constexpr uint32_t timeout_cycles = 17000;
+            const uint32_t     start_cycles   = DWT->CYCCNT;
+
+            // Enable DWT if not already enabled
+            if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+            {
+                CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+                DWT->CYCCNT = 0;
+                DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+            }
+
+            bool calibration_success = false;
+            while ((DWT->CYCCNT - start_cycles) < timeout_cycles)
+            {
+                if (LL_HRTIM_IsActiveFlag_DLLRDY(ControllerTraitsT::skInstance) != 0)
+                {
+                    calibration_success = true;
+                    break;
+                }
+            }
 
             // If timeout occurred, DLL calibration failed (hardware fault)
-            // In production code, this should trigger error handling
-            if (timeout == 0)
+            if (!calibration_success)
             {
                 // ERROR: HRTIM DLL calibration timeout
                 // Consider: Error logging, safe mode, or halt

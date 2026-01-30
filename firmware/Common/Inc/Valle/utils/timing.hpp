@@ -133,6 +133,64 @@ namespace valle
     // DELAY UTILITIES
     // =========================================================================
 
+    /**
+     * @brief Busy-wait delay for a precise number of CPU cycles.
+     * 
+     * Uses the DWT CYCCNT register for accurate cycle counting.
+     * This is a true busy-wait (no __WFI) suitable for critical hardware initialization
+     * where interrupts must not interfere with timing.
+     * 
+     * @param cycles Number of CPU cycles to wait (at system clock frequency)
+     * 
+     * @note DWT will be automatically enabled if not already active.
+     * @note This function is inline and noexcept for zero overhead.
+     * @note Suitable for hardware initialization delays per RM0440 specifications.
+     * 
+     * Example usage:
+     *   delay_cycles(3500);  // ~20.6 µs @ 170 MHz (for ADC regulator startup)
+     *   delay_cycles(17000); // ~100 µs @ 170 MHz (for HRTIM DLL calibration)
+     */
+    inline void delay_cycles(const uint32_t cycles) noexcept
+    {
+        // Enable DWT if not already enabled
+        if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
+        {
+            CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+            DWT->CYCCNT = 0;
+            DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+        }
+
+        const uint32_t start = DWT->CYCCNT;
+        // Busy-wait until the specified number of cycles have elapsed
+        // Note: This handles 32-bit overflow correctly due to unsigned arithmetic
+        while ((DWT->CYCCNT - start) < cycles)
+        {
+            // Pure busy-wait - no __WFI() to ensure precise timing
+            __NOP();
+        }
+    }
+
+    /**
+     * @brief Simple blocking delay using decrement loop.
+     * 
+     * Fallback delay function that doesn't require DWT.
+     * Less precise than delay_cycles() but works in all contexts.
+     * Uses compiler barriers to prevent optimization.
+     * 
+     * @param iterations Number of loop iterations (NOT CPU cycles)
+     * 
+     * @note Actual delay depends on optimization level and CPU pipeline.
+     * @note Use delay_cycles() for precise timing requirements.
+     */
+    inline void delay_cycles_blocking(uint32_t iterations) noexcept
+    {
+        volatile uint32_t count = iterations;
+        while (count > 0)
+        {
+            count = count - 1;
+        }
+    }
+
     template <typename TDuration, typename TClock = SystemClock>
     inline void delay(TDuration wait_duration) noexcept
     {
@@ -151,5 +209,21 @@ namespace valle
     inline void delay_us(const uint32_t us) noexcept
     {
         delay<std::chrono::microseconds, CycleClock>(std::chrono::microseconds(us));
+    }
+
+    /**
+     * @brief Precise busy-wait delay in microseconds using DWT cycle counter.
+     * 
+     * Unlike delay_us(), this does NOT use __WFI() and performs a true busy-wait.
+     * Suitable for critical hardware initialization where precise timing is required.
+     * 
+     * @param us Microseconds to delay
+     * 
+     * @note At 170 MHz: 1 µs = 170 cycles
+     */
+    inline void delay_us_blocking(const uint32_t us) noexcept
+    {
+        constexpr uint32_t cycles_per_us = kSystemClockFreqHz / 1'000'000;
+        delay_cycles(us * cycles_per_us);
     }
 }  // namespace valle
