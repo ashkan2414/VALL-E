@@ -8,6 +8,7 @@ namespace valle::app
     DriverBuilderReturnT install_drivers(DriverBuilderT&& builder)
     {
         return std::move(builder)
+            .template install<UARTLoggerT>()
             .template install<CurrentSensorT>()
             .template install<VCAControllerT>(delegate::Delegate<float>(&read_vca_current))
             .template install<PositionSensorT>()
@@ -84,6 +85,18 @@ namespace valle::app
      */
     static void init_drivers()
     {
+        g_drivers.uart_logger.init(UARTControllerConfig{
+            .baud_rate         = UARTBaudRate::kBaud115200,
+            .word_length       = UARTWordLength::kBits8,
+            .stop_bits         = UARTStopBits::kBits1,
+            .parity            = UARTParity::kNone,
+            .transfer_mode     = UARTTransferMode::kTxRx,
+            .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
+            .dma_priority      = DMAPriority::kHigh,
+            .dma_int_priority  = 5,
+            .uart_int_priority = 5,
+        });
+
         g_drivers.vca.init();
         g_drivers.current_sensor.init(ACS724Config{.channel_config = ADCChannelConfig{
                                                        .sampling_time = ADCChannelSampleTime::k12Cycles5,

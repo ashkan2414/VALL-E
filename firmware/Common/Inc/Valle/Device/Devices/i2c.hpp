@@ -72,29 +72,25 @@ namespace valle
     // ============================================================================
     // COMPILE TIME CONFIGURATIONS
     // ============================================================================
-
-    template <typename TDMAChannelDeviceRx = void, typename TDMAChannelDeviceTx = void>
-    // Either both void or both valid DMA Channel Devices
-        requires((CVoid<TDMAChannelDeviceRx> && CVoid<TDMAChannelDeviceTx>) ||
-                 (CDMAChannelDevice<TDMAChannelDeviceRx> && CDMAChannelDevice<TDMAChannelDeviceTx>))
-    struct I2CControllerCTConfig
+    struct I2CControllerCTConfigDefaults
     {
-        using DMAChannelRxT            = TDMAChannelDeviceRx;
-        using DMAChannelTxT            = TDMAChannelDeviceTx;
-        static constexpr bool skHasDMA = !CVoid<DMAChannelRxT> && !CVoid<DMAChannelTxT>;
+        using DMAChannelRxT = DMANullChannelDevice;
+        using DMAChannelTxT = DMANullChannelDevice;
     };
 
     template <typename T>
-    concept CValidI2CControllerCTConfig = requires {
-        typename T::DMAChannelRxT;
-        typename T::DMAChannelTxT;
-    };
+    concept CValidI2CControllerCTConfig =
+        requires {
+            typename T::DMAChannelRxT;
+            typename T::DMAChannelTxT;
+        } && ((CNullDMAChannel<typename T::DMAChannelRxT> && CNullDMAChannel<typename T::DMAChannelTxT>) ||
+              (CDMAChannelDevice<typename T::DMAChannelRxT> && CDMAChannelDevice<typename T::DMAChannelTxT>));
 
     template <I2CControllerID tkControllerID>
         requires(kValidI2CControllerID<tkControllerID>)
     struct I2CControllerCTConfigTraits
     {
-        static constexpr I2CControllerCTConfig skConfig = {};
+        static constexpr auto skConfig = I2CControllerCTConfigDefaults{};
     };
 
 #define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \
@@ -109,7 +105,7 @@ namespace valle
     }
 
     // ============================================================================
-    // INTERRUPT ROUTER (The Socket)
+    // INTERRUPT TRAITS
     // ============================================================================
 
     // ----------------------------------------------------------------------------
@@ -261,13 +257,62 @@ namespace valle
         }
     };
 
-    // ----------------------------------------------------------------------------
-    // I2C ISR ROUTER
-    // ----------------------------------------------------------------------------
+    // ============================================================================
+    // GLOBAL ISR ROUTERS
+    // ============================================================================
 
+    /**
+     * @brief Global Event ISR Router for a specific I2C.
+     * Specializing this allows you to handle the entire Event ISR in one function
+     * (e.g., when delegating to the ST HAL).
+     *
+     * @tparam tkControllerID I2C Controller ID.
+     */
+    template <I2CControllerID tkControllerID>
+        requires(kValidI2CControllerID<tkControllerID>)
+    struct I2CGlobalEventISRRouter
+    {
+        using UnboundIsrHandlerTag = void;
+        static void handle()
+        {
+            // Default: Do nothing (Optimized away)
+        }
+    };
+
+    /**
+     * @brief Global Error ISR Router for a specific I2C.
+     * Specializing this allows you to handle the entire Error ISR in one function
+     * (e.g., when delegating to the ST HAL).
+     *
+     * @tparam tkControllerID I2C Controller ID.
+     */
+    template <I2CControllerID tkControllerID>
+        requires(kValidI2CControllerID<tkControllerID>)
+    struct I2CGlobalErrorISRRouter
+    {
+        using UnboundIsrHandlerTag = void;
+        static void handle()
+        {
+            // Default: Do nothing (Optimized away)
+        }
+    };
+
+    // ============================================================================
+    // GRANULAR ISR ROUTER
+    // ============================================================================
+
+    /**
+     * @brief I2C ISR Router
+     *
+     * Specialize this template in your application or driver to bind
+     * logic to specific I2C interrupts.
+     *
+     * @tparam tkControllerID I2C Controller ID.
+     * @tparam tkIntType      I2C Interrupt Type.
+     */
     template <I2CControllerID tkControllerID, I2CInterruptType tkIntType>
         requires(kValidI2CControllerID<tkControllerID>)
-    struct I2CIsrRouter
+    struct I2CISRRouter
     {
         using UnboundIsrHandlerTag = void;
         static void handle()
@@ -300,10 +345,10 @@ namespace valle
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceList<I2CControllerDevice<1>,
-                                        I2CControllerDevice<2>,
-                                        I2CControllerDevice<3>,
-                                        I2CControllerDevice<4>>;
+            using Children = DeviceTreeList<I2CControllerDevice<1>,
+                                            I2CControllerDevice<2>,
+                                            I2CControllerDevice<3>,
+                                            I2CControllerDevice<4>>;
         };
     };
 
@@ -333,7 +378,7 @@ namespace valle
         using CTConfigT                  = decltype(skCTConfig);
         using DMAChannelRxT              = typename CTConfigT::DMAChannelRxT;
         using DMAChannelTxT              = typename CTConfigT::DMAChannelTxT;
-        static constexpr bool skHasDMA   = CTConfigT::skHasDMA;
+        static constexpr bool skHasDMA   = !CNullDMAChannel<DMAChannelRxT> && !CNullDMAChannel<DMAChannelTxT>;
 
         using InjectDevices = std::conditional_t<skHasDMA, TypeList<DMAChannelRxT, DMAChannelTxT>, TypeList<>>;
 
@@ -1294,7 +1339,7 @@ namespace valle
         }
 
         // =============================================================================
-        // ISR METHODS (Called from I2CIsrRouter)
+        // ISR METHODS (Called from I2CISRRouter)
         // =============================================================================
 
         /**
@@ -1457,45 +1502,45 @@ namespace valle
 
 }  // namespace valle
 
-#define VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(INSTANCE)                                                       \
+#define VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(instance)                                                       \
     namespace valle                                                                                              \
     {                                                                                                            \
         template <>                                                                                              \
-        struct I2CIsrRouter<std::remove_cvref_t<decltype((INSTANCE))>::skControllerID,                           \
+        struct I2CISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID,                           \
                             I2CInterruptType::kTransferComplete>                                                 \
         {                                                                                                        \
             static void handle()                                                                                 \
             {                                                                                                    \
-                (INSTANCE).handle_tc_event_isr();                                                                \
+                (instance).handle_tc_event_isr();                                                                \
             }                                                                                                    \
         };                                                                                                       \
                                                                                                                  \
         template <>                                                                                              \
-        struct I2CIsrRouter<std::remove_cvref_t<decltype((INSTANCE))>::skControllerID,                           \
+        struct I2CISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID,                           \
                             I2CInterruptType::kStopDetection>                                                    \
         {                                                                                                        \
             static void handle()                                                                                 \
             {                                                                                                    \
-                (INSTANCE).handle_stop_event_isr();                                                              \
+                (instance).handle_stop_event_isr();                                                              \
             }                                                                                                    \
         };                                                                                                       \
                                                                                                                  \
         template <>                                                                                              \
-        struct I2CIsrRouter<std::remove_cvref_t<decltype((INSTANCE))>::skControllerID,                           \
+        struct I2CISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID,                           \
                             I2CInterruptType::kNACKReceived>                                                     \
         {                                                                                                        \
             static void handle()                                                                                 \
             {                                                                                                    \
-                (INSTANCE).handle_nack_event_isr();                                                              \
+                (instance).handle_nack_event_isr();                                                              \
             }                                                                                                    \
         };                                                                                                       \
                                                                                                                  \
         template <>                                                                                              \
-        struct I2CIsrRouter<std::remove_cvref_t<decltype((INSTANCE))>::skControllerID, I2CInterruptType::kError> \
+        struct I2CISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID, I2CInterruptType::kError> \
         {                                                                                                        \
             static void handle(I2CErrorInterruptType error)                                                      \
             {                                                                                                    \
-                (INSTANCE).handle_error_isr(error);                                                              \
+                (instance).handle_error_isr(error);                                                              \
             }                                                                                                    \
         };                                                                                                       \
     }

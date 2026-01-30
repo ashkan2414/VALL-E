@@ -45,7 +45,7 @@ namespace valle
     // =============================================================================
 
     // ============================================================================
-    // ISR ROUTER TEMPLATE
+    // INTERRUPT TRAITS
     // ============================================================================
     enum class DMAInterruptType : uint8_t
     {
@@ -167,8 +167,44 @@ namespace valle
 
 #undef DEFINE_DMA_INT_TRAIT
 
+    // ============================================================================
+    // GLOBAL ISR ROUTER
+    // ============================================================================
+
+    /**
+     * @brief Global ISR Router for a specific DMA.
+     * Specializing this allows you to handle the entire ISR in one function
+     * (e.g., when delegating to the ST HAL).
+     *
+     * @tparam tkControllerID DMA Controller ID.
+     * @tparam tkChannelID    DMA Channel ID.
+     */
+    template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
+    struct DMAGlobalISRRouter
+    {
+        using UnboundIsrHandlerTag = void;
+
+        static void handle()
+        {
+        }
+    };
+
+    // ===========================================================================
+    // GANULAR ISR ROUTER
+    // ===========================================================================
+
+    /**
+     * @brief DMA ISR Router
+     *
+     * Specialize this template to handle specific DMA interrupts for a given
+     * controller and channel.
+     *
+     * @tparam tkControllerID DMA Controller ID (1 or 2)
+     * @tparam tkChannelID    DMA Channel ID (1-8)
+     * @tparam tkIntType      DMA Interrupt Type
+     */
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID, DMAInterruptType tkIntType>
-    struct DMAIsrRouter
+    struct DMAISRRouter
     {
         using UnboundIsrHandlerTag = void;
         static void handle()
@@ -199,7 +235,7 @@ namespace valle
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceList<DMAControllerDevice<1>, DMAControllerDevice<2>>;
+            using Children = DeviceTreeList<DMAControllerDevice<1>, DMAControllerDevice<2>>;
         };
     };
 
@@ -214,15 +250,17 @@ namespace valle
         struct Descriptor : public SharedDeviceDescriptor
         {
             // Declares ownership of all 8 channels for this controller
-            using Children = DeviceList<DMAChannelDevice<tkControllerID, 1>,
-                                        DMAChannelDevice<tkControllerID, 2>,
-                                        DMAChannelDevice<tkControllerID, 3>,
-                                        DMAChannelDevice<tkControllerID, 4>,
-                                        DMAChannelDevice<tkControllerID, 5>,
-                                        DMAChannelDevice<tkControllerID, 6>,
-                                        DMAChannelDevice<tkControllerID, 7>,
-                                        DMAChannelDevice<tkControllerID, 8>>;
+            using Children = DeviceTreeList<DMAChannelDevice<tkControllerID, 1>,
+                                            DMAChannelDevice<tkControllerID, 2>,
+                                            DMAChannelDevice<tkControllerID, 3>,
+                                            DMAChannelDevice<tkControllerID, 4>,
+                                            DMAChannelDevice<tkControllerID, 5>,
+                                            DMAChannelDevice<tkControllerID, 6>,
+                                            DMAChannelDevice<tkControllerID, 7>,
+                                            DMAChannelDevice<tkControllerID, 8>>;
         };
+
+        static constexpr DMAControllerID skControllerID = tkControllerID;
 
         using DependDevices     = TypeList<DMADevice>;
         using ControllerTraitsT = DMAControllerTraits<tkControllerID>;
@@ -263,8 +301,8 @@ namespace valle
         using ControllerTraitsT = DMAControllerTraits<tkControllerID>;
         using ChannelTraitsT    = DMAChannelTraits<tkControllerID, tkChannelID>;
 
-        static constexpr uint8_t skControllerID = tkControllerID;
-        static constexpr uint8_t skChannelID    = tkChannelID;
+        static constexpr DMAControllerID skControllerID = tkControllerID;
+        static constexpr DMAChannelID    skChannelID    = tkChannelID;
 
     public:
         explicit DMAChannelDevice()
@@ -369,7 +407,7 @@ namespace valle
             }
             else
             {
-                static_assert(tkChannelID != tkChannelID, "Invalid DMA Channel ID");
+                static_assert(false, "Invalid DMA Channel ID");
             }
         }
 

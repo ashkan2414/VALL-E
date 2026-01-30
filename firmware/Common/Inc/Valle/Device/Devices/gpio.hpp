@@ -51,13 +51,13 @@ namespace valle
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceList<GPIOPortDevice<GPIOPortID::kA>,
-                                        GPIOPortDevice<GPIOPortID::kB>,
-                                        GPIOPortDevice<GPIOPortID::kC>,
-                                        GPIOPortDevice<GPIOPortID::kD>,
-                                        GPIOPortDevice<GPIOPortID::kE>,
-                                        GPIOPortDevice<GPIOPortID::kF>,
-                                        GPIOPortDevice<GPIOPortID::kG>>;
+            using Children = DeviceTreeList<GPIOPortDevice<GPIOPortID::kA>,
+                                            GPIOPortDevice<GPIOPortID::kB>,
+                                            GPIOPortDevice<GPIOPortID::kC>,
+                                            GPIOPortDevice<GPIOPortID::kD>,
+                                            GPIOPortDevice<GPIOPortID::kE>,
+                                            GPIOPortDevice<GPIOPortID::kF>,
+                                            GPIOPortDevice<GPIOPortID::kG>>;
         };
     };
 
@@ -74,23 +74,26 @@ namespace valle
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
-            using Children = DeviceList<GPIOPinDevice<tkPortID, 0>,
-                                        GPIOPinDevice<tkPortID, 1>,
-                                        GPIOPinDevice<tkPortID, 2>,
-                                        GPIOPinDevice<tkPortID, 3>,
-                                        GPIOPinDevice<tkPortID, 4>,
-                                        GPIOPinDevice<tkPortID, 5>,
-                                        GPIOPinDevice<tkPortID, 6>,
-                                        GPIOPinDevice<tkPortID, 7>,
-                                        GPIOPinDevice<tkPortID, 8>,
-                                        GPIOPinDevice<tkPortID, 9>,
-                                        GPIOPinDevice<tkPortID, 10>,
-                                        GPIOPinDevice<tkPortID, 11>,
-                                        GPIOPinDevice<tkPortID, 12>,
-                                        GPIOPinDevice<tkPortID, 13>,
-                                        GPIOPinDevice<tkPortID, 14>,
-                                        GPIOPinDevice<tkPortID, 15>>;
+            using Children = DeviceTreeList<GPIOPinDevice<tkPortID, 0>,
+                                            GPIOPinDevice<tkPortID, 1>,
+                                            GPIOPinDevice<tkPortID, 2>,
+                                            GPIOPinDevice<tkPortID, 3>,
+                                            GPIOPinDevice<tkPortID, 4>,
+                                            GPIOPinDevice<tkPortID, 5>,
+                                            GPIOPinDevice<tkPortID, 6>,
+                                            GPIOPinDevice<tkPortID, 7>,
+                                            GPIOPinDevice<tkPortID, 8>,
+                                            GPIOPinDevice<tkPortID, 9>,
+                                            GPIOPinDevice<tkPortID, 10>,
+                                            GPIOPinDevice<tkPortID, 11>,
+                                            GPIOPinDevice<tkPortID, 12>,
+                                            GPIOPinDevice<tkPortID, 13>,
+                                            GPIOPinDevice<tkPortID, 14>,
+                                            GPIOPinDevice<tkPortID, 15>>;
         };
+
+        static constexpr GPIOPortID skPortID = tkPortID;
+
         using DependDevices = TypeList<GPIODevice>;
         using PortTraitsT   = GPIOPortTraits<tkPortID>;
 
@@ -128,6 +131,9 @@ namespace valle
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
+
+        constexpr static GPIOPortID skPortID = tkPortID;
+        constexpr static GPIOPinID  skPinID  = tkPinID;
 
         using DependDevices = TypeList<GPIOPortDevice<tkPortID>>;
         using PortTraitsT   = GPIOPortTraits<tkPortID>;
@@ -170,7 +176,10 @@ namespace valle
     };
 
     template <typename T>
-    concept CGPIONullPinDevice = std::is_same_v<T, GPIONullPinDevice>;
+    concept CNullGPIOPinDevice = std::is_same_v<T, GPIONullPinDevice>;
+
+    template <typename T>
+    concept CGPIOPinDevice = std::is_base_of_v<GPIOPinDevice<T::skPortID, T::skPinID>, T>;
 
     // ============================================================================
     // GPIO Pin Aliases

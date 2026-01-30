@@ -13,3 +13,6 @@
 [submodule "firmware/Thirdparty/magic_enum"]
 	path = firmware/Thirdparty/magic_enum
 	url = https://github.com/Neargye/magic_enum.git
+[submodule "firmware/Thirdparty/fmt"]
+	path = firmware/Thirdparty/fmt
+	url = https://github.com/fmtlib/fmt.git

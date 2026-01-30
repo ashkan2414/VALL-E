@@ -19,9 +19,9 @@ namespace valle
     // ============================================================================
 
     /**
- * @brief Configuration for ADC Injected Group
- *
- */
+     * @brief Configuration for ADC Injected Group
+     *
+     */
     struct ADCInjectGroupConfig
     {
         // What triggers the inject group (software or external)
@@ -32,9 +32,9 @@ namespace valle
     };
 
     /**
- * @brief Configuration for ADC Regular Group DMA Transfer
- *
- */
+    * @brief Configuration for ADC Regular Group DMA Transfer
+    *
+    */
     struct ADCRegularGroupDMAConfig
     {
         /// DMA Channel Priority
@@ -48,9 +48,9 @@ namespace valle
     };
 
     /**
- * @brief Configuration for ADC Regular Group (Background/DMA).
- *
- */
+     * @brief Configuration for ADC Regular Group (Background/DMA).
+     *
+     */
     struct ADCRegularGroupConfig
     {
         /// Source of trigger (Software/External)
@@ -73,9 +73,9 @@ namespace valle
     };
 
     /**
- * @brief Configuration for ADC Oversampling (Hardware Averaging).
- *
- */
+     * @brief Configuration for ADC Oversampling (Hardware Averaging).
+     *
+     */
     struct ADCOversamplingConfig
     {
         // How many times to sample (2x to 256x)
@@ -89,8 +89,8 @@ namespace valle
     };
 
     /**
- * @brief Configuration for the ADC Peripheral (Global).
- */
+     * @brief Configuration for the ADC Peripheral (Global).
+     */
     struct ADCControllerConfig
     {
         // --- Core Settings ---
@@ -123,8 +123,8 @@ namespace valle
     };
 
     /**
- * @brief Configuration for a single ADC Channel (Physics).
- */
+     * @brief Configuration for a single ADC Channel (Physics).
+     */
     struct ADCChannelConfig
     {
         // Sampling time
@@ -140,23 +140,21 @@ namespace valle
     // =============================================================================
     // COMPILE TIME CONFIGURATIONS
     // =============================================================================
-
-    template <typename TDMAChannelDevice = void>
-        requires(CVoid<TDMAChannelDevice> || CDMAChannelDevice<TDMAChannelDevice>)
-    struct ADCControllerCTConfig
+    struct ADCControllerCTConfigDefaults
     {
-        using DMAChannel               = TDMAChannelDevice;
-        static constexpr bool skHasDMA = !CVoid<DMAChannel>;
+        using DMAChannelT = DMANullChannelDevice;
     };
 
     template <typename T>
-    concept CValidADCControllerCTConfig = requires { typename T::DMAChannel; };
+    concept CValidADCControllerCTConfig = requires {
+        typename T::DMAChannelT;
+    } && (CNullDMAChannel<typename T::DMAChannelT> || CDMAChannelDevice<typename T::DMAChannelT>);
 
     template <ADCControllerID tkControllerID>
         requires(kValidADCControllerID<tkControllerID>)
     struct ADCControllerCTConfigTraits
     {
-        static constexpr ADCControllerCTConfig skConfig = {};
+        static constexpr auto skConfig = ADCControllerCTConfigDefaults{};
     };
 
 #define VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \
@@ -226,15 +224,42 @@ namespace valle
 
 #undef DEFINE_ADC_INT_TRAIT
 
+    // ===========================================================================
+    // GLOBAL ISR ROUTER
+    // ===========================================================================
+
     /**
- * @brief ADC Interrupt Router.
- *
- * @tparam tkControllerID The ADC peripheral index the interrupt belongs to.
- * @tparam tkIntType The interrupt type triggered.
- */
+     * @brief ADC Global ISR Router
+     *
+     * Specialize this template to handle all ADC interrupts for a given
+     * controller in one function (e.g., when using the ST HAL).
+     *
+     * @tparam tkControllerID ADC Controller ID (1-5)
+     */
+    template <ADCControllerID tkControllerID>
+        requires(kValidADCControllerID<tkControllerID>)
+    struct ADCGlobalISRRouter
+    {
+        using UnboundIsrHandlerTag = void;
+        static void handle()
+        {
+            // Default: Do nothing (Optimized away)
+        }
+    };
+
+    // ============================================================================
+    // GRANULAR ISR ROUTER
+    // ============================================================================
+
+    /**
+     * @brief ADC Interrupt Router.
+     *
+     * @tparam tkControllerID The ADC peripheral index the interrupt belongs to.
+     * @tparam tkIntType The interrupt type triggered.
+     */
     template <ADCControllerID tkControllerID, ADCInterruptType tkIntType>
         requires(kValidADCControllerID<tkControllerID>)
-    struct ADCIsrRouter
+    struct ADCISRRouter
     {
         using UnboundIsrHandlerTag = void;
         static void handle()
@@ -268,19 +293,19 @@ namespace valle
     // Base ADC DEVICE (INTERFACE DEVICE)
     // ============================================================================
     /**
- * @brief ADC Device (Interface Device), represents the ADC peripheral family.
- *
- */
+     * @brief ADC Device (Interface Device), represents the ADC peripheral family.
+     *
+     */
     class ADCDevice
     {
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceList<ADCControllerDevice<1>,
-                                        ADCControllerDevice<2>,
-                                        ADCControllerDevice<3>,
-                                        ADCControllerDevice<4>,
-                                        ADCControllerDevice<5>>;
+            using Children = DeviceTreeList<ADCControllerDevice<1>,
+                                            ADCControllerDevice<2>,
+                                            ADCControllerDevice<3>,
+                                            ADCControllerDevice<4>,
+                                            ADCControllerDevice<5>>;
         };
     };
 
@@ -294,43 +319,43 @@ namespace valle
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
-            using Children = DeviceList<ADCChannelDevice<tkControllerID, ADCChannelID::kChannel0>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel1>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel2>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel3>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel4>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel5>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel6>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel7>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel8>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel9>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel10>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel11>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel12>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel13>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel14>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel15>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel16>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel17>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannel18>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVRefInt>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelTempSensorADC1>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelTempSensorADC5>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVBat>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp1>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp2>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp3ADC2>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp3ADC3>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp4>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp5>,
-                                        ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp6>>;
+            using Children = DeviceTreeList<ADCChannelDevice<tkControllerID, ADCChannelID::kChannel0>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel1>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel2>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel3>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel4>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel5>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel6>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel7>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel8>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel9>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel10>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel11>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel12>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel13>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel14>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel15>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel16>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel17>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel18>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVRefInt>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelTempSensorADC1>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelTempSensorADC5>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVBat>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp1>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp2>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp3ADC2>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp3ADC3>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp4>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp5>,
+                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp6>>;
         };
 
         using CTConfigTraitT             = ADCControllerCTConfigTraits<tkControllerID>;
         static constexpr auto skCTConfig = CTConfigTraitT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
-        using DMAChannelT                = CTConfigT::DMAChannel;
-        static constexpr bool skHasDMA   = CTConfigT::skHasDMA;
+        using DMAChannelT                = CTConfigT::DMAChannelT;
+        static constexpr bool skHasDMA   = !CNullDMAChannel<DMAChannelT>;
 
         using DependDevices = TypeList<ADCDevice>;
         using InjectDevices = std::conditional_t<skHasDMA, TypeList<DMAChannelT>, TypeList<>>;
@@ -1013,7 +1038,7 @@ namespace valle
     template <CNullADCPinMap T>
     struct ADCPinDevice<T>
     {
-        using type = void;
+        using type = GPIONullPinDevice;
     };
 
     template <typename T>
@@ -1033,7 +1058,7 @@ namespace valle
 
         using ControllerT              = ADCControllerDevice<tkControllerID>;
         using PinT                     = typename ADCPinDevice<ADCPinMap<tkControllerID, tkChannelId>>::type;
-        static constexpr bool skHasPin = !CGPIONullPinDevice<PinT>;
+        static constexpr bool skHasPin = !CNullGPIOPinDevice<PinT>;
 
         using InjectDevices = std::conditional_t<skHasPin, TypeList<ControllerT, PinT>, TypeList<ControllerT>>;
 

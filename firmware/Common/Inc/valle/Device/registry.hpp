@@ -5,6 +5,20 @@
 
 namespace valle
 {
+    namespace debug
+    {
+        // If you see this in an error, look at the template arguments in the compiler output
+        template <typename... Ts>
+        struct ERROR_MISSING_RESOURCES_IN_REGISTRY;
+
+        // Define the struct (don't just forward declare it)
+        template <typename TMissingDevice, typename TAvailableRegistry>
+        struct ERROR_DEVICE_NOT_FOUND_IN_REGISTRY;
+
+        template <typename TStuckDevices>
+        struct ERROR_CIRCULAR_DEPENDENCY_OR_MISSING_LEAF_HARDWARE;
+
+    }  // namespace debug
 
     namespace detail
     {
@@ -122,10 +136,17 @@ namespace valle
 
             using ReadyT = typename FindReady<PendingT>::type;
 
-            // Assertion: If Pending is not empty, we MUST find a ReadyT.
-            // If ReadyT is void, it means we have a cycle or missing dependency.
-            static_assert(!std::is_void_v<ReadyT>,
-                          "Cyclic Dependency or Missing Dependency detected! Graph cannot be resolved.");
+            static_assert(
+                !std::is_void_v<ReadyT>,
+                "\n\n[VALLE ERROR] Hardware Dependency Graph Resolution Failed!\n"
+                "This usually means:\n"
+                "1. You have a circular dependency.\n"
+                "2. You are missing a base hardware device (e.g., ADCDevice) in your DeviceList.\n"
+                "Check the 'ERROR_CIRCULAR_...' type in the compiler output to see which devices are stuck.\n");
+            // This line forces the compiler to "print" the pending list if resolution fails
+            using _DebugHook = std::conditional_t<!std::is_void_v<ReadyT>,
+                                                  void,
+                                                  debug::ERROR_CIRCULAR_DEPENDENCY_OR_MISSING_LEAF_HARDWARE<PendingT>>;
 
             // Move ReadyT from Pending to Sorted
             using NextPendingT = typename TypeListRemove<ReadyT, PendingT>::type;
@@ -171,11 +192,34 @@ namespace valle
         {
             static constexpr size_t skRegSize = std::tuple_size_v<TRegistryTuple>;
 
+            template <typename TNeed>
+            static constexpr size_t get_single_index()
+            {
+                constexpr bool exists = TupleContains<DeviceRef<TNeed>, TRegistryTuple>::value;
+
+                static_assert(exists,
+                              "\n\n[VALLE ERROR] A Driver requested a device that is not present in the Registry.\n"
+                              "Check if you included the required hardware in your DeviceList/Storage,\n"
+                              "or if the device was already 'claimed' (moved) by a previous driver.\n");
+
+                if constexpr (!exists)
+                {
+                    // This forces the compiler to show you exactly which type TNeed is
+                    // and what the Registry actually contains.
+                    sizeof(debug::ERROR_DEVICE_NOT_FOUND_IN_REGISTRY<DeviceRef<TNeed>, TRegistryTuple>);
+                    return 0;  // Unreachable
+                }
+                else
+                {
+                    return TupleIndex<DeviceRef<TNeed>, TRegistryTuple>::value;
+                }
+            }
+
             // Identify INDICES of required devices
             template <typename... TNeeds>
             static constexpr auto get_indices(TypeList<TNeeds...> needs)
             {
-                return std::array<size_t, sizeof...(TNeeds)>{TupleIndex<DeviceRef<TNeeds>, TRegistryTuple>::value...};
+                return std::array<size_t, sizeof...(TNeeds)>{get_single_index<TNeeds>()...};
             }
 
             static constexpr auto skIndices = get_indices(TNeedsList{});
@@ -212,13 +256,13 @@ namespace valle
             // Logic: Extracting the dependencies
             // Returns a tuple of references (copies or moves)
             template <typename... TNeeds>
-            static auto extract_deps(TRegistryTuple& reg, TypeList<TNeeds...> needs)
+            static constexpr auto extract_deps(TRegistryTuple& reg, TypeList<TNeeds...> needs)
             {
                 return std::make_tuple(extract_one<TNeeds>(reg)...);
             }
 
             template <typename Need, typename Reg>
-            static DeviceRef<Need> extract_one(Reg& reg)
+            static constexpr DeviceRef<Need> extract_one(Reg& reg)
             {
                 constexpr size_t idx = TupleIndex<DeviceRef<Need>, Reg>::value;
                 // Move if Unique, Copy if Shared
@@ -233,9 +277,9 @@ namespace valle
             }
 
             template <size_t Index>
-            static auto get_if_kept(TRegistryTuple& reg)
+            static constexpr auto get_if_kept(TRegistryTuple& reg)
             {
-                if constexpr (should_keep<Index>())  // NOLINT(bugprone-branch-clone)
+                if constexpr (should_keep<Index>())
                 {
                     // Keep: Return a tuple containing the element
                     return std::make_tuple(std::move(std::get<Index>(reg)));
@@ -248,16 +292,41 @@ namespace valle
             }
 
             // Logic: Building the new Registry
-            // We iterate 0..N, check should_keep(), and build a new tuple.
+            // We iterate 0..N, check should_keep, and build a new tuple.
             template <size_t... Is>
-            static auto build_new_registry(TRegistryTuple&& reg, std::index_sequence<Is...> indices)
+            static constexpr auto build_new_registry(TRegistryTuple&& reg, std::index_sequence<Is...> indices)
             {
                 // Expand using the helper and concat results
                 return std::tuple_cat(get_if_kept<Is>(reg)...);
             }
 
-            static auto run(TRegistryTuple&& reg)
+            template <typename... TNeeds>
+            static constexpr void check_existence(TypeList<TNeeds...>)
             {
+                // Check if every TNeed exists as a DeviceRef<TNeed> in TRegistryTuple
+                constexpr bool all_exist = (TupleContains<DeviceRef<TNeeds>, TRegistryTuple>::value && ...);
+
+                if constexpr (!all_exist)
+                {
+                    // Find which one is missing to be specific
+                    ((TupleContains<DeviceRef<TNeeds>, TRegistryTuple>::value
+                          ? 0
+                          : (sizeof(
+                                 valle::debug::ERROR_DEVICE_NOT_FOUND_IN_REGISTRY<DeviceRef<TNeeds>, TRegistryTuple>),
+                             0)),
+                     ...);
+
+                    static_assert(all_exist,
+                                  "\n\n[VALLE ERROR] A Driver requested a device that is not present in the Registry.\n"
+                                  "Check if you included the required hardware in your DeviceList/Storage.\n"
+                                  "Look at the 'ERROR_DEVICE_NOT_FOUND_IN_REGISTRY' in the logs below.\n");
+                }
+            }
+
+            static constexpr auto run(TRegistryTuple&& reg)
+            {
+                check_existence(TNeedsList{});
+
                 // Extract Dependencies
                 auto deps = extract_deps(reg, TNeedsList{});
 
@@ -270,6 +339,11 @@ namespace valle
 
                 return std::make_pair(std::move(deps), std::move(new_reg));
             }
+        };
+
+        template <typename T>
+        struct IsSharedDeviceRef : std::bool_constant<CSharedDeviceRef<T>>
+        {
         };
 
     }  // namespace detail
@@ -357,11 +431,36 @@ namespace valle
         constexpr auto claim() & = delete;
 
         template <CSharedDevice TDevice>
-        [[nodiscard]] TDevice& get()
+        [[nodiscard]] DeviceRef<TDevice> get_ref() const
         {
             constexpr size_t   idx = TupleIndex<DeviceRef<TDevice>, TRegistryTuple>::value;
             DeviceRef<TDevice> ref = std::get<idx>(refs);
-            return ref.get();
+            return ref;
+        }
+
+        template <CSharedDevice TDevice>
+        [[nodiscard]] TDevice& get() const
+        {
+            return get_ref<TDevice>().get();
+        }
+
+        template <CSharedDevice... TDevices>
+            requires(sizeof...(TDevices) > 1)
+        [[nodiscard]] auto get() const
+        {
+            return std::make_tuple(get_ref<TDevices>()...);
+        }
+
+        template <CSharedDevice... TDevices>
+            requires(sizeof...(TDevices) > 1)
+        [[nodiscard]] auto get(TypeList<TDevices...>) const
+        {
+            return get<TDevices...>();
+        }
+
+        [[nodiscard]] auto get_all() const
+        {
+            return filter_tuple_values<detail::IsSharedDeviceRef>(refs);
         }
 
         template <typename Visitor>
@@ -618,12 +717,12 @@ namespace valle
 
     template <CDevice... TDevices>
     using DeviceStorageFromDeviceTree =
-        typename detail::DeviceStorageBuilderHelper<typename DeviceList<TDevices...>::Devices>::type;
+        typename detail::DeviceStorageBuilderHelper<typename DeviceTreeList<TDevices...>::Devices>::type;
 
     template <CDevice... TDevices>
     [[nodiscard]] inline DeviceStorageFromDeviceTree<TDevices...> build_device_storage_from_device_tree()
     {
-        using DeviceGraph = typename DeviceList<TDevices...>::Devices;
+        using DeviceGraph = typename DeviceTreeList<TDevices...>::Devices;
         return detail::device_storage_builder_helper(DeviceGraph{});
     }
 
@@ -645,13 +744,13 @@ namespace valle
         }
 
         /**
-     * @brief  Install a device that has dependencies.
-     *
-     * @tparam TDriver Driver type to install.
-     * @tparam Args Constructor argument types.
-     * @param args Constructor arguments.
-     * @return auto New DriverBuilder with the installed device.
-     */
+         * @brief  Install a device that has dependencies.
+         *
+         * @tparam TDriver Driver type to install.
+         * @tparam Args Constructor argument types.
+         * @param args Constructor arguments.
+         * @return auto New DriverBuilder with the installed device.
+         */
         template <CHasInjectDevices TDriver, typename... Args>
         [[nodiscard]] auto install(Args&&... args) &&
         {
@@ -671,12 +770,12 @@ namespace valle
         }
 
         /**
-     * @brief Install a device that has no dependencies.
-     *
-     * @tparam TDriver Device type to install.
-     * @tparam Args Constructor argument types.
-     * @param args Constructor arguments.
-     */
+         * @brief Install a device that has no dependencies.
+         *
+         * @tparam TDriver Device type to install.
+         * @tparam Args Constructor argument types.
+         * @param args Constructor arguments.
+         */
         template <typename TDriver, typename... Args>
             requires(!CHasInjectDevices<TDriver>)
         [[nodiscard]] auto install(Args&&... args) &&
@@ -692,20 +791,20 @@ namespace valle
         }
 
         /**
-     * @brief Deleted l-value overload for install to prevent installing from l-value DriverBuilder.
-     *
-     * @tparam D Device type to install.
-     * @tparam A Constructor argument types.
-     * @param args Constructor arguments.
-     */
+         * @brief Deleted l-value overload for install to prevent installing from l-value DriverBuilder.
+         *
+         * @tparam D Device type to install.
+         * @tparam A Constructor argument types.
+         * @param args Constructor arguments.
+         */
         template <typename D, typename... A>
         void install(A&&...) & = delete;
 
         /**
-     * @brief Yield the installed drivers.
-     *
-     * @return auto
-     */
+         * @brief Yield the installed drivers.
+         *
+         * @return auto
+         */
         [[nodiscard]] auto yield() &&
         {
             return std::make_pair(std::move(m_registry), std::move(m_drivers));

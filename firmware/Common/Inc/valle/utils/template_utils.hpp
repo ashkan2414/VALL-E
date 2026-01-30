@@ -28,6 +28,28 @@ namespace valle
     };
 
     // ----------------------------------------------------------------------------
+    // TypeListAny: check if T is in TList
+    // ----------------------------------------------------------------------------
+    template <template <typename> typename TPred, typename TList>
+    struct TypeListAny;
+
+    template <template <typename> typename TPred, typename... Ts>
+    struct TypeListAny<TPred, TypeList<Ts...>> : std::bool_constant<(TPred<Ts>::value || ...)>
+    {
+    };
+
+    // ----------------------------------------------------------------------------
+    // TypeListAll: check if all Ts satisfy TPred
+    // ----------------------------------------------------------------------------
+    template <template <typename> typename TPred, typename TList>
+    struct TypeListAll;
+
+    template <template <typename> typename TPred, typename... Ts>
+    struct TypeListAll<TPred, TypeList<Ts...>> : std::bool_constant<(TPred<Ts>::value && ...)>
+    {
+    };
+
+    // ----------------------------------------------------------------------------
     // TypeListAdd: add T to TList
     // ----------------------------------------------------------------------------
     template <typename T, typename TList>
@@ -224,7 +246,7 @@ namespace valle
     };
 
     // ----------------------------------------------------------------------------
-    // Is Tuple
+    // TypeListToTuple: convert TypeList to std::tuple
     // ----------------------------------------------------------------------------
 
     template <typename TList>
@@ -234,6 +256,27 @@ namespace valle
     struct TypeListToTuple<TypeList<Ts...>>
     {
         using type = std::tuple<Ts...>;
+    };
+
+    // ----------------------------------------------------------------------------
+    // FilterTypeList: filter types in a type list based on a predicate
+    // ----------------------------------------------------------------------------
+
+    template <template <class> class TPred, typename TList>
+    struct FilterTypeList;
+
+    template <template <class> class TPred>
+    struct FilterTypeList<TPred, TypeList<>>
+    {
+        using type = TypeList<>;
+    };
+
+    template <template <class> class TPred, typename T, typename... Ts>
+    struct FilterTypeList<TPred, TypeList<T, Ts...>>
+    {
+        using rest = typename FilterTypeList<TPred, TypeList<Ts...>>::type;
+
+        using type = std::conditional_t<TPred<T>::value, typename TypeListConcat<TypeList<T>, rest>::type, rest>;
     };
 
     // ============================================================================
@@ -300,8 +343,8 @@ namespace valle
     // ----------------------------------------------------------------------------
     // TupleIndex: get index of T in TTuple<Ts...>
     // ----------------------------------------------------------------------------
-    template <typename T, typename Tuple>
-        requires(TupleContains<T, Tuple>::value)
+    template <typename T, typename TTuple>
+        requires(TupleContains<T, TTuple>::value)
     struct TupleIndex;
 
     template <typename T, typename... Ts>
@@ -348,6 +391,61 @@ namespace valle
                     }(std::forward<decltype(args)>(args))...);
             },
             std::forward<TTuple>(tuple));
+    }
+
+    // ----------------------------------------------------------------------------
+    // FilterTupleTypes: filter types in a tuple based on a predicate
+    // ----------------------------------------------------------------------------
+
+    template <template <class> class TPred, typename... Ts>
+    struct FilterTupleTypes;
+
+    template <template <class> class TPred>
+    struct FilterTupleTypes<TPred>
+    {
+        using type = std::tuple<>;
+    };
+
+    template <template <class> class TPred, typename T, typename... Ts>
+    struct FilterTupleTypes<TPred, T, Ts...>
+    {
+        using rest = typename FilterTupleTypes<TPred, Ts...>::type;
+
+        using type = std::conditional_t<TPred<T>::value,
+                                        decltype(std::tuple_cat(std::declval<std::tuple<T>>(), std::declval<rest>())),
+                                        rest>;
+    };
+
+    // ----------------------------------------------------------------------------
+    // filter_tuple_values: filter values in a tuple based on a predicate
+    // ----------------------------------------------------------------------------
+
+    namespace detail
+    {
+        template <typename TTuple, template <class> class TPred, std::size_t... I>
+        constexpr auto filter_tuple_values_impl(TTuple&& t, std::index_sequence<I...>)
+        {
+            return std::tuple_cat((
+                [&t]() constexpr
+                {
+                    if constexpr (TPred<std::tuple_element_t<I, std::remove_reference_t<TTuple>>>::value)
+                    {
+                        return std::tuple{std::get<I>(std::forward<TTuple>(t))};
+                    }
+                    else
+                    {
+                        return std::tuple<>{};
+                    }
+                }())...);
+        }
+    }  // namespace detail
+
+    template <template <class> class TPred, typename TTuple>
+    constexpr auto filter_tuple_values(TTuple&& t)
+    {
+        constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<TTuple>>;
+
+        return detail::filter_tuple_values_impl<TTuple, TPred>(std::forward<TTuple>(t), std::make_index_sequence<N>{});
     }
 
     // ============================================================================

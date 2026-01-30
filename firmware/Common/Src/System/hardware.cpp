@@ -17,8 +17,12 @@ namespace valle
         }
 
         DeviceRefRegistryT g_ref_registry = std::move(dont_use_me::g_temp_installed_drivers.first);
-        DriverContainerT   g_drivers =
+
+        DriverContainerT g_drivers =
             std::make_from_tuple<DriverContainerT>(std::move(dont_use_me::g_temp_installed_drivers.second));
+
+        DeviceContainerT g_devices =
+            std::make_from_tuple<Devices>(g_ref_registry.get(typename DeviceContainerT::DevicesT{}));
 
     }  // namespace app
 }  // namespace valle

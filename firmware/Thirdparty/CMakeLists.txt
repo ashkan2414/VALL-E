@@ -105,3 +105,12 @@ target_link_libraries(${CMAKE_PROJECT_NAME} portable_bitfields)
 # ==============================================================================
 add_subdirectory(${THIRDPARTY_DIRECTORY}/magic_enum)
 target_link_libraries(${CMAKE_PROJECT_NAME} magic_enum::magic_enum)
+
+# ==============================================================================
+# fmt Integration
+# ==============================================================================
+set(FMT_OS OFF)
+set(FMT_UNICODE OFF)
+add_subdirectory(${THIRDPARTY_DIRECTORY}/fmt)
+target_link_libraries(${CMAKE_PROJECT_NAME} fmt::fmt-header-only)
+target_compile_definitions(${CMAKE_PROJECT_NAME}  PRIVATE FMT_USE_CHRONO=0 FMT_USE_WCHAR=0 FMT_USE_LOCALE=0)

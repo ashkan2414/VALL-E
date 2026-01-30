@@ -1,14 +1,17 @@
 #include <random>
 
+#include "Valle/Core/Logging/logger.hpp"
 #include "app.hpp"
 #include "app_bridge.h"
-
 
 using namespace valle;
 
 void app_entry(void)
 {
     app::init();
+
+    VALLE_LOG_INFO("Starting VCA Controller Test Application");
+
     app::start_vca_controller();
 
     while (1)
