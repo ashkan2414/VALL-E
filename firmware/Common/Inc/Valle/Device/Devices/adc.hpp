@@ -129,10 +129,16 @@ namespace valle
 
     /**
  * @brief Configuration for a single ADC Channel (Physics).
+ * 
+ * PITFALL NOTE: Sampling time must be sufficient for the channel type.
+ * RM0440 Section 21.4.8, Table 115:
+ * - Internal channels (VREFINT, VBAT, TempSensor): Minimum 12.5 cycles
+ * - External channels with high impedance (> 50 kΩ): Consider longer sampling times
+ * - At 60 MHz ADC clock (max): 12.5 cycles = 0.208 µs
  */
     struct ADCChannelConfig
     {
-        // Sampling time
+        // Sampling time (choose based on channel type and source impedance)
         ADCChannelSampleTime sampling_time = ADCChannelSampleTime::k24Cycles5;
 
         // Input mode (Single-Ended/Differential)

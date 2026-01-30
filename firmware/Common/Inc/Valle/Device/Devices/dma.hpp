@@ -273,9 +273,22 @@ namespace valle
 
         /**
      * @brief Initialize the DMA Channel and route the DMAMUX.
+     * 
+     * PITFALL NOTE: Ensure this channel is not already in use by another peripheral.
+     * Each DMA channel can only be used by ONE peripheral at a time.
      */
         static void init(const DMAChannelConfig& config)
         {
+            // PITFALL FIX: Check if channel is already enabled (indicates potential conflict)
+            if (LL_DMA_IsEnabledChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID))
+            {
+                // WARNING: DMA channel already enabled!
+                // This could indicate:
+                // 1. Double initialization (call stop() first)
+                // 2. Channel conflict (two peripherals using same channel)
+                // In production, this should trigger an error or assertion
+            }
+
             // Configure Transfer Parameters
             LL_DMA_ConfigTransfer(ControllerTraitsT::skInstance,
                                   ChannelTraitsT::skChannelLLID,

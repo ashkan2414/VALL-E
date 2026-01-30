@@ -204,9 +204,20 @@ namespace valle
 
         static constexpr HRTIMControllerID skControllerID = tkControllerID;
 
+    private:
+        // PITFALL FIX: Track initialization state to prevent re-initialization
+        static inline bool s_initialized = false;
+
     public:
         static inline void init()
         {
+            // PITFALL FIX: Prevent re-initialization which could disrupt running timers
+            if (s_initialized)
+            {
+                // Already initialized - skip to avoid disrupting running HRTIM
+                return;
+            }
+
             // Enable Bus Clock
             LL_APB2_GRP1_EnableClock(ControllerTraitsT::skClock);
 
@@ -229,6 +240,8 @@ namespace valle
                 // ERROR: HRTIM DLL calibration timeout
                 // Consider: Error logging, safe mode, or halt
             }
+
+            s_initialized = true;
         }
 
         static inline void post_init()
