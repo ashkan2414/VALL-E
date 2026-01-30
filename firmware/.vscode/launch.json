@@ -12,7 +12,7 @@
             "runToEntryPoint": "main",
             "svdFile": "${workspaceFolder}/STM32G474.svd",
             "v1": false,
-            "executable": "${workspaceFolder}/build/Debug/VALL-E_Firmware.elf",
+            "executable": "${command:cmake.launchTargetPath}",
             "preLaunchTask": "CMake: build"
         }
     ]

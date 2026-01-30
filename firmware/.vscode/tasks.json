@@ -1,0 +1,20 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Flash (ST-Link)",
+            "type": "shell",
+            "command": "STM32_Programmer_CLI.exe",
+            "args": [
+                "-c",
+                "port=SWD",
+                "-w",
+                "${command:cmake.launchTargetPath}",
+                "-v",
+                "-rst"
+            ],
+            "dependsOn": "CMake: build",
+            "problemMatcher": []
+        }
+    ]
+}
