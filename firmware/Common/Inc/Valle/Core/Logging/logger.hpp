@@ -29,7 +29,7 @@ namespace valle
     {
         static constexpr std::string_view extract_filename(const std::string_view path)
         {
-            size_t pos = path.find_last_of("/\"");
+            size_t pos = path.find_last_of("/\\");
             return (pos == std::string_view::npos) ? path : path.substr(pos + 1);
         }
 
