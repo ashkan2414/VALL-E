@@ -1,29 +1,67 @@
 #include "Valle/Device/Devices/hrtim.hpp"
 
+#include "magic_enum/magic_enum.hpp"
+
 #if __has_include("app_isr_bindings.hpp")
 #include "app_isr_bindings.hpp"
 #endif
 
 namespace valle
 {
+    /**
+     * @brief Check if any granular ISR handler is bound for this HRTIM Timer.
+     *
+     * @tparam tkControllerID HRTIM Controller ID.
+     * @tparam tkTimerID      HRTIM Timer ID.
+     */
+    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
+        requires(kValidHRTIMID<tkControllerID>)
+    [[nodiscard]] consteval static inline bool hrtim_has_any_granular_isr_handler()
+    {
+        constexpr auto values = magic_enum::enum_values<HRTIMInterruptType>();
+
+        return [values]<std::size_t... Is>(std::index_sequence<Is...>)
+        {
+            return (CBoundISRRouter<HRTIMISRRouter<tkControllerID, tkTimerID, values[Is]>> || ...);
+        }(std::make_index_sequence<values.size()>{});
+    }
 
     /**
      * @brief HRTIM Interrupt Handler Router
      *
-     * @tparam tkIndex
+     * @tparam tkControllerID HRTIM Controller ID.
+     * @tparam tkTimerID      HRTIM Timer ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
         requires(kValidHRTIMID<tkControllerID>)
     static inline void hrtim_irq_handler()
     {
-#define HANDLE_HRTIM_INT(tkIntType)                                                         \
-    if constexpr (CBoundIsrHandler<HRTIMIsrRouter<tkControllerID, tkTimerID, (tkIntType)>>) \
-    {                                                                                       \
-        if (HRTIMInterruptTraits<tkControllerID, tkTimerID, tkIntType>::is_pending())       \
-        {                                                                                   \
-            HRTIMInterruptTraits<tkControllerID, tkTimerID, tkIntType>::ack();              \
-            HRTIMIsrRouter<tkControllerID, tkTimerID, tkIntType>::handle();                 \
-        }                                                                                   \
+        using GlobalRouterT               = HRTIMGlobalISRRouter<tkControllerID, tkTimerID>;
+        constexpr bool kHasGlobalRouter   = CBoundISRRouter<GlobalRouterT>;
+        constexpr bool kHasGranularRouter = hrtim_has_any_granular_isr_handler<tkControllerID, tkTimerID>();
+        static_assert(!(kHasGlobalRouter && kHasGranularRouter), "VALLE CONFLICT: Global and Granular ISRs detected.");
+
+        if constexpr (kHasGlobalRouter)
+        {
+            GlobalRouterT::handle();
+            return;
+        }
+
+#define HANDLE_HRTIM_INT(tkIntType)                                                   \
+    {                                                                                 \
+        using RouterT = HRTIMISRRouter<tkControllerID, tkTimerID, (tkIntType)>;       \
+        using TraitsT = HRTIMInterruptTraits<tkControllerID, tkTimerID, (tkIntType)>; \
+        if constexpr (CBoundISRRouter<RouterT>)                                       \
+        {                                                                             \
+            if (TraitsT::is_pending())                                                \
+            {                                                                         \
+                if constexpr (kISRRouterConfigAck<RouterT>)                           \
+                {                                                                     \
+                    TraitsT::ack();                                                   \
+                }                                                                     \
+                RouterT::handle();                                                    \
+            }                                                                         \
+        }                                                                             \
     }
 
         // Check all possible interrupts for this HRTIM Timer

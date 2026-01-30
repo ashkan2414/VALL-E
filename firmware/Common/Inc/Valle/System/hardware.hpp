@@ -37,7 +37,7 @@ namespace valle
             using BuildFromDriversTraits = BuildFromDriverListTraits<TypeList<TDrivers...>>;
         }  // namespace internal
 
-        using DriversT        = typename Config::DriversT;
+        using DriversT        = typename Config::DriverContainerT::DriversT;
         using HardwareTraitsT = internal::BuildFromDriverListTraits<DriversT>;
         using DeviceStorageT  = typename HardwareTraitsT::DeviceStorageT;
 
@@ -62,6 +62,7 @@ namespace valle
     {
         using DriversT             = system::DriversT;
         using DriverContainerT     = typename system::Config::DriverContainerT;
+        using DeviceContainerT     = typename system::Config::DeviceContainerT;
         using DeviceRefRegistryT   = typename system::HardwareTraitsT::DeviceRefRegistryT;
         using DriversTupleT        = typename TypeListToTuple<DriversT>::type;
         using DriverBuilderT       = decltype(system::internal::boot_driver_builder());
@@ -73,6 +74,8 @@ namespace valle
         // Global variables that app can use
         extern DeviceRefRegistryT g_ref_registry;
         extern DriverContainerT   g_drivers;
+        extern DeviceContainerT   g_devices;
+
     }  // namespace app
 
 }  // namespace valle

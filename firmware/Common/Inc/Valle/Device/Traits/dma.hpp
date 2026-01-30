@@ -79,7 +79,39 @@ namespace valle
             }
         }
 
+        // Helper to get Channel Instance
+        static inline DMA_Channel_TypeDef* get_channel_instance()
+        {
+            if constexpr (tkControllerID == 1)  // NOLINT(bugprone-branch-clone)
+            {
+                if constexpr (tkChannelID == 1) return DMA1_Channel1;
+                if constexpr (tkChannelID == 2) return DMA1_Channel2;
+                if constexpr (tkChannelID == 3) return DMA1_Channel3;
+                if constexpr (tkChannelID == 4) return DMA1_Channel4;
+                if constexpr (tkChannelID == 5) return DMA1_Channel5;
+                if constexpr (tkChannelID == 6) return DMA1_Channel6;
+                if constexpr (tkChannelID == 7) return DMA1_Channel7;
+                if constexpr (tkChannelID == 8) return DMA1_Channel8;
+            }
+            else if constexpr (tkControllerID == 2)
+            {
+                if constexpr (tkChannelID == 1) return DMA2_Channel1;
+                if constexpr (tkChannelID == 2) return DMA2_Channel2;
+                if constexpr (tkChannelID == 3) return DMA2_Channel3;
+                if constexpr (tkChannelID == 4) return DMA2_Channel4;
+                if constexpr (tkChannelID == 5) return DMA2_Channel5;
+                if constexpr (tkChannelID == 6) return DMA2_Channel6;
+                if constexpr (tkChannelID == 7) return DMA2_Channel7;
+                if constexpr (tkChannelID == 8) return DMA2_Channel8;
+            }
+            else
+            {
+                static_assert(false, "Invalid DMA Controller ID");
+            }
+        }
+
     public:
+        static inline DMA_Channel_TypeDef* const skInstance = get_channel_instance();
         // Helper to map index (1-8) to LL Constant (LL_DMA_CHANNEL_x)
         static constexpr uint32_t skChannelLLID = (tkChannelID == 1)   ? LL_DMA_CHANNEL_1
                                                   : (tkChannelID == 2) ? LL_DMA_CHANNEL_2

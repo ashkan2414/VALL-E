@@ -1,11 +1,27 @@
 #include "Valle/Device/Devices/adc.hpp"
 
+#include "magic_enum/magic_enum.hpp"
+
 #if __has_include("app_isr_bindings.hpp")
 #include "app_isr_bindings.hpp"
 #endif
 
 namespace valle
 {
+    /**
+     * @brief Check if any granular ISR handler is bound for this ADC.
+     *
+     * @tparam tkControllerID ADC Controller ID.
+     */
+    template <ADCControllerID tkID>
+        requires(kValidADCControllerID<tkID>)
+    [[nodiscard]] consteval static inline bool adc_has_any_granular_isr_handler()
+    {
+        constexpr auto values = magic_enum::enum_values<ADCInterruptType>();
+
+        return [values]<std::size_t... Is>(std::index_sequence<Is...>)
+        { return (CBoundISRRouter<ADCISRRouter<tkID, values[Is]>> || ...); }(std::make_index_sequence<values.size()>{});
+    }
 
     /**
      * @brief ADC Interrupt Handler Router
@@ -16,14 +32,32 @@ namespace valle
         requires(kValidADCControllerID<tkControllerID>)
     static inline void adc_irq_handler()
     {
-#define HANDLE_ADC_INT(tkIntType)                                              \
-    if constexpr (CBoundIsrHandler<ADCIsrRouter<tkControllerID, (tkIntType)>>) \
-    {                                                                          \
-        if (ADCInterruptTraits<tkControllerID, tkIntType>::is_pending())       \
-        {                                                                      \
-            ADCInterruptTraits<tkControllerID, tkIntType>::ack();              \
-            ADCIsrRouter<tkControllerID, tkIntType>::handle();                 \
-        }                                                                      \
+        using GlobalRouterT               = ADCGlobalISRRouter<tkControllerID>;
+        constexpr bool kHasGlobalRouter   = CBoundISRRouter<GlobalRouterT>;
+        constexpr bool kHasGranularRouter = adc_has_any_granular_isr_handler<tkControllerID>();
+        static_assert(!(kHasGlobalRouter && kHasGranularRouter), "VALLE CONFLICT: Global and Granular ISRs detected.");
+
+        if constexpr (kHasGlobalRouter)
+        {
+            GlobalRouterT::handle();
+            return;
+        }
+
+#define HANDLE_ADC_INT(tkIntType)                                      \
+    {                                                                  \
+        using RouterT = ADCISRRouter<tkControllerID, (tkIntType)>;     \
+        using TraitsT = ADCInterruptTraits<tkControllerID, tkIntType>; \
+        if constexpr (CBoundISRRouter<RouterT>)                        \
+        {                                                              \
+            if (TraitsT::is_pending())                                 \
+            {                                                          \
+                if constexpr (kISRRouterConfigAck<RouterT>)            \
+                {                                                      \
+                    TraitsT::ack();                                    \
+                }                                                      \
+                RouterT::handle();                                     \
+            }                                                          \
+        }                                                              \
     }
 
         HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog1);

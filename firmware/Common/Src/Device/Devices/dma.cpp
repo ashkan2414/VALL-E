@@ -1,30 +1,67 @@
 #include "Valle/Device/Devices/dma.hpp"
 
+#include "magic_enum/magic_enum.hpp"
+
 #if __has_include("app_isr_bindings.hpp")
 #include "app_isr_bindings.hpp"
 #endif
 
 namespace valle
 {
+    /**
+     * @brief Check if any granular ISR handler is bound for this DMA Channel.
+     *
+     * @tparam tkControllerID DMA Controller ID.
+     * @tparam tkChannelID    DMA Channel ID.
+     */
+    template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
+        requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
+    [[nodiscard]] consteval static inline bool dma_has_any_granular_isr_handler()
+    {
+        constexpr auto values = magic_enum::enum_values<DMAInterruptType>();
+
+        return [values]<std::size_t... Is>(std::index_sequence<Is...>)
+        {
+            return (CBoundISRRouter<DMAISRRouter<tkControllerID, tkChannelID, values[Is]>> || ...);
+        }(std::make_index_sequence<values.size()>{});
+    }
 
     /**
- * @brief DMA Interrupt Handler Router
- *
- * @tparam tkControllerID DMA Controller Index (1 or 2)
- * @tparam tkChannelID DMA Channel Index (1-8)
- */
+     * @brief DMA Interrupt Handler Router
+     *
+     * @tparam tkControllerID DMA Controller Index (1 or 2)
+     * @tparam tkChannelID DMA Channel Index (1-8)
+     */
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
         requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     static inline void dma_irq_handler()
     {
-#define HANDLE_DMA_INT(tkIntType)                                                           \
-    if constexpr (CBoundIsrHandler<DMAIsrRouter<tkControllerID, tkChannelID, (tkIntType)>>) \
-    {                                                                                       \
-        if (DMAInterruptTraits<tkControllerID, tkChannelID, tkIntType>::is_pending())       \
-        {                                                                                   \
-            DMAInterruptTraits<tkControllerID, tkChannelID, tkIntType>::ack();              \
-            DMAIsrRouter<tkControllerID, tkChannelID, tkIntType>::handle();                 \
-        }                                                                                   \
+        using GlobalRouterT               = DMAGlobalISRRouter<tkControllerID, tkChannelID>;
+        constexpr bool kHasGlobalRouter   = CBoundISRRouter<GlobalRouterT>;
+        constexpr bool kHasGranularRouter = dma_has_any_granular_isr_handler<tkControllerID, tkChannelID>();
+        static_assert(!(kHasGlobalRouter && kHasGranularRouter), "VALLE CONFLICT: Global and Granular ISRs detected.");
+
+        if constexpr (kHasGlobalRouter)
+        {
+            GlobalRouterT::handle();
+            return;
+        }
+
+#define HANDLE_DMA_INT(tkIntType)                                                     \
+    {                                                                                 \
+        using RouterT = DMAISRRouter<tkControllerID, tkChannelID, (tkIntType)>;       \
+        using TraitsT = DMAInterruptTraits<tkControllerID, tkChannelID, (tkIntType)>; \
+        if constexpr (CBoundISRRouter<RouterT>)                                       \
+        {                                                                             \
+            if (TraitsT::is_pending())                                                \
+            {                                                                         \
+                if constexpr (kISRRouterConfigAck<RouterT>)                           \
+                {                                                                     \
+                    TraitsT::ack();                                                   \
+                }                                                                     \
+                RouterT::handle();                                                    \
+            }                                                                         \
+        }                                                                             \
     }
 
         HANDLE_DMA_INT(DMAInterruptType::kTransferError);

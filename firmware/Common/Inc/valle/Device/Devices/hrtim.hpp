@@ -43,7 +43,7 @@ namespace valle
     // =============================================================================
 
     // ============================================================================
-    // INTERRUPT ROUTER (The Socket)
+    // INTERRUPT TRAITS
     // ============================================================================
 
     enum class HRTIMInterruptType : uint8_t
@@ -140,9 +140,45 @@ namespace valle
 
 #undef DEFINE_HRTIM_INT_TRAIT
 
+    // =============================================================================
+    // GLOBAL ISR ROUTER
+    // =============================================================================
+    /**
+     * @brief Global ISR Router for a specific HRTIM.
+     * Specializing this allows you to handle the entire ISR in one function
+     * (e.g., when delegating to the ST HAL).
+     *
+     * @tparam tkControllerID HRTIM Controller ID.
+     * @tparam tkTimerID      HRTIM Timer ID.
+     */
+    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
+        requires(kValidHRTIMID<tkControllerID>)
+    struct HRTIMGlobalISRRouter
+    {
+        using UnboundIsrHandlerTag = void;
+        static void handle()
+        {
+            // Default: Do nothing (Optimized away)
+        }
+    };
+
+    // =============================================================================
+    // GRANULAR ISR ROUTER
+    // ============================================================================
+
+    /**
+     * @brief HRTIM Interrupt Router.
+     *
+     * Specialize this template in your application or driver to bind
+     * logic to specific HRTIM interrupts.
+     *
+     * @tparam tkControllerID The HRTIM peripheral index the interrupt belongs to.
+     * @tparam tkTimerID The HRTIM Timer index the interrupt belongs to.
+     * @tparam tkIntType The interrupt type triggered.
+     */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID, HRTIMInterruptType tkIntType>
         requires(kValidHRTIMID<tkControllerID>)
-    struct HRTIMIsrRouter
+    struct HRTIMISRRouter
     {
         using UnboundIsrHandlerTag = void;
 
@@ -175,7 +211,7 @@ namespace valle
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceList<HRTIMControllerDevice<1>>;
+            using Children = DeviceTreeList<HRTIMControllerDevice<1>>;
         };
     };
 
@@ -186,12 +222,12 @@ namespace valle
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
-            using Children = DeviceList<HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kA>,
-                                        HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kB>,
-                                        HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kC>,
-                                        HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kD>,
-                                        HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kE>,
-                                        HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kF>>;
+            using Children = DeviceTreeList<HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kA>,
+                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kB>,
+                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kC>,
+                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kD>,
+                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kE>,
+                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kF>>;
         };
 
         using ControllerTraitsT = HRTIMControllerTraits<tkControllerID>;
