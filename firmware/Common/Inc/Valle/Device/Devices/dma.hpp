@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Valle/Device/Devices/dmamux.hpp"
 #include "Valle/Device/Traits/dma.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "stm32g4xx_ll_bus.h"
@@ -12,8 +13,8 @@ namespace valle
     // ============================================================================
 
     /**
- * @brief Configuration for DMA Interrupts.
- */
+     * @brief Configuration for DMA Interrupts.
+     */
     struct DMAInterruptConfig
     {
         uint32_t priority  = 5;      // NVIC Priority (0 = Highest, 15 = Lowest)
@@ -23,21 +24,32 @@ namespace valle
     };
 
     /**
- * @brief Configuration for a specific DMA Channel Transfer.
- */
+     * @brief Data Width for DMA Transfers.
+     */
+    enum class DMADataWidth : uint32_t
+    {
+        kByte,
+        kHalfWord,
+        kWord,
+    };
+
+    /**
+     * @brief Configuration for a specific DMA Channel Transfer.
+     */
     struct DMAChannelConfig
     {
-        DMADirection direction  = DMADirection::kPeriphToMem;
-        DMAPriority  priority   = DMAPriority::kLow;
-        DMAMode      mode       = DMAMode::kNormal;
-        DMADataWidth data_width = DMADataWidth::kByte;  // Applied to both source and dest for simplicity
+        DMADirection direction         = DMADirection::kPeriphToMem;
+        DMAPriority  priority          = DMAPriority::kLow;
+        DMAMode      mode              = DMAMode::kNormal;
+        DMADataWidth periph_data_width = DMADataWidth::kByte;
+        DMADataWidth memory_data_width = DMADataWidth::kByte;
 
         // Increment settings
         bool inc_periph = false;  // Typically FALSE for ADC/SPI
         bool inc_memory = true;   // Typically TRUE for Buffers
 
         // DMAMUX Request ID (The "Wire" connection)
-        DMARequestID request_id = DMARequestID::kMem2Mem;
+        DMAMuxRequestID request_id = DMAMuxRequestID::kMem2Mem;
     };
 
     // =============================================================================
@@ -57,10 +69,12 @@ namespace valle
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID, DMAInterruptType tkIntType>
     struct DMAInterruptTraits;
 
-#define DEFINE_DMA_INT_TRAIT(tkIntType, ll_name)                                                               \
+#define DEFINE_DMA_INT_TRAIT(tkIntType, ll_name, should_clear)                                                 \
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>                                        \
-    struct DMAInterruptTraits<tkControllerID, tkChannelID, tkIntType>                                          \
+    struct DMAInterruptTraits<tkControllerID, tkChannelID, (tkIntType)>                                        \
     {                                                                                                          \
+        static constexpr bool skShouldClear = (should_clear);                                                  \
+                                                                                                               \
         static inline void enable()                                                                            \
         {                                                                                                      \
             LL_DMA_EnableIT_##ll_name(DMAControllerTraits<tkControllerID>::skInstance,                         \
@@ -124,35 +138,35 @@ namespace valle
         {                                                                                                      \
             if constexpr (tkChannelID == 1)                                                                    \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##1(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##1(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 2)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##2(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##2(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 3)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##3(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##3(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 4)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##4(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##4(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 5)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##5(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##5(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 6)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##6(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##6(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 7)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##7(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##7(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else if constexpr (tkChannelID == 8)                                                               \
             {                                                                                                  \
-                LL_DMA_ClearFlags_##ll_name##8(DMAControllerTraits<tkControllerID>::skInstance);               \
+                LL_DMA_ClearFlag_##ll_name##8(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
             else                                                                                               \
             {                                                                                                  \
@@ -161,9 +175,9 @@ namespace valle
         }                                                                                                      \
     };
 
-    DEFINE_DMA_INT_TRAIT(DMAInterruptType::kTransferComplete, TC);
-    DEFINE_DMA_INT_TRAIT(DMAInterruptType::kHalfTransfer, HT);
-    DEFINE_DMA_INT_TRAIT(DMAInterruptType::kTransferError, TE);
+    DEFINE_DMA_INT_TRAIT(DMAInterruptType::kTransferComplete, TC, true);
+    DEFINE_DMA_INT_TRAIT(DMAInterruptType::kHalfTransfer, HT, true);
+    DEFINE_DMA_INT_TRAIT(DMAInterruptType::kTransferError, TE, true);
 
 #undef DEFINE_DMA_INT_TRAIT
 
@@ -217,20 +231,20 @@ namespace valle
     // FORWARD DECLARATIONS
     // ============================================================================
 
-    class DMADevice;
+    class DMARootDevice;
 
     template <DMAControllerID tkControllerID>
-        requires(kValidDMAID<tkControllerID>)
+        requires(kValidDMAControllerID<tkControllerID>)
     class DMAControllerDevice;
 
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
+        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     class DMAChannelDevice;
 
     // ============================================================================
     // DMA DEVICE INTERFACE
     // ============================================================================
-    class DMADevice
+    class DMARootDevice
     {
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
@@ -243,7 +257,7 @@ namespace valle
     // DMA CONTROLLER (SHARED)
     // ============================================================================
     template <DMAControllerID tkControllerID>
-        requires(kValidDMAID<tkControllerID>)
+        requires(kValidDMAControllerID<tkControllerID>)
     class DMAControllerDevice
     {
     public:
@@ -262,17 +276,14 @@ namespace valle
 
         static constexpr DMAControllerID skControllerID = tkControllerID;
 
-        using DependDevices     = TypeList<DMADevice>;
-        using ControllerTraitsT = DMAControllerTraits<tkControllerID>;
+        using ControllerTraitsT    = DMAControllerTraits<tkControllerID>;
+        using MuxControllerDeviceT = DMAMuxControllerDevice<ControllerTraitsT::skMuxControllerID>;
+        using DependDevices        = TypeList<DMARootDevice, MuxControllerDeviceT>;
 
         static inline void init()
         {
             // Enable Controller Clock
-            LL_AHB1_GRP1_EnableClock(ControllerTraitsT::skClock);
-
-            // Enable DMAMUX Clock (Shared global resource)
-            // It is safe to call this multiple times (e.g. by DMA1 and DMA2)
-            LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMAMUX1);
+            ControllerTraitsT::enable_clock();
         }
 
         static inline void post_init()
@@ -288,7 +299,7 @@ namespace valle
     // DMA CHANNEL (UNIQUE)
     // ============================================================================
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
+        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     class DMAChannelDevice
     {
     public:
@@ -296,37 +307,44 @@ namespace valle
         {
         };
 
-        using ControllerT       = DMAControllerDevice<tkControllerID>;
-        using DependDevices     = TypeList<ControllerT>;
-        using ControllerTraitsT = DMAControllerTraits<tkControllerID>;
-        using ChannelTraitsT    = DMAChannelTraits<tkControllerID, tkChannelID>;
-
         static constexpr DMAControllerID skControllerID = tkControllerID;
         static constexpr DMAChannelID    skChannelID    = tkChannelID;
 
+        using ControllerT          = DMAControllerDevice<skControllerID>;
+        using ControllerTraitsT    = DMAControllerTraits<skControllerID>;
+        using ChannelTraitsT       = DMAChannelTraits<skControllerID, skChannelID>;
+        using MuxControllerDeviceT = typename ControllerT::MuxControllerDeviceT;
+
+        using DependDevices = TypeList<ControllerT>;
+        using InjectDevices = TypeList<MuxControllerDeviceT>;
+
+    private:
+        [[no_unique_address]] DeviceRef<MuxControllerDeviceT> m_dmamux;
+
     public:
-        explicit DMAChannelDevice()
+        explicit DMAChannelDevice(DeviceRef<MuxControllerDeviceT>&& dmamux) : m_dmamux(std::move(dmamux))
         {
         }
 
         /**
          * @brief Initialize the DMA Channel and route the DMAMUX.
          */
-        static void init(const DMAChannelConfig& config)
+        void init(const DMAChannelConfig& config)
         {
             // Configure Transfer Parameters
-            LL_DMA_ConfigTransfer(ControllerTraitsT::skInstance,
-                                  ChannelTraitsT::skChannelLLID,
-                                  static_cast<uint32_t>(config.direction) | static_cast<uint32_t>(config.priority) |
-                                      static_cast<uint32_t>(config.mode) |
-                                      static_cast<uint32_t>(config.data_width) |  // Peripheral Width
-                                      static_cast<uint32_t>(config.data_width) |  // Memory Width (Keep same for now)
-                                      (config.inc_periph ? LL_DMA_PERIPH_INCREMENT : LL_DMA_PERIPH_NOINCREMENT) |
-                                      (config.inc_memory ? LL_DMA_MEMORY_INCREMENT : LL_DMA_MEMORY_NOINCREMENT));
+            LL_DMA_ConfigTransfer(
+                ControllerTraitsT::skInstance,
+                ChannelTraitsT::skChannelLLID,
+                static_cast<uint32_t>(config.direction) | static_cast<uint32_t>(config.priority) |
+                    static_cast<uint32_t>(config.mode) |
+                    static_cast<uint32_t>(map_data_width<true>(config.periph_data_width)) |   // Peripheral Width
+                    static_cast<uint32_t>(map_data_width<false>(config.memory_data_width)) |  // Memory Width
+                    (config.inc_periph ? LL_DMA_PERIPH_INCREMENT : LL_DMA_PERIPH_NOINCREMENT) |
+                    (config.inc_memory ? LL_DMA_MEMORY_INCREMENT : LL_DMA_MEMORY_NOINCREMENT));
 
             // Configure Routing (DMAMUX)
             // This is what connects "ADC1" to "DMA1 Channel 1"
-            LL_DMAMUX_SetRequestID(DMAMUX1, ChannelTraitsT::skChannelLLID, static_cast<uint32_t>(config.request_id));
+            m_dmamux->route_request(ChannelTraitsT::skMuxChannelID, config.request_id);
         }
 
         /**
@@ -457,15 +475,18 @@ namespace valle
         {
             if (config.enable_tc)
             {
+                DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferComplete>::ack();
                 DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferComplete>::enable();
             }
             if (config.enable_ht)
             {
+                DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kHalfTransfer>::ack();
                 DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kHalfTransfer>::enable();
             }
 
             if (config.enable_te)
             {
+                DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferError>::ack();
                 DMAInterruptTraits<tkControllerID, tkChannelID, DMAInterruptType::kTransferError>::enable();
             }
 
@@ -485,6 +506,48 @@ namespace valle
         }
 
     private:
+        /**
+         * @brief Map generic DMADataWidth to Peripheral or Memory specific width.
+         *
+         * @tparam tkForPeripheral true to map for peripheral, false for memory
+         * @param width Generic DMADataWidth
+         * @return Mapped width enum
+         */
+        template <bool tkForPeripheral>
+        static auto map_data_width(const DMADataWidth width)
+        {
+            if constexpr (tkForPeripheral)
+            {
+                switch (width)
+                {
+                    case DMADataWidth::kByte:
+                        return DMAPeripheralDataWidth::kByte;
+                    case DMADataWidth::kHalfWord:
+                        return DMAPeripheralDataWidth::kHalfWord;
+                    case DMADataWidth::kWord:
+                        return DMAPeripheralDataWidth::kWord;
+                    default:
+                        assert(false && "Invalid DMA Data Width");
+                        return DMAPeripheralDataWidth::kByte;
+                }
+            }
+            else
+            {
+                switch (width)
+                {
+                    case DMADataWidth::kByte:
+                        return DMAMemoryDataWidth::kByte;
+                    case DMADataWidth::kHalfWord:
+                        return DMAMemoryDataWidth::kHalfWord;
+                    case DMADataWidth::kWord:
+                        return DMAMemoryDataWidth::kWord;
+                    default:
+                        assert(false && "Invalid DMA Data Width");
+                        return DMAMemoryDataWidth::kByte;
+                }
+            }
+        }
+
         /**
          * @brief Internal start implementation.
          *

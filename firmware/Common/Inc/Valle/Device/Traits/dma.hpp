@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Valle/Device/Traits/dmamux.hpp"
 #include "stm32g4xx_ll_bus.h"
 #include "stm32g4xx_ll_dma.h"
 #include "stm32g4xx_ll_dmamux.h"
@@ -14,7 +15,7 @@ namespace valle
     using DMAControllerID = uint8_t;
 
     template <DMAControllerID tkControllerID>
-    constexpr bool kValidDMAID = (tkControllerID == 1 || tkControllerID == 2);
+    constexpr bool kValidDMAControllerID = (tkControllerID == 1 || tkControllerID == 2);
 
     using DMAChannelID = uint8_t;
 
@@ -37,15 +38,29 @@ namespace valle
     template <>
     struct DMAControllerTraits<1>
     {
-        static inline DMA_TypeDef* const skInstance = DMA1;
-        static constexpr uint32_t        skClock    = LL_AHB1_GRP1_PERIPH_DMA1;
+        static constexpr DMAMuxControllerID skMuxControllerID = 1;
+        using MuxTraitsT                                      = DMAMuxControllerTraits<skMuxControllerID>;
+        static inline DMA_TypeDef* const skInstance           = DMA1;
+        static constexpr uint32_t        skClock              = LL_AHB1_GRP1_PERIPH_DMA1;
+
+        static void enable_clock()
+        {
+            LL_AHB1_GRP1_EnableClock(skClock);
+        }
     };
 
     template <>
     struct DMAControllerTraits<2>
     {
-        static inline DMA_TypeDef* const skInstance = DMA2;
-        static constexpr uint32_t        skClock    = LL_AHB1_GRP1_PERIPH_DMA2;
+        static constexpr DMAMuxControllerID skMuxControllerID = 1;
+        using MuxTraitsT                                      = DMAMuxControllerTraits<skMuxControllerID>;
+        static inline DMA_TypeDef* const skInstance           = DMA2;
+        static constexpr uint32_t        skClock              = LL_AHB1_GRP1_PERIPH_DMA2;
+
+        static void enable_clock()
+        {
+            LL_AHB1_GRP1_EnableClock(skClock);
+        }
     };
 
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
@@ -80,7 +95,7 @@ namespace valle
         }
 
         // Helper to get Channel Instance
-        static inline DMA_Channel_TypeDef* get_channel_instance()
+        static DMA_Channel_TypeDef* get_channel_instance()
         {
             if constexpr (tkControllerID == 1)  // NOLINT(bugprone-branch-clone)
             {
@@ -110,17 +125,140 @@ namespace valle
             }
         }
 
+        static consteval uint32_t get_ll_channel_id()
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            if constexpr (tkChannelID == 1)
+            {
+                return LL_DMA_CHANNEL_1;
+            }
+            else if constexpr (tkChannelID == 2)
+            {
+                return LL_DMA_CHANNEL_2;
+            }
+            else if constexpr (tkChannelID == 3)
+            {
+                return LL_DMA_CHANNEL_3;
+            }
+            else if constexpr (tkChannelID == 4)
+            {
+                return LL_DMA_CHANNEL_4;
+            }
+            else if constexpr (tkChannelID == 5)
+            {
+                return LL_DMA_CHANNEL_5;
+            }
+            else if constexpr (tkChannelID == 6)
+            {
+                return LL_DMA_CHANNEL_6;
+            }
+            else if constexpr (tkChannelID == 7)
+            {
+                return LL_DMA_CHANNEL_7;
+            }
+            else if constexpr (tkChannelID == 8)
+            {
+                return LL_DMA_CHANNEL_8;
+            }
+            else
+            {
+                static_assert(false, "Invalid DMA Channel ID");
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        static consteval DMAMuxChannel get_mux_channel_id()
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            if constexpr (tkControllerID == 1)
+            {
+                if constexpr (tkChannelID == 1)
+                {
+                    return DMAMuxChannel::kDMA1Channel1;
+                }
+                else if constexpr (tkChannelID == 2)
+                {
+                    return DMAMuxChannel::kDMA1Channel2;
+                }
+                else if constexpr (tkChannelID == 3)
+                {
+                    return DMAMuxChannel::kDMA1Channel3;
+                }
+                else if constexpr (tkChannelID == 4)
+                {
+                    return DMAMuxChannel::kDMA1Channel4;
+                }
+                else if constexpr (tkChannelID == 5)
+                {
+                    return DMAMuxChannel::kDMA1Channel5;
+                }
+                else if constexpr (tkChannelID == 6)
+                {
+                    return DMAMuxChannel::kDMA1Channel6;
+                }
+                else if constexpr (tkChannelID == 7)
+                {
+                    return DMAMuxChannel::kDMA1Channel7;
+                }
+                else if constexpr (tkChannelID == 8)
+                {
+                    return DMAMuxChannel::kDMA1Channel8;
+                }
+                else
+                {
+                    static_assert(false, "Invalid DMA Channel ID");
+                }
+            }
+            else if constexpr (tkControllerID == 2)
+            {
+                if constexpr (tkChannelID == 1)
+                {
+                    return DMAMuxChannel::kDMA2Channel1;
+                }
+                else if constexpr (tkChannelID == 2)
+                {
+                    return DMAMuxChannel::kDMA2Channel2;
+                }
+                else if constexpr (tkChannelID == 3)
+                {
+                    return DMAMuxChannel::kDMA2Channel3;
+                }
+                else if constexpr (tkChannelID == 4)
+                {
+                    return DMAMuxChannel::kDMA2Channel4;
+                }
+                else if constexpr (tkChannelID == 5)
+                {
+                    return DMAMuxChannel::kDMA2Channel5;
+                }
+                else if constexpr (tkChannelID == 6)
+                {
+                    return DMAMuxChannel::kDMA2Channel6;
+                }
+                else if constexpr (tkChannelID == 7)
+                {
+                    return DMAMuxChannel::kDMA2Channel7;
+                }
+                else if constexpr (tkChannelID == 8)
+                {
+                    return DMAMuxChannel::kDMA2Channel8;
+                }
+                else
+                {
+                    static_assert(false, "Invalid DMA Channel ID");
+                }
+            }
+            else
+            {
+                static_assert(false, "Invalid DMA Controller ID");
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
     public:
-        static inline DMA_Channel_TypeDef* const skInstance = get_channel_instance();
-        // Helper to map index (1-8) to LL Constant (LL_DMA_CHANNEL_x)
-        static constexpr uint32_t skChannelLLID = (tkChannelID == 1)   ? LL_DMA_CHANNEL_1
-                                                  : (tkChannelID == 2) ? LL_DMA_CHANNEL_2
-                                                  : (tkChannelID == 3) ? LL_DMA_CHANNEL_3
-                                                  : (tkChannelID == 4) ? LL_DMA_CHANNEL_4
-                                                  : (tkChannelID == 5) ? LL_DMA_CHANNEL_5
-                                                  : (tkChannelID == 6) ? LL_DMA_CHANNEL_6
-                                                  : (tkChannelID == 7) ? LL_DMA_CHANNEL_7
-                                                                       : LL_DMA_CHANNEL_8;
+        static inline DMA_Channel_TypeDef* const skInstance     = get_channel_instance();
+        static constexpr uint32_t                skChannelLLID  = get_ll_channel_id();
+        static constexpr DMAMuxChannel           skMuxChannelID = get_mux_channel_id();
 
         static constexpr IRQn_Type skIRQn = get_irq_n();
     };
@@ -150,11 +288,18 @@ namespace valle
         kCircular = LL_DMA_MODE_CIRCULAR
     };
 
-    enum class DMADataWidth : uint32_t
+    enum class DMAPeripheralDataWidth : uint32_t
     {
         kByte     = LL_DMA_PDATAALIGN_BYTE,
         kHalfWord = LL_DMA_PDATAALIGN_HALFWORD,
         kWord     = LL_DMA_PDATAALIGN_WORD
+    };
+
+    enum class DMAMemoryDataWidth : uint32_t
+    {
+        kByte     = LL_DMA_MDATAALIGN_BYTE,
+        kHalfWord = LL_DMA_MDATAALIGN_HALFWORD,
+        kWord     = LL_DMA_MDATAALIGN_WORD
     };
 
     enum class DMAIncrementMode : uint32_t
@@ -163,126 +308,6 @@ namespace valle
         kPeriphIncrement = LL_DMA_PERIPH_INCREMENT,
         kMemoryFixed     = LL_DMA_MEMORY_NOINCREMENT,
         kMemoryIncrement = LL_DMA_MEMORY_INCREMENT
-    };
-
-    enum class DMARequestID : uint32_t
-    {
-        kMem2Mem     = LL_DMAMUX_REQ_MEM2MEM,
-        kGenerator0  = LL_DMAMUX_REQ_GENERATOR0,
-        kGenerator1  = LL_DMAMUX_REQ_GENERATOR1,
-        kGenerator2  = LL_DMAMUX_REQ_GENERATOR2,
-        kGenerator3  = LL_DMAMUX_REQ_GENERATOR3,
-        kADC1        = LL_DMAMUX_REQ_ADC1,
-        kDAC1Ch1     = LL_DMAMUX_REQ_DAC1_CH1,
-        kDAC1Ch2     = LL_DMAMUX_REQ_DAC1_CH2,
-        kTIM6Up      = LL_DMAMUX_REQ_TIM6_UP,
-        kTIM7Up      = LL_DMAMUX_REQ_TIM7_UP,
-        kSPI1Rx      = LL_DMAMUX_REQ_SPI1_RX,
-        kSPI1Tx      = LL_DMAMUX_REQ_SPI1_TX,
-        kSPI2Rx      = LL_DMAMUX_REQ_SPI2_RX,
-        kSPI2Tx      = LL_DMAMUX_REQ_SPI2_TX,
-        kSPI3Rx      = LL_DMAMUX_REQ_SPI3_RX,
-        kSPI3Tx      = LL_DMAMUX_REQ_SPI3_TX,
-        kI2C1Rx      = LL_DMAMUX_REQ_I2C1_RX,
-        kI2C1Tx      = LL_DMAMUX_REQ_I2C1_TX,
-        kI2C2Rx      = LL_DMAMUX_REQ_I2C2_RX,
-        kI2C2Tx      = LL_DMAMUX_REQ_I2C2_TX,
-        kI2C3Rx      = LL_DMAMUX_REQ_I2C3_RX,
-        kI2C3Tx      = LL_DMAMUX_REQ_I2C3_TX,
-        kI2C4Rx      = LL_DMAMUX_REQ_I2C4_RX,
-        kI2C4Tx      = LL_DMAMUX_REQ_I2C4_TX,
-        kUSART1Rx    = LL_DMAMUX_REQ_USART1_RX,
-        kUSART1Tx    = LL_DMAMUX_REQ_USART1_TX,
-        kUSART2Rx    = LL_DMAMUX_REQ_USART2_RX,
-        kUSART2Tx    = LL_DMAMUX_REQ_USART2_TX,
-        kUSART3Rx    = LL_DMAMUX_REQ_USART3_RX,
-        kUSART3Tx    = LL_DMAMUX_REQ_USART3_TX,
-        kUART4Rx     = LL_DMAMUX_REQ_UART4_RX,
-        kUART4Tx     = LL_DMAMUX_REQ_UART4_TX,
-        kUART5Rx     = LL_DMAMUX_REQ_UART5_RX,
-        kUART5Tx     = LL_DMAMUX_REQ_UART5_TX,
-        kLPUART1Rx   = LL_DMAMUX_REQ_LPUART1_RX,
-        kLPUART1Tx   = LL_DMAMUX_REQ_LPUART1_TX,
-        kADC2        = LL_DMAMUX_REQ_ADC2,
-        kADC3        = LL_DMAMUX_REQ_ADC3,
-        kADC4        = LL_DMAMUX_REQ_ADC4,
-        kADC5        = LL_DMAMUX_REQ_ADC5,
-        kQSPI        = LL_DMAMUX_REQ_QSPI,
-        kDAC2Ch1     = LL_DMAMUX_REQ_DAC2_CH1,
-        kTIM1Ch1     = LL_DMAMUX_REQ_TIM1_CH1,
-        kTIM1Ch2     = LL_DMAMUX_REQ_TIM1_CH2,
-        kTIM1Ch3     = LL_DMAMUX_REQ_TIM1_CH3,
-        kTIM1Ch4     = LL_DMAMUX_REQ_TIM1_CH4,
-        kTIM1Up      = LL_DMAMUX_REQ_TIM1_UP,
-        kTIM1Trig    = LL_DMAMUX_REQ_TIM1_TRIG,
-        kTIM1Com     = LL_DMAMUX_REQ_TIM1_COM,
-        kTIM8Ch1     = LL_DMAMUX_REQ_TIM8_CH1,
-        kTIM8Ch2     = LL_DMAMUX_REQ_TIM8_CH2,
-        kTIM8Ch3     = LL_DMAMUX_REQ_TIM8_CH3,
-        kTIM8Ch4     = LL_DMAMUX_REQ_TIM8_CH4,
-        kTIM8Up      = LL_DMAMUX_REQ_TIM8_UP,
-        kTIM8Trig    = LL_DMAMUX_REQ_TIM8_TRIG,
-        kTIM8Com     = LL_DMAMUX_REQ_TIM8_COM,
-        kTIM2Ch1     = LL_DMAMUX_REQ_TIM2_CH1,
-        kTIM2Ch2     = LL_DMAMUX_REQ_TIM2_CH2,
-        kTIM2Ch3     = LL_DMAMUX_REQ_TIM2_CH3,
-        kTIM2Ch4     = LL_DMAMUX_REQ_TIM2_CH4,
-        kTIM2Up      = LL_DMAMUX_REQ_TIM2_UP,
-        kTIM3Ch1     = LL_DMAMUX_REQ_TIM3_CH1,
-        kTIM3Ch2     = LL_DMAMUX_REQ_TIM3_CH2,
-        kTIM3Ch3     = LL_DMAMUX_REQ_TIM3_CH3,
-        kTIM3Ch4     = LL_DMAMUX_REQ_TIM3_CH4,
-        kTIM3Up      = LL_DMAMUX_REQ_TIM3_UP,
-        kTIM3Trig    = LL_DMAMUX_REQ_TIM3_TRIG,
-        kTIM4Ch1     = LL_DMAMUX_REQ_TIM4_CH1,
-        kTIM4Ch2     = LL_DMAMUX_REQ_TIM4_CH2,
-        kTIM4Ch3     = LL_DMAMUX_REQ_TIM4_CH3,
-        kTIM4Ch4     = LL_DMAMUX_REQ_TIM4_CH4,
-        kTIM4Up      = LL_DMAMUX_REQ_TIM4_UP,
-        kTIM5Ch1     = LL_DMAMUX_REQ_TIM5_CH1,
-        kTIM5Ch2     = LL_DMAMUX_REQ_TIM5_CH2,
-        kTIM5Ch3     = LL_DMAMUX_REQ_TIM5_CH3,
-        kTIM5Ch4     = LL_DMAMUX_REQ_TIM5_CH4,
-        kTIM5Up      = LL_DMAMUX_REQ_TIM5_UP,
-        kTIM5Trig    = LL_DMAMUX_REQ_TIM5_TRIG,
-        kTIM15Ch1    = LL_DMAMUX_REQ_TIM15_CH1,
-        kTIM15Up     = LL_DMAMUX_REQ_TIM15_UP,
-        kTIM15Trig   = LL_DMAMUX_REQ_TIM15_TRIG,
-        kTIM15Com    = LL_DMAMUX_REQ_TIM15_COM,
-        kTIM16Ch1    = LL_DMAMUX_REQ_TIM16_CH1,
-        kTIM16Up     = LL_DMAMUX_REQ_TIM16_UP,
-        kTIM17Ch1    = LL_DMAMUX_REQ_TIM17_CH1,
-        kTIM17Up     = LL_DMAMUX_REQ_TIM17_UP,
-        kTIM20Ch1    = LL_DMAMUX_REQ_TIM20_CH1,
-        kTIM20Ch2    = LL_DMAMUX_REQ_TIM20_CH2,
-        kTIM20Ch3    = LL_DMAMUX_REQ_TIM20_CH3,
-        kTIM20Ch4    = LL_DMAMUX_REQ_TIM20_CH4,
-        kTIM20Up     = LL_DMAMUX_REQ_TIM20_UP,
-        kAESIn       = LL_DMAMUX_REQ_AES_IN,
-        kAESOut      = LL_DMAMUX_REQ_AES_OUT,
-        kTIM20Trig   = LL_DMAMUX_REQ_TIM20_TRIG,
-        kTIM20Com    = LL_DMAMUX_REQ_TIM20_COM,
-        kHRTIM1M     = LL_DMAMUX_REQ_HRTIM1_M,
-        kHRTIM1A     = LL_DMAMUX_REQ_HRTIM1_A,
-        kHRTIM1B     = LL_DMAMUX_REQ_HRTIM1_B,
-        kHRTIM1C     = LL_DMAMUX_REQ_HRTIM1_C,
-        kHRTIM1D     = LL_DMAMUX_REQ_HRTIM1_D,
-        kHRTIM1E     = LL_DMAMUX_REQ_HRTIM1_E,
-        kHRTIM1F     = LL_DMAMUX_REQ_HRTIM1_F,
-        kDAC3Ch1     = LL_DMAMUX_REQ_DAC3_CH1,
-        kDAC3Ch2     = LL_DMAMUX_REQ_DAC3_CH2,
-        kDAC4Ch1     = LL_DMAMUX_REQ_DAC4_CH1,
-        kDAC4Ch2     = LL_DMAMUX_REQ_DAC4_CH2,
-        kSPI4Rx      = LL_DMAMUX_REQ_SPI4_RX,
-        kSPI4Tx      = LL_DMAMUX_REQ_SPI4_TX,
-        kSAI1A       = LL_DMAMUX_REQ_SAI1_A,
-        kSAI1B       = LL_DMAMUX_REQ_SAI1_B,
-        kFMACRead    = LL_DMAMUX_REQ_FMAC_READ,
-        kFMACWrite   = LL_DMAMUX_REQ_FMAC_WRITE,
-        kCORDICRead  = LL_DMAMUX_REQ_CORDIC_READ,
-        kCORDICWrite = LL_DMAMUX_REQ_CORDIC_WRITE,
-        kUCPD1Rx     = LL_DMAMUX_REQ_UCPD1_RX,
-        kUCPD1Tx     = LL_DMAMUX_REQ_UCPD1_TX,
     };
 
 }  // namespace valle

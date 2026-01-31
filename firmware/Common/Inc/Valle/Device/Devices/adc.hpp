@@ -7,16 +7,15 @@
 #include <variant>
 
 #include "Valle/Core/Logging/logger.hpp"
+#include "Valle/Device/Devices/adc_clk.hpp"
 #include "Valle/Device/Devices/dma.hpp"
 #include "Valle/Device/Traits/adc.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Drivers/gpio.hpp"
 #include "Valle/Utils/timing.hpp"
 
-
 namespace valle
 {
-
     // ============================================================================
     // CONFIGURATIONS
     // ============================================================================
@@ -119,6 +118,22 @@ namespace valle
         std::optional<ADCOversamplingConfig> oversampling = std::nullopt;
     };
 
+    struct ADCInterruptConfig
+    {
+        uint32_t priority = 5;  // NVIC Priority (0 = highest) // NOLINT(readability-magic-numbers)
+        // bool     enable_ready_int : 1     = false;  // Ready flag
+        bool enable_reg_eoc_int : 1   = false;  // Regular End Of Conversion
+        bool enable_reg_eos_int : 1   = false;  // Regular End Of Sequence
+        bool enable_reg_eosmp_int : 1 = false;  // Regular End Of Sampling
+        bool enable_inj_eoc_int : 1   = false;  // Inject End Of Conversion
+        bool enable_inj_eos_int : 1   = false;  // Inject End Of Sequence
+        bool enable_inj_cqovf_int : 1 = false;  // Inject Context Queue Overflow
+        bool enable_ovr_int : 1       = false;  // Overrun
+        bool enable_awd1_int : 1      = false;  // Analog Watchdog 1
+        bool enable_awd2_int : 1      = false;  // Analog Watchdog 2
+        bool enable_awd3_int : 1      = false;  // Analog Watchdog 3
+    };
+
     struct ADCChannelOffsetConfig
     {
         /// Offset Index (1 to 4)
@@ -185,55 +200,66 @@ namespace valle
     // ============================================================================
     enum class ADCInterruptType : uint8_t
     {
-        kAnalogWatchdog1 = 0,
+        kReady = 0,
+        kRegularEndOfConversion,
+        kRegularEndOfSequence,
+        kRegularEndOfSampling,
+        kInjectEndOfConversion,
+        kInjectEndOfSequence,
+        kInjectContextQueueOverflow,
+        kOverrun,
+        kAnalogWatchdog1,
         kAnalogWatchdog2,
         kAnalogWatchdog3,
-        kEndOfRegularSequence,
-        kEndOfInjectSequence,
-        kOverrun,
     };
 
     template <ADCControllerID tkControllerID, ADCInterruptType tkIntType>
     struct ADCInterruptTraits;
 
-#define DEFINE_ADC_INT_TRAIT(tkIntType, ll_name)                                         \
-    template <ADCControllerID tkControllerID>                                            \
-    struct ADCInterruptTraits<tkControllerID, (tkIntType)>                               \
-    {                                                                                    \
-        static inline void enable()                                                      \
-        {                                                                                \
-            LL_ADC_EnableIT_##ll_name(ADCTraits<tkControllerID>::skInstance);            \
-        }                                                                                \
-        static inline void disable()                                                     \
-        {                                                                                \
-            LL_ADC_DisableIT_##ll_name(ADCTraits<tkControllerID>::skInstance);           \
-        }                                                                                \
-        static inline bool is_enabled()                                                  \
-        {                                                                                \
-            return LL_ADC_IsEnabledIT_##ll_name(ADCTraits<tkControllerID>::skInstance);  \
-        }                                                                                \
-        static inline bool flag_active()                                                 \
-        {                                                                                \
-            return LL_ADC_IsActiveFlag_##ll_name(ADCTraits<tkControllerID>::skInstance); \
-        }                                                                                \
-                                                                                         \
-        static inline bool is_pending()                                                  \
-        {                                                                                \
-            return flag_active() && is_enabled();                                        \
-        }                                                                                \
-        static inline void ack()                                                         \
-        {                                                                                \
-            LL_ADC_ClearFlag_##ll_name(ADCTraits<tkControllerID>::skInstance);           \
-        }                                                                                \
+#define DEFINE_ADC_INT_TRAIT(tkIntType, ll_name, should_clear)                                     \
+    template <ADCControllerID tkControllerID>                                                      \
+    struct ADCInterruptTraits<tkControllerID, (tkIntType)>                                         \
+    {                                                                                              \
+        static constexpr bool skShouldClear = (should_clear);                                      \
+                                                                                                   \
+        static inline void enable()                                                                \
+        {                                                                                          \
+            LL_ADC_EnableIT_##ll_name(ADCControllerTraits<tkControllerID>::skInstance);            \
+        }                                                                                          \
+        static inline void disable()                                                               \
+        {                                                                                          \
+            LL_ADC_DisableIT_##ll_name(ADCControllerTraits<tkControllerID>::skInstance);           \
+        }                                                                                          \
+        static inline bool is_enabled()                                                            \
+        {                                                                                          \
+            return LL_ADC_IsEnabledIT_##ll_name(ADCControllerTraits<tkControllerID>::skInstance);  \
+        }                                                                                          \
+        static inline bool flag_active()                                                           \
+        {                                                                                          \
+            return LL_ADC_IsActiveFlag_##ll_name(ADCControllerTraits<tkControllerID>::skInstance); \
+        }                                                                                          \
+                                                                                                   \
+        static inline bool is_pending()                                                            \
+        {                                                                                          \
+            return flag_active() && is_enabled();                                                  \
+        }                                                                                          \
+        static inline void ack()                                                                   \
+        {                                                                                          \
+            LL_ADC_ClearFlag_##ll_name(ADCControllerTraits<tkControllerID>::skInstance);           \
+        }                                                                                          \
     };
 
-    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kAnalogWatchdog1, AWD1);
-    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kAnalogWatchdog2, AWD2);
-    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kAnalogWatchdog3, AWD3);
-    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kEndOfRegularSequence, EOS);
-    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kEndOfInjectSequence, JEOS);
-    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kOverrun, OVR);
-
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kReady, ADRDY, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kRegularEndOfConversion, EOC, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kRegularEndOfSequence, EOS, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kRegularEndOfSampling, EOSMP, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kInjectEndOfConversion, JEOC, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kInjectEndOfSequence, JEOS, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kInjectContextQueueOverflow, JQOVF, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kOverrun, OVR, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kAnalogWatchdog1, AWD1, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kAnalogWatchdog2, AWD2, true);
+    DEFINE_ADC_INT_TRAIT(ADCInterruptType::kAnalogWatchdog3, AWD3, true);
 #undef DEFINE_ADC_INT_TRAIT
 
     // ===========================================================================
@@ -280,10 +306,46 @@ namespace valle
         }
     };
 
+    // ============================================================================
+    // DEVICE TRAITS
+    // ============================================================================
+    template <ADCControllerID tkControllerID>
+    struct ADCControllerDeviceTraits;
+
+    template <>
+    struct ADCControllerDeviceTraits<1>
+    {
+        using ADCClockDeviceT = ADC12ClockDevice;
+    };
+
+    template <>
+    struct ADCControllerDeviceTraits<2>
+    {
+        using ADCClockDeviceT = ADC12ClockDevice;
+    };
+
+    template <>
+    struct ADCControllerDeviceTraits<3>
+    {
+        using ADCClockDeviceT = ADC345ClockDevice;
+    };
+
+    template <>
+    struct ADCControllerDeviceTraits<4>
+    {
+        using ADCClockDeviceT = ADC345ClockDevice;
+    };
+
+    template <>
+    struct ADCControllerDeviceTraits<5>  // NOLINT(readability-magic-numbers)
+    {
+        using ADCClockDeviceT = ADC345ClockDevice;
+    };
+
     // =============================================================================
     // FORWARD DECLARATIONS
     // =============================================================================
-    class ADCDevice;
+    class ADCRootDevice;
 
     template <ADCControllerID tkControllerID>
         requires(kValidADCControllerID<tkControllerID>)
@@ -308,7 +370,7 @@ namespace valle
      * @brief ADC Device (Interface Device), represents the ADC peripheral family.
      *
      */
-    class ADCDevice
+    class ADCRootDevice
     {
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
@@ -362,18 +424,19 @@ namespace valle
                                             ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp5>,
                                             ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp6>>;
         };
+        static constexpr ADCControllerID skControllerID = tkControllerID;
+        using ControllerTraitsT                         = ADCControllerTraits<skControllerID>;
+        using ControllerDeviceTraitsT                   = ADCControllerDeviceTraits<skControllerID>;
+        using ClockDeviceT                              = typename ControllerDeviceTraitsT::ADCClockDeviceT;
 
-        using CTConfigTraitT             = ADCControllerCTConfigTraits<tkControllerID>;
+        using CTConfigTraitT             = ADCControllerCTConfigTraits<skControllerID>;
         static constexpr auto skCTConfig = CTConfigTraitT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
         using DMAChannelT                = CTConfigT::DMAChannelT;
         static constexpr bool skHasDMA   = !CNullDMAChannel<DMAChannelT>;
 
-        using DependDevices = TypeList<ADCDevice>;
+        using DependDevices = TypeList<ClockDeviceT, ADCRootDevice>;
         using InjectDevices = std::conditional_t<skHasDMA, TypeList<DMAChannelT>, TypeList<>>;
-
-        using ControllerTraitsT                         = ADCTraits<tkControllerID>;
-        static constexpr ADCControllerID skControllerID = tkControllerID;
 
     private:
         static constexpr uint8_t skChannelRankFreeFlag = 0xFF;
@@ -395,7 +458,8 @@ namespace valle
         std::conditional_t<skHasDMA, ADCRegularGroupDMAConfig, std::monostate> m_dma_config;
 
         // Store data alignment for DMA configuration
-        ADCDataAlignment m_data_alignment = ADCDataAlignment::kRight;
+        ADCDataAlignment     m_data_alignment = ADCDataAlignment::kRight;
+        ADCInjectGroupConfig m_inj_config     = {};
 
     public:
         ADCControllerDevice(DeviceRef<DMAChannelT>&& dma_channel)
@@ -404,7 +468,7 @@ namespace valle
             : m_dma(std::move(dma_channel))
         {
             std::fill(std::begin(m_reg_cidx_to_rank_map), std::end(m_reg_cidx_to_rank_map), skChannelRankFreeFlag);
-            std::fill(std::begin(m_inj_cidx_to_rank_map), std::end(m_inj_cidx_to_rank_map), 0);
+            std::fill(std::begin(m_inj_cidx_to_rank_map), std::end(m_inj_cidx_to_rank_map), skChannelRankFreeFlag);
             std::fill(std::begin(m_dma_buffer), std::end(m_dma_buffer), 0);
         }
 
@@ -412,7 +476,7 @@ namespace valle
             requires(!skHasDMA)
         {
             std::fill(std::begin(m_reg_cidx_to_rank_map), std::end(m_reg_cidx_to_rank_map), skChannelRankFreeFlag);
-            std::fill(std::begin(m_inj_cidx_to_rank_map), std::end(m_inj_cidx_to_rank_map), 0);
+            std::fill(std::begin(m_inj_cidx_to_rank_map), std::end(m_inj_cidx_to_rank_map), skChannelRankFreeFlag);
             std::fill(std::begin(m_dma_buffer), std::end(m_dma_buffer), 0);
         }
 
@@ -432,14 +496,7 @@ namespace valle
 
             // Store data alignment for DMA width calculation
             m_data_alignment = config.data_alignment;
-
-            // Clock & Power
-            LL_AHB2_GRP1_EnableClock(ControllerTraitsT::skClock);
-
-            // Explicitly configure ADC common clock
-            // RM0440 Section 21.4.3: ADC clock must be explicitly configured
-            // Use asynchronous clock mode (typical for precision measurements)
-            LL_ADC_SetCommonClock(ControllerTraitsT::skCommon, LL_ADC_CLOCK_ASYNC_DIV1);
+            m_inj_config     = config.inj;
 
             if (LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 0)
             {
@@ -447,8 +504,8 @@ namespace valle
                 LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
 
                 // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
-                // Use busy wait with known cycle count: ~3500 cycles @ 170 MHz = ~20.6 µs
-                delay_us_busy(21u);
+                // wait for 100 to be safe.
+                delay_us_busy(100u);
             }
 
             // Calibration with precise timeout
@@ -473,21 +530,21 @@ namespace valle
             LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.data_alignment));
             LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.low_power));
 
-            // Inject Group Configuration
-            LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance,
-                                        static_cast<uint32_t>(config.inj.trigger_source));
-            LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.inj.trigger_edge));
+            // Inject Group Configuration (must be done before enable)
+            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance,
+                                    LL_ADC_INJ_QUEUE_DISABLE);  // Queue mode not supported
             LL_ADC_INJ_SetTrigAuto(
                 ControllerTraitsT::skInstance,
                 config.inj.auto_trigger_from_regular ? LL_ADC_INJ_TRIG_FROM_GRP_REGULAR : LL_ADC_INJ_TRIG_INDEPENDENT);
 
-            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance,
-                                    LL_ADC_INJ_QUEUE_DISABLE);  // Queue mode not supported
-
             // Regular Group Configuration
             LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance,
                                         static_cast<uint32_t>(config.reg.trigger_source));
-            LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.reg.trigger_edge));
+            if (config.reg.trigger_source != ADCRegularGroupTriggerSource::kSoftware)
+            {
+                LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance,
+                                          static_cast<uint32_t>(config.reg.trigger_edge));
+            }
             LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.reg.overrun));
             LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance,
                                          static_cast<uint32_t>(config.reg.conversion_mode));
@@ -504,7 +561,7 @@ namespace valle
                                               static_cast<uint32_t>(config.reg.oversampling_mode));
             }
 
-            return false;
+            return true;
         }
 
         // --- Registration API (Called by Channel) ---
@@ -565,12 +622,11 @@ namespace valle
          * @brief Post init called after init and channel registration. Sets up sequences and starts ADC.
          *
          */
-        [[nodiscard]] bool post_init(const bool start_inject_group = false, const bool start_regular_group = false)
+        [[nodiscard]] bool post_init()
         {
-            const uint8_t reg_count = std::find_if(std::begin(m_reg_cidx_to_rank_map),
-                                                   std::end(m_reg_cidx_to_rank_map),
-                                                   [](uint8_t v) { return v == skChannelRankFreeFlag; }) -
-                                      std::begin(m_reg_cidx_to_rank_map);
+            const uint8_t reg_count = std::count_if(std::begin(m_reg_cidx_to_rank_map),
+                                                    std::end(m_reg_cidx_to_rank_map),
+                                                    [](uint8_t v) { return v != skChannelRankFreeFlag; });
 
             // Regular Sequence Config
             if (reg_count > 0)
@@ -614,13 +670,14 @@ namespace valle
 
                     // Configure DMA Channel
                     m_dma->init(DMAChannelConfig{
-                        .direction  = DMADirection::kPeriphToMem,
-                        .priority   = m_dma_config.priority,
-                        .mode       = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
-                        .data_width = dma_width,
-                        .inc_periph = false,
-                        .inc_memory = true,
-                        .request_id = ControllerTraitsT::skDMARequestId,
+                        .direction         = DMADirection::kPeriphToMem,
+                        .priority          = m_dma_config.priority,
+                        .mode              = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
+                        .periph_data_width = dma_width,
+                        .memory_data_width = dma_width,
+                        .inc_periph        = false,
+                        .inc_memory        = true,
+                        .request_id        = ControllerTraitsT::skDMAMuxRequest,
 
                     });
                 }
@@ -631,34 +688,9 @@ namespace valle
                 }
             }
 
-            const uint8_t inj_count = std::find_if(std::begin(m_inj_cidx_to_rank_map),
-                                                   std::end(m_inj_cidx_to_rank_map),
-                                                   [](uint8_t v) { return v == 0; }) -
-                                      std::begin(m_inj_cidx_to_rank_map);
-
-            // Inject Sequence Config
-            if (inj_count > 0)
-            {
-                LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
-                                              ADCInjectGroupTraits::count_to_sequence_length(inj_count));
-
-                for (uint32_t i = 0; i < kADCMaxChannelId; ++i)
-                {
-                    if (m_inj_cidx_to_rank_map[i] != 0)
-                    {
-                        const uint32_t ch = __LL_ADC_DECIMAL_NB_TO_CHANNEL(i);
-                        LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                                     ADCInjectGroupTraits::rank_to_rank_reg(m_inj_cidx_to_rank_map[i]),
-                                                     ch);
-                    }
-                }
-            }
-
-            // Enable with precise timeout
-            LL_ADC_Enable(ControllerTraitsT::skInstance);
-
             // Wait for ADC ready with precise timeout
             // RM0440: Typically a few ADC clock cycles, allow up to 100 µs for safety
+            LL_ADC_Enable(ControllerTraitsT::skInstance);
             const bool adc_ready = wait_for_with_timeout_us(
                 []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100u);
 
@@ -668,30 +700,142 @@ namespace valle
                 return false;
             }
 
-            if (start_inject_group)
+            // Inject Group Configuration (after enable)
+            LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance,
+                                        static_cast<uint32_t>(m_inj_config.trigger_source));
+            if (m_inj_config.trigger_source != ADCInjectGroupTriggerSource::kSoftware)
             {
-                start_inject();
+                LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance,
+                                          static_cast<uint32_t>(m_inj_config.trigger_edge));
             }
 
-            if (start_regular_group)
+            const uint8_t inj_count = std::count_if(std::begin(m_inj_cidx_to_rank_map),
+                                                    std::end(m_inj_cidx_to_rank_map),
+                                                    [](uint8_t v) { return v != skChannelRankFreeFlag; });
+
+            // Inject Sequence Config
+            if (inj_count > 0)
             {
-                start_regular();
+                LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
+                                              ADCInjectGroupTraits::count_to_sequence_length(inj_count));
+
+                for (uint32_t i = 0; i < kADCMaxChannelId; ++i)
+                {
+                    if (m_inj_cidx_to_rank_map[i] != skChannelRankFreeFlag)
+                    {
+                        const uint32_t ch = __LL_ADC_DECIMAL_NB_TO_CHANNEL(i);
+                        LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
+                                                     ADCInjectGroupTraits::rank_to_rank_reg(m_inj_cidx_to_rank_map[i]),
+                                                     ch);
+                    }
+                }
             }
 
             return true;
         }
 
+        [[nodiscard]] bool initialized() const
+        {
+            return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0;
+        }
+
+        // --- Control API (Called by Application) ---
+        void enable_interrupts(const ADCInterruptConfig& config)
+        {
+            if (!initialized())
+            {
+                VALLE_LOG_ERROR("ADC must be initialized before enabling interrupts");
+                return;
+            }
+
+            // if (config.enable_ready_int)
+            // {
+            //     ADCInterruptTraits<tkControllerID, ADCInterruptType::kReady>::ack();
+            //     ADCInterruptTraits<tkControllerID, ADCInterruptType::kReady>::enable();
+            // }
+
+            if (config.enable_reg_eoc_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfConversion>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfConversion>::enable();
+            }
+
+            if (config.enable_reg_eos_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfSequence>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfSequence>::enable();
+            }
+
+            if (config.enable_reg_eosmp_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfSampling>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfSampling>::enable();
+            }
+
+            if (config.enable_inj_eoc_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectEndOfConversion>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectEndOfConversion>::enable();
+            }
+
+            if (config.enable_inj_eos_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectEndOfSequence>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectEndOfSequence>::enable();
+            }
+
+            if (config.enable_inj_cqovf_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectContextQueueOverflow>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectContextQueueOverflow>::enable();
+            }
+
+            if (config.enable_ovr_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kOverrun>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kOverrun>::enable();
+            }
+
+            if (config.enable_awd1_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kAnalogWatchdog1>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kAnalogWatchdog1>::enable();
+            }
+
+            if (config.enable_awd2_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kAnalogWatchdog2>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kAnalogWatchdog2>::enable();
+            }
+
+            if (config.enable_awd3_int)
+            {
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kAnalogWatchdog3>::ack();
+                ADCInterruptTraits<tkControllerID, ADCInterruptType::kAnalogWatchdog3>::enable();
+            }
+
+            NVIC_SetPriority(ControllerTraitsT::skIRQn, config.priority);
+            NVIC_EnableIRQ(ControllerTraitsT::skIRQn);
+        }
+
+        void disable_interrupts()
+        {
+            NVIC_DisableIRQ(ControllerTraitsT::skIRQn);
+        }
+
         /**
-     * @brief Arms the Inject Sequence.
-     * @note Must be called AFTER ADC is enabled (post_init).
-     */
+         * @brief Arms the Inject Sequence.
+         * @note Must be called AFTER ADC is enabled (post_init).
+         */
         void start_inject()
         {
-            ADCInterruptTraits<tkControllerID, ADCInterruptType::kEndOfInjectSequence>::ack();
+            if (!initialized())
+            {
+                VALLE_LOG_ERROR("ADC must be initialized before starting conversions.");
+                return;
+            }
 
-            // Enable Inject End of Sequence Interrupt (JEOS)
-            // This allows the Vector Table to jump to ADC1_2_IRQHandler
-            LL_ADC_EnableIT_JEOS(ControllerTraitsT::skInstance);
+            ADCInterruptTraits<tkControllerID, ADCInterruptType::kInjectEndOfSequence>::ack();
 
             // ARM THE TRIGGER (The most important part)
             // If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
@@ -700,9 +844,9 @@ namespace valle
         }
 
         /**
-     * @brief Rearm Inject Conversions.
-     *
-     */
+         * @brief Rearm Inject Conversions.
+         *
+         */
         static void trigger_inject()
         {
             // ARM THE TRIGGER (The most important part)
@@ -712,20 +856,31 @@ namespace valle
         }
 
         /**
-     * @brief Stop Inject Conversions.
-     *
-     */
+         * @brief Stop Inject Conversions.
+         *
+         */
         void stop_inject()
         {
             LL_ADC_INJ_StopConversion(ControllerTraitsT::skInstance);
         }
 
         /**
-     * @brief Arms the Regular Sequence.
-     *
-     */
+         * @brief Arms the Regular Sequence.
+         *
+         */
         void start_regular()
         {
+            if (!initialized())
+            {
+                VALLE_LOG_ERROR("ADC must be initialized before starting conversions.");
+                return;
+            }
+
+            // Clear all relevant flags to avoid immediate false triggers
+            // RM0440 Section 21.4.20: OVR flag must be cleared before starting
+            ADCInterruptTraits<tkControllerID, ADCInterruptType::kRegularEndOfSequence>::ack();
+            ADCInterruptTraits<tkControllerID, ADCInterruptType::kOverrun>::ack();
+
             if constexpr (skHasDMA)
             {
                 if (m_dma_config.interrupts.has_value())
@@ -739,19 +894,6 @@ namespace valle
                 const uint32_t reg_count   = ADCRegularGroupTraits::sequence_length_to_count(
                     LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
                 m_dma->start_periph_to_mem(adc_dr_addr, buffer_addr, reg_count);
-            }
-
-            // Clear all relevant flags to avoid immediate false triggers
-            // RM0440 Section 21.4.20: OVR flag must be cleared before starting
-            ADCInterruptTraits<tkControllerID, ADCInterruptType::kEndOfRegularSequence>::ack();
-            ADCInterruptTraits<tkControllerID, ADCInterruptType::kOverrun>::ack();
-
-            // If not using DMA
-            if (!skHasDMA)
-            {
-                // Enable Regular End of Sequence Interrupt (EOS)
-                // This allows the Vector Table to jump to ADC1_2_IRQHandler
-                LL_ADC_EnableIT_EOS(ControllerTraitsT::skInstance);
             }
 
             // ARM THE TRIGGER (The most important part)
@@ -950,7 +1092,7 @@ namespace valle
         void register_inject_sequence()
         {
             const uint32_t idx = get_adc_channel_idx<tkChannelId>();
-            if (idx < kADCMaxChannelId && m_inj_cidx_to_rank_map[idx] == 0)
+            if (idx < kADCMaxChannelId && m_inj_cidx_to_rank_map[idx] == skChannelRankFreeFlag)
             {
                 m_inj_cidx_to_rank_map[idx] = tkRank;
             }
@@ -966,7 +1108,7 @@ namespace valle
             requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCRegularRank<tkRank>)
         void register_regular_sequence()
         {
-            constexpr uint32_t idx = get_adc_channel_idx<tkChannelId>();
+            const uint32_t idx = get_adc_channel_idx<tkChannelId>();
             if (m_reg_cidx_to_rank_map[idx] == skChannelRankFreeFlag)
             {
                 m_reg_cidx_to_rank_map[idx] = tkRank;
@@ -1264,7 +1406,7 @@ namespace valle
      * @param raw Raw ADC value.
      * @return float Voltage in Volts.
      */
-        [[nodiscard]] inline float raw_to_voltage(const ADCValue raw)
+        [[nodiscard]] inline float raw_to_voltage(const ADCValue raw) const
         {
             return raw_normalized(raw) * 3.3F;
         }
@@ -1462,6 +1604,70 @@ namespace valle
             return m_channel.get().template read_regular_normalized<skRank>();
         }
     };
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice1 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 1>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice2 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 2>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice3 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 3>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice4 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 4>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice5 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 5>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice6 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 6>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice7 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 7>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice8 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 8>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice9 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 9>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice10 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 10>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice11 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 11>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice12 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 12>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice13 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 13>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice14 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 14>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice15 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 15>;
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
+        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    using ADCRegularChannelDevice16 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 16>;
 
     namespace detail
     {

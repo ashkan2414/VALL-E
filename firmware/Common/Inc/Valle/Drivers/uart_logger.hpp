@@ -78,7 +78,7 @@ namespace valle
         };                                                                                         \
     }
 
-#define VALLE_BIND_UART_LOGGER_ISR_ROUTER(instance)                                                        \
+#define VALLE_BIND_UART_LOGGER_UART_ISR_ROUTER(instance)                                                   \
     namespace valle                                                                                        \
     {                                                                                                      \
         template <>                                                                                        \
@@ -90,3 +90,7 @@ namespace valle
             }                                                                                              \
         };                                                                                                 \
     }
+
+#define VALLE_BIND_UART_LOGGER_ISR_ROUTERS(instance) \
+    VALLE_BIND_UART_LOGGER_DMA_ISR_ROUTER(instance)  \
+    VALLE_BIND_UART_LOGGER_UART_ISR_ROUTER(instance)

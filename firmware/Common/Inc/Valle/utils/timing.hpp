@@ -54,15 +54,24 @@ namespace valle
         using time_point                = std::chrono::time_point<CycleClock>;
         static constexpr bool is_steady = true;  // NOLINT(readability-identifier-naming)
 
+        static void init()
+        {
+            static bool initialized = false;
+            if (initialized)
+            {
+                return;
+            }
+
+            CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+            DWT->CYCCNT = 0;
+            DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
+            initialized = true;
+        }
+
         static time_point now() noexcept
         {
             // Ensure DWT is enabled
-            if (!(CoreDebug->DEMCR & CoreDebug_DEMCR_TRCENA_Msk))
-            {
-                CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
-                DWT->CYCCNT = 0;
-                DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-            }
+            init();
             return time_point(duration(DWT->CYCCNT));
         }
     };
@@ -143,7 +152,7 @@ namespace valle
     template <typename TDuration, typename TClock = ClockForDuration<TDuration>, bool tkBusyWait>
     inline void delay(TDuration wait_duration) noexcept
     {
-        const auto end_time = TClock::now() + wait_duration;
+        const auto end_time = TClock::now() + std::chrono::duration_cast<typename TClock::duration>(wait_duration);
         while (TClock::now() < end_time)
         {
             if constexpr (tkBusyWait)

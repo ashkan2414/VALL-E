@@ -53,6 +53,29 @@
             ]
         },
         {
+            "name": "app-adc-test",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "adc_test"
+            }
+        },
+        {
+            "name": "adc-test-debug",
+            "displayName": "ADC Test (Debug)",
+            "inherits": [
+                "debug",
+                "app-adc-test"
+            ]
+        },
+        {
+            "name": "adc-test-release",
+            "displayName": "ADC Test (Release)",
+            "inherits": [
+                "release",
+                "app-adc-test"
+            ]
+        },
+        {
             "name": "app-vca-test",
             "hidden": true,
             "cacheVariables": {
@@ -84,6 +107,14 @@
         {
             "name": "hello-release",
             "configurePreset": "hello-release"
+        },
+        {
+            "name": "adc-test-debug",
+            "configurePreset": "adc-test-debug"
+        },
+        {
+            "name": "adc-test-release",
+            "configurePreset": "adc-test-release"
         },
         {
             "name": "vca-test-debug",

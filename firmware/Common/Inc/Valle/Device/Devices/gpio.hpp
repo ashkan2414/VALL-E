@@ -30,7 +30,7 @@ namespace valle
     // Forward Declarations
     // =============================================================================
 
-    class GPIODevice;
+    class GPIORootDevice;
 
     template <GPIOPortID tkPortID>
     class GPIOPortDevice;
@@ -46,7 +46,7 @@ namespace valle
  * @brief Represents the GPIO Controller (GPIOA, GPIOB...).
  *
  */
-    class GPIODevice
+    class GPIORootDevice
     {
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
@@ -94,7 +94,7 @@ namespace valle
 
         static constexpr GPIOPortID skPortID = tkPortID;
 
-        using DependDevices = TypeList<GPIODevice>;
+        using DependDevices = TypeList<GPIORootDevice>;
         using PortTraitsT   = GPIOPortTraits<tkPortID>;
 
         void init()
