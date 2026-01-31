@@ -199,7 +199,7 @@ namespace valle
     // FORWARD DECLARATIONS
     // =============================================================================
 
-    class HRTIMDevice;
+    class HRTIMRootDevice;
 
     template <HRTIMControllerID tkControllerID>
         requires(kValidHRTIMID<tkControllerID>)
@@ -213,7 +213,7 @@ namespace valle
     // HRTIM DEVICE (SHARED DEVICE)
     // =============================================================================
 
-    class HRTIMDevice
+    class HRTIMRootDevice
     {
     public:
         struct Descriptor : public InterfaceDeviceDescriptor

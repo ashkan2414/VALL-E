@@ -4,7 +4,7 @@ namespace valle
 {
 
     template <>
-    struct ADCISRRouter<app::CurrentSensorT::ChannelT::skControllerID, ADCInterruptType::kEndOfInjectSequence>
+    struct ADCISRRouter<app::CurrentSensorT::ChannelT::skControllerID, ADCInterruptType::kInjectEndOfSequence>
     {
         static_assert(app::CurrentSensorT::ChannelT::skGroup == ADCChannelGroup::kInject,
                       "ADCISRRouter specialization used for non-inject channel");
@@ -22,8 +22,7 @@ namespace valle
 }  // namespace valle
 
 // Bind UART Logger ISR
-VALLE_BIND_UART_LOGGER_DMA_ISR_ROUTER(app::g_drivers.uart_logger);
-VALLE_BIND_UART_LOGGER_ISR_ROUTER(app::g_drivers.uart_logger);
+VALLE_BIND_UART_LOGGER_ISR_ROUTERS(app::g_drivers.uart_logger);
 
 // Bind I2C Command Buffer Device ISRs
 VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(app::g_devices.i2c1.get());

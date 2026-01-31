@@ -27,8 +27,8 @@ namespace valle
     {
         static inline USART_TypeDef* const skInstance          = USART1;
         static constexpr IRQn_Type         skIRQn              = USART1_IRQn;
-        static constexpr DMARequestID      skTxRequest         = DMARequestID::kUSART1Tx;
-        static constexpr DMARequestID      skRxRequest         = DMARequestID::kUSART1Rx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART1Tx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART1Rx;
         static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kA;
         static constexpr GPIOPinID         skDefaultGPIOTxPin  = 9;
         static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kA;
@@ -45,8 +45,8 @@ namespace valle
     {
         static inline USART_TypeDef* const skInstance          = USART2;
         static constexpr IRQn_Type         skIRQn              = USART2_IRQn;
-        static constexpr DMARequestID      skTxRequest         = DMARequestID::kUSART2Tx;
-        static constexpr DMARequestID      skRxRequest         = DMARequestID::kUSART2Rx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART2Tx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART2Rx;
         static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kA;
         static constexpr GPIOPinID         skDefaultGPIOTxPin  = 2;
         static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kA;
@@ -63,8 +63,8 @@ namespace valle
     {
         static inline USART_TypeDef* const skInstance          = USART3;
         static constexpr IRQn_Type         skIRQn              = USART3_IRQn;
-        static constexpr DMARequestID      skTxRequest         = DMARequestID::kUSART3Tx;
-        static constexpr DMARequestID      skRxRequest         = DMARequestID::kUSART3Rx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART3Tx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART3Rx;
         static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kB;
         static constexpr GPIOPinID         skDefaultGPIOTxPin  = 10;
         static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kB;
@@ -81,8 +81,8 @@ namespace valle
     {
         static inline USART_TypeDef* const skInstance          = UART4;
         static constexpr IRQn_Type         skIRQn              = UART4_IRQn;
-        static constexpr DMARequestID      skTxRequest         = DMARequestID::kUART4Tx;
-        static constexpr DMARequestID      skRxRequest         = DMARequestID::kUART4Rx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUART4Tx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUART4Rx;
         static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kC;
         static constexpr GPIOPinID         skDefaultGPIOTxPin  = 10;
         static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kC;
@@ -99,8 +99,8 @@ namespace valle
     {
         static inline USART_TypeDef* const skInstance          = UART5;
         static constexpr IRQn_Type         skIRQn              = UART5_IRQn;
-        static constexpr DMARequestID      skTxRequest         = DMARequestID::kUART5Tx;
-        static constexpr DMARequestID      skRxRequest         = DMARequestID::kUART5Rx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUART5Tx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUART5Rx;
         static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kC;
         static constexpr GPIOPinID         skDefaultGPIOTxPin  = 12;
         static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kD;
@@ -117,8 +117,8 @@ namespace valle
     {
         static inline USART_TypeDef* const skInstance          = LPUART1;
         static constexpr IRQn_Type         skIRQn              = LPUART1_IRQn;
-        static constexpr DMARequestID      skTxRequest         = DMARequestID::kLPUART1Tx;
-        static constexpr DMARequestID      skRxRequest         = DMARequestID::kLPUART1Rx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kLPUART1Tx;
+        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kLPUART1Rx;
         static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kA;
         static constexpr GPIOPinID         skDefaultGPIOTxPin  = 2;
         static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kA;

@@ -241,7 +241,32 @@ namespace valle
     };
 
     // ============================================================================
-    // DRIVER
+    // FORWARD DECLARATIONS
+    // ============================================================================
+    class UARTRootDevice;
+
+    template <UARTControllerID tkControllerID>
+    class UARTControllerDevice;
+
+    // ============================================================================
+    // UART ROOT DEVICE
+    // ============================================================================
+    class UARTRootDevice
+    {
+    public:
+        struct Descriptor : public InterfaceDeviceDescriptor
+        {
+            using Children = DeviceTreeList<UARTControllerDevice<kUSART1>,
+                                            UARTControllerDevice<kUSART2>,
+                                            UARTControllerDevice<kUSART3>,
+                                            UARTControllerDevice<kUART4>,
+                                            UARTControllerDevice<kUART5>,
+                                            UARTControllerDevice<kLPUART1>>;
+        };
+    };
+
+    // ============================================================================
+    // UART CONTROLLER DEVICE
     // ============================================================================
     namespace detail
     {
@@ -353,6 +378,7 @@ namespace valle
         static constexpr bool skHasDMATx = !CNullDMAChannel<DMAChannelTxT>;
         using InjectDevices5             = std::conditional_t<skHasDMATx, TypeList<DMAChannelTxT>, TypeList<>>;
 
+        using DependentDevices = TypeList<UARTRootDevice>;
         using InjectDevices =
             typename TypeListConcat<InjectDevices1, InjectDevices2, InjectDevices3, InjectDevices4, InjectDevices5>::
                 type;
@@ -450,7 +476,7 @@ namespace valle
                 // We only hold the dma channel device to lock it.
 
                 m_hdma_tx.Instance                 = DMAChannelTxT::ChannelTraitsT::skInstance;
-                m_hdma_tx.Init.Request             = static_cast<uint32_t>(ControllerTraitsT::skTxRequest);
+                m_hdma_tx.Init.Request             = static_cast<uint32_t>(ControllerTraitsT::skDMAMuxRequestTx);
                 m_hdma_tx.Init.Direction           = DMA_MEMORY_TO_PERIPH;
                 m_hdma_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
                 m_hdma_tx.Init.MemInc              = DMA_MINC_ENABLE;
@@ -465,9 +491,9 @@ namespace valle
                 // Enable UART Interrupt (required for HAL DMA mode to clean up after transfer)
                 m_dma_tx->enable_interrupts(DMAInterruptConfig{
                     .priority  = config.dma_int_priority,
-                    .enable_tc = true,   // Required
-                    .enable_ht = false,  // Not used
-                    .enable_te = true,   // Required
+                    .enable_tc = true,
+                    .enable_ht = true,
+                    .enable_te = true,
                 });
             }
 
@@ -506,6 +532,14 @@ namespace valle
             HAL_UART_IRQHandler(&m_huart);
         }
     };
+
+    using USART1ControllerDevice  = UARTControllerDevice<kUSART1>;
+    using USART2ControllerDevice  = UARTControllerDevice<kUSART2>;
+    using USART3ControllerDevice  = UARTControllerDevice<kUSART3>;
+    using UART4ControllerDevice   = UARTControllerDevice<kUART4>;
+    using UART5ControllerDevice   = UARTControllerDevice<kUART5>;
+    using LPUART1ControllerDevice = UARTControllerDevice<kLPUART1>;  // Usually the main USB UART
+
 }  // namespace valle
 
 // Put these in app_isr_bindings.hpp to bind your instance

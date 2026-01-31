@@ -15,7 +15,7 @@ namespace valle
      * @tparam tkChannelID    DMA Channel ID.
      */
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
+        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     [[nodiscard]] consteval static inline bool dma_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<DMAInterruptType>();
@@ -33,7 +33,7 @@ namespace valle
      * @tparam tkChannelID DMA Channel Index (1-8)
      */
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAID<tkControllerID> && kValidDMAChannel<tkChannelID>)
+        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     static inline void dma_irq_handler()
     {
         using GlobalRouterT               = DMAGlobalISRRouter<tkControllerID, tkChannelID>;
@@ -60,6 +60,16 @@ namespace valle
                     TraitsT::ack();                                                   \
                 }                                                                     \
                 RouterT::handle();                                                    \
+            }                                                                         \
+        }                                                                             \
+        else                                                                          \
+        {                                                                             \
+            if constexpr (TraitsT::skShouldClear)                                     \
+            {                                                                         \
+                if (TraitsT::is_pending())                                            \
+                {                                                                     \
+                    TraitsT::ack();                                                   \
+                }                                                                     \
             }                                                                         \
         }                                                                             \
     }

@@ -340,7 +340,7 @@ namespace valle
     // I2C DEVICE (THE INTERFACE DEVICE)
     // ============================================================================
 
-    class I2CDevice
+    class I2CRootDevice
     {
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
@@ -628,18 +628,19 @@ namespace valle
         inline void dma_init(const DMAPriority& priority)
             requires(skHasDMA)
         {
-            constexpr DMADirection direction = tkRead ? DMADirection::kPeriphToMem : DMADirection::kMemToPeriph;
-            constexpr DMARequestID request_id =
-                tkRead ? ControllerTraitsT::skRxRequest : ControllerTraitsT::skTxRequest;
+            constexpr DMADirection    direction = tkRead ? DMADirection::kPeriphToMem : DMADirection::kMemToPeriph;
+            constexpr DMAMuxRequestID request_id =
+                tkRead ? ControllerTraitsT::skDMAMuxRequestRx : ControllerTraitsT::skDMAMuxRequestTx;
 
             DMAChannelConfig dma_cfg = DMAChannelConfig{
-                .direction  = direction,
-                .priority   = priority,
-                .mode       = DMAMode::kNormal,
-                .data_width = DMADataWidth::kByte,
-                .inc_periph = false,
-                .inc_memory = true,
-                .request_id = request_id,
+                .direction         = direction,
+                .priority          = priority,
+                .mode              = DMAMode::kNormal,
+                .periph_data_width = DMADataWidth::kByte,
+                .memory_data_width = DMADataWidth::kByte,
+                .inc_periph        = false,
+                .inc_memory        = true,
+                .request_id        = request_id,
             };
 
             if constexpr (tkRead)

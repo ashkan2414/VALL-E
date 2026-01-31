@@ -58,14 +58,29 @@ namespace valle
                 RouterT::handle();                                     \
             }                                                          \
         }                                                              \
+        else                                                           \
+        {                                                              \
+            if constexpr (TraitsT::skShouldClear)                      \
+            {                                                          \
+                if (TraitsT::is_pending())                             \
+                {                                                      \
+                    TraitsT::ack();                                    \
+                }                                                      \
+            }                                                          \
+        }                                                              \
     }
 
+        HANDLE_ADC_INT(ADCInterruptType::kReady);
+        HANDLE_ADC_INT(ADCInterruptType::kRegularEndOfConversion);
+        HANDLE_ADC_INT(ADCInterruptType::kRegularEndOfSequence);
+        HANDLE_ADC_INT(ADCInterruptType::kRegularEndOfSampling);
+        HANDLE_ADC_INT(ADCInterruptType::kInjectEndOfConversion);
+        HANDLE_ADC_INT(ADCInterruptType::kInjectEndOfSequence);
+        HANDLE_ADC_INT(ADCInterruptType::kInjectContextQueueOverflow);
+        HANDLE_ADC_INT(ADCInterruptType::kOverrun);
         HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog1);
         HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog2);
         HANDLE_ADC_INT(ADCInterruptType::kAnalogWatchdog3);
-        HANDLE_ADC_INT(ADCInterruptType::kEndOfRegularSequence);
-        HANDLE_ADC_INT(ADCInterruptType::kEndOfInjectSequence);
-        HANDLE_ADC_INT(ADCInterruptType::kOverrun);
 #undef HANDLE_ADC_INT
     }
 
