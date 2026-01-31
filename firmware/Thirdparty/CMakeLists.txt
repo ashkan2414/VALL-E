@@ -24,12 +24,12 @@ set(stm32cube_include_dirs
     ${STM32CUBE_DIRECTORY}/Drivers/STM32G4xx_HAL_Driver/Inc
     ${STM32CUBE_DIRECTORY}/Drivers/CMSIS/Device/ST/STM32G4xx/Include
     ${STM32CUBE_DIRECTORY}/Drivers/CMSIS/Core/Include
-    ${FIRMWARE_DIRECTORY}/Core/Inc
+    ${FIRMWARE_DIRECTORY}/Platform/Inc
 )
 
 # STM32CubeMX generated application sources
 set(stm32cube_application_src
-    ${FIRMWARE_DIRECTORY}/startup_stm32g474xx.s
+    ${FIRMWARE_DIRECTORY}/Platform/Src/startup_stm32g474xx.s
 )
 
 # STM32 HAL/LL Drivers sources (exclude templates)
@@ -40,7 +40,7 @@ file(GLOB stm32cube_drivers_src
 )
 list(FILTER stm32cube_drivers_src EXCLUDE REGEX "template")
 
-# Drivers Midllewares
+# Drivers Middlewares
 # (none for now)
 
 # Link directories setup

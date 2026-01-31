@@ -7,13 +7,14 @@
 #include <span>
 #include <variant>
 
+#include "Valle/Core/timing.hpp"
 #include "Valle/Device/Devices/dma.hpp"
 #include "Valle/Device/Traits/i2c.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Utils/circular_queue.hpp"
 #include "Valle/Utils/hal_utils.hpp"
-#include "Valle/Utils/timing.hpp"
 #include "delegate/delegate.h"
+
 
 namespace valle
 {

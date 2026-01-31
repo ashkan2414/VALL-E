@@ -4,9 +4,10 @@
 #include <numbers>
 #include <span>
 
+#include "Valle/Core/timing.hpp"
 #include "Valle/Device/Devices/i2c.hpp"
 #include "Valle/Math/converters.hpp"
-#include "Valle/Utils/timing.hpp"
+
 
 namespace valle
 {

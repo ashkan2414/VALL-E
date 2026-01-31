@@ -1,0 +1,32 @@
+#include "Valle/Core/core.hpp"
+
+#include "Valle/Core/clock.hpp"
+#include "Valle/Core/error.hpp"
+#include "Valle/Core/timing.hpp"
+
+namespace valle
+{
+    void core_init()
+    {
+        /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+        HAL_Init();
+
+        /* Configure the system clock */
+        config_system_clock();
+
+        /* Configure system timers */
+        SystemClock::init();
+        CycleClock::init();
+    }
+
+    extern "C"
+    {
+        void HAL_MspInit(void)  // NOLINT(readability-identifier-naming)
+        {
+            __HAL_RCC_SYSCFG_CLK_ENABLE();
+            __HAL_RCC_PWR_CLK_ENABLE();
+            HAL_PWREx_DisableUCPDDeadBattery();
+        }
+    }
+
+}  // namespace valle
