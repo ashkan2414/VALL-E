@@ -74,10 +74,13 @@ namespace valle
         /**
          * @brief Initialize ADC Clock with given configuration.
          * @param config ADC Clock configuration.
+         * @note The ADC has certain clock speed limitations depending on use. Refer to Table 66. ADC characteristics
+         * in the datasheet.
          *
          */
         [[nodiscard]] bool init(const ADCClockConfig& config)
         {
+            // TODO: Validate clock speed based on system clock and prescaler
             const bool result = std::visit(
                 Overloaded{
                     [](const ADCAsyncClockConfig& async_config)

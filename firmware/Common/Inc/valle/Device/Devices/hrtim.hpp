@@ -4,11 +4,12 @@
 #include <cstdint>
 
 #include "Valle/Core/Logging/logger.hpp"
+#include "Valle/Core/timing.hpp"
 #include "Valle/Device/Traits/hrtim.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Utils/hal_utils.hpp"
-#include "Valle/Utils/timing.hpp"
 #include "stm32g4xx_ll_bus.h"
+
 
 namespace valle
 {

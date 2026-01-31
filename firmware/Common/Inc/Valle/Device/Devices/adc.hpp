@@ -7,12 +7,13 @@
 #include <variant>
 
 #include "Valle/Core/Logging/logger.hpp"
+#include "Valle/Core/timing.hpp"
 #include "Valle/Device/Devices/adc_clk.hpp"
 #include "Valle/Device/Devices/dma.hpp"
 #include "Valle/Device/Traits/adc.hpp"
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Drivers/gpio.hpp"
-#include "Valle/Utils/timing.hpp"
+
 
 namespace valle
 {

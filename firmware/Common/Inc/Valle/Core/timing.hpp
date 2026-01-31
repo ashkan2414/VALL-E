@@ -1,14 +1,15 @@
 #pragma once
 
+#include <delegate/delegate.h>
+#include <stm32g4xx_hal.h>
+
 #include <chrono>
 #include <cstdint>
 
-#include "delegate/delegate.h"
-#include "stm32g4xx_hal.h"
+#include "Valle/Core/clock.hpp"
 
 namespace valle
 {
-    constexpr uint32_t kSystemClockFreqHz = 170'000'000;  // 170 MHz
 
     // 1 tick = 1 millisecond (Standard HAL resolution)
     using ms_ticks = std::chrono::duration<uint32_t, std::milli>;
@@ -35,6 +36,11 @@ namespace valle
         using duration                  = std::chrono::duration<rep, period>;
         using time_point                = std::chrono::time_point<SystemClock>;
         static constexpr bool is_steady = true;  // NOLINT(readability-identifier-naming)
+
+        static void init()
+        {
+            // Nothing to do, HAL_GetTick is already initialized by HAL_Init
+        }
 
         static time_point now() noexcept
         {
@@ -71,7 +77,6 @@ namespace valle
         static time_point now() noexcept
         {
             // Ensure DWT is enabled
-            init();
             return time_point(duration(DWT->CYCCNT));
         }
     };

@@ -35,7 +35,7 @@ set(CMAKE_PROJECT_NAME VALL-E_Firmware)
 # Enable compile command export (for VS Code IntelliSense)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-# Core project settings
+# Platform project settings
 project(${CMAKE_PROJECT_NAME})
 
 # Enable Assembly, C, and C++
@@ -72,22 +72,21 @@ file(GLOB_RECURSE COMMON_SOURCES
 )
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${COMMON_SOURCES})
 
-# C. Auto-Discovery in Core
-# This finds any .cpp or .c file you add to Core/Src,
-# BUT excludes main.c if you accidentally have a main.cpp to avoid conflicts.
-file(GLOB CORE_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/Core/Src/*.c"
+# C. Auto-Discovery in Platform
+# This finds any .cpp or .c file you add to Platform/Src,
+file(GLOB PLATFORM_SOURCES
+    "${CMAKE_CURRENT_SOURCE_DIR}/Platform/Src/*.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/Platform/Src/*.c"
 )
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${CORE_SOURCES})
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${PLATFORM_SOURCES})
 
 # ==============================================================================
 # INCLUDE DIRECTORIES
 # ==============================================================================
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc                  # CubeMX generated headers (main.h)
-    ${CMAKE_CURRENT_SOURCE_DIR}/Common/Inc                # Your Common library headers (PID.h)
-    ${CMAKE_CURRENT_SOURCE_DIR}/Apps/${TARGET_APP}        # The specific App's local headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Inc                  # Platform headers (stm32g4xx_hal_conf.h, etc)
+    ${CMAKE_CURRENT_SOURCE_DIR}/Common/Inc                    # Application Common headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/Apps/${TARGET_APP}            # The specific App's local headers
 )
 
 # ==============================================================================
