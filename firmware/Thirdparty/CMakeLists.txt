@@ -29,7 +29,7 @@ set(stm32cube_include_dirs
 
 # STM32CubeMX generated application sources
 set(stm32cube_application_src
-    ${FIRMWARE_DIRECTORY}/Platform/Src/startup_stm32g474xx.s
+    ${FIRMWARE_DIRECTORY}/Platform/startup_stm32g474xx.s
 )
 
 # STM32 HAL/LL Drivers sources (exclude templates)

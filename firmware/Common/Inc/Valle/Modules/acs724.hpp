@@ -6,9 +6,9 @@ namespace valle
 {
 
     /**
- * @brief ACS724 models.
- *
- */
+     * @brief ACS724 models.
+     *
+     */
     enum class ACS724Model : uint8_t
     {
         k2P5ABi = 0,  // 2P5AB-S ±2.5
@@ -117,15 +117,15 @@ namespace valle
 
     struct ACS724Config
     {
-        ADCChannelConfig channel_config = {};  /// ADC Channel Configuration
+        ADCChannelConfig channel_config{};  /// ADC Channel Configuration
     };
 
     /**
- * @brief ACS724 Current Sensor Driver.
- *
- * @tparam TADCChannel ADC Channel Device type.
- * @tparam tkModel   ACS724 Model type.
- */
+     * @brief ACS724 Current Sensor Driver.
+     *
+     * @tparam TADCChannel ADC Channel Device type.
+     * @tparam tkModel   ACS724 Model type.
+     */
     template <typename TADCChannel, ACS724Model tkModel>
     class ACS724Module
     {
@@ -157,30 +157,30 @@ namespace valle
         // Initialization
         // ------------------------------------------------------------------------
         /**
-     * @brief Initialize ACS724 Module.
-     *
-     * @param config Configuration structure.
-     */
-        void init(const ACS724Config& config)
+         * @brief Initialize ACS724 Module.
+         *
+         * @param config Configuration structure.
+         */
+        [[nodiscard]] bool init(const ACS724Config& config)
         {
-            m_driver.init(ADCSensorDriverConfig<ConverterT>{.channel_config   = config.channel_config,
-                                                            .converter_config = skConverterConfig});
+            return m_driver.init(ADCSensorDriverConfig<ConverterT>{.channel_config   = config.channel_config,
+                                                                   .converter_config = skConverterConfig});
         }
 
         /**
-     * @brief Read the converted current value.
-     *
-     * @return float Current in Amps.
-     */
+         * @brief Read the converted current value.
+         *
+         * @return float Current in Amps.
+         */
         [[nodiscard]] inline float read_amps() const
         {
             return m_driver.read();
         }
 
         /**
-     * @brief Notify that new data is available (to be called from ADC ISR).
-     *
-     */
+         * @brief Notify that new data is available (to be called from ADC ISR).
+         *
+         */
         void on_data_available()
         {
             m_driver.on_data_available();

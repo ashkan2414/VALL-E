@@ -280,15 +280,17 @@ namespace valle
         using MuxControllerDeviceT = DMAMuxControllerDevice<ControllerTraitsT::skMuxControllerID>;
         using DependDevices        = TypeList<DMARootDevice, MuxControllerDeviceT>;
 
-        static inline void init()
+        static inline bool init()
         {
             // Enable Controller Clock
             ControllerTraitsT::enable_clock();
+            return true;
         }
 
-        static inline void post_init()
+        static inline bool post_init()
         {
             // Additional post-initialization if needed
+            return true;
         }
     };
 
@@ -329,7 +331,7 @@ namespace valle
         /**
          * @brief Initialize the DMA Channel and route the DMAMUX.
          */
-        void init(const DMAChannelConfig& config)
+        [[nodiscard]] bool init(const DMAChannelConfig& config)
         {
             // Configure Transfer Parameters
             LL_DMA_ConfigTransfer(
@@ -345,6 +347,7 @@ namespace valle
             // Configure Routing (DMAMUX)
             // This is what connects "ADC1" to "DMA1 Channel 1"
             m_dmamux->route_request(ChannelTraitsT::skMuxChannelID, config.request_id);
+            return true;
         }
 
         /**

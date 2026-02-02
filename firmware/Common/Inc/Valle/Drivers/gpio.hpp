@@ -10,15 +10,9 @@ namespace valle
     // ============================================================================
     struct GPIODigitalOutConfig
     {
-        GPIOOutputMode mode;
-        GPIOSpeedMode  speed;
-        GPIOPullMode   pull;
-
-        [[nodiscard]] static GPIODigitalOutConfig default_config()
-        {
-            return GPIODigitalOutConfig{
-                .mode = GPIOOutputMode::kPushPull, .speed = GPIOSpeedMode::kLow, .pull = GPIOPullMode::kNoPull};
-        }
+        GPIOOutputMode mode  = GPIOOutputMode::kPushPull;
+        GPIOSpeedMode  speed = GPIOSpeedMode::kLow;
+        GPIOPullMode   pull  = GPIOPullMode::kNoPull;
     };
 
     template <typename TGpioPin>
@@ -29,23 +23,25 @@ namespace valle
 
     private:
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
-        bool                                      m_inverted;
+        bool                                      m_inverted = false;
 
     public:
+        GPIODigitalOutDriver() = delete;
+
         /**
-     * @brief Construct a new Digital Out
-     * @param pin Injected Pin Resource
-     */
+         * @brief Construct a new Digital Out
+         * @param pin Injected Pin Resource
+         */
         GPIODigitalOutDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
         {
         }
 
-        void init(const GPIODigitalOutConfig& config = GPIODigitalOutConfig::default_config())
+        [[nodiscard]] bool init(const GPIODigitalOutConfig& config)
         {
-            m_pin.get().init(GPIOPinConfig{.mode      = static_cast<uint32_t>(config.mode),
-                                           .pull      = config.pull,
-                                           .speed     = config.speed,
-                                           .alternate = GPIOAlternativeFunction::kAF0});
+            return m_pin.get().init(GPIOPinConfig{.mode      = static_cast<uint32_t>(config.mode),
+                                                  .pull      = config.pull,
+                                                  .speed     = config.speed,
+                                                  .alternate = GPIOAlternativeFunction::kAF0});
         }
 
         // --- API ---
@@ -71,18 +67,10 @@ namespace valle
     // ============================================================================
     struct GPIODigitalInConfig
     {
-        GPIOPullMode              pull;
-        GPIOInputInterruptTrigger it_trigger;
-        GPIOInputInterruptAction  it_action;
-        bool                      inverted;
-
-        [[nodiscard]] static inline constexpr GPIODigitalInConfig default_config()
-        {
-            return GPIODigitalInConfig{.pull       = GPIOPullMode::kNoPull,
-                                       .it_trigger = GPIOInputInterruptTrigger::kNone,
-                                       .it_action  = GPIOInputInterruptAction::kInterrupt,
-                                       .inverted   = false};
-        }
+        GPIOPullMode              pull       = GPIOPullMode::kNoPull;
+        GPIOInputInterruptTrigger it_trigger = GPIOInputInterruptTrigger::kNone;
+        GPIOInputInterruptAction  it_action  = GPIOInputInterruptAction::kInterrupt;
+        bool                      inverted   = false;
     };
 
     template <typename TGpioPin>
@@ -96,11 +84,13 @@ namespace valle
         bool                                      m_inverted;
 
     public:
+        GPIODigitalInDriver() = delete;
+
         GPIODigitalInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
         {
         }
 
-        void init(const GPIODigitalInConfig& config = GPIODigitalInConfig::default_config())
+        [[nodiscard]] bool init(const GPIODigitalInConfig& config)
         {
             m_inverted = config.inverted;
 
@@ -130,16 +120,12 @@ namespace valle
 
     struct GPIOAnalogInConfig
     {
-        [[nodiscard]] static inline constexpr GPIOAnalogInConfig default_config()
-        {
-            return GPIOAnalogInConfig{};
-        }
     };
 
     /**
- * @brief Configures a pin as Analog (High Impedance).
- * Used for ADC, DAC, OpAmp, Comparator, or Low Power disconnect.
- */
+     * @brief Configures a pin as Analog (High Impedance).
+     * Used for ADC, DAC, OpAmp, Comparator, or Low Power disconnect.
+     */
     template <typename TGpioPin>
     class GPIOAnalogInDriver
     {
@@ -150,16 +136,19 @@ namespace valle
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
 
     public:
+        GPIOAnalogInDriver() = delete;
+
         GPIOAnalogInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
         {
         }
 
-        void init(const GPIOAnalogInConfig& config = GPIOAnalogInConfig::default_config())
+        [[nodiscard]] bool init(const GPIOAnalogInConfig& config)
         {
-            m_pin.get().init(GPIOPinConfig{.mode      = GPIO_MODE_ANALOG,
-                                           .pull      = GPIOPullMode::kNoPull,
-                                           .speed     = GPIOSpeedMode::kLow,
-                                           .alternate = GPIOAlternativeFunction::kAF0});
+            (void)config;
+            return m_pin.get().init(GPIOPinConfig{.mode      = GPIO_MODE_ANALOG,
+                                                  .pull      = GPIOPullMode::kNoPull,
+                                                  .speed     = GPIOSpeedMode::kLow,
+                                                  .alternate = GPIOAlternativeFunction::kAF0});
         }
     };
 
@@ -169,22 +158,15 @@ namespace valle
 
     struct GPIOAlternativeFunctionConfig
     {
-        GPIOAlternateFunctionMode mode;
-        GPIOSpeedMode             speed;
-        GPIOPullMode              pull;
-
-        [[nodiscard]] static inline constexpr GPIOAlternativeFunctionConfig default_config()
-        {
-            return GPIOAlternativeFunctionConfig{.mode  = GPIOAlternateFunctionMode::kPushPull,
-                                                 .speed = GPIOSpeedMode::kLow,
-                                                 .pull  = GPIOPullMode::kNoPull};
-        };
+        GPIOAlternateFunctionMode mode  = GPIOAlternateFunctionMode::kPushPull;
+        GPIOSpeedMode             speed = GPIOSpeedMode::kLow;
+        GPIOPullMode              pull  = GPIOPullMode::kNoPull;
     };
 
     /**
- * @brief Connects a pin to an internal peripheral (Timer, UART, SPI).
- * @tparam tkAfIdx The Alternate Function Index (0-15). See Datasheet.
- */
+     * @brief Connects a pin to an internal peripheral (Timer, UART, SPI).
+     * @tparam tkAfIdx The Alternate Function Index (0-15). See Datasheet.
+     */
     template <typename TGpioPin, GPIOAlternativeFunction tkAfIdx>
     class GPIOAlternativeFunctionDriver
     {
@@ -195,16 +177,18 @@ namespace valle
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
 
     public:
+        GPIOAlternativeFunctionDriver() = delete;
+
         GPIOAlternativeFunctionDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
         {
         }
 
-        void init(const GPIOAlternativeFunctionConfig& config = GPIOAlternativeFunctionConfig::default_config())
+        [[nodiscard]] bool init(const GPIOAlternativeFunctionConfig& config)
         {
-            m_pin.get().init(GPIOPinConfig{.mode      = static_cast<uint32_t>(config.mode),
-                                           .pull      = config.pull,
-                                           .speed     = config.speed,
-                                           .alternate = tkAfIdx});
+            return m_pin.get().init(GPIOPinConfig{.mode      = static_cast<uint32_t>(config.mode),
+                                                  .pull      = config.pull,
+                                                  .speed     = config.speed,
+                                                  .alternate = tkAfIdx});
         }
     };
 

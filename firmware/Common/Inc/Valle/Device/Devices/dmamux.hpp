@@ -66,14 +66,16 @@ namespace valle
         using DependDevices     = TypeList<DMAMuxRootDevice>;
         using ControllerTraitsT = DMAMuxControllerTraits<tkControllerID>;
 
-        static inline void init()
+        static inline bool init()
         {
             ControllerTraitsT::enable_clock();
+            return true;
         }
 
-        static inline void post_init()
+        static inline bool post_init()
         {
             // Additional post-initialization if needed
+            return true;
         }
 
         static inline void route_request(const DMAMuxChannel tkChannelID, const DMAMuxRequestID tkRequestID)

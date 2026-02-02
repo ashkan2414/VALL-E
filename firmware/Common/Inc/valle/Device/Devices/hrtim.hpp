@@ -10,7 +10,6 @@
 #include "Valle/Utils/hal_utils.hpp"
 #include "stm32g4xx_ll_bus.h"
 
-
 namespace valle
 {
 
@@ -280,9 +279,10 @@ namespace valle
             return true;
         }
 
-        static inline void post_init()
+        [[nodiscard]] inline bool post_init()
         {
             // Do nothing for now
+            return true;
         }
 
         static inline void init_output_channel(const uint32_t output, const HRTIMOutputChannelConfig& config)
@@ -467,8 +467,8 @@ namespace valle
             // We need to find the smallest integer i such that f_hrtim * 32 / (2^i * f_target) <= 65535.
             // We arrive at the following condition for i:
             // i > log2(f_hrtim / f_target) - 11 --> i = floor(log2(f_hrtim / f_target)) - 10
-            // To implement this efficienctly, we can take advantage of the fact that floor(log2(floor(x))) = floor(log2(x))
-            // and then we can use __CLZ to compute floor(log2(x)) = 31 - __CLZ(x) for 32-bit integers.
+            // To implement this efficienctly, we can take advantage of the fact that floor(log2(floor(x))) =
+            // floor(log2(x)) and then we can use __CLZ to compute floor(log2(x)) = 31 - __CLZ(x) for 32-bit integers.
 
             // Validate input to prevent divide-by-zero and __builtin_clz(0)
             // RM0440 Section 29.3.6: HRTIM frequency range is ~81 Hz to 5.3 MHz @ 170 MHz
@@ -508,7 +508,7 @@ namespace valle
             }
 
             const uint32_t ratio = f_hrtim_hz / target_freq_hz;
-            const int8_t   index = 31 - __builtin_clz(ratio) - 10;
+            const int8_t   index = static_cast<int8_t>(31 - __builtin_clz(ratio) - 10);
             return std::clamp<int8_t>(index, kMinPrescaler, kMaxPrescaler);
         }
 

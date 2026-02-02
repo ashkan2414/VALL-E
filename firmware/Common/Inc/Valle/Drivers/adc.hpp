@@ -95,8 +95,8 @@ namespace valle
     template <CADCConverter TConverter = ADCRawValueConverter<IdentityConverter<ADCValue>>>
     struct ADCSensorDriverConfig
     {
-        ADCChannelConfig            channel_config   = {};
-        typename TConverter::Config converter_config = {};
+        ADCChannelConfig            channel_config{};
+        typename TConverter::Config converter_config{};
     };
 
     template <CDevice TADCChannel, CADCConverter TConverter = ADCRawValueConverter<IdentityConverter<ADCValue>>>
@@ -140,10 +140,10 @@ namespace valle
             return *this;
         }
 
-        void init(const ADCSensorDriverConfig<TConverter>& config)
+        [[nodiscard]] bool init(const ADCSensorDriverConfig<TConverter>& config)
         {
-            m_channel.get().init(config.channel_config);
             m_converter.init(config.converter_config);
+            return m_channel.get().init(config.channel_config);
         }
 
         [[nodiscard]] inline ConvertedT read() const

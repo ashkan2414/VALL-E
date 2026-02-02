@@ -35,7 +35,7 @@ BinPackArguments: false
 BinPackParameters: false
 AllowShortFunctionsOnASingleLine: None
 AlwaysBreakTemplateDeclarations: Yes
-ReflowComments: false
+ReflowComments: true
 
 # --- Features ---
 FixNamespaceComments: true

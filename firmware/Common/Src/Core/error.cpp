@@ -4,12 +4,59 @@
 
 namespace valle
 {
-    void fault_handler()
+    struct PanicSourceInfo
+    {
+        std::string_view message;
+        SourceLocation   location;
+    };
+
+    struct AssertSourceInfo
+    {
+        std::string_view file;
+        uint32_t         line;
+    };
+
+    enum class FaultInterruptType
+    {
+        kHardFault,
+        kMemManageFault,
+        kBusFault,
+        kUsageFault,
+        kNMI
+    };
+
+    struct FaultInterruptContextInfo
+    {
+        FaultInterruptType fault_type;
+    };
+
+    struct FaultContext
+    {
+        std::variant<PanicSourceInfo, AssertSourceInfo, FaultInterruptContextInfo> source_info;
+    };
+
+    FaultContext g_fault_context;
+
+    void fault_handler(FaultContext&& context)
     {
         __disable_irq();
+        g_fault_context = std::move(context);
         while (1)
         {
         }
+    }
+
+    /**
+     * @brief This function logs a panic message and halts the system.
+     * @param message The panic message to log.
+     * @param location The source location where the panic occurred.
+     */
+    void panic(std::string_view message, SourceLocation location = {})
+    {
+        fault_handler(FaultContext{.source_info = PanicSourceInfo{
+                                       .message  = message,
+                                       .location = location,
+                                   }});
     }
 
     extern "C"
@@ -22,9 +69,12 @@ namespace valle
          * @param  line: assert_param error line source number
          * @retval None
          */
-        void assert_failed(uint8_t *file, uint32_t line)
+        void assert_failed(uint8_t* file, uint32_t line)
         {
-            fault_handler();
+            fault_handler(FaultContext{.source_info = AssertSourceInfo{
+                                           .file = reinterpret_cast<const char*>(file),
+                                           .line = line,
+                                       }});
         }
 #endif /* USE_FULL_ASSERT */
 
@@ -33,7 +83,9 @@ namespace valle
          */
         void NMI_Handler(void)  // NOLINT(readability-identifier-naming)
         {
-            fault_handler();
+            fault_handler(FaultContext{.source_info = FaultInterruptContextInfo{
+                                           .fault_type = FaultInterruptType::kNMI,
+                                       }});
         }
 
         /**
@@ -41,7 +93,9 @@ namespace valle
          */
         void HardFault_Handler(void)  // NOLINT(readability-identifier-naming)
         {
-            fault_handler();
+            fault_handler(FaultContext{.source_info = FaultInterruptContextInfo{
+                                           .fault_type = FaultInterruptType::kHardFault,
+                                       }});
         }
 
         /**
@@ -49,7 +103,9 @@ namespace valle
          */
         void MemManage_Handler(void)  // NOLINT(readability-identifier-naming)
         {
-            fault_handler();
+            fault_handler(FaultContext{.source_info = FaultInterruptContextInfo{
+                                           .fault_type = FaultInterruptType::kMemManageFault,
+                                       }});
         }
 
         /**
@@ -57,7 +113,9 @@ namespace valle
          */
         void BusFault_Handler(void)  // NOLINT(readability-identifier-naming)
         {
-            fault_handler();
+            fault_handler(FaultContext{.source_info = FaultInterruptContextInfo{
+                                           .fault_type = FaultInterruptType::kBusFault,
+                                       }});
         }
 
         /**
@@ -65,7 +123,9 @@ namespace valle
          */
         void UsageFault_Handler(void)  // NOLINT(readability-identifier-naming)
         {
-            fault_handler();
+            fault_handler(FaultContext{.source_info = FaultInterruptContextInfo{
+                                           .fault_type = FaultInterruptType::kUsageFault,
+                                       }});
         }
     }
 

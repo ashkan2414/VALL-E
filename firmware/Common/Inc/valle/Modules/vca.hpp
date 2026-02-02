@@ -14,9 +14,9 @@ namespace valle
 {
 
     /**
- * @brief VCAControllerModule (Voice Coil Actuator) Control Modes
- *
- */
+     * @brief VCAControllerModule (Voice Coil Actuator) Control Modes
+     *
+     */
     enum class VCAControlMode
     {
         kOpenLoopDuty,
@@ -24,13 +24,13 @@ namespace valle
     };
 
     /**
- * @brief VCAControllerModule (Voice Coil Actuator) Configuration Structure
- *
- */
+     * @brief VCAControllerModule (Voice Coil Actuator) Configuration Structure
+     *
+     */
     struct VCAModuleConfig
     {
         // PWM Configuration
-        HRTIMHalfBridgeConfig pwm_config = {};
+        HRTIMHalfBridgeConfig pwm_config{};
 
         /// Maximum current in Amps
         float max_current_amp = 5.0F;  // NOLINT(readability-magic-numbers)
@@ -40,11 +40,11 @@ namespace valle
     };
 
     /**
- * @brief VCAControllerModule (Voice Coil Actuator) Controller Class
- *
- * @tparam THRTIMTimerDevice Hardware Device class for HRTIM control.
- * @tparam tkMode  Control mode (open-loop duty or closed-loop current).
- */
+     * @brief VCAControllerModule (Voice Coil Actuator) Controller Class
+     *
+     * @tparam THRTIMTimerDevice Hardware Device class for HRTIM control.
+     * @tparam tkMode  Control mode (open-loop duty or closed-loop current).
+     */
     template <typename THRTIMDevice, VCAControlMode tkMode = VCAControlMode::kClosedLoopCurrent>
     class VCAControllerModule
     {
@@ -70,10 +70,10 @@ namespace valle
         VCAControllerModule() = delete;
 
         /**
-     * @brief Construct a new VCAControllerModule object
-     *
-     * @param current_feedback_fn function to read the current feedback in Amps.
-     */
+         * @brief Construct a new VCAControllerModule object
+         *
+         * @param current_feedback_fn function to read the current feedback in Amps.
+         */
         VCAControllerModule(DeviceRef<THRTIMDevice> hw,
                             const VCAModuleConfig&  config,
                             CurrentFeedbackFn       current_feedback_fn)
@@ -89,10 +89,10 @@ namespace valle
         }
 
         /**
-     * @brief Construct a new VCAControllerModule object with default configuration.
-     *
-     * @param current_feedback_fn function to read the current feedback in Amps.
-     */
+         * @brief Construct a new VCAControllerModule object with default configuration.
+         *
+         * @param current_feedback_fn function to read the current feedback in Amps.
+         */
         VCAControllerModule(DeviceRef<THRTIMDevice> hw, CurrentFeedbackFn current_feedback_fn)
             : VCAControllerModule(std::move(hw), VCAModuleConfig{}, std::move(current_feedback_fn))
         {
@@ -125,13 +125,16 @@ namespace valle
         // ------------------------------------------------------------------------
 
         /**
-     * @brief Initializes the VCAControllerModule hardware and feedback system.
-     *
-     */
-        void init()
+         * @brief Initializes the VCAControllerModule hardware and feedback system.
+         *
+         */
+        [[nodiscard]] bool init()
         {
             m_feedback_system.reset();
-            m_device.init(m_config.pwm_config);
+            if (!m_device.init(m_config.pwm_config))
+            {
+                return false;
+            }
 
             // Start at idle
             if constexpr (tkMode == VCAControlMode::kOpenLoopDuty)
@@ -145,21 +148,23 @@ namespace valle
 
             // Update PID sample time based on PWM frequency
             m_feedback_system.open_loop().set_sample_time(1.0F / static_cast<float>(get_ctrl_loop_freq_hz()));
+
+            return true;
         }
 
         /**
-     * @brief Enables the actuator output.
-     *
-     */
+         * @brief Enables the actuator output.
+         *
+         */
         void enable()
         {
             m_device.enable_output();
         }
 
         /**
-     * @brief Disables the actuator output (sets duty to 0% and disables PWM).
-     *
-     */
+         * @brief Disables the actuator output (sets duty to 0% and disables PWM).
+         *
+         */
         void disable()
         {
             m_device.disable_output();
@@ -170,9 +175,9 @@ namespace valle
         // ------------------------------------------------------------------------
 
         /**
-     * @brief Sets the target duty cycle for open-loop control.
-     * @param duty 0.0 to 1.0 (0.5 = Zero Force)
-     */
+         * @brief Sets the target duty cycle for open-loop control.
+         * @param duty 0.0 to 1.0 (0.5 = Zero Force)
+         */
         void set_target_duty(const float duty)
             requires(tkMode == VCAControlMode::kOpenLoopDuty)
         {
@@ -180,9 +185,9 @@ namespace valle
         }
 
         /**
-     * @brief Sets the normalized force output.
-     * @param force -1.0 (Max Reverse) to 1.0 (Max Forward). 0.0 is Idle.
-     */
+         * @brief Sets the normalized force output.
+         * @param force -1.0 (Max Reverse) to 1.0 (Max Forward). 0.0 is Idle.
+         */
         void set_target_current(const float amps)
             requires(tkMode == VCAControlMode::kClosedLoopCurrent)
         {
@@ -191,29 +196,29 @@ namespace valle
         }
 
         /**
-     * @brief Gets the control loop frequency in Hz.
-     *
-     * @return uint64_t Control loop frequency.
-     */
-        [[nodiscard]] const uint64_t get_ctrl_loop_freq_hz() const
+         * @brief Gets the control loop frequency in Hz.
+         *
+         * @return uint64_t Control loop frequency.
+         */
+        [[nodiscard]] uint64_t get_ctrl_loop_freq_hz() const
         {
             return m_config.pwm_config.get_int_freq_hz();
         }
 
         /**
-     * @brief Get the interrupt frequency in Hz.
-     *
-     * @return const uint64_t Interrupt frequency.
-     */
-        [[nodiscard]] const uint64_t get_int_freq_hz() const
+         * @brief Get the interrupt frequency in Hz.
+         *
+         * @return uint64_t Interrupt frequency.
+         */
+        [[nodiscard]] uint64_t get_int_freq_hz() const
         {
             return m_device.get_int_freq_hz();
         }
 
         /**
-     * @brief Runs the control loop. Should be called at PWM frequency via a timer interrupt.
-     * @note Hot Path! Keep this function efficient and ISR safe.
-     */
+         * @brief Runs the control loop. Should be called at PWM frequency via a timer interrupt.
+         * @note Hot Path! Keep this function efficient and ISR safe.
+         */
         void run_ctrl_loop()
         {
             const float output_duty = get_controller_output();
@@ -226,10 +231,10 @@ namespace valle
 
     private:
         /**
-     * @brief Gets the controller output based on the current mode.
-     *
-     * @return float Controller output value.
-     */
+         * @brief Gets the controller output based on the current mode.
+         *
+         * @return float Controller output value.
+         */
         [[nodiscard]] float get_controller_output()
         {
             if constexpr (tkMode == VCAControlMode::kOpenLoopDuty)
