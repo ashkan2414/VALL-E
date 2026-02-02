@@ -11,9 +11,9 @@ namespace valle
     // =============================================================================
 
     /**
- * @brief Configuration structure for GPIO Pin initialization.
- *
- */
+     * @brief Configuration structure for GPIO Pin initialization.
+     *
+     */
     struct GPIOPinConfig
     {
         uint32_t                mode      = GPIO_MODE_INPUT;
@@ -43,9 +43,9 @@ namespace valle
     // THE GPIO CONTROLLER (interface device)
     // ============================================================================
     /**
- * @brief Represents the GPIO Controller (GPIOA, GPIOB...).
- *
- */
+     * @brief Represents the GPIO Controller (GPIOA, GPIOB...).
+     *
+     */
     class GPIORootDevice
     {
     public:
@@ -65,9 +65,9 @@ namespace valle
     // THE PORT (Shared Device)
     // ============================================================================
     /**
- * @brief Represents the GPIO Port Hardware (GPIOA, GPIOB...).
- * Responsibility: Managing the AHB Clock.
- */
+     * @brief Represents the GPIO Port Hardware (GPIOA, GPIOB...).
+     * Responsibility: Managing the AHB Clock.
+     */
     template <GPIOPortID tkPortID>
     class GPIOPortDevice
     {
@@ -97,14 +97,16 @@ namespace valle
         using DependDevices = TypeList<GPIORootDevice>;
         using PortTraitsT   = GPIOPortTraits<tkPortID>;
 
-        void init()
+        [[nodiscard]] bool init()
         {
             PortTraitsT::enable_clock();
+            return true;
         }
 
-        void post_init()
+        [[nodiscard]] bool post_init()
         {
             // Nothing for now
+            return true;
         }
     };
 
@@ -120,9 +122,9 @@ namespace valle
     // THE PIN (Unique Device)
     // ============================================================================
     /**
- * @brief Represents the Physical Pin.
- * Pure resource container. No functional API.
- */
+     * @brief Represents the Physical Pin.
+     * Pure resource container. No functional API.
+     */
     template <GPIOPortID tkPortID, GPIOPinID tkPinID>
         requires(kValidGPIOPinID<tkPortID, tkPinID>)
     class GPIOPinDevice
@@ -140,23 +142,24 @@ namespace valle
         using PinTraitsT    = GPIOPinTraits<tkPortID, tkPinID>;
 
     public:
-        static inline void init(const GPIOPinConfig& config)
+        [[nodiscard]] inline bool init(const GPIOPinConfig& config)
         {
-            GPIO_InitTypeDef init = {0};
-            init.Pin              = PinTraitsT::skPinMask;
-            init.Mode             = static_cast<uint32_t>(config.mode);
-            init.Pull             = static_cast<uint32_t>(config.pull);
-            init.Speed            = static_cast<uint32_t>(config.speed);
-            init.Alternate        = static_cast<uint32_t>(config.alternate);
+            GPIO_InitTypeDef init{};
+            init.Pin       = PinTraitsT::skPinMask;
+            init.Mode      = static_cast<uint32_t>(config.mode);
+            init.Pull      = static_cast<uint32_t>(config.pull);
+            init.Speed     = static_cast<uint32_t>(config.speed);
+            init.Alternate = static_cast<uint32_t>(config.alternate);
             HAL_GPIO_Init(PortTraitsT::skInstance, &init);
+            return true;
         }
 
-        static inline void write(bool state)
+        inline void write(bool state)
         {
             HAL_GPIO_WritePin(PortTraitsT::skInstance, PinTraitsT::skPinMask, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
         }
 
-        static inline void toggle()
+        inline void toggle()
         {
             HAL_GPIO_TogglePin(PortTraitsT::skInstance, PinTraitsT::skPinMask);
         }

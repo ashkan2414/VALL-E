@@ -8,7 +8,6 @@
 #include "Valle/Device/Devices/i2c.hpp"
 #include "Valle/Math/converters.hpp"
 
-
 namespace valle
 {
 
@@ -81,10 +80,10 @@ namespace valle
     enum class LDC161XRCountRegFields : uint8_t
     {
         /**
-     * @brief Reference Count conversion interval time.
-     * 0x0000 - 0x0004: Reserved
-     * 0x0005 - 0xFFFF: Conversion time = (RCOUNT * 16) / f_REF
-     */
+         * @brief Reference Count conversion interval time.
+         * 0x0000 - 0x0004: Reserved
+         * 0x0005 - 0xFFFF: Conversion time = (RCOUNT * 16) / f_REF
+         */
         kRCount,
     };
 
@@ -93,9 +92,9 @@ namespace valle
     enum class LDC161XOffsetRegFields : uint8_t
     {
         /**
-     * @brief Channel conversion offset.
-     * f_offset = (OFFSET / 2^16) * f_REF
-     */
+         * @brief Channel conversion offset.
+         * f_offset = (OFFSET / 2^16) * f_REF
+         */
         kOffset,
     };
 
@@ -240,8 +239,9 @@ namespace valle
 
         /**
          * @brief Sensor Activate mode selection
-         * 0: Full current activation mode: the LDC will drive maximum sensor current for a shorter sensor activation time.
-         * 1: Low Power activation mode: the LDC uses the value in DRIVE_CURRENTx during sensor activation to minimize power consumption.
+         * 0: Full current activation mode: the LDC will drive maximum sensor current for a shorter sensor activation
+         * time. 1: Low Power activation mode: the LDC uses the value in DRIVE_CURRENTx during sensor activation to
+         * minimize power consumption.
          */
         kSensorActivateSel,
 
@@ -286,7 +286,7 @@ namespace valle
     enum class LDC161XDeglitchBandwidth : uint8_t
     {
         kBand1MHz   = 0b001,
-        kBand3_3MHz = 0b100,
+        kBand3p3MHz = 0b100,
         kBand10MHz  = 0b101,
         kBand33MHz  = 0b111,
     };
@@ -302,12 +302,9 @@ namespace valle
 
         /**
          * @brief Auto-scan sequence configuration
-         * Configure multiplexing channel sequence. The LDC will perform a single conversion on each channel in the sequence
-         * selected, and then restart the sequence continuously.
-         * 0b00: Ch0, Ch1
-         * 0b01: Ch0, Ch1, Ch2 (LDC1614 only)
-         * 0b10: Ch0, Ch1, Ch2, Ch3 (LDC1614 only)
-         * 0b11: Ch0, Ch1
+         * Configure multiplexing channel sequence. The LDC will perform a single conversion on each channel in the
+         * sequence selected, and then restart the sequence continuously. 0b00: Ch0, Ch1 0b01: Ch0, Ch1, Ch2 (LDC1614
+         * only) 0b10: Ch0, Ch1, Ch2, Ch3 (LDC1614 only) 0b11: Ch0, Ch1
          */
         kRRSequence,  // Auto scan sequence configuration
         kReserved,    // Reserved
@@ -340,7 +337,8 @@ namespace valle
 
     enum class LDC161XDriveCurrentRegFields : uint8_t
     {
-        kIDrive,  // Drive Current Setting used during the settling and conversion time of the sensor. RP OVERRIDE must be 1.
+        kIDrive,  // Drive Current Setting used during the settling and conversion time of the sensor. RP OVERRIDE must
+                  // be 1.
 
         /**
          * @brief Initial Drive Current Setting used during calibration (readonly).
@@ -389,9 +387,9 @@ namespace valle
         static constexpr FinDivider     skMaxFinDivider                       = 15U;
         static constexpr FrefDivider    skMinFrefDivider                      = 1U;
         static constexpr FrefDivider    skMaxFrefDivider                      = 1023U;
-        static constexpr float          skMaxFrefMhzSingleChannel             = 35.0f;
-        static constexpr float          skMaxFrefMhzMultiChannelInternalClock = 55.0f;
-        static constexpr float          skMaxFrefMhzMultiChannelExternalClock = 40.0f;
+        static constexpr float          skMaxFrefMhzSingleChannel             = 35.0F;
+        static constexpr float          skMaxFrefMhzMultiChannelInternalClock = 55.0F;
+        static constexpr float          skMaxFrefMhzMultiChannelExternalClock = 40.0F;
         static constexpr IDrive         skMaxIDrive                           = 0x1FU;  // 5 bits, 31
         static constexpr ManufacturerID skManufacturerID                      = 0x5449;
         static constexpr DeviceID       skDeviceID                            = 0x3055;
@@ -441,7 +439,7 @@ namespace valle
     // USER API
     // =============================================================================
     template <uint8_t tkNumChannels>
-    concept kLDC161XValidNumChannels = (tkNumChannels >= 1 && tkNumChannels <= 4);
+    concept CLDC161XValidNumChannels = (tkNumChannels >= 1 && tkNumChannels <= 4);
 
     // =============================================================================
     // CHANNEL CONFIGURATION
@@ -460,34 +458,35 @@ namespace valle
     // ----------------------------------------------------------------------------
     struct LDC161XIDriveCurrent
     {
-        LDC161XTraits::IDrive value;
+        LDC161XTraits::IDrive value = 0;
 
         [[nodiscard]] static constexpr LDC161XIDriveCurrent from_raw(const LDC161XTraits::IDrive raw_value)
         {
             return LDC161XIDriveCurrent{
-                .value = static_cast<LDC161XTraits::IDrive>(raw_value & static_cast<uint8_t>(0x1FU))};  // 5 bits
+                .value = static_cast<LDC161XTraits::IDrive>(raw_value & LDC161XTraits::skMaxIDrive)};  // 5 bits
         }
 
+        // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
         [[nodiscard]] static constexpr LDC161XIDriveCurrent from_coil_rp(const float coil_rp_kohm,
-                                                                         const float target_v = 1.5f)
+                                                                         const float target_v = 1.5F)
         {
             // Equation 12: I_drive = (pi * Vp) / (4 * Rp)
             // Simplified: I_uA = (PI * target_v * 250) / rp_kohm
-            const float target_i_ua = (std::numbers::pi_v<float> * target_v * 250.0f) / coil_rp_kohm;
+            const float target_i_ua = (std::numbers::pi_v<float> * target_v * 250.0F) / coil_rp_kohm;
 
             // Find the first current in the table that is EQUAL to or GREATER than
             // our target. This ensures we have enough current to maintain oscillation.
-            const auto it = std::lower_bound(
+            const auto lower_bound_it = std::lower_bound(
                 LDC161XTraits::skIDriveTableUA.begin(), LDC161XTraits::skIDriveTableUA.end(), target_i_ua);
 
-            if (it == LDC161XTraits::skIDriveTableUA.end())
+            if (lower_bound_it == LDC161XTraits::skIDriveTableUA.end())
             {
                 return LDC161XIDriveCurrent::from_raw(
                     LDC161XTraits::skMaxIDrive);  // Calculated current exceeds standard IDRIVE range
             }
 
             return LDC161XIDriveCurrent::from_raw(
-                static_cast<uint8_t>(std::distance(LDC161XTraits::skIDriveTableUA.begin(), it)));
+                static_cast<uint8_t>(std::distance(LDC161XTraits::skIDriveTableUA.begin(), lower_bound_it)));
         }
     };
 
@@ -496,21 +495,20 @@ namespace valle
     // ----------------------------------------------------------------------------
     struct LDC161XOffsetConfigRaw
     {
-        uint16_t value;
+        uint16_t value = 0;
 
         // Factory: From an absolute frequency
         static constexpr LDC161XOffsetConfigRaw from_frequency_mhz(float foffset_mhz, float fref_mhz)
         {
             // Rearranged formula
-            constexpr uint32_t two_to_16 = 1U << 16;
-            return LDC161XOffsetConfigRaw{
-                .value = static_cast<uint16_t>((static_cast<double>(foffset_mhz) / fref_mhz) * two_to_16)};
+            constexpr uint32_t two_to_16 = 1U << 16U;
+            return LDC161XOffsetConfigRaw{.value = static_cast<uint16_t>((foffset_mhz / fref_mhz) * two_to_16)};
         }
     };
 
     struct LDC161XOffsetConfigFrequency
     {
-        float offset_mhz;
+        float offset_mhz = 0.0F;
     };
 
     using LDC161XOffsetConfig = std::variant<LDC161XOffsetConfigRaw, LDC161XOffsetConfigFrequency>;
@@ -520,9 +518,9 @@ namespace valle
     // ----------------------------------------------------------------------------
     struct LDC161XChannelConfig
     {
-        LDC161XCoilConfig    coil_config;
-        LDC161XIDriveCurrent drive_current;  // Used if RP Override is enabled
-        LDC161XOffsetConfig  offset_config;
+        LDC161XCoilConfig    coil_config{};
+        LDC161XIDriveCurrent drive_current{};  // Used if RP Override is enabled
+        LDC161XOffsetConfig  offset_config{};
     };
 
     // ===========================================================================
@@ -534,7 +532,7 @@ namespace valle
     // ----------------------------------------------------------------------------
     struct LDC161XClockSourceInternalOscillator
     {
-        static constexpr float fclk_mhz = 43.4f;
+        static constexpr float skFClkMHz = 43.4F;
     };
 
     struct LDC161XClockSourceExternalClock
@@ -582,21 +580,21 @@ namespace valle
     // SENSOR CONFIG
     // ---------------------------------------------------------------------------
     template <uint8_t tkNumChannels>
-        requires(kLDC161XValidNumChannels<tkNumChannels>)
+        requires(CLDC161XValidNumChannels<tkNumChannels>)
     struct LDC161XSensorConfig
     {
-        ClockSource                           clock_source;
-        uint16_t                              sample_rate_hz;
-        LDC161XDeglitchBandwidth              deglitch_bandwidth;
-        std::optional<LDC161XInterruptConfig> interrupt_config;
+        ClockSource                           clock_source       = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0F};
+        uint16_t                              sample_rate_hz     = 200U;
+        LDC161XDeglitchBandwidth              deglitch_bandwidth = LDC161XDeglitchBandwidth::kBand10MHz;
+        std::optional<LDC161XInterruptConfig> interrupt_config   = std::nullopt;
         LDC161XSensorActivationMode           sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode;
 
         bool enable_rp_override = true;
         bool auto_amplitude_en  = false;
 
-        std::conditional_t<tkNumChannels == 1, bool, std::monostate> high_current_drive_en;
+        std::conditional_t<tkNumChannels == 1, bool, std::monostate> high_current_drive_en{};
 
-        std::array<LDC161XChannelConfig, tkNumChannels> channels;
+        std::array<LDC161XChannelConfig, tkNumChannels> channels{};
     };
 
     // =============================================================================
@@ -604,27 +602,27 @@ namespace valle
     // =============================================================================
     struct LDC161XChannelConfigRaw
     {
-        float                  fref_mhz;
-        LDC161XRCountReg       rcount;
-        LDC161XOffsetReg       offset;
-        LDC161XSettleCountReg  settle_count;
-        LDC161XClockDividerReg clock_divider;
-        LDC161XDriveCurrentReg idrive;
+        float                  fref_mhz      = 0.0F;
+        LDC161XRCountReg       rcount        = 0;
+        LDC161XOffsetReg       offset        = 0;
+        LDC161XSettleCountReg  settle_count  = 0;
+        LDC161XClockDividerReg clock_divider = 0;
+        LDC161XDriveCurrentReg idrive        = 0;
     };
 
     template <uint8_t tkNumChannels>
-        requires(kLDC161XValidNumChannels<tkNumChannels>)
+        requires(CLDC161XValidNumChannels<tkNumChannels>)
     struct LDC161XSensorConfigRaw
     {
-        LDC161XMuxConfigReg   mux_config;
-        LDC161XErrorConfigReg error_config;
-        LDC161XConfigReg      device_config;
+        LDC161XMuxConfigReg   mux_config    = 0;
+        LDC161XErrorConfigReg error_config  = 0;
+        LDC161XConfigReg      device_config = 0;
 
-        std::array<LDC161XChannelConfigRaw, tkNumChannels> channels;
+        std::array<LDC161XChannelConfigRaw, tkNumChannels> channels{};
     };
 
     template <typename TI2CSlaveDevice, uint8_t tkNumChannels>
-        requires(kLDC161XValidNumChannels<tkNumChannels>)
+        requires(CLDC161XValidNumChannels<tkNumChannels>)
     class LDC161XSensorDriver
     {
     public:
@@ -933,7 +931,7 @@ namespace valle
 
             // Common product used in both factors
             const uint16_t fin_divider    = config.clock_divider.at<LDC161XClockDividerRegFields::kFinDivider>();
-            const double   clock_product  = static_cast<double>(fin_divider) * config.fref_mhz;
+            const double   clock_product  = static_cast<double>(fin_divider) * static_cast<double>(config.fref_mhz);
             const double   offset_reg_val = config.offset.at<LDC161XOffsetRegFields::kOffset>();
 
             const double slope  = clock_product / two_to_28;
@@ -960,7 +958,7 @@ namespace valle
             const auto clk_source_info = std::visit(
                 Overloaded{[](const LDC161XClockSourceInternalOscillator& int_clk)
                            {
-                               return std::make_pair(int_clk.fclk_mhz,
+                               return std::make_pair(int_clk.skFClkMHz,
                                                      (tkNumChannels == 1)
                                                          ? LDC161XTraits::skMaxFrefMhzSingleChannel
                                                          : LDC161XTraits::skMaxFrefMhzMultiChannelInternalClock);

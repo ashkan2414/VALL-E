@@ -9,43 +9,43 @@
 
 namespace valle::app
 {
-    constexpr UARTControllerID kLoggerUARTID = UARTControllerID::kLPUART1;
-    struct UARTControllerCTConfig : UARTControllerCTConfigDefaults<kLoggerUARTID>
+    // Logger
+    constexpr UARTControllerID kLoggerUARTControllerID = UARTControllerID::kLPUART1;
+    struct UARTControllerCTConfig : UARTControllerCTConfigDefaults<kLoggerUARTControllerID>
     {
         using DMAChannelTxT = DMA1Channel1Device;
     };
-    static constexpr UARTControllerCTConfig kLoggerUARTCTConfig{};
 
+    // ADC Channel
     constexpr ADCControllerID kTestADCControllerID = 1;
-    constexpr ADCChannelID    kTestADCChannelId    = ADCChannelID::kChannel1;
+    constexpr ADCChannelID    kTestADCChannelID    = ADCChannelID::kChannel1;
     constexpr bool            kTestADCUseInject    = false;
-    using TestADCDMAChannelT                       = DMA2Channel1Device;
+
+    using TestADCDMAChannelT = DMA2Channel1Device;
     struct ADCControllerCTConfig : ADCControllerCTConfigDefaults
     {
         using DMAChannelT = TestADCDMAChannelT;
     };
-    constexpr auto kTestADCCTConfig = ADCControllerCTConfig{};
 
 }  // namespace valle::app
 
-VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(valle::app::kLoggerUARTID, valle::app::kLoggerUARTCTConfig);
-VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(valle::app::kTestADCControllerID, valle::app::kTestADCCTConfig);
+// Bind compile-time configurations
+VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTControllerID, app::UARTControllerCTConfig{});
+VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(app::kTestADCControllerID, app::ADCControllerCTConfig{});
 
 namespace valle::app
 {
 
     // ============================================================================
-    // Device Configurations
+    // Driver Configurations
     // ============================================================================
-    using LoggerUARTControllerT = UARTControllerDevice<valle::app::kLoggerUARTID>;
-    using UARTLoggerT           = UARTLogger<LoggerUARTControllerT>;
+    using UARTLoggerT = UARTLogger<UARTControllerDevice<kLoggerUARTControllerID>>;
 
-    using TestADCChannelT    = std::conditional_t<kTestADCUseInject,
-                                                  ADCInjectChannelDevice1<kTestADCControllerID, kTestADCChannelId>,
-                                                  ADCRegularChannelDevice1<kTestADCControllerID, kTestADCChannelId>>;
-    using TestADCControllerT = TestADCChannelT::ChannelT::ControllerT;
-    using TestADCConverterT  = ADCVoltageConverter<IdentityConverter<float>>;
-    using TestADCDriverT     = ADCSensorDriver<TestADCChannelT, TestADCConverterT>;
+    using TestADCChannelT   = std::conditional_t<kTestADCUseInject,
+                                                 ADCInjectChannelRank1Device<kTestADCControllerID, kTestADCChannelID>,
+                                                 ADCRegularChannelRank1Device<kTestADCControllerID, kTestADCChannelID>>;
+    using TestADCConverterT = ADCVoltageConverter<IdentityConverter<float>>;
+    using TestADCDriverT    = ADCSensorDriver<TestADCChannelT, TestADCConverterT>;
 
     struct Drivers
     {
@@ -57,19 +57,19 @@ namespace valle::app
 
     struct Devices
     {
-        using DevicesT = TypeList<ADC12ClockDevice,
-                                  TestADCControllerT,
-                                  DMAMux1ControllerDevice,
+        using DevicesT = TypeList<DMAMux1ControllerDevice,
                                   DMA1ControllerDevice,
                                   DMA2ControllerDevice,
-                                  GPIOPortADevice>;
+                                  GPIOPortADevice,
+                                  ADC12ClockDevice,
+                                  ADC1ControllerDevice>;
 
-        [[no_unique_address]] DeviceRef<ADC12ClockDevice>        adc12_clk;
-        [[no_unique_address]] DeviceRef<TestADCControllerT>      adc1;
         [[no_unique_address]] DeviceRef<DMAMux1ControllerDevice> dmamux1;
         [[no_unique_address]] DeviceRef<DMA1ControllerDevice>    dma1;
         [[no_unique_address]] DeviceRef<DMA2ControllerDevice>    dma2;
         [[no_unique_address]] DeviceRef<GPIOPortADevice>         gpioa;
+        [[no_unique_address]] DeviceRef<ADC12ClockDevice>        adc12_clk;
+        [[no_unique_address]] DeviceRef<ADC1ControllerDevice>    adc1;
     };
 
 }  // namespace valle::app

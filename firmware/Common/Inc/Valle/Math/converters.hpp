@@ -22,6 +22,7 @@ namespace valle
 
         void init(const Config& config)
         {
+            (void)config;
         }
 
         [[nodiscard]] ConvertedT convert(const T raw) const

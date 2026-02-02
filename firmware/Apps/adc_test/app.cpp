@@ -1,5 +1,7 @@
 #include "app.hpp"
 
+#include "Valle/Core/error.hpp"
+
 VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
 
 namespace valle::app
@@ -18,12 +20,13 @@ namespace valle::app
         g_ref_registry.foreach_shared(Overloaded{
             [](ADC12ClockDevice& dev)
             {
-                dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
-                                             .prescaler = ADCAsyncClockPrescaler::kDiv8});
+                const bool result = dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
+                                                                 .prescaler = ADCAsyncClockPrescaler::kDiv8});
+                valle::expect(result, "Failed to initialize ADC12 Clock Device");
             },
-            [](TestADCControllerT& dev)
+            [](ADC1ControllerDevice& dev)
             {
-                dev.init(ADCControllerConfig{
+                const bool result = dev.init(ADCControllerConfig{
                     .resolution     = ADCResolution::k12Bit,
                     .data_alignment = ADCDataAlignment::kRight,
                     .low_power      = ADCLowPowerMode::kNone,
@@ -51,11 +54,17 @@ namespace valle::app
                                                           .oversampling_mode = ADCRegularGroupOversamplingMode::kDiscontinuous},
                     .oversampling = std::nullopt  // No oversampling by default
                 });
+
+                valle::expect(result, "Failed to initialize Test ADC Controller");
             },
-            [](DMAMux1ControllerDevice& dev) { dev.init(); },
-            [](DMA1ControllerDevice& dev) { dev.init(); },
-            [](DMA2ControllerDevice& dev) { dev.init(); },
-            [](GPIOPortADevice& dev) { dev.init(); },
+            [](DMAMux1ControllerDevice& dev)
+            { valle::expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
+
+            [](DMA1ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
+
+            [](DMA2ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA2 Controller Device"); },
+
+            [](GPIOPortADevice& dev) { valle::expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
         }  // namespace valle
         );
     }
@@ -66,23 +75,25 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        g_drivers.uart_logger.init(UARTControllerConfig{
-            .baud_rate         = UARTBaudRate::kBaud230400,
-            .word_length       = UARTWordLength::kBits8,
-            .stop_bits         = UARTStopBits::kBits1,
-            .parity            = UARTParity::kNone,
-            .transfer_mode     = UARTTransferMode::kTxRx,
-            .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
-            .dma_priority      = DMAPriority::kHigh,
-            .dma_int_priority  = 5,
-            .uart_int_priority = 5,
-        });
+        valle::expect(g_drivers.uart_logger.init(UARTControllerConfig{
+                          .baud_rate         = UARTBaudRate::kBaud230400,
+                          .word_length       = UARTWordLength::kBits8,
+                          .stop_bits         = UARTStopBits::kBits1,
+                          .parity            = UARTParity::kNone,
+                          .transfer_mode     = UARTTransferMode::kTxRx,
+                          .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
+                          .dma_priority      = DMAPriority::kHigh,
+                          .dma_int_priority  = 5,
+                          .uart_int_priority = 5,
+                      }),
+                      "Failed to initialize UART Logger Driver");
 
-        g_drivers.test_adc.init(ADCSensorDriverConfig<TestADCConverterT>{
-            .channel_config   = ADCChannelConfig{.sampling_time = ADCChannelSampleTime::k12Cycles5,
-                                                 .input_mode    = ADCChannelInputMode::kSingleEnded,
-                                                 .offset        = std::nullopt},
-            .converter_config = {}});
+        valle::expect(g_drivers.test_adc.init(ADCSensorDriverConfig<TestADCConverterT>{
+                          .channel_config = ADCChannelConfig{.sampling_time = ADCChannelSampleTime::k12Cycles5,
+                                                             .input_mode    = ADCChannelInputMode::kSingleEnded,
+                                                             .offset        = std::nullopt},
+                          .converter_config{}}),
+                      "Failed to initialize Test ADC Driver");
     }
 
     /**
@@ -92,12 +103,23 @@ namespace valle::app
     static void post_init_shared()
     {
         g_ref_registry.foreach_shared(Overloaded{
-            [](ADC12ClockDevice& dev) { dev.post_init(); },
-            [](TestADCControllerT& dev) { dev.post_init(); },
-            [](DMAMux1ControllerDevice& dev) { dev.post_init(); },
-            [](DMA1ControllerDevice& dev) { dev.post_init(); },
-            [](DMA2ControllerDevice& dev) { dev.post_init(); },
-            [](GPIOPortADevice& dev) { dev.post_init(); },
+            [](ADC12ClockDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize ADC12 Clock Device"); },
+
+            [](ADC1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize ADC1 Controller Device"); },
+
+            [](DMAMux1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller Device"); },
+
+            [](DMA1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMA1 Controller Device"); },
+
+            [](DMA2ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMA2 Controller Device"); },
+
+            [](GPIOPortADevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize GPIO Port A Device"); },
         });
     }
 

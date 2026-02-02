@@ -117,10 +117,10 @@ namespace valle
 
     enum class GPIOSpeedMode
     {
-        kLow      = GPIO_SPEED_FREQ_LOW,
-        kMedium   = GPIO_SPEED_FREQ_MEDIUM,
-        kHigh     = GPIO_SPEED_FREQ_HIGH,
-        kVeryHigh = GPIO_SPEED_FREQ_VERY_HIGH,
+        kLow      = GPIO_SPEED_FREQ_LOW,        // range up to 5 MHz
+        kMedium   = GPIO_SPEED_FREQ_MEDIUM,     // range  5 MHz to 25 MHz
+        kHigh     = GPIO_SPEED_FREQ_HIGH,       // range 25 MHz to 50 MHz
+        kVeryHigh = GPIO_SPEED_FREQ_VERY_HIGH,  // range 50 MHz to 120 MHz
     };
 
     enum class GPIOOutputMode

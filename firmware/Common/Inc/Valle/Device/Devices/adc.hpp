@@ -14,7 +14,6 @@
 #include "Valle/Device/device_core.hpp"
 #include "Valle/Drivers/gpio.hpp"
 
-
 namespace valle
 {
     // ============================================================================
@@ -38,9 +37,9 @@ namespace valle
     };
 
     /**
-    * @brief Configuration for ADC Regular Group DMA Transfer
-    *
-    */
+     * @brief Configuration for ADC Regular Group DMA Transfer
+     *
+     */
     struct ADCRegularGroupDMAConfig
     {
         /// DMA Channel Priority
@@ -460,7 +459,7 @@ namespace valle
 
         // Store data alignment for DMA configuration
         ADCDataAlignment     m_data_alignment = ADCDataAlignment::kRight;
-        ADCInjectGroupConfig m_inj_config     = {};
+        ADCInjectGroupConfig m_inj_config{};
 
     public:
         ADCControllerDevice(DeviceRef<DMAChannelT>&& dma_channel)
@@ -596,7 +595,7 @@ namespace valle
          *
          * @tparam tkChannelId Channel ID to initialize.
          * @tparam tkRank Rank in Inject Sequence (1-4).
-        */
+         */
         template <ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
             requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCInjectRank<tkRank>)
         void init_channel_as_inject(const ADCChannelConfig& cfg)
@@ -625,9 +624,10 @@ namespace valle
          */
         [[nodiscard]] bool post_init()
         {
-            const uint8_t reg_count = std::count_if(std::begin(m_reg_cidx_to_rank_map),
-                                                    std::end(m_reg_cidx_to_rank_map),
-                                                    [](uint8_t v) { return v != skChannelRankFreeFlag; });
+            const uint8_t reg_count =
+                static_cast<uint8_t>(std::count_if(std::begin(m_reg_cidx_to_rank_map),
+                                                   std::end(m_reg_cidx_to_rank_map),
+                                                   [](const uint8_t v) { return v != skChannelRankFreeFlag; }));
 
             // Regular Sequence Config
             if (reg_count > 0)
@@ -670,17 +670,21 @@ namespace valle
                     }
 
                     // Configure DMA Channel
-                    m_dma->init(DMAChannelConfig{
-                        .direction         = DMADirection::kPeriphToMem,
-                        .priority          = m_dma_config.priority,
-                        .mode              = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
-                        .periph_data_width = dma_width,
-                        .memory_data_width = dma_width,
-                        .inc_periph        = false,
-                        .inc_memory        = true,
-                        .request_id        = ControllerTraitsT::skDMAMuxRequest,
+                    if (!m_dma->init(DMAChannelConfig{
+                            .direction         = DMADirection::kPeriphToMem,
+                            .priority          = m_dma_config.priority,
+                            .mode              = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
+                            .periph_data_width = dma_width,
+                            .memory_data_width = dma_width,
+                            .inc_periph        = false,
+                            .inc_memory        = true,
+                            .request_id        = ControllerTraitsT::skDMAMuxRequest,
 
-                    });
+                        }))
+                    {
+                        VALLE_LOG_FATAL("ADC DMA Channel initialization failed");
+                        return false;
+                    }
                 }
                 else
                 {
@@ -710,9 +714,10 @@ namespace valle
                                           static_cast<uint32_t>(m_inj_config.trigger_edge));
             }
 
-            const uint8_t inj_count = std::count_if(std::begin(m_inj_cidx_to_rank_map),
-                                                    std::end(m_inj_cidx_to_rank_map),
-                                                    [](uint8_t v) { return v != skChannelRankFreeFlag; });
+            const uint8_t inj_count =
+                static_cast<uint8_t>(std::count_if(std::begin(m_inj_cidx_to_rank_map),
+                                                   std::end(m_inj_cidx_to_rank_map),
+                                                   [](const uint8_t v) { return v != skChannelRankFreeFlag; }));
 
             // Inject Sequence Config
             if (inj_count > 0)
@@ -965,11 +970,11 @@ namespace valle
 
         // --- Data Access ---
         /**
-     * @brief Read data from Regular Channel.
-     *
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from Regular Channel.
+         *
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         * @return ADCValue Raw ADC value.
+         */
         template <ADCInjectChannelRank tkRank>
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] constexpr inline ADCValue read_inject_data() const
@@ -979,11 +984,11 @@ namespace valle
         }
 
         /**
-     * @brief Read data from Inject Channel (Slow).
-     *
-     * @tparam tkChannelId Channel ID to read.
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from Inject Channel (Slow).
+         *
+         * @tparam tkChannelId Channel ID to read.
+         * @return ADCValue Raw ADC value.
+         */
         template <ADCChannelID tkChannelId>
         [[nodiscard]] constexpr inline ADCValue read_inject_data_slow()
         {
@@ -991,11 +996,11 @@ namespace valle
         }
 
         /**
-     * @brief Read data from Regular Channel.
-     *
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from Regular Channel.
+         *
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         * @return ADCValue Raw ADC value.
+         */
         template <ADCRegularChannelRank tkRank>
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] constexpr inline ADCValue read_regular_data() const
@@ -1004,11 +1009,11 @@ namespace valle
         }
 
         /**
-     * @brief Read data from Regular Channel (Slow).
-     *
-     * @tparam tkChannelId Channel ID to read.
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from Regular Channel (Slow).
+         *
+         * @tparam tkChannelId Channel ID to read.
+         * @return ADCValue Raw ADC value.
+         */
         template <ADCChannelID tkChannelId>
         [[nodiscard]] constexpr inline ADCValue read_regular_data_slow()
         {
@@ -1017,11 +1022,11 @@ namespace valle
 
     private:
         /**
-     * @brief Get the ADC Channel Index from Channel ID.
-     *
-     * @tparam tkChannelId Channel ID.
-     * @return uint32_t Channel Index.
-     */
+         * @brief Get the ADC Channel Index from Channel ID.
+         *
+         * @tparam tkChannelId Channel ID.
+         * @return uint32_t Channel Index.
+         */
         template <ADCChannelID tkChannelId>
         [[nodiscard]] static inline uint32_t get_adc_channel_idx()
         {
@@ -1029,11 +1034,11 @@ namespace valle
         }
 
         /**
-     * @brief Get the ADC Channel Rank in Regular Sequence.
-     *
-     * @tparam tkChannelId The ID of the channel.
-     * @return uint8_t Rank (1-16).
-     */
+         * @brief Get the ADC Channel Rank in Regular Sequence.
+         *
+         * @tparam tkChannelId The ID of the channel.
+         * @return uint8_t Rank (1-16).
+         */
         template <ADCChannelID tkChannelId>
         [[nodiscard]] constexpr inline ADCRegularChannelRank get_adc_channel_rank_regular() const
         {
@@ -1042,11 +1047,11 @@ namespace valle
         }
 
         /**
-     * @brief Get the ADC Channel Rank in Inject Sequence.
-     *
-     * @tparam tkChannelId The ID of the channel.
-     * @return uint8_t Rank (1-4).
-     */
+         * @brief Get the ADC Channel Rank in Inject Sequence.
+         *
+         * @tparam tkChannelId The ID of the channel.
+         * @return uint8_t Rank (1-4).
+         */
         template <ADCChannelID tkChannelId>
         [[nodiscard]] constexpr inline ADCInjectChannelRank get_adc_channel_rank_inject() const
         {
@@ -1055,11 +1060,11 @@ namespace valle
         }
 
         /**
-     * @brief Configure and register this channel.
-     *
-     * @tparam tkChannelId The ID of the channel to configure.
-     * @param cfg        Physics configuration (Sampling time, Single/Diff, etc.)
-     */
+         * @brief Configure and register this channel.
+         *
+         * @tparam tkChannelId The ID of the channel to configure.
+         * @param cfg        Physics configuration (Sampling time, Single/Diff, etc.)
+         */
         template <ADCChannelID tkChannelId>
             requires(kValidADCChannelID<tkControllerID, tkChannelId>)
         void init_channel_core(const ADCChannelConfig& cfg)
@@ -1083,11 +1088,11 @@ namespace valle
         }
 
         /**
-     * @brief Registers a channel for the inject conversion sequence.
-     *
-     * @tparam tkChannelId The ID of the channel to register.
-     * @tparam tkRank Rank in Inject Sequence (1-4).
-     */
+         * @brief Registers a channel for the inject conversion sequence.
+         *
+         * @tparam tkChannelId The ID of the channel to register.
+         * @tparam tkRank Rank in Inject Sequence (1-4).
+         */
         template <ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
             requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCInjectRank<tkRank>)
         void register_inject_sequence()
@@ -1100,11 +1105,11 @@ namespace valle
         }
 
         /**
-     * @brief Registers a channel for the regular conversion sequence.
-     *
-     * @tparam tkChannelId The ID of the channel to register.
-     * @tparam tkRank The rank in the regular sequence (1-16).
-     */
+         * @brief Registers a channel for the regular conversion sequence.
+         *
+         * @tparam tkChannelId The ID of the channel to register.
+         * @tparam tkRank The rank in the regular sequence (1-16).
+         */
         template <ADCChannelID tkChannelId, ADCRegularChannelRank tkRank>
             requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCRegularRank<tkRank>)
         void register_regular_sequence()
@@ -1117,11 +1122,11 @@ namespace valle
         }
 
         /**
-     * @brief Read data from inject channel.
-     *
-     * @param rank Rank in Inject Sequence (1-4).
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from inject channel.
+         *
+         * @param rank Rank in Inject Sequence (1-4).
+         * @return ADCValue Raw ADC value.
+         */
         [[nodiscard]] inline ADCValue read_inject_data(const ADCInjectChannelRank rank) const
         {
             return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
@@ -1129,11 +1134,11 @@ namespace valle
         }
 
         /**
-     * @brief Read data from regular channel.
-     *
-     * @param rank Rank in Regular Sequence (1-16).
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from regular channel.
+         *
+         * @param rank Rank in Regular Sequence (1-16).
+         * @return ADCValue Raw ADC value.
+         */
         [[nodiscard]] constexpr inline ADCValue read_regular_data(const ADCRegularChannelRank rank) const
         {
             // Memory barrier to ensure DMA writes are visible to CPU
@@ -1144,6 +1149,12 @@ namespace valle
             return m_dma_buffer[buf_idx];
         }
     };
+
+    using ADC1ControllerDevice = ADCControllerDevice<1>;
+    using ADC2ControllerDevice = ADCControllerDevice<2>;
+    using ADC3ControllerDevice = ADCControllerDevice<3>;
+    using ADC4ControllerDevice = ADCControllerDevice<4>;
+    using ADC5ControllerDevice = ADCControllerDevice<5>;
 
     // ============================================================================
     // ADC CHANNEL (UNIQUE DEVICE)
@@ -1210,54 +1221,54 @@ namespace valle
     protected:
         // --- Initialization ---
         /**
-     * @brief Configure and register this channel.
-     *
-     * @tparam tkGroup ADC Channel Group (Regular/Inject).
-     * @tparam tkRank Rank in Sequence (Regular: 1-16, Inject: 1-4).
-     * @param config Physics configuration (Sampling time, Single/Diff, etc.)
-     */
+         * @brief Configure and register this channel.
+         *
+         * @tparam tkGroup ADC Channel Group (Regular/Inject).
+         * @tparam tkRank Rank in Sequence (Regular: 1-16, Inject: 1-4).
+         * @param config Physics configuration (Sampling time, Single/Diff, etc.)
+         */
         template <ADCChannelGroup tkGroup, uint8_t tkRank = 0>
             requires((tkGroup == ADCChannelGroup::kRegular && kValidADCRegularRank<tkRank>) ||
                      (tkGroup == ADCChannelGroup::kInject && kValidADCInjectRank<tkRank>))
-        void init(const ADCChannelConfig& config)
+        [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
             m_adc.get().template init_channel<tkChannelId, tkGroup, tkRank>(config);
-            gpio_init();
+            return gpio_init();
         }
 
         /**
-     * @brief Configure and register this channel for the Inject Sequence (Interrupt).
-     *
-     * @tparam tkRank Rank in Inject Sequence (1-4).
-     * @param config Physics configuration (Sampling time, Single/Diff, etc.)
-     */
+         * @brief Configure and register this channel for the Inject Sequence (Interrupt).
+         *
+         * @tparam tkRank Rank in Inject Sequence (1-4).
+         * @param config Physics configuration (Sampling time, Single/Diff, etc.)
+         */
         template <ADCRegularChannelRank tkRank>
-        void init_as_regular(const ADCChannelConfig& config)
+        [[nodiscard]] bool init_as_regular(const ADCChannelConfig& config)
         {
             m_adc.get().template init_channel_as_regular<skChannelID, tkRank>(config);
-            gpio_init();
+            return gpio_init();
         }
 
         /**
-     * @brief Configure and register this channel for the Regular Sequence (DMA).
-     *
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     * @param config Physics configuration (Sampling time, Single/Diff, etc.)
-     */
+         * @brief Configure and register this channel for the Regular Sequence (DMA).
+         *
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         * @param config Physics configuration (Sampling time, Single/Diff, etc.)
+         */
         template <ADCInjectChannelRank tkRank>
-        void init_as_inject(const ADCChannelConfig& config)
+        [[nodiscard]] bool init_as_inject(const ADCChannelConfig& config)
         {
             m_adc.get().template init_channel_as_inject<skChannelID, tkRank>(config);
-            gpio_init();
+            return gpio_init();
         }
 
         // --- Accessors ---
         // Read raw
         /**
-     * @brief Read data from inject channel.
-     *
-     * @tparam tkRank Rank in Inject Sequence (1-4).
-     */
+         * @brief Read data from inject channel.
+         *
+         * @tparam tkRank Rank in Inject Sequence (1-4).
+         */
         template <ADCInjectChannelRank tkRank>
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline ADCValue read_inject() const
@@ -1266,20 +1277,20 @@ namespace valle
         }
 
         /**
-     * @brief Read data from inject channel (slow method, use read_inject() instead).
-     *
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from inject channel (slow method, use read_inject() instead).
+         *
+         * @return ADCValue Raw ADC value.
+         */
         [[nodiscard]] inline ADCValue read_inject_slow() const
         {
             return m_adc.get().template read_inject_data_slow<skChannelID>();
         }
 
         /**
-     * @brief Read data from regular channel.
-     *
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     */
+         * @brief Read data from regular channel.
+         *
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         */
         template <ADCRegularChannelRank tkRank>
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline ADCValue read_regular() const
@@ -1288,10 +1299,10 @@ namespace valle
         }
 
         /**
-     * @brief Read data from regular channel (slow method, use read_regular() instead).
-     *
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from regular channel (slow method, use read_regular() instead).
+         *
+         * @return ADCValue Raw ADC value.
+         */
         [[nodiscard]] inline ADCValue read_regular_slow() const
         {
             return m_adc.get().template read_regular_data_slow<skChannelID>();
@@ -1299,11 +1310,11 @@ namespace valle
 
         // Read voltage
         /**
-     * @brief Read voltage from inject channel.
-     *
-     * @tparam tkRank Rank in Inject Sequence (1-4).
-     * @return float Voltage in Volts.
-     */
+         * @brief Read voltage from inject channel.
+         *
+         * @tparam tkRank Rank in Inject Sequence (1-4).
+         * @return float Voltage in Volts.
+         */
         template <ADCInjectChannelRank tkRank>
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_voltage() const
@@ -1312,21 +1323,21 @@ namespace valle
         }
 
         /**
-     * @brief Read voltage from inject channel (slow method, use read_inject_voltage() instead).
-     *
-     * @return float Voltage in Volts.
-     */
+         * @brief Read voltage from inject channel (slow method, use read_inject_voltage() instead).
+         *
+         * @return float Voltage in Volts.
+         */
         [[nodiscard]] inline float read_inject_voltage_slow() const
         {
             return raw_to_voltage(read_inject_slow());
         }
 
         /**
-     * @brief Read voltage from regular channel.
-     *
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     * @return float Voltage in Volts.
-     */
+         * @brief Read voltage from regular channel.
+         *
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         * @return float Voltage in Volts.
+         */
         template <ADCRegularChannelRank tkRank>
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_voltage() const
@@ -1335,10 +1346,10 @@ namespace valle
         }
 
         /**
-     * @brief Read voltage from regular channel (slow method, use read_regular_voltage() instead).
-     *
-     * @return float Voltage in Volts.
-     */
+         * @brief Read voltage from regular channel (slow method, use read_regular_voltage() instead).
+         *
+         * @return float Voltage in Volts.
+         */
         [[nodiscard]] inline float read_regular_voltage_slow() const
         {
             return raw_to_voltage(read_regular_slow());
@@ -1346,11 +1357,11 @@ namespace valle
 
         // Read normalized
         /**
-     * @brief Read normalized value (0.0 to 1.0) from inject channel.
-     *
-     * @tparam tkRank Rank in Inject Sequence (1-4).
-     * @return float Normalized value.
-     */
+         * @brief Read normalized value (0.0 to 1.0) from inject channel.
+         *
+         * @tparam tkRank Rank in Inject Sequence (1-4).
+         * @return float Normalized value.
+         */
         template <ADCInjectChannelRank tkRank>
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_normalized() const
@@ -1359,20 +1370,21 @@ namespace valle
         }
 
         /**
-     * @brief Read normalized value (0.0 to 1.0) from inject channel (slow method, use read_inject_normalized() instead).
-     *
-     * @return float Normalized value.
-     */
+         * @brief Read normalized value (0.0 to 1.0) from inject channel (slow method, use read_inject_normalized()
+         * instead).
+         *
+         * @return float Normalized value.
+         */
         [[nodiscard]] inline float read_inject_normalized_slow() const
         {
             return raw_normalized(read_inject_slow());
         }
 
         /**
-     * @brief Read normalized value (0.0 to 1.0) from regular channel.
-     *
-     * @tparam tkRank Rank in Regular Sequence (1-16).
-     */
+         * @brief Read normalized value (0.0 to 1.0) from regular channel.
+         *
+         * @tparam tkRank Rank in Regular Sequence (1-16).
+         */
         template <ADCRegularChannelRank tkRank>
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_normalized() const
@@ -1381,32 +1393,33 @@ namespace valle
         }
 
         /**
-     * @brief Read normalized value (0.0 to 1.0) from regular channel (slow method, use read_regular_normalized() instead).
-     *
-     * @return float Normalized value.
-     */
+         * @brief Read normalized value (0.0 to 1.0) from regular channel (slow method, use read_regular_normalized()
+         * instead).
+         *
+         * @return float Normalized value.
+         */
         [[nodiscard]] inline float read_regular_normalized_slow() const
         {
             return raw_normalized(read_regular_slow());
         }
 
         /**
-     * @brief Convert raw ADC value to normalized float (0.0 to 1.0).
-     *
-     * @param raw Raw ADC value.
-     * @return float Normalized value.
-     */
+         * @brief Convert raw ADC value to normalized float (0.0 to 1.0).
+         *
+         * @param raw Raw ADC value.
+         * @return float Normalized value.
+         */
         [[nodiscard]] inline float raw_normalized(const ADCValue raw) const
         {
             return static_cast<float>(raw) / m_adc.get().get_resolution_range();
         }
 
         /**
-     * @brief Convert raw ADC value to voltage (Volts).
-     *
-     * @param raw Raw ADC value.
-     * @return float Voltage in Volts.
-     */
+         * @brief Convert raw ADC value to voltage (Volts).
+         *
+         * @param raw Raw ADC value.
+         * @return float Voltage in Volts.
+         */
         [[nodiscard]] inline float raw_to_voltage(const ADCValue raw) const
         {
             return raw_normalized(raw) * 3.3F;
@@ -1414,17 +1427,47 @@ namespace valle
 
     private:
         /**
-     * @brief Initialize GPIO Pin (if pin exists).
-     *
-     */
-        inline void gpio_init()
+         * @brief Initialize GPIO Pin (if pin exists).
+         *
+         */
+        [[nodiscard]] inline bool gpio_init()
         {
             if constexpr (skHasPin)
             {
-                m_pin.init();
+                return m_pin.init(GPIOAnalogInConfig{});
             }
+            return true;
         }
     };
+
+#define DECLARE_ADC_CHANNEL_DEVICE_ALIASES(controller_id)                                                  \
+    using ADC##controller_id##Channel0Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel0>;  \
+    using ADC##controller_id##Channel1Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel1>;  \
+    using ADC##controller_id##Channel2Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel2>;  \
+    using ADC##controller_id##Channel3Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel3>;  \
+    using ADC##controller_id##Channel4Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel4>;  \
+    using ADC##controller_id##Channel5Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel5>;  \
+    using ADC##controller_id##Channel6Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel6>;  \
+    using ADC##controller_id##Channel7Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel7>;  \
+    using ADC##controller_id##Channel8Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel8>;  \
+    using ADC##controller_id##Channel9Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel9>;  \
+    using ADC##controller_id##Channel10Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel10>; \
+    using ADC##controller_id##Channel11Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel11>; \
+    using ADC##controller_id##Channel12Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel12>; \
+    using ADC##controller_id##Channel13Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel13>; \
+    using ADC##controller_id##Channel14Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel14>; \
+    using ADC##controller_id##Channel15Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel15>; \
+    using ADC##controller_id##Channel16Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel16>; \
+    using ADC##controller_id##Channel17Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel17>; \
+    using ADC##controller_id##Channel18Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel18>;
+
+    DECLARE_ADC_CHANNEL_DEVICE_ALIASES(1);
+    DECLARE_ADC_CHANNEL_DEVICE_ALIASES(2);
+    DECLARE_ADC_CHANNEL_DEVICE_ALIASES(3);
+    DECLARE_ADC_CHANNEL_DEVICE_ALIASES(4);
+    DECLARE_ADC_CHANNEL_DEVICE_ALIASES(5);
+
+#undef DECLARE_ADC_CHANNEL_DEVICE_ALIASES
 
     // ============================================================================
     // ADC INJECTED CHANNEL (UNIQUE DEVICE)
@@ -1458,40 +1501,40 @@ namespace valle
 
         // --- Initialization ---
         /**
-     * @brief Initialize Inject Channel.
-     *
-     */
-        void init(const ADCChannelConfig& config)
+         * @brief Initialize Inject Channel.
+         *
+         */
+        [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
-            m_channel.get().template init_as_inject<skRank>(config);
+            return m_channel.get().template init_as_inject<skRank>(config);
         }
 
         // --- Accessors ---
         /**
-     * @brief Read data from inject channel.
-     *
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from inject channel.
+         *
+         * @return ADCValue Raw ADC value.
+         */
         [[nodiscard]] ADCValue read() const
         {
             return m_channel.get().template read_inject<skRank>();
         }
 
         /**
-     * @brief Read voltage from inject channel.
-     *
-     * @return float Voltage in Volts.
-     */
+         * @brief Read voltage from inject channel.
+         *
+         * @return float Voltage in Volts.
+         */
         [[nodiscard]] float read_voltage() const
         {
             return m_channel.get().template read_inject_voltage<skRank>();
         }
 
         /**
-     * @brief Read normalized value from inject channel.
-     *
-     * @return float Normalized value (0.0 to 1.0).
-     */
+         * @brief Read normalized value from inject channel.
+         *
+         * @return float Normalized value (0.0 to 1.0).
+         */
         [[nodiscard]] float read_normalized() const
         {
             return m_channel.get().template read_inject_normalized<skRank>();
@@ -1500,18 +1543,18 @@ namespace valle
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelDevice1 = ADCInjectChannelDevice<tkControllerID, tkChannelId, 1>;
+    using ADCInjectChannelRank1Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 1>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelDevice2 = ADCInjectChannelDevice<tkControllerID, tkChannelId, 2>;
+    using ADCInjectChannelRank2Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 2>;
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelDevice3 = ADCInjectChannelDevice<tkControllerID, tkChannelId, 3>;
+    using ADCInjectChannelRank3Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 3>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelDevice4 = ADCInjectChannelDevice<tkControllerID, tkChannelId, 4>;
+    using ADCInjectChannelRank4Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 4>;
 
     namespace detail
     {
@@ -1530,10 +1573,65 @@ namespace valle
     template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIds>
         requires((kValidADCChannelID<tkControllerID, tkChannelIds> && ...) &&
                  (sizeof...(tkChannelIds) <= kADCMaxInjChannels))
-    using ADCInjectChannelDeviceSequence = typename detail::MakeInjectSequenceImpl<
-        tkControllerID,
-        std::make_index_sequence<sizeof...(tkChannelIds)>,  // Generates 0, 1, 2...
-        tkChannelIds...>::type;
+    using ADCInjectChannelDeviceSequence =
+        typename detail::MakeInjectSequenceImpl<tkControllerID,
+                                                std::make_index_sequence<sizeof...(tkChannelIds)>,  // Generates 0,
+                                                                                                    // 1, 2...
+                                                tkChannelIds...>::type;
+
+#define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, rank) \
+    using ADC##controller_id##InjectChannel0Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel0, rank>;   \
+    using ADC##controller_id##InjectChannel1Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel1, rank>;   \
+    using ADC##controller_id##InjectChannel2Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel2, rank>;   \
+    using ADC##controller_id##InjectChannel3Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel3, rank>;   \
+    using ADC##controller_id##InjectChannel4Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel4, rank>;   \
+    using ADC##controller_id##InjectChannel5Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel5, rank>;   \
+    using ADC##controller_id##InjectChannel6Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel6, rank>;   \
+    using ADC##controller_id##InjectChannel7Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel7, rank>;   \
+    using ADC##controller_id##InjectChannel8Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel8, rank>;   \
+    using ADC##controller_id##InjectChannel9Rank##rank##Device =                \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel9, rank>;   \
+    using ADC##controller_id##InjectChannel10Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel10, rank>;  \
+    using ADC##controller_id##InjectChannel11Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel11, rank>;  \
+    using ADC##controller_id##InjectChannel12Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel12, rank>;  \
+    using ADC##controller_id##InjectChannel13Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel13, rank>;  \
+    using ADC##controller_id##InjectChannel14Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel14, rank>;  \
+    using ADC##controller_id##InjectChannel15Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel15, rank>;  \
+    using ADC##controller_id##InjectChannel16Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel16, rank>;  \
+    using ADC##controller_id##InjectChannel17Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel17, rank>;  \
+    using ADC##controller_id##InjectChannel18Rank##rank##Device =               \
+        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel18, rank>;
+
+#define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(controller_id)          \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 1); \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 2); \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 3); \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 4);
+
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(1);
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(2);
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(3);
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(4);
+
+#undef DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK
+#undef DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES
 
     // ============================================================================
     // ADC REGULAR CHANNEL (UNIQUE DEVICE)
@@ -1566,40 +1664,40 @@ namespace valle
 
         // --- Initialization ---
         /**
-     * @brief Initialize Regular Channel.
-     *
-     */
-        void init(const ADCChannelConfig& config)
+         * @brief Initialize Regular Channel.
+         *
+         */
+        [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
-            m_channel.get().template init_as_regular<skRank>(config);
+            return m_channel.get().template init_as_regular<skRank>(config);
         }
 
         // --- Accessors ---
         /**
-     * @brief Read data from regular channel.
-     *
-     * @return ADCValue Raw ADC value.
-     */
+         * @brief Read data from regular channel.
+         *
+         * @return ADCValue Raw ADC value.
+         */
         [[nodiscard]] ADCValue read() const
         {
             return m_channel.get().template read_regular<skRank>();
         }
 
         /**
-     * @brief Read voltage from regular channel.
-     *
-     * @return float Voltage in Volts.
-     */
+         * @brief Read voltage from regular channel.
+         *
+         * @return float Voltage in Volts.
+         */
         [[nodiscard]] float read_voltage() const
         {
             return m_channel.get().template read_regular_voltage<skRank>();
         }
 
         /**
-     * @brief Read normalized value from regular channel.
-     *
-     * @return float Normalized value (0.0 to 1.0).
-     */
+         * @brief Read normalized value from regular channel.
+         *
+         * @return float Normalized value (0.0 to 1.0).
+         */
         [[nodiscard]] float read_normalized() const
         {
             return m_channel.get().template read_regular_normalized<skRank>();
@@ -1608,67 +1706,67 @@ namespace valle
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice1 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 1>;
+    using ADCRegularChannelRank1Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 1>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice2 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 2>;
+    using ADCRegularChannelRank2Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 2>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice3 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 3>;
+    using ADCRegularChannelRank3Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 3>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice4 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 4>;
+    using ADCRegularChannelRank4Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 4>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice5 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 5>;
+    using ADCRegularChannelRank5Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 5>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice6 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 6>;
+    using ADCRegularChannelRank6Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 6>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice7 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 7>;
+    using ADCRegularChannelRank7Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 7>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice8 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 8>;
+    using ADCRegularChannelRank8Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 8>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice9 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 9>;
+    using ADCRegularChannelRank9Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 9>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice10 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 10>;
+    using ADCRegularChannelRank10Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 10>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice11 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 11>;
+    using ADCRegularChannelRank11Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 11>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice12 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 12>;
+    using ADCRegularChannelRank12Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 12>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice13 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 13>;
+    using ADCRegularChannelRank13Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 13>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice14 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 14>;
+    using ADCRegularChannelRank14Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 14>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice15 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 15>;
+    using ADCRegularChannelRank15Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 15>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
         requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelDevice16 = ADCRegularChannelDevice<tkControllerID, tkChannelId, 16>;
+    using ADCRegularChannelRank16Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 16>;
 
     namespace detail
     {
@@ -1687,9 +1785,77 @@ namespace valle
     template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIds>
         requires((kValidADCChannelID<tkControllerID, tkChannelIds> && ...) &&
                  (sizeof...(tkChannelIds) <= kADCMaxRegChannels))
-    using ADCRegularChannelDeviceSequence = typename detail::MakeRegularSequenceImpl<
-        tkControllerID,
-        std::make_index_sequence<sizeof...(tkChannelIds)>,  // Generates 0, 1, 2...
-        tkChannelIds...>::type;
+    using ADCRegularChannelDeviceSequence =
+        typename detail::MakeRegularSequenceImpl<tkControllerID,
+                                                 std::make_index_sequence<sizeof...(tkChannelIds)>,  // Generates 0,
+                                                                                                     // 1, 2...
+                                                 tkChannelIds...>::type;
+
+#define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, rank) \
+    using ADC##controller_id##RegularChannel0Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel0, rank>;   \
+    using ADC##controller_id##RegularChannel1Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel1, rank>;   \
+    using ADC##controller_id##RegularChannel2Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel2, rank>;   \
+    using ADC##controller_id##RegularChannel3Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel3, rank>;   \
+    using ADC##controller_id##RegularChannel4Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel4, rank>;   \
+    using ADC##controller_id##RegularChannel5Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel5, rank>;   \
+    using ADC##controller_id##RegularChannel6Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel6, rank>;   \
+    using ADC##controller_id##RegularChannel7Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel7, rank>;   \
+    using ADC##controller_id##RegularChannel8Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel8, rank>;   \
+    using ADC##controller_id##RegularChannel9Rank##rank##Device =                \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel9, rank>;   \
+    using ADC##controller_id##RegularChannel10Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel10, rank>;  \
+    using ADC##controller_id##RegularChannel11Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel11, rank>;  \
+    using ADC##controller_id##RegularChannel12Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel12, rank>;  \
+    using ADC##controller_id##RegularChannel13Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel13, rank>;  \
+    using ADC##controller_id##RegularChannel14Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel14, rank>;  \
+    using ADC##controller_id##RegularChannel15Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel15, rank>;  \
+    using ADC##controller_id##RegularChannel16Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel16, rank>;  \
+    using ADC##controller_id##RegularChannel17Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel17, rank>;  \
+    using ADC##controller_id##RegularChannel18Rank##rank##Device =               \
+        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel18, rank>;
+
+#define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(controller_id)           \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 1);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 2);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 3);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 4);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 5);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 6);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 7);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 8);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 9);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 10); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 11); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 12); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 13); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 14); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 15); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 16);
+
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(1);
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(2);
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(3);
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(4);
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(5);
+
+#undef DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK
+#undef DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES
 
 }  // namespace valle

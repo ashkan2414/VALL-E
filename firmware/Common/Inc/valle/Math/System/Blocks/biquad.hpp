@@ -15,8 +15,8 @@ namespace valle
     template <typename T>
     struct BiQuadCoeffs
     {
-        Eigen::Vector<T, 3> b = {};
-        Eigen::Vector<T, 3> a = {};
+        Eigen::Vector<T, 3> b{};
+        Eigen::Vector<T, 3> a{};
 
         BiQuadCoeffs() = default;
 
@@ -86,8 +86,8 @@ namespace valle
     template <typename T>
     struct BiQuadCoeffsNorm
     {
-        Eigen::Vector<T, 3> b = {};  // b coefficients normalized by a0
-        Eigen::Vector<T, 2> a = {};  // a1, a2 coefficients normalized by a0
+        Eigen::Vector<T, 3> b{};  // b coefficients normalized by a0
+        Eigen::Vector<T, 2> a{};  // a1, a2 coefficients normalized by a0
 
         BiQuadCoeffsNorm() = default;
 
@@ -212,8 +212,8 @@ namespace valle
     {
     private:
         BiQuadCoeffsNorm<T> m_coeffs;
-        Eigen::Vector<T, 2> m_input_vector  = {};
-        Eigen::Vector<T, 2> m_output_vector = {};
+        Eigen::Vector<T, 2> m_input_vector{};
+        Eigen::Vector<T, 2> m_output_vector{};
 
     public:
         // Initialize coefficients and apply gain immediately
@@ -255,8 +255,8 @@ namespace valle
     private:
         BiQuadCoeffsNorm<T> m_coeffs;
         T                   m_a0;
-        Eigen::Vector<T, 2> m_input_vector  = {};
-        Eigen::Vector<T, 2> m_output_vector = {};
+        Eigen::Vector<T, 2> m_input_vector{};
+        Eigen::Vector<T, 2> m_output_vector{};
 
     public:
         template <typename TCoeffs>
@@ -305,7 +305,7 @@ namespace valle
     {
     private:
         BiQuadCoeffsNorm<T> m_coeffs;
-        Eigen::Vector<T, 2> m_state_vector = {};  // State variables w[n-1], w[n-2]
+        Eigen::Vector<T, 2> m_state_vector{};  // State variables w[n-1], w[n-2]
 
     public:
         template <typename TCoeffs>
@@ -371,7 +371,7 @@ namespace valle
     {
     private:
         BiQuadCoeffs<T>     m_coeffs;
-        Eigen::Vector<T, 2> m_state_vector = {};  // State variables w[n-1], w[n-2]
+        Eigen::Vector<T, 2> m_state_vector{};  // State variables w[n-1], w[n-2]
 
     public:
         template <typename TCoeffs>

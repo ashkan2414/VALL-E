@@ -15,7 +15,6 @@
 #include "Valle/Utils/hal_utils.hpp"
 #include "delegate/delegate.h"
 
-
 namespace valle
 {
 
@@ -38,8 +37,8 @@ namespace valle
      */
     struct I2CInterruptConfig
     {
-        uint8_t event_priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
-        uint8_t error_priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
+        uint8_t event_priority = 5;  // NVIC Priority  // NOLINT(readability-magic-numbers)
+        uint8_t error_priority = 5;  // NVIC Priority  // NOLINT(readability-magic-numbers)
 
         bool enable_event_tx : 1         = false;  // TX Event Interrupt Enable
         bool enable_event_rx : 1         = false;  // RX Event Interrupt Enable
@@ -55,9 +54,9 @@ namespace valle
      */
     struct I2CCommandBufferDeviceConfig
     {
-        I2CControllerConfig controller_config  = {};
-        uint8_t             event_int_priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
-        uint8_t             error_int_priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
+        I2CControllerConfig controller_config{};
+        uint8_t             event_int_priority = 5;  // NVIC Priority  // NOLINT(readability-magic-numbers)
+        uint8_t             error_int_priority = 5;  // NVIC Priority  // NOLINT(readability-magic-numbers)
     };
 
     /**
@@ -65,9 +64,9 @@ namespace valle
      */
     struct I2CTransferConfig
     {
-        I2CSlaveAddressVariant slave_address;
-        I2CTransferEndMode     end_mode;
-        I2CTransferRequest     request;
+        I2CSlaveAddressVariant slave_address{};
+        I2CTransferEndMode     end_mode = I2CTransferEndMode::kAutoEnd;
+        I2CTransferRequest     request  = I2CTransferRequest::kStart;
     };
 
     // ============================================================================
@@ -405,7 +404,7 @@ namespace valle
         // ------------------------------------------------------------------------
         // Initialization
         // ------------------------------------------------------------------------
-        void init(const I2CControllerConfig& config)
+        [[nodiscard]] bool init(const I2CControllerConfig& config)
         {
             LL_APB1_GRP1_EnableClock(ControllerTraitsT::skClock);
             LL_I2C_Disable(ControllerTraitsT::skInstance);
@@ -426,11 +425,13 @@ namespace valle
             }
 
             LL_I2C_Enable(ControllerTraitsT::skInstance);
+            return true;
         }
 
-        void post_init()
+        [[nodiscard]] bool post_init()
         {
             // Nothing to do for now
+            return true;
         }
 
         void reset()
@@ -682,7 +683,7 @@ namespace valle
      */
     struct I2CWriteCommand
     {
-        std::span<const std::byte> data;
+        std::span<const std::byte> data{};
     };
 
     /**
@@ -691,25 +692,27 @@ namespace valle
      */
     struct I2CReadCommand
     {
-        std::span<std::byte> data;
+        std::span<std::byte> data{};
     };
 
     /**
      * @brief I2C Write command with Restart.
-     * Generates a start condition but no stop condition. This can be changed with another command to handle multiple commands.
+     * Generates a start condition but no stop condition. This can be changed with another command to handle multiple
+     * commands.
      */
     struct I2CWriteRestartCommand
     {
-        std::span<const std::byte> data;
+        std::span<const std::byte> data{};
     };
 
     /**
      * @brief I2C Read command with Restart.
-     * Generates a start condition but no stop condition. This can be changed with another command to handle multiple commands.
+     * Generates a start condition but no stop condition. This can be changed with another command to handle multiple
+     * commands.
      */
     struct I2CReadRestartCommand
     {
-        std::span<std::byte> data;
+        std::span<std::byte> data{};
     };
 
     /**
@@ -738,7 +741,7 @@ namespace valle
         template <size_t tkC, bool tkBO>
         friend class I2CTransactionGenerator;
 
-        I2CCommandBuffer<tkCount> m_commands;
+        I2CCommandBuffer<tkCount> m_commands{};
 
         // Internal constructor to carry the array through the chain
         constexpr explicit I2CTransactionGenerator(I2CCommandBuffer<tkCount>&& cmds) : m_commands(std::move(cmds))
@@ -863,12 +866,12 @@ namespace valle
 
     struct I2CTransactionHandle
     {
-        I2CSlaveAddressVariant             address;     // Associated Slave Address
-        std::span<const I2CCommand>        commands;    // Commands to execute
-        I2CTransactionCompleteCallback     callback;    // Optional callback on completion
-        uint8_t                            current;     // Progress tracker for ISR
-        I2CTransactionStatus               status;      // Pending, Busy, Done, Error
-        std::optional<I2CTransactionError> last_error;  // Last error encountered
+        I2CSlaveAddressVariant             address{};     // Associated Slave Address
+        std::span<const I2CCommand>        commands{};    // Commands to execute
+        I2CTransactionCompleteCallback     callback{};    // Optional callback on completion
+        uint8_t                            current{};     // Progress tracker for ISR
+        I2CTransactionStatus               status{};      // Pending, Busy, Done, Error
+        std::optional<I2CTransactionError> last_error{};  // Last error encountered
     };
 
     template <typename TController, uint8_t tkTransactionQueueSize>
@@ -882,9 +885,10 @@ namespace valle
         [[no_unique_address]] DeviceRef<ControllerT>                 m_controller;
         CircularQueue<I2CTransactionHandle*, tkTransactionQueueSize> m_transaction_queue;
         I2CTransactionHandle*                                        mp_active_transaction;
-        I2CCommandBufferDeviceConfig                                 m_config{};
+        I2CCommandBufferDeviceConfig                                 m_config;
 
     public:
+        I2CCommandBufferDeviceInternalStateManager() = delete;
         I2CCommandBufferDeviceInternalStateManager(DeviceRef<TController>&& controller)
             : m_controller(std::move(controller)), m_transaction_queue(), mp_active_transaction(nullptr)
         {
@@ -897,9 +901,10 @@ namespace valle
             init_interrupts();
         }
 
-        inline void post_init()
+        [[nodiscard]] inline bool post_init()
         {
             // Nothing to do for now
+            return true;
         }
 
         inline void reset(bool clear_queue = true)
@@ -934,11 +939,12 @@ namespace valle
             }
 
             transaction = I2CTransactionHandle{
-                .address  = address,
-                .commands = commands,
-                .callback = std::move(callback),
-                .current  = 0,
-                .status   = I2CTransactionStatus::kPending,
+                .address    = address,
+                .commands   = commands,
+                .callback   = std::move(callback),
+                .current    = 0,
+                .status     = I2CTransactionStatus::kPending,
+                .last_error = std::nullopt,
             };
 
             // If nothing is running, start immediately
@@ -1196,9 +1202,10 @@ namespace valle
          * @brief Post-initialization steps for the I2C Command Buffer Device.
          *
          */
-        inline void post_init()
+        [[nodiscard]] inline bool post_init()
         {
             // Nothing to do for now
+            return true;
         }
 
         /**

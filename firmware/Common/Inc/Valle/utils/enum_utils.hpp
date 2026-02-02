@@ -86,6 +86,7 @@ namespace detail
     template <typename T, size_t... Is>
     consteval auto make_table(std::index_sequence<Is...> indices)
     {
+        (void)indices;
         // This creates an array of string_views pointing to the unique static buffers
         return std::array<std::string_view, sizeof...(Is)>{
             EnumValueStringStorage<magic_enum::enum_values<T>()[Is]>::value...};

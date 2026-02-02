@@ -3,6 +3,7 @@
 #include <chrono>
 #include <span>
 
+#include "Valle/Core/Logging/logger.hpp"
 #include "Valle/Device/Devices/dma.hpp"
 #include "Valle/Device/Traits/uart.hpp"
 #include "Valle/Device/device_core.hpp"
@@ -25,8 +26,8 @@ namespace valle
 
         // DMA Settings
         DMAPriority dma_priority      = DMAPriority::kHigh;
-        uint8_t     dma_int_priority  = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
-        uint8_t     uart_int_priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
+        uint8_t     dma_int_priority  = 5;  // NVIC Priority (0-15)  // NOLINT(readability-magic-numbers)
+        uint8_t     uart_int_priority = 5;  // NVIC Priority (0-15)  // NOLINT(readability-magic-numbers)
     };
 
     template <UARTControllerID tkControllerID>
@@ -129,39 +130,39 @@ namespace valle
     template <UARTControllerID tkControllerID, UARTInterruptType tkIntType>
     struct UARTInterruptTraits;
 
-#define DEFINE_UART_INT_TRAIT(tkIntType, ll_name)                                                                  \
-    template <UARTControllerID tkControllerID>                                                                     \
-    struct UARTInterruptTraits<tkControllerID, (tkIntType)>                                                        \
-    {                                                                                                              \
-        static inline void enable()                                                                                \
-        {                                                                                                          \
-            LL_USART_EnableIT_##ll_name(UARTTraits<tkControllerID>::skInstance);                                   \
-        }                                                                                                          \
-        static inline void disable()                                                                               \
-        {                                                                                                          \
-            LL_USART_DisableIT_##ll_name(UARTTraits<tkControllerID>::skInstance);                                  \
-        }                                                                                                          \
-        static inline bool is_enabled()                                                                            \
-        {                                                                                                          \
-            return LL_USART_IsEnabledIT_##ll_name(UARTTraits<tkControllerID>::skInstance);                         \
-        }                                                                                                          \
-        static inline bool flag_active()                                                                           \
-        {                                                                                                          \
-            return LL_USART_IsActiveFlag_##ll_name(UARTTraits<tkControllerID>::skInstance);                        \
-        }                                                                                                          \
-        static inline bool is_pending()                                                                            \
-        {                                                                                                          \
-            return flag_active() && is_enabled();                                                                  \
-        }                                                                                                          \
-        static inline void ack()                                                                                   \
-        {                                                                                                          \
-            /* Note: Some flags (TXE, RXNE) have no clear register; */                                             \
-            /* they are cleared by RDR/TDR access. LL handles this. */                                             \
-            if constexpr (tkIntType != UARTInterruptType::kTxEmpty && tkIntType != UARTInterruptType::kRxNotEmpty) \
-            {                                                                                                      \
-                LL_USART_ClearFlag_##ll_name(UARTTraits<tkControllerID>::skInstance);                              \
-            }                                                                                                      \
-        }                                                                                                          \
+#define DEFINE_UART_INT_TRAIT(tkIntType, ll_name)                                                                      \
+    template <UARTControllerID tkControllerID>                                                                         \
+    struct UARTInterruptTraits<tkControllerID, (tkIntType)>                                                            \
+    {                                                                                                                  \
+        static inline void enable()                                                                                    \
+        {                                                                                                              \
+            LL_USART_EnableIT_##ll_name(UARTTraits<tkControllerID>::skInstance);                                       \
+        }                                                                                                              \
+        static inline void disable()                                                                                   \
+        {                                                                                                              \
+            LL_USART_DisableIT_##ll_name(UARTTraits<tkControllerID>::skInstance);                                      \
+        }                                                                                                              \
+        static inline bool is_enabled()                                                                                \
+        {                                                                                                              \
+            return LL_USART_IsEnabledIT_##ll_name(UARTTraits<tkControllerID>::skInstance);                             \
+        }                                                                                                              \
+        static inline bool flag_active()                                                                               \
+        {                                                                                                              \
+            return LL_USART_IsActiveFlag_##ll_name(UARTTraits<tkControllerID>::skInstance);                            \
+        }                                                                                                              \
+        static inline bool is_pending()                                                                                \
+        {                                                                                                              \
+            return flag_active() && is_enabled();                                                                      \
+        }                                                                                                              \
+        static inline void ack()                                                                                       \
+        {                                                                                                              \
+            /* Note: Some flags (TXE, RXNE) have no clear register; */                                                 \
+            /* they are cleared by RDR/TDR access. LL handles this. */                                                 \
+            if constexpr ((tkIntType) != UARTInterruptType::kTxEmpty && (tkIntType) != UARTInterruptType::kRxNotEmpty) \
+            {                                                                                                          \
+                LL_USART_ClearFlag_##ll_name(UARTTraits<tkControllerID>::skInstance);                                  \
+            }                                                                                                          \
+        }                                                                                                              \
     };
 
     // Basic
@@ -384,16 +385,16 @@ namespace valle
                 type;
 
     private:
-        [[no_unique_address]] TxPinDriverT                                                   m_tx_pin;
-        [[no_unique_address]] RxPinDriverT                                                   m_rx_pin;
-        [[no_unique_address]] std::conditional_t<skHasCKPin, CKPinDriverT, std::monostate>   m_ck_pin;
-        [[no_unique_address]] std::conditional_t<skHasCTSPin, CTSPinDriverT, std::monostate> m_cts_pin;
-        [[no_unique_address]] std::conditional_t<skHasRTSPin, RTSPinDriverT, std::monostate> m_rts_pin;
-        [[no_unique_address]] ConditionalDeviceRef<skHasDMATx, DMAChannelTxT>                m_dma_tx;
+        [[no_unique_address]] TxPinDriverT                                                   m_tx_pin{};
+        [[no_unique_address]] RxPinDriverT                                                   m_rx_pin{};
+        [[no_unique_address]] std::conditional_t<skHasCKPin, CKPinDriverT, std::monostate>   m_ck_pin{};
+        [[no_unique_address]] std::conditional_t<skHasCTSPin, CTSPinDriverT, std::monostate> m_cts_pin{};
+        [[no_unique_address]] std::conditional_t<skHasRTSPin, RTSPinDriverT, std::monostate> m_rts_pin{};
+        [[no_unique_address]] ConditionalDeviceRef<skHasDMATx, DMAChannelTxT>                m_dma_tx{};
 
         // HAL handles
         UART_HandleTypeDef                                                m_huart{};
-        std::conditional_t<skHasDMATx, DMA_HandleTypeDef, std::monostate> m_hdma_tx;
+        std::conditional_t<skHasDMATx, DMA_HandleTypeDef, std::monostate> m_hdma_tx{};
 
     public:
         template <typename... Args>
@@ -407,51 +408,71 @@ namespace valle
         {
         }
 
-        void init(const UARTControllerConfig& config)
+        [[nodiscard]] bool init(const UARTControllerConfig& config)
         {
             // Enable Peripheral Clock
             ControllerTraitsT::enable_clock();
 
             // Init Pins (AF mode)
-            m_tx_pin.init(GPIOAlternativeFunctionConfig{
-                .mode = GPIOAlternateFunctionMode::kPushPull,
-                // Use Medium speed for bauds > 1M to keep edges sharp
-                .speed =
-                    (static_cast<uint32_t>(config.baud_rate) > 1000000) ? GPIOSpeedMode::kMedium : GPIOSpeedMode::kLow,
-                .pull = GPIOPullMode::kPullUp,
-            });
+            if (!m_tx_pin.init(GPIOAlternativeFunctionConfig{
+                    .mode = GPIOAlternateFunctionMode::kPushPull,
+                    // Use Medium speed for bauds > 1M to keep edges sharp
+                    .speed = (static_cast<uint32_t>(config.baud_rate) > 1000000) ? GPIOSpeedMode::kMedium
+                                                                                 : GPIOSpeedMode::kLow,
+                    .pull  = GPIOPullMode::kPullUp,
+                }))
+            {
+                VALLE_LOG_FATAL("Failed to initialize UART TX Pin");
+                return false;
+            }
 
-            m_rx_pin.init(GPIOAlternativeFunctionConfig{
-                .mode  = GPIOAlternateFunctionMode::kPushPull,
-                .speed = GPIOSpeedMode::kLow,
-                .pull  = GPIOPullMode::kPullUp,
-            });
+            if (!m_rx_pin.init(GPIOAlternativeFunctionConfig{
+                    .mode  = GPIOAlternateFunctionMode::kPushPull,
+                    .speed = GPIOSpeedMode::kLow,
+                    .pull  = GPIOPullMode::kPullUp,
+                }))
+            {
+                VALLE_LOG_FATAL("Failed to initialize UART RX Pin");
+                return false;
+            }
 
             if constexpr (skHasCKPin)
             {
-                m_ck_pin.init(GPIOAlternativeFunctionConfig{
-                    .mode  = GPIOAlternateFunctionMode::kPushPull,
-                    .speed = GPIOSpeedMode::kHigh,
-                    .pull  = GPIOPullMode::kNoPull,
-                });
+                if (!m_ck_pin.init(GPIOAlternativeFunctionConfig{
+                        .mode  = GPIOAlternateFunctionMode::kPushPull,
+                        .speed = GPIOSpeedMode::kHigh,
+                        .pull  = GPIOPullMode::kNoPull,
+                    }))
+                {
+                    VALLE_LOG_FATAL("Failed to initialize UART CK Pin");
+                    return false;
+                }
             }
 
             if constexpr (skHasCTSPin)
             {
-                m_cts_pin.init(GPIOAlternativeFunctionConfig{
-                    .mode  = GPIOAlternateFunctionMode::kPushPull,
-                    .speed = GPIOSpeedMode::kLow,
-                    .pull  = GPIOPullMode::kPullUp,
-                });
+                if (!m_cts_pin.init(GPIOAlternativeFunctionConfig{
+                        .mode  = GPIOAlternateFunctionMode::kPushPull,
+                        .speed = GPIOSpeedMode::kLow,
+                        .pull  = GPIOPullMode::kPullUp,
+                    }))
+                {
+                    VALLE_LOG_FATAL("Failed to initialize UART CTS Pin");
+                    return false;
+                }
             }
 
             if constexpr (skHasRTSPin)
             {
-                m_rts_pin.init(GPIOAlternativeFunctionConfig{
-                    .mode  = GPIOAlternateFunctionMode::kPushPull,
-                    .speed = GPIOSpeedMode::kMedium,
-                    .pull  = GPIOPullMode::kPullUp,
-                });
+                if (!m_rts_pin.init(GPIOAlternativeFunctionConfig{
+                        .mode  = GPIOAlternateFunctionMode::kPushPull,
+                        .speed = GPIOSpeedMode::kMedium,
+                        .pull  = GPIOPullMode::kPullUp,
+                    }))
+                {
+                    VALLE_LOG_FATAL("Failed to initialize UART RTS Pin");
+                    return false;
+                }
             }
 
             // Configure UART Handle
@@ -499,21 +520,26 @@ namespace valle
 
             HAL_NVIC_SetPriority(ControllerTraitsT::skIRQn, config.uart_int_priority, 0);
             HAL_NVIC_EnableIRQ(ControllerTraitsT::skIRQn);
+
+            return true;
         }
 
         // --- API ---
-        HAL_StatusTypeDef transmit(std::span<const std::byte> data, std::chrono::milliseconds timeout_ms = 10)
+        HAL_StatusTypeDef transmit(std::span<const std::byte> data, std::chrono::milliseconds timeout_ms)
         {
-            return HAL_UART_Transmit(
-                &m_huart, reinterpret_cast<const uint8_t*>(data.data()), data.size(), timeout_ms.count());
+            return HAL_UART_Transmit(&m_huart,
+                                     reinterpret_cast<const uint8_t*>(data.data()),
+                                     static_cast<uint16_t>(data.size()),
+                                     timeout_ms.count());
         }
 
         HAL_StatusTypeDef transmit_async(std::span<const std::byte> data)
         {
-            if constexpr (skHasDMATx)
+            if constexpr (skHasDMATx)  // NOLINT(bugprone-branch-clone)
             {
-                return HAL_UART_Transmit_DMA(
-                    &m_huart, const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data.data())), data.size());
+                return HAL_UART_Transmit_DMA(&m_huart,
+                                             const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data.data())),
+                                             static_cast<uint16_t>(data.size()));
             }
             else
             {

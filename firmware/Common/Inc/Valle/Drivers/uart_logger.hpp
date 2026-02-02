@@ -17,13 +17,15 @@ namespace valle
         [[no_unique_address]] DeviceRef<ControllerT> m_uart;
 
     public:
+        UARTLogger() = delete;
+
         UARTLogger(DeviceRef<ControllerT>&& uart_controller) : m_uart(std::move(uart_controller))
         {
         }
 
-        inline void init(const UARTControllerConfig& config)
+        [[nodiscard]] inline bool init(const UARTControllerConfig& config)
         {
-            m_uart->init(config);
+            return m_uart->init(config);
         }
 
         void output(const std::string_view message)

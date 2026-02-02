@@ -4,7 +4,6 @@
 
 #include "Valle/Device/Devices/hrtim.hpp"
 
-
 namespace valle
 {
 
@@ -61,7 +60,8 @@ namespace valle
 
     private:
         [[no_unique_address]] DeviceRef<HRTIMTimerDeviceT> m_device;
-        HRTIMHalfBridgeConfig                              m_config;
+        float                                              m_min_duty = 0.0F;
+        float                                              m_max_duty = 1.0F;
 
     public:
         HRTIMHalfBridgeDriver() = delete;
@@ -74,12 +74,15 @@ namespace valle
         // ------------------------------------------------------------------------
 
         /**
-     * @brief Initializes the HRTIM half-bridge with the given configuration.
-     *
-     * @param config  Configuration parameters.
-     */
-        void init(const HRTIMHalfBridgeConfig& config)
+         * @brief Initializes the HRTIM half-bridge with the given configuration.
+         *
+         * @param config  Configuration parameters.
+         */
+        [[nodiscard]] bool init(const HRTIMHalfBridgeConfig& config)
         {
+            m_min_duty = config.min_duty;
+            m_max_duty = config.max_duty;
+
             // Calculate Period and Prescaler
             const uint32_t f_hrtim_hz   = m_device.get().get_hrtim_freq_hz();
             const uint32_t prescaler    = m_device.get().get_prescalar_for_freq(config.freq_hz);
@@ -162,11 +165,6 @@ namespace valle
                 // Enable specific fault sources for this output
                 LL_HRTIM_TIM_EnableFault(
                     ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, config.fault_source.value());
-                // Lock if requested
-                // if (config.fault_lock)
-                // {
-                //     LL_HRTIM_FLT_Lock(ControllerTraitsT::skInstance, LL_HRTIM_FAULT_LOCK_READ_WRITE);
-                // }
             }
 
             // Enable Interrupts
@@ -180,13 +178,13 @@ namespace valle
             // Start Timer
             LL_HRTIM_TIM_CounterEnable(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
 
-            m_config = config;
+            return true;
         }
 
         /**
-     * @brief Enables the half-bridge output.
-     *
-     */
+         * @brief Enables the half-bridge output.
+         *
+         */
         inline void enable_output()
         {
             LL_HRTIM_EnableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1 | TimerTraitsT::skOutput2);
@@ -194,9 +192,9 @@ namespace valle
         }
 
         /**
-     * @brief Disables the half-bridge output.
-     *
-     */
+         * @brief Disables the half-bridge output.
+         *
+         */
         inline void disable_output()
         {
             LL_HRTIM_DisableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1 | TimerTraitsT::skOutput2);
@@ -209,7 +207,7 @@ namespace valle
         // duty: 0.0 to 1.0 (0.5 = Zero Force)
         inline void set_duty_cycle(const float duty)
         {
-            const float clamed_duty = std::clamp(duty, m_config.min_duty, m_config.max_duty);
+            const float clamed_duty = std::clamp(duty, m_min_duty, m_max_duty);
 
             // Get Period (Cached in register)
             const uint32_t period  = m_device.get().get_period_ticks();

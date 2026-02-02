@@ -16,7 +16,7 @@ namespace valle
         static constexpr ValueT skDefaultMinTolerance = static_cast<ValueT>(1e-6);
 
     private:
-        TOpenLoopSys m_ol_system     = {};
+        TOpenLoopSys m_ol_system{};
         ValueT       m_last_output   = static_cast<ValueT>(0.0);
         ValueT       m_min_tolerance = skDefaultMinTolerance;
 

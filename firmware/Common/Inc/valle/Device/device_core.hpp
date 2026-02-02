@@ -85,8 +85,6 @@ namespace valle
         using UniqueDeviceRefTag = void;
         using DeviceT            = TDevice;
 
-    private:
-    public:
         UniqueDeviceRef() = delete;
 
         explicit UniqueDeviceRef(DeviceT& device) noexcept
@@ -149,8 +147,6 @@ namespace valle
         using SharedDeviceRefTag = void;
         using DeviceT            = TDevice;
 
-    private:
-    public:
         SharedDeviceRef() = delete;
 
         explicit SharedDeviceRef(const DeviceT& device) noexcept
@@ -216,6 +212,8 @@ namespace valle
     class NullDeviceRef
     {
     public:
+        NullDeviceRef() = delete;
+
         explicit NullDeviceRef(TDevice& device)
         {
         }

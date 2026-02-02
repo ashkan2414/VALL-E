@@ -86,10 +86,23 @@ namespace valle
                     [](const ADCAsyncClockConfig& async_config)
                     {
                         // Configure Asynchronous Clock (RCC Multiplexer)
-                        RCC_PeriphCLKInitTypeDef clk_init = {0};
+                        RCC_PeriphCLKInitTypeDef clk_init{};
 
                         clk_init.PeriphClockSelection = ClockTraitsT::skPeripClock;
-                        clk_init.Adc12ClockSelection  = ClockTraitsT::get_async_clock_selection(async_config.source);
+
+                        if constexpr (skClockID == ADCClockID::kADC12)
+                        {
+                            clk_init.Adc12ClockSelection = ClockTraitsT::get_async_clock_selection(async_config.source);
+                        }
+                        else if constexpr (skClockID == ADCClockID::kADC345)
+                        {
+                            clk_init.Adc345ClockSelection =
+                                ClockTraitsT::get_async_clock_selection(async_config.source);
+                        }
+                        else
+                        {
+                            static_assert(false, "Unhandled ADCClockID in ADCClockDevice initialization");
+                        }
 
                         if (HAL_RCCEx_PeriphCLKConfig(&clk_init) != HAL_OK)
                         {
@@ -118,9 +131,10 @@ namespace valle
             return true;
         }
 
-        void post_init()
+        [[nodiscard]] bool post_init()
         {
             // Nothing to do for now
+            return true;
         }
     };
 
