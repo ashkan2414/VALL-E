@@ -385,12 +385,12 @@ namespace valle
                 type;
 
     private:
-        [[no_unique_address]] TxPinDriverT                                                   m_tx_pin{};
-        [[no_unique_address]] RxPinDriverT                                                   m_rx_pin{};
-        [[no_unique_address]] std::conditional_t<skHasCKPin, CKPinDriverT, std::monostate>   m_ck_pin{};
-        [[no_unique_address]] std::conditional_t<skHasCTSPin, CTSPinDriverT, std::monostate> m_cts_pin{};
-        [[no_unique_address]] std::conditional_t<skHasRTSPin, RTSPinDriverT, std::monostate> m_rts_pin{};
-        [[no_unique_address]] ConditionalDeviceRef<skHasDMATx, DMAChannelTxT>                m_dma_tx{};
+        [[no_unique_address]] ConditionalDeviceRef<skHasDMATx, DMAChannelTxT> m_dma_tx{};
+        TxPinDriverT                                                          m_tx_pin{};
+        RxPinDriverT                                                          m_rx_pin{};
+        CKPinDriverT                                                          m_ck_pin{};
+        CTSPinDriverT                                                         m_cts_pin{};
+        RTSPinDriverT                                                         m_rts_pin{};
 
         // HAL handles
         UART_HandleTypeDef                                                m_huart{};

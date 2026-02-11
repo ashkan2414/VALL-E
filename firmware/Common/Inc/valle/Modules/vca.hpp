@@ -30,7 +30,7 @@ namespace valle
     struct VCAModuleConfig
     {
         // PWM Configuration
-        HRTIMHalfBridgeConfig pwm_config{};
+        HRTIMHalfBridgeDriverConfig pwm_config{};
 
         /// Maximum current in Amps
         float max_current_amp = 5.0F;  // NOLINT(readability-magic-numbers)
