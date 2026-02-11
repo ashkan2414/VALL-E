@@ -304,6 +304,14 @@ namespace valle
     using FilterInterfaceDevices = typename FilterTypeList<IsNotInterfaceDevice, TDeviceList>::type;
 
     template <typename T>
+    struct IsNotNullDevice : std::bool_constant<!CNullDevice<T>>
+    {
+    };
+
+    template <typename TDeviceList>
+    using FilterNullDevices = typename FilterTypeList<IsNotNullDevice, TDeviceList>::type;
+
+    template <typename T>
     concept CHasInjectDevices =
         requires { typename T::InjectDevices; } && TypeListSize<typename T::InjectDevices>::value > 0;
 

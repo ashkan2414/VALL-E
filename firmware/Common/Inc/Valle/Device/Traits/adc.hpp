@@ -355,7 +355,7 @@ namespace valle
     struct ADCPinMap<tkControllerID, tkChannelID>                   \
     {                                                               \
         constexpr static GPIOPortID skPort = port;                  \
-        constexpr static uint8_t    skPin  = pin;                   \
+        constexpr static GPIOPinID  skPin  = pin;                   \
     };
 
     // ADC1
@@ -441,6 +441,8 @@ namespace valle
     DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel14, GPIOPortID::kE, 10);  // PE10
     DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel15, GPIOPortID::kE, 11);  // PE11
     DECLARE_ADC_PIN_MAP(5, ADCChannelID::kChannel16, GPIOPortID::kE, 12);  // PE12
+
+#undef DECLARE_ADC_PIN_MAP
 
     template <typename T>
     concept CNullADCPinMap = requires { typename T::NullPinTag; };

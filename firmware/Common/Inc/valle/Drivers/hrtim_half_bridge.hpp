@@ -6,31 +6,37 @@
 
 namespace valle
 {
+    struct HRTIMHalfBridgeOutputConfig
+    {
+        HRTIMOutputPolarity   polarity    = HRTIMOutputPolarity::kPositive;
+        HRTIMOutputIdleMode   idle_mode   = HRTIMOutputIdleMode::kBurst;
+        HRTIMOutputIdleLevel  idle_level  = HRTIMOutputIdleLevel::kInactive;
+        HRTIMOutputFaultState fault_state = HRTIMOutputFaultState::kInactive;
+        HRTIMOutputGPIOConfig gpio_config{};
+    };
 
-    struct HRTIMHalfBridgeConfig
+    struct HRTIMHalfBridgeDriverConfig
     {
         // --- Basic Timing ---
-        uint32_t freq_hz = 100000;  // PWM Frequency in Hz
+        uint32_t freq_hz    = 50000;  // PWM Frequency in Hz
+        uint8_t  repetition = 0;      // Repetition value for interrupt generation
 
-        // Interrupts
-        std::optional<HRTIMRepIntConfig> int_config = std::nullopt;
+        HRTIMTimerInterruptConfig interrupt_config{};
 
         // Outputs
-        HRTIMOutputChannelConfig output_channel_config = HRTIMOutputChannelConfig{};
+        HRTIMHalfBridgeOutputConfig output_config{};
 
         // Deadtime (Shoot-through protection)
         std::optional<HRTIMDeadTimeConfig> deadtime_config = HRTIMDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F};
 
         // --- Safety & Hardware Limits ---
-        float min_duty = 0.0F;  // Clamp (0.0 to 1.0). Usually 0.0.
+        float min_duty = 0.0F;
 
-        // Clamp (0.0 to 1.0). CRITICAL for bootstrapped gate drivers.
+        // CRITICAL for bootstrapped gate drivers.
         // If you hit 100% on a bootstrap driver, the high-side caps drain
         // and the MOSFET turns off (or enters linear region and explodes).
         // Recommended: 0.95 or 0.98.
         float max_duty = 0.95F;  // NOLINT(readability-magic-numbers)
-
-        std::optional<uint32_t> fault_source = std::nullopt;  // Fault source
 
         // --- Polarity / Topology ---
         // If true, PWM is centered (Up-Down count). Better for EMI and ADC sampling.
@@ -39,12 +45,7 @@ namespace valle
 
         [[nodiscard]] constexpr uint64_t get_int_freq_hz() const
         {
-            if (!int_config.has_value())
-            {
-                return 0;
-            }
-
-            return freq_hz / (int_config->int_rep + 1);
+            return freq_hz / (repetition + 1);
         }
     };
 
@@ -53,19 +54,22 @@ namespace valle
     {
     public:
         using InjectDevices             = TypeList<THRTIMTimerDevice>;
-        using HRTIMTimerDeviceT         = THRTIMTimerDevice;
-        using ControllerTraitsT         = HRTIMTimerDeviceT::ControllerTraitsT;
-        using TimerTraitsT              = HRTIMTimerDeviceT::TimerTraitsT;
-        static constexpr size_t skIndex = HRTIMTimerDeviceT::skIndex;
+        using HRTIMTimerT               = THRTIMTimerDevice;
+        using ControllerTraitsT         = HRTIMTimerT::ControllerTraitsT;
+        using TimerTraitsT              = HRTIMTimerT::TimerTraitsT;
+        static constexpr size_t skIndex = HRTIMTimerT::skIndex;
+
+        static_assert(HRTIMTimerT::skHasOutput1Pin && HRTIMTimerT::skHasOutput2Pin,
+                      "HRTIMHalfBridgeDriver requires a timer both GPIO outputs for complementary control.");
 
     private:
-        [[no_unique_address]] DeviceRef<HRTIMTimerDeviceT> m_device;
-        float                                              m_min_duty = 0.0F;
-        float                                              m_max_duty = 1.0F;
+        [[no_unique_address]] DeviceRef<HRTIMTimerT> m_timer;
+        float                                        m_min_duty = 0.0F;
+        float                                        m_max_duty = 1.0F;
 
     public:
         HRTIMHalfBridgeDriver() = delete;
-        HRTIMHalfBridgeDriver(DeviceRef<HRTIMTimerDeviceT> device) : m_device(std::move(device))
+        explicit HRTIMHalfBridgeDriver(DeviceRef<HRTIMTimerT>&& device) : m_timer(std::move(device))
         {
         }
 
@@ -78,105 +82,124 @@ namespace valle
          *
          * @param config  Configuration parameters.
          */
-        [[nodiscard]] bool init(const HRTIMHalfBridgeConfig& config)
+        [[nodiscard]] bool init(const HRTIMHalfBridgeDriverConfig& config)
         {
+            if (!m_timer->init())
+            {
+                return false;
+            }
+
             m_min_duty = config.min_duty;
             m_max_duty = config.max_duty;
 
             // Calculate Period and Prescaler
-            const uint32_t f_hrtim_hz   = m_device.get().get_hrtim_freq_hz();
-            const uint32_t prescaler    = m_device.get().get_prescalar_for_freq(config.freq_hz);
-            const uint64_t h_hrck_hz    = (f_hrtim_hz << 5) >> prescaler;
-            const uint32_t period_ticks = static_cast<uint32_t>(h_hrck_hz / config.freq_hz);
+            const uint32_t            f_hrtim_hz   = m_timer->get_hrtim_freq_hz();
+            const HRTIMTimerPrescaler prescaler    = m_timer->get_prescaler_for_freq(config.freq_hz);
+            const uint64_t            h_hrck_hz    = m_timer->calculate_hrck_freq_hz(f_hrtim_hz, prescaler);
+            uint16_t                  period_ticks = static_cast<uint16_t>(h_hrck_hz / config.freq_hz);
 
-            // Configure Timer Time Base
-            LL_HRTIM_TIM_SetPrescaler(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, prescaler);
-            LL_HRTIM_TIM_SetPeriod(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, period_ticks);
-
-            // Configure Compare Unit 1 (Duty Cycle)
-            // Initialize to 50% (Zero Force)
-            LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, period_ticks / 2);
-
-            LL_HRTIM_TIM_SetCounterMode(
-                ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, LL_HRTIM_MODE_CONTINUOUS);
+            // In Center-Aligned mode (up-down counting), one full cycle consists of counting up
+            // to the period and back down to zero. Therefore, the period register must be set
+            // to half the number of ticks required for the full cycle frequency.
             if (config.center_aligned)
             {
-                LL_HRTIM_TIM_SetCountingMode(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, LL_HRTIM_COUNTING_MODE_UP_DOWN);
+                period_ticks /= 2;
+            }
 
-                // Configure OUTPUT 1 (Forward Phase)
-                // Logic: HIGH at Period Start, LOW at Compare Match
-                LL_HRTIM_OUT_SetOutputSetSrc(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skOutput1, LL_HRTIM_OUTPUTSET_TIMCMP1);
-                LL_HRTIM_OUT_SetOutputResetSrc(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skOutput1, LL_HRTIM_OUTPUTRESET_NONE);
+            // Configure Compare Unit 1 (Duty Cycle)
+            // Initialize to 50%
+            LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, period_ticks / 2);
+            HRTIMTimerCountingMode counting_mode        = HRTIMTimerCountingMode::kUp;
+            HRTIMOutputSetSource   output1_set_source   = HRTIMOutputSetSource::kNone;
+            HRTIMOutputResetSource output1_reset_source = HRTIMOutputResetSource::kNone;
+            HRTIMOutputSetSource   output2_set_source   = HRTIMOutputSetSource::kNone;
+            HRTIMOutputResetSource output2_reset_source = HRTIMOutputResetSource::kNone;
 
-                // Complimentary output automatically handled by hardware with deadtime insertion
+            if (config.center_aligned)
+            {
+                counting_mode = HRTIMTimerCountingMode::kUpDown;
+
+                // Center-aligned PWM: Use CMP1 as both Set and Reset source.
+                // In Up-Down counting mode (RM0440 §28.3.6), the hardware automatically
+                // swaps Set/Reset crossbar events when the counter is decrementing:
+                //   Up-count CMP1 match:   RESET wins (Set becomes Reset) → output LOW
+                //   Down-count CMP1 match: SET wins (Reset becomes Set)   → output HIGH
+                // This produces a symmetric center-aligned pulse with duty = CMP1/PER,
+                // giving a linear 0–100% duty range with compare = duty * period.
+                output1_set_source   = HRTIMOutputSetSource::kTimerCompare1;
+                output1_reset_source = HRTIMOutputResetSource::kTimerCompare1;
+
+                // Complementary output automatically handled by hardware with deadtime insertion
                 if (!config.deadtime_config.has_value())
                 {
-                    // Configure OUTPUT 2 (Reverse Phase / Complementary)
-                    // Logic: HIGH at Compare Match, LOW at Period Start
-                    LL_HRTIM_OUT_SetOutputSetSrc(
-                        ControllerTraitsT::skInstance, TimerTraitsT::skOutput2, LL_HRTIM_OUTPUTSET_NONE);
-                    LL_HRTIM_OUT_SetOutputResetSrc(
-                        ControllerTraitsT::skInstance, TimerTraitsT::skOutput2, LL_HRTIM_OUTPUTRESET_TIMCMP1);
+                    // If deadtime is disabled, we can still use the hardware swapping feature
+                    // to generate complementary waveforms.
+                    // TODO: verify with oscilloscope that this works as expected without deadtime.
+                    output2_set_source   = HRTIMOutputSetSource::kTimerCompare1;
+                    output2_reset_source = HRTIMOutputResetSource::kTimerCompare1;
                 }
             }
             else
             {
-                LL_HRTIM_TIM_SetCountingMode(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, LL_HRTIM_COUNTING_MODE_UP);
+                counting_mode = HRTIMTimerCountingMode::kUp;
 
-                // Configure OUTPUT 1 (Forward Phase)
                 // Logic: HIGH at Period Start, LOW at Compare Match
-                LL_HRTIM_OUT_SetOutputSetSrc(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skOutput1, LL_HRTIM_OUTPUTSET_TIMPER);
-                LL_HRTIM_OUT_SetOutputResetSrc(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skOutput1, LL_HRTIM_OUTPUTRESET_TIMCMP1);
+                output1_set_source   = HRTIMOutputSetSource::kTimerPeriod;
+                output1_reset_source = HRTIMOutputResetSource::kTimerCompare1;
 
-                // Complimentary output automatically handled by hardware with deadtime insertion
+                // Complementary output automatically handled by hardware with deadtime insertion
                 if (!config.deadtime_config.has_value())
                 {
-                    // Configure OUTPUT 2 (Reverse Phase / Complementary)
                     // Logic: HIGH at Compare Match, LOW at Period Start
-                    LL_HRTIM_OUT_SetOutputSetSrc(
-                        ControllerTraitsT::skInstance, TimerTraitsT::skOutput2, LL_HRTIM_OUTPUTSET_TIMCMP1);
-                    LL_HRTIM_OUT_SetOutputResetSrc(
-                        ControllerTraitsT::skInstance, TimerTraitsT::skOutput2, LL_HRTIM_OUTPUTRESET_TIMPER);
+                    output2_set_source   = HRTIMOutputSetSource::kTimerCompare1;
+                    output2_reset_source = HRTIMOutputResetSource::kTimerPeriod;
                 }
             }
 
-            m_device.get().init_output1_channel(config.output_channel_config);
-            m_device.get().init_output2_channel(config.output_channel_config);
+            // Configure Timer Time Base
+            m_timer->init_counter(HRTIMTimerCounterConfig{
+                .prescaler     = prescaler,
+                .counter_mode  = HRTIMTimerCounterMode::kContinuous,
+                .counting_mode = counting_mode,
+                .period        = period_ticks,
+                .repetition    = config.repetition,
+            });
+
+            m_timer->init_output1(
+                HRTIMVirtualOutputConfig{
+                    .set_source   = output1_set_source,
+                    .reset_source = output1_reset_source,
+                    .polarity     = config.output_config.polarity,
+                    .idle_mode    = config.output_config.idle_mode,
+                    .idle_level   = config.output_config.idle_level,
+                    .fault_state  = config.output_config.fault_state,
+                },
+                config.output_config.gpio_config);
+
+            m_timer->init_output2(
+                HRTIMVirtualOutputConfig{
+                    .set_source   = output2_set_source,
+                    .reset_source = output2_reset_source,
+                    .polarity     = config.output_config.polarity,
+                    .idle_mode    = config.output_config.idle_mode,
+                    .idle_level   = config.output_config.idle_level,
+                    .fault_state  = config.output_config.fault_state,
+                },
+                config.output_config.gpio_config);
 
             // Deadtime (Optional but recommended for H-Bridge)
             if (config.deadtime_config.has_value())
             {
-                m_device.get().init_deadtime(config.deadtime_config.value());
+                m_timer->init_deadtime(config.deadtime_config.value());
             }
             else
             {
-                m_device.get().disable_deadtime();
-            }
-
-            // Fault Setup
-            if (config.fault_source.has_value())
-            {
-                // Enable specific fault sources for this output
-                LL_HRTIM_TIM_EnableFault(
-                    ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, config.fault_source.value());
+                m_timer->disable_deadtime();
             }
 
             // Enable Interrupts
-            if (config.int_config.has_value())
-            {
-                m_device.get().init_rep_int(config.int_config.value());
-            }
-
-            enable_output();
-
-            // Start Timer
-            LL_HRTIM_TIM_CounterEnable(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+            // Interrupts must be enabled AFTER checking for deadtime since deadtime config might lock registers
+            m_timer->enable_interrupts(config.interrupt_config);
 
             return true;
         }
@@ -187,8 +210,8 @@ namespace valle
          */
         inline void enable_output()
         {
-            LL_HRTIM_EnableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1 | TimerTraitsT::skOutput2);
-            LL_HRTIM_TIM_CounterEnable(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+            m_timer->enable_outputs();
+            m_timer->enable_counter();
         }
 
         /**
@@ -197,8 +220,13 @@ namespace valle
          */
         inline void disable_output()
         {
-            LL_HRTIM_DisableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1 | TimerTraitsT::skOutput2);
-            LL_HRTIM_TIM_CounterDisable(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx);
+            m_timer->disable_outputs();
+            m_timer->disable_counter();
+        }
+
+        void set_repetition_counter(uint8_t repetition)
+        {
+            LL_HRTIM_TIM_SetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, repetition);
         }
 
         // ------------------------------------------------------------------------
@@ -207,11 +235,18 @@ namespace valle
         // duty: 0.0 to 1.0 (0.5 = Zero Force)
         inline void set_duty_cycle(const float duty)
         {
-            const float clamed_duty = std::clamp(duty, m_min_duty, m_max_duty);
+            const float clamped_duty = std::clamp(duty, m_min_duty, m_max_duty);
 
-            // Get Period (Cached in register)
-            const uint32_t period  = m_device.get().get_period_ticks();
-            const uint32_t compare = (uint32_t)(clamed_duty * (float)period);
+            // Get current period ticks (cached in hardware register)
+            // TODO: should we cache in memory for faster access?
+            const uint32_t period = m_timer->get_period_ticks();
+
+            // Calculate Compare Value
+            // duty is 0.0 to 1.0.
+            // Result is [min_duty*period, max_duty*period]
+            const uint32_t compare = (uint32_t)(clamped_duty * (float)period);
+
+            // Apply Compare Value
             LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, compare);
         }
     };

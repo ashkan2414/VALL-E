@@ -1,3 +1,5 @@
+#pragma once
+
 #include "valle/System/hardware.hpp"
 
 namespace valle::app

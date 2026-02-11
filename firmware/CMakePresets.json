@@ -76,6 +76,29 @@
             ]
         },
         {
+            "name": "app-pwm-test",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "pwm_test"
+            }
+        },
+        {
+            "name": "pwm-test-debug",
+            "displayName": "PWM Test (Debug)",
+            "inherits": [
+                "debug",
+                "app-pwm-test"
+            ]
+        },
+        {
+            "name": "pwm-test-release",
+            "displayName": "PWM Test (Release)",
+            "inherits": [
+                "release",
+                "app-pwm-test"
+            ]
+        },
+        {
             "name": "app-vca-test",
             "hidden": true,
             "cacheVariables": {
@@ -115,6 +138,14 @@
         {
             "name": "adc-test-release",
             "configurePreset": "adc-test-release"
+        },
+        {
+            "name": "pwm-test-debug",
+            "configurePreset": "pwm-test-debug"
+        },
+        {
+            "name": "pwm-test-release",
+            "configurePreset": "pwm-test-release"
         },
         {
             "name": "vca-test-debug",
