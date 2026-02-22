@@ -1,5 +1,7 @@
 #include "app.hpp"
 
+#include "Valle/Core/error.hpp"
+
 VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
 
 namespace valle::app
@@ -34,49 +36,46 @@ namespace valle::app
     static void init_shared()
     {
         g_ref_registry.foreach_shared(Overloaded{
-            [](ADCControllerDevice<1>& dev)
+            [](ADC345ClockDevice& dev)
             {
-                dev.init(ADCControllerConfig{
-                    .resolution     = ADCResolution::k12Bit,
-                    .data_alignment = ADCDataAlignment::kRight,
-                    .low_power      = ADCLowPowerMode::kNone,
-                    .inj =
-                        ADCInjectGroupConfig{
-                            .trigger_source = ADCInjectGroupTriggerSource::kSoftware,
-                            .trigger_edge   = ADCInjectGroupTriggerEdge::kRising,
-                        },
-                    .reg          = ADCRegularGroupConfig{.trigger_source = ADCRegularGroupTriggerSource::kSoftware,
-                                                          .trigger_edge   = ADCRegularGroupTriggerEdge::kRising,
-                                                          .dma =
-                                                     ADCRegularGroupDMAConfig{
-                                                                  .priority      = DMAPriority::kHigh,
-                                                                  .circular_mode = true,
-                                                                  .interrupts =
-                                                             DMAInterruptConfig{
-                                                                          .priority  = 5,
-                                                                          .enable_tc = true,
-                                                                          .enable_ht = false,
-                                                                          .enable_te = true,
-                                                             },
-                                                     },
-                                                          .overrun           = ADCRegularGroupOverrunBehavior::kOverwrite,
-                                                          .conversion_mode   = ADCRegularGroupConversionMode::kSingleShot,
-                                                          .oversampling_mode = ADCRegularGroupOversamplingMode::kDiscontinuous},
-                    .oversampling = std::nullopt  // No oversampling by default
-                });
+                valle::expect(dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
+                                                           .prescaler = ADCAsyncClockPrescaler::kDiv8}),
+                              "Failed to initialize ADC Clock Device");
+            },
+            [](ADC3ControllerDevice& dev)
+            {
+                valle::expect(dev.init(ADCControllerConfig{
+                                  .resolution     = ADCResolution::k12Bit,
+                                  .data_alignment = ADCDataAlignment::kRight,
+                                  .low_power      = ADCLowPowerMode::kNone,
+                                  .inj =
+                                      ADCInjectGroupConfig{
+                                          .trigger_source = ADCInjectGroupTriggerSource::kExtHrtimTRG1,
+                                          .trigger_edge   = ADCInjectGroupTriggerEdge::kRising,
+                                      },
+                                  .reg          = ADCRegularGroupConfig{},  // Not used
+                                  .oversampling = std::nullopt              // No oversampling by default
+                              }),
+                              "Failed to initialize ADC3 Controller Device");
             },
 
-            [](DMA1ControllerDevice& dev) { dev.init(); },
-            [](GPIOPortADevice& dev) { dev.init(); },
-            [](HRTIM1ControllerDevice& dev) { dev.init(); },
-            [](I2CCommandBufferDevice<1>& dev)
+            [](HRTIM1ControllerDevice& dev)
+            { valle::expect(dev.init(), "Failed to initialize HRTIM1 Controller Device"); },
+            [](I2C1CommandBufferDevice<>& dev)
             {
-                dev.init(I2CCommandBufferDeviceConfig{
-                    .event_int_priority = 5,
-                    .error_int_priority = 5,
-                });
+                valle::expect(dev.init(I2CCommandBufferDeviceConfig{
+                                  .event_int_priority = 5,
+                                  .error_int_priority = 5,
+                              }),
+                              "Failed to initialize I2C1 Command Buffer Device");
             },
-            [](DMA2ControllerDevice& dev) { dev.init(); },
+            [](DMAMux1ControllerDevice& dev)
+            { valle::expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
+            [](DMA1ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
+            [](DMA2ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA2 Controller Device"); },
+            [](GPIOPortADevice& dev) { valle::expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](GPIOPortBDevice& dev) { valle::expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
+
         }  // namespace valle
         );
     }
@@ -87,47 +86,52 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        g_drivers.uart_logger.init(UARTControllerConfig{
-            .baud_rate         = UARTBaudRate::kBaud115200,
-            .word_length       = UARTWordLength::kBits8,
-            .stop_bits         = UARTStopBits::kBits1,
-            .parity            = UARTParity::kNone,
-            .transfer_mode     = UARTTransferMode::kTxRx,
-            .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
-            .dma_priority      = DMAPriority::kHigh,
-            .dma_int_priority  = 5,
-            .uart_int_priority = 5,
-        });
+        valle::expect(g_drivers.uart_logger.init(UARTControllerConfig{
+                          .baud_rate         = UARTBaudRate::kBaud115200,
+                          .word_length       = UARTWordLength::kBits8,
+                          .stop_bits         = UARTStopBits::kBits1,
+                          .parity            = UARTParity::kNone,
+                          .transfer_mode     = UARTTransferMode::kTxRx,
+                          .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
+                          .dma_priority      = DMAPriority::kHigh,
+                          .dma_int_priority  = 5,
+                          .uart_int_priority = 5,
+                      }),
+                      "Failed to initialize UART Logger Driver");
 
-        g_drivers.vca.init();
-        g_drivers.current_sensor.init(ACS724Config{.channel_config = ADCChannelConfig{
-                                                       .sampling_time = ADCChannelSampleTime::k12Cycles5,
-                                                       .input_mode    = ADCChannelInputMode::kSingleEnded,
-                                                       .offset        = std::nullopt,
-                                                   }});
+        valle::expect(g_drivers.vca.init(), "Failed to initialize VCA Controller");
+        valle::expect(
+            g_drivers.current_sensor.init(ACS724Config{.channel_config =
+                                                           ADCChannelConfig{
+                                                               .sampling_time = ADCChannelSampleTime::k12Cycles5,
+                                                               .input_mode    = ADCChannelInputMode::kSingleEnded,
+                                                               .offset        = std::nullopt,
+                                                           }}),
+            "Failed to initialize Current Sensor");
 
         // TODO: check return value
-        g_drivers.position_sensor.init(LDC161XSensorConfig<1>{
-            .clock_source           = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0f},
-            .sample_rate_hz         = 1000,
-            .deglitch_bandwidth     = LDC161XDeglitchBandwidth::kBand10MHz,
-            .interrupt_config       = std::nullopt,
-            .sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode,
-            .enable_rp_override     = true,
-            .auto_amplitude_en      = false,
-            .high_current_drive_en  = true,
-            .channels               = {LDC161XChannelConfig{
-                              .coil_config =
-                    LDC161XCoilConfig{
-                                      .inductance_uh  = 18.147f,
-                                      .capacitance_pf = 100.0f,
-                                      .rp_kohm        = 15.727f,
-                                      .q_factor       = 35.97f,
-                    },
-                              .drive_current = LDC161XIDriveCurrent::from_coil_rp(15.727f, 1.5f),
-                              .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 0.0f},
-            }},
-        });
+        valle::expect(g_drivers.position_sensor.init(LDC161XSensorConfig<1>{
+                          .clock_source           = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0f},
+                          .sample_rate_hz         = 1000,
+                          .deglitch_bandwidth     = LDC161XDeglitchBandwidth::kBand10MHz,
+                          .interrupt_config       = std::nullopt,
+                          .sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode,
+                          .enable_rp_override     = true,
+                          .auto_amplitude_en      = false,
+                          .high_current_drive_en  = true,
+                          .channels               = {LDC161XChannelConfig{
+                                            .coil_config =
+                                  LDC161XCoilConfig{
+                                                    .inductance_uh  = 18.147f,
+                                                    .capacitance_pf = 100.0f,
+                                                    .rp_kohm        = 15.727f,
+                                                    .q_factor       = 35.97f,
+                                  },
+                                            .drive_current = LDC161XIDriveCurrent::from_coil_rp(15.727f, 1.5f),
+                                            .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 0.0f},
+                          }},
+                      }),
+                      "Failed to initialize Position Sensor");
     }
 
     /**
@@ -137,12 +141,22 @@ namespace valle::app
     static void post_init_shared()
     {
         g_ref_registry.foreach_shared(Overloaded{
-            [](ADCControllerDevice<1>& dev) { dev.post_init(true, false); },
-            [](DMA1ControllerDevice& dev) { dev.post_init(); },
-            [](GPIOPortADevice& dev) { dev.post_init(); },
-            [](HRTIM1ControllerDevice& dev) { dev.post_init(); },
-            [](I2CCommandBufferDevice<1>& dev) { dev.post_init(); },
-            [](DMA2ControllerDevice& dev) { dev.post_init(); },
+            [](ADC345ClockDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize ADC Clock Device"); },
+            [](ADC3ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize ADC Controller"); },
+            [](HRTIM1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize HRTIM1 Controller"); },
+            [](I2C1CommandBufferDevice<>& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize I2C Command Buffer"); },
+            [](DMAMux1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller"); },
+            [](DMA1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMA1 Controller"); },
+            [](DMA2ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMA2 Controller"); },
+            [](GPIOPortADevice& dev) { valle::expect(dev.post_init(), "Failed to post-initialize GPIO Port A"); },
+            [](GPIOPortBDevice& dev) { valle::expect(dev.post_init(), "Failed to post-initialize GPIO Port B"); },
         });
     }
 
@@ -159,7 +173,16 @@ namespace valle::app
 
     void start_vca_controller()
     {
-        g_ref_registry.template get<CurrentSensorADCControllerT>().start_inject();
+        // Start current sensor ADC conversions
+        g_devices.adc3->enable_interrupts(ADCInterruptConfig{
+            .priority = 5,
+            .interrupts =
+                ADCInterruptMask{
+                    .inj_eos = true,
+                },
+        });
+        g_devices.adc3->start_inject();
+
         g_drivers.vca.enable();
     }
 

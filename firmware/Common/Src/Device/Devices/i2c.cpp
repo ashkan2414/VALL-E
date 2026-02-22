@@ -1,4 +1,4 @@
-#include "Valle/Device/Devices/i2c.hpp"
+#include "Valle/Board/Device/Devices/i2c.hpp"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -75,10 +75,10 @@ namespace valle
     }
 
     /**
- * @brief I2C Error Interrupt Handler Router
- *
- * @tparam tkControllerID I2C Index (1-4)
- */
+     * @brief I2C Error Interrupt Handler Router
+     *
+     * @tparam tkControllerID I2C Index (1-4)
+     */
     template <I2CControllerID tkControllerID>
         requires(kValidI2CControllerID<tkControllerID>)
     static inline void i2c_error_irq_handler()

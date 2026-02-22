@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Valle/Device/registry.hpp"
+#include "Valle/Board/Device/registry.hpp"
 #include "app_system_config.hpp"
 
 // ============================================================================

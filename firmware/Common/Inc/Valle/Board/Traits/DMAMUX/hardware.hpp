@@ -1,0 +1,171 @@
+#pragma once
+
+#include "Valle/Board/Traits/DMAMUX/id.hpp"
+#include "stm32g4xx_ll_bus.h"
+#include "stm32g4xx_ll_dmamux.h"
+
+namespace valle
+{
+    // ============================================================================
+    // ENUMERATIONS
+    // ============================================================================
+    enum class DMAMuxChannel : uint32_t
+    {
+        kDMA1Channel1 = LL_DMAMUX_CHANNEL_0,
+        kDMA1Channel2 = LL_DMAMUX_CHANNEL_1,
+        kDMA1Channel3 = LL_DMAMUX_CHANNEL_2,
+        kDMA1Channel4 = LL_DMAMUX_CHANNEL_3,
+        kDMA1Channel5 = LL_DMAMUX_CHANNEL_4,
+        kDMA1Channel6 = LL_DMAMUX_CHANNEL_5,
+        kDMA1Channel7 = LL_DMAMUX_CHANNEL_6,
+        kDMA1Channel8 = LL_DMAMUX_CHANNEL_7,
+        kDMA2Channel1 = LL_DMAMUX_CHANNEL_8,
+        kDMA2Channel2 = LL_DMAMUX_CHANNEL_9,
+        kDMA2Channel3 = LL_DMAMUX_CHANNEL_10,
+        kDMA2Channel4 = LL_DMAMUX_CHANNEL_11,
+        kDMA2Channel5 = LL_DMAMUX_CHANNEL_12,
+        kDMA2Channel6 = LL_DMAMUX_CHANNEL_13,
+        kDMA2Channel7 = LL_DMAMUX_CHANNEL_14,
+        kDMA2Channel8 = LL_DMAMUX_CHANNEL_15
+    };
+
+    enum class DMAMuxRequestID : uint32_t
+    {
+        kMem2Mem     = LL_DMAMUX_REQ_MEM2MEM,
+        kGenerator0  = LL_DMAMUX_REQ_GENERATOR0,
+        kGenerator1  = LL_DMAMUX_REQ_GENERATOR1,
+        kGenerator2  = LL_DMAMUX_REQ_GENERATOR2,
+        kGenerator3  = LL_DMAMUX_REQ_GENERATOR3,
+        kADC1        = LL_DMAMUX_REQ_ADC1,
+        kDAC1Ch1     = LL_DMAMUX_REQ_DAC1_CH1,
+        kDAC1Ch2     = LL_DMAMUX_REQ_DAC1_CH2,
+        kTIM6Up      = LL_DMAMUX_REQ_TIM6_UP,
+        kTIM7Up      = LL_DMAMUX_REQ_TIM7_UP,
+        kSPI1Rx      = LL_DMAMUX_REQ_SPI1_RX,
+        kSPI1Tx      = LL_DMAMUX_REQ_SPI1_TX,
+        kSPI2Rx      = LL_DMAMUX_REQ_SPI2_RX,
+        kSPI2Tx      = LL_DMAMUX_REQ_SPI2_TX,
+        kSPI3Rx      = LL_DMAMUX_REQ_SPI3_RX,
+        kSPI3Tx      = LL_DMAMUX_REQ_SPI3_TX,
+        kI2C1Rx      = LL_DMAMUX_REQ_I2C1_RX,
+        kI2C1Tx      = LL_DMAMUX_REQ_I2C1_TX,
+        kI2C2Rx      = LL_DMAMUX_REQ_I2C2_RX,
+        kI2C2Tx      = LL_DMAMUX_REQ_I2C2_TX,
+        kI2C3Rx      = LL_DMAMUX_REQ_I2C3_RX,
+        kI2C3Tx      = LL_DMAMUX_REQ_I2C3_TX,
+        kI2C4Rx      = LL_DMAMUX_REQ_I2C4_RX,
+        kI2C4Tx      = LL_DMAMUX_REQ_I2C4_TX,
+        kUSART1Rx    = LL_DMAMUX_REQ_USART1_RX,
+        kUSART1Tx    = LL_DMAMUX_REQ_USART1_TX,
+        kUSART2Rx    = LL_DMAMUX_REQ_USART2_RX,
+        kUSART2Tx    = LL_DMAMUX_REQ_USART2_TX,
+        kUSART3Rx    = LL_DMAMUX_REQ_USART3_RX,
+        kUSART3Tx    = LL_DMAMUX_REQ_USART3_TX,
+        kUART4Rx     = LL_DMAMUX_REQ_UART4_RX,
+        kUART4Tx     = LL_DMAMUX_REQ_UART4_TX,
+        kUART5Rx     = LL_DMAMUX_REQ_UART5_RX,
+        kUART5Tx     = LL_DMAMUX_REQ_UART5_TX,
+        kLPUART1Rx   = LL_DMAMUX_REQ_LPUART1_RX,
+        kLPUART1Tx   = LL_DMAMUX_REQ_LPUART1_TX,
+        kADC2        = LL_DMAMUX_REQ_ADC2,
+        kADC3        = LL_DMAMUX_REQ_ADC3,
+        kADC4        = LL_DMAMUX_REQ_ADC4,
+        kADC5        = LL_DMAMUX_REQ_ADC5,
+        kQSPI        = LL_DMAMUX_REQ_QSPI,
+        kDAC2Ch1     = LL_DMAMUX_REQ_DAC2_CH1,
+        kTIM1Ch1     = LL_DMAMUX_REQ_TIM1_CH1,
+        kTIM1Ch2     = LL_DMAMUX_REQ_TIM1_CH2,
+        kTIM1Ch3     = LL_DMAMUX_REQ_TIM1_CH3,
+        kTIM1Ch4     = LL_DMAMUX_REQ_TIM1_CH4,
+        kTIM1Up      = LL_DMAMUX_REQ_TIM1_UP,
+        kTIM1Trig    = LL_DMAMUX_REQ_TIM1_TRIG,
+        kTIM1Com     = LL_DMAMUX_REQ_TIM1_COM,
+        kTIM8Ch1     = LL_DMAMUX_REQ_TIM8_CH1,
+        kTIM8Ch2     = LL_DMAMUX_REQ_TIM8_CH2,
+        kTIM8Ch3     = LL_DMAMUX_REQ_TIM8_CH3,
+        kTIM8Ch4     = LL_DMAMUX_REQ_TIM8_CH4,
+        kTIM8Up      = LL_DMAMUX_REQ_TIM8_UP,
+        kTIM8Trig    = LL_DMAMUX_REQ_TIM8_TRIG,
+        kTIM8Com     = LL_DMAMUX_REQ_TIM8_COM,
+        kTIM2Ch1     = LL_DMAMUX_REQ_TIM2_CH1,
+        kTIM2Ch2     = LL_DMAMUX_REQ_TIM2_CH2,
+        kTIM2Ch3     = LL_DMAMUX_REQ_TIM2_CH3,
+        kTIM2Ch4     = LL_DMAMUX_REQ_TIM2_CH4,
+        kTIM2Up      = LL_DMAMUX_REQ_TIM2_UP,
+        kTIM3Ch1     = LL_DMAMUX_REQ_TIM3_CH1,
+        kTIM3Ch2     = LL_DMAMUX_REQ_TIM3_CH2,
+        kTIM3Ch3     = LL_DMAMUX_REQ_TIM3_CH3,
+        kTIM3Ch4     = LL_DMAMUX_REQ_TIM3_CH4,
+        kTIM3Up      = LL_DMAMUX_REQ_TIM3_UP,
+        kTIM3Trig    = LL_DMAMUX_REQ_TIM3_TRIG,
+        kTIM4Ch1     = LL_DMAMUX_REQ_TIM4_CH1,
+        kTIM4Ch2     = LL_DMAMUX_REQ_TIM4_CH2,
+        kTIM4Ch3     = LL_DMAMUX_REQ_TIM4_CH3,
+        kTIM4Ch4     = LL_DMAMUX_REQ_TIM4_CH4,
+        kTIM4Up      = LL_DMAMUX_REQ_TIM4_UP,
+        kTIM5Ch1     = LL_DMAMUX_REQ_TIM5_CH1,
+        kTIM5Ch2     = LL_DMAMUX_REQ_TIM5_CH2,
+        kTIM5Ch3     = LL_DMAMUX_REQ_TIM5_CH3,
+        kTIM5Ch4     = LL_DMAMUX_REQ_TIM5_CH4,
+        kTIM5Up      = LL_DMAMUX_REQ_TIM5_UP,
+        kTIM5Trig    = LL_DMAMUX_REQ_TIM5_TRIG,
+        kTIM15Ch1    = LL_DMAMUX_REQ_TIM15_CH1,
+        kTIM15Up     = LL_DMAMUX_REQ_TIM15_UP,
+        kTIM15Trig   = LL_DMAMUX_REQ_TIM15_TRIG,
+        kTIM15Com    = LL_DMAMUX_REQ_TIM15_COM,
+        kTIM16Ch1    = LL_DMAMUX_REQ_TIM16_CH1,
+        kTIM16Up     = LL_DMAMUX_REQ_TIM16_UP,
+        kTIM17Ch1    = LL_DMAMUX_REQ_TIM17_CH1,
+        kTIM17Up     = LL_DMAMUX_REQ_TIM17_UP,
+        kTIM20Ch1    = LL_DMAMUX_REQ_TIM20_CH1,
+        kTIM20Ch2    = LL_DMAMUX_REQ_TIM20_CH2,
+        kTIM20Ch3    = LL_DMAMUX_REQ_TIM20_CH3,
+        kTIM20Ch4    = LL_DMAMUX_REQ_TIM20_CH4,
+        kTIM20Up     = LL_DMAMUX_REQ_TIM20_UP,
+        kAESIn       = LL_DMAMUX_REQ_AES_IN,
+        kAESOut      = LL_DMAMUX_REQ_AES_OUT,
+        kTIM20Trig   = LL_DMAMUX_REQ_TIM20_TRIG,
+        kTIM20Com    = LL_DMAMUX_REQ_TIM20_COM,
+        kHRTIM1M     = LL_DMAMUX_REQ_HRTIM1_M,
+        kHRTIM1A     = LL_DMAMUX_REQ_HRTIM1_A,
+        kHRTIM1B     = LL_DMAMUX_REQ_HRTIM1_B,
+        kHRTIM1C     = LL_DMAMUX_REQ_HRTIM1_C,
+        kHRTIM1D     = LL_DMAMUX_REQ_HRTIM1_D,
+        kHRTIM1E     = LL_DMAMUX_REQ_HRTIM1_E,
+        kHRTIM1F     = LL_DMAMUX_REQ_HRTIM1_F,
+        kDAC3Ch1     = LL_DMAMUX_REQ_DAC3_CH1,
+        kDAC3Ch2     = LL_DMAMUX_REQ_DAC3_CH2,
+        kDAC4Ch1     = LL_DMAMUX_REQ_DAC4_CH1,
+        kDAC4Ch2     = LL_DMAMUX_REQ_DAC4_CH2,
+        kSPI4Rx      = LL_DMAMUX_REQ_SPI4_RX,
+        kSPI4Tx      = LL_DMAMUX_REQ_SPI4_TX,
+        kSAI1A       = LL_DMAMUX_REQ_SAI1_A,
+        kSAI1B       = LL_DMAMUX_REQ_SAI1_B,
+        kFMACRead    = LL_DMAMUX_REQ_FMAC_READ,
+        kFMACWrite   = LL_DMAMUX_REQ_FMAC_WRITE,
+        kCORDICRead  = LL_DMAMUX_REQ_CORDIC_READ,
+        kCORDICWrite = LL_DMAMUX_REQ_CORDIC_WRITE,
+        kUCPD1Rx     = LL_DMAMUX_REQ_UCPD1_RX,
+        kUCPD1Tx     = LL_DMAMUX_REQ_UCPD1_TX,
+    };
+
+    // ============================================================================
+    // HARDWARE TRAITS
+    // ============================================================================
+    template <DMAMuxControllerID tkControllerID>
+        requires(kValidDMAMuxControllerID<tkControllerID>)
+    struct DMAMuxControllerTraits;
+
+    template <>
+    struct DMAMuxControllerTraits<1>
+    {
+        static inline DMAMUX_Channel_TypeDef* const skInstance = DMAMUX1;
+        static constexpr uint32_t                   skClock    = LL_AHB1_GRP1_PERIPH_DMAMUX1;
+
+        static inline void enable_clock()
+        {
+            LL_AHB1_GRP1_EnableClock(skClock);
+        }
+    };
+
+}  // namespace valle

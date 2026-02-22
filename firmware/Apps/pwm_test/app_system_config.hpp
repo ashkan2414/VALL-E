@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Valle/Device/device.hpp"
-#include "Valle/Drivers/uart_logger.hpp"
+#include "Valle/Board/Device/device.hpp"
+#include "Valle/Board/Drivers/uart_logger.hpp"
 #include "Valle/Modules/acs724.hpp"
 #include "Valle/Modules/ldc1612.hpp"
 #include "Valle/Modules/vca.hpp"

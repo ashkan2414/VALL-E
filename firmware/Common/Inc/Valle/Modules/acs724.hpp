@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Valle/Drivers/adc.hpp"
+#include "Valle/Board/Drivers/adc.hpp"
 
 namespace valle
 {

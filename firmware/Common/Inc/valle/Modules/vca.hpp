@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <atomic>
 
-#include "Valle/Drivers/hrtim_half_bridge.hpp"
+#include "Valle/Board/Drivers/hrtim_half_bridge.hpp"
 #include "Valle/Math/System/Blocks/feedback.hpp"
 #include "Valle/Math/System/Blocks/pid.hpp"
 #include "delegate/Delegate.h"

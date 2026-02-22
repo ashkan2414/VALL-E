@@ -20,42 +20,46 @@ namespace valle::app
         g_ref_registry.foreach_shared(Overloaded{
             [](ADC12ClockDevice& dev)
             {
-                const bool result = dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
-                                                                 .prescaler = ADCAsyncClockPrescaler::kDiv8});
-                valle::expect(result, "Failed to initialize ADC12 Clock Device");
+                valle::expect(dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
+                                                           .prescaler = ADCAsyncClockPrescaler::kDiv8}),
+                              "Failed to initialize ADC12 Clock Device");
             },
             [](ADC1ControllerDevice& dev)
             {
-                const bool result = dev.init(ADCControllerConfig{
-                    .resolution     = ADCResolution::k12Bit,
-                    .data_alignment = ADCDataAlignment::kRight,
-                    .low_power      = ADCLowPowerMode::kNone,
-                    .inj =
-                        ADCInjectGroupConfig{
-                            .trigger_source = ADCInjectGroupTriggerSource::kSoftware,
-                            .trigger_edge   = ADCInjectGroupTriggerEdge::kRisingFalling,
-                        },
-                    .reg          = ADCRegularGroupConfig{.trigger_source = ADCRegularGroupTriggerSource::kSoftware,
-                                                          .trigger_edge   = ADCRegularGroupTriggerEdge::kRisingFalling,
-                                                          .dma =
-                                                     ADCRegularGroupDMAConfig{
-                                                                  .priority      = DMAPriority::kHigh,
-                                                                  .circular_mode = true,
+                valle::expect(
+                    dev.init(ADCControllerConfig{
+                        .resolution     = ADCResolution::k12Bit,
+                        .data_alignment = ADCDataAlignment::kRight,
+                        .low_power      = ADCLowPowerMode::kNone,
+                        .inj =
+                            ADCInjectGroupConfig{
+                                .trigger_source = ADCInjectGroupTriggerSource::kSoftware,
+                                .trigger_edge   = ADCInjectGroupTriggerEdge::kRisingFalling,
+                            },
+                        .reg =
+                            ADCRegularGroupConfig{.trigger_source = ADCRegularGroupTriggerSource::kSoftware,
+                                                  .trigger_edge   = ADCRegularGroupTriggerEdge::kRisingFalling,
+                                                  .dma =
+                                                      ADCRegularGroupDMAConfig{
+                                                          .priority      = DMAPriority::kHigh,
+                                                          .circular_mode = true,
+                                                          .interrupts =
+                                                              DMAChannelInterruptConfig{
+                                                                  .priority = 10,
                                                                   .interrupts =
-                                                             DMAInterruptConfig{
-                                                                          .priority  = 10,
-                                                                          .enable_tc = true,
-                                                                          .enable_ht = false,
-                                                                          .enable_te = false,
-                                                             },
-                                                     },
-                                                          .overrun           = ADCRegularGroupOverrunBehavior::kOverwrite,
-                                                          .conversion_mode   = ADCRegularGroupConversionMode::kSingleShot,
-                                                          .oversampling_mode = ADCRegularGroupOversamplingMode::kDiscontinuous},
-                    .oversampling = std::nullopt  // No oversampling by default
-                });
-
-                valle::expect(result, "Failed to initialize Test ADC Controller");
+                                                                      DMAChannelInterruptMask{
+                                                                          .transfer_complete = true,
+                                                                          .half_transfer     = false,
+                                                                          .transfer_error    = false,
+                                                                      },
+                                                              },
+                                                      },
+                                                  .overrun           = ADCRegularGroupOverrunBehavior::kOverwrite,
+                                                  .conversion_mode   = ADCRegularGroupConversionMode::kSingleShot,
+                                                  .oversampling_mode = ADCRegularGroupOversamplingMode::kDiscontinuous},
+                        .oversampling = std::nullopt  // No oversampling by default
+                    }),
+                    "Failed to initialize Test ADC Controller");
             },
             [](DMAMux1ControllerDevice& dev)
             { valle::expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },

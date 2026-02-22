@@ -56,7 +56,7 @@ namespace valle::app
                           .interrupt_config = HRTIMTimerInterruptConfig{.priority = 5,
                                                                         .interrupts =
                                                                             HRTIMTimerInterruptMask{
-                                                                                .enable_repetition = true,
+                                                                                .repetition = true,
                                                                             }},
                           .output_config =
                               {

@@ -1,4 +1,4 @@
-#include "Valle/Device/Devices/dma.hpp"
+#include "Valle/Board/Device/Devices/dma.hpp"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -18,7 +18,7 @@ namespace valle
         requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     [[nodiscard]] consteval static inline bool dma_has_any_granular_isr_handler()
     {
-        constexpr auto values = magic_enum::enum_values<DMAInterruptType>();
+        constexpr auto values = magic_enum::enum_values<DMAChannelInterruptType>();
 
         return [values]<std::size_t... Is>(std::index_sequence<Is...>)
         {
@@ -47,36 +47,36 @@ namespace valle
             return;
         }
 
-#define HANDLE_DMA_INT(tkIntType)                                                     \
-    {                                                                                 \
-        using RouterT = DMAISRRouter<tkControllerID, tkChannelID, (tkIntType)>;       \
-        using TraitsT = DMAInterruptTraits<tkControllerID, tkChannelID, (tkIntType)>; \
-        if constexpr (CBoundISRRouter<RouterT>)                                       \
-        {                                                                             \
-            if (TraitsT::is_pending())                                                \
-            {                                                                         \
-                if constexpr (kISRRouterConfigAck<RouterT>)                           \
-                {                                                                     \
-                    TraitsT::ack();                                                   \
-                }                                                                     \
-                RouterT::handle();                                                    \
-            }                                                                         \
-        }                                                                             \
-        else                                                                          \
-        {                                                                             \
-            if constexpr (TraitsT::skShouldClear)                                     \
-            {                                                                         \
-                if (TraitsT::is_pending())                                            \
-                {                                                                     \
-                    TraitsT::ack();                                                   \
-                }                                                                     \
-            }                                                                         \
-        }                                                                             \
+#define HANDLE_DMA_INT(tkIntType)                                                            \
+    {                                                                                        \
+        using RouterT = DMAISRRouter<tkControllerID, tkChannelID, (tkIntType)>;              \
+        using TraitsT = DMAChannelInterruptTraits<tkControllerID, tkChannelID, (tkIntType)>; \
+        if constexpr (CBoundISRRouter<RouterT>)                                              \
+        {                                                                                    \
+            if (TraitsT::is_pending())                                                       \
+            {                                                                                \
+                if constexpr (kISRRouterConfigAck<RouterT>)                                  \
+                {                                                                            \
+                    TraitsT::ack();                                                          \
+                }                                                                            \
+                RouterT::handle();                                                           \
+            }                                                                                \
+        }                                                                                    \
+        else                                                                                 \
+        {                                                                                    \
+            if constexpr (TraitsT::skShouldClear)                                            \
+            {                                                                                \
+                if (TraitsT::is_pending())                                                   \
+                {                                                                            \
+                    TraitsT::ack();                                                          \
+                }                                                                            \
+            }                                                                                \
+        }                                                                                    \
     }
 
-        HANDLE_DMA_INT(DMAInterruptType::kTransferError);
-        HANDLE_DMA_INT(DMAInterruptType::kHalfTransfer);
-        HANDLE_DMA_INT(DMAInterruptType::kTransferComplete);
+        HANDLE_DMA_INT(DMAChannelInterruptType::kTransferError);
+        HANDLE_DMA_INT(DMAChannelInterruptType::kHalfTransfer);
+        HANDLE_DMA_INT(DMAChannelInterruptType::kTransferComplete);
 #undef HANDLE_DMA_INT
     }
 
