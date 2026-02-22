@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Valle/Device/Devices/gpio.hpp"
+#include "Valle/Board/Device/Devices/gpio.hpp"
 
 using RCCOsc32InGPIOPinDevice  = GPIOPinC14Device;
 using RCCOsc32OutGPIOPinDevice = GPIOPinC15Device;

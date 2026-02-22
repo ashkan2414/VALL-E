@@ -1,5 +1,7 @@
 #include "app.hpp"
 
+#include "Valle/Core/error.hpp"
+
 VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
 
 namespace valle::app
@@ -16,8 +18,10 @@ namespace valle::app
     static void init_shared()
     {
         g_ref_registry.foreach_shared(Overloaded{
-            [](DMA1ControllerDevice& dev) { dev.init(); },
-            [](GPIOPortADevice& dev) { dev.init(); },
+            [](DMAMux1ControllerDevice& dev)
+            { valle::expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
+            [](DMA1ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
+            [](GPIOPortADevice& dev) { valle::expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
         }  // namespace valle
         );
     }
@@ -28,17 +32,18 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        g_drivers.uart_logger.init(UARTControllerConfig{
-            .baud_rate         = UARTBaudRate::kBaud115200,
-            .word_length       = UARTWordLength::kBits8,
-            .stop_bits         = UARTStopBits::kBits1,
-            .parity            = UARTParity::kNone,
-            .transfer_mode     = UARTTransferMode::kTxRx,
-            .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
-            .dma_priority      = DMAPriority::kHigh,
-            .dma_int_priority  = 5,
-            .uart_int_priority = 5,
-        });
+        valle::expect(g_drivers.uart_logger.init(UARTControllerConfig{
+                          .baud_rate         = UARTBaudRate::kBaud115200,
+                          .word_length       = UARTWordLength::kBits8,
+                          .stop_bits         = UARTStopBits::kBits1,
+                          .parity            = UARTParity::kNone,
+                          .transfer_mode     = UARTTransferMode::kTxRx,
+                          .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
+                          .dma_priority      = DMAPriority::kHigh,
+                          .dma_int_priority  = 5,
+                          .uart_int_priority = 5,
+                      }),
+                      "Failed to initialize UART Logger Driver");
     }
 
     /**
@@ -48,8 +53,12 @@ namespace valle::app
     static void post_init_shared()
     {
         g_ref_registry.foreach_shared(Overloaded{
-            [](DMA1ControllerDevice& dev) { dev.post_init(); },
-            [](GPIOPortADevice& dev) { dev.post_init(); },
+            [](DMAMux1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller Device"); },
+            [](DMA1ControllerDevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize DMA1 Controller Device"); },
+            [](GPIOPortADevice& dev)
+            { valle::expect(dev.post_init(), "Failed to post-initialize GPIO Port A Device"); },
         });
     }
 

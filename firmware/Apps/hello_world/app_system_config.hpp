@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Valle/Device/device.hpp"
-#include "Valle/Drivers/uart_logger.hpp"
+#include "Valle/Board/Device/device.hpp"
+#include "Valle/Board/Drivers/uart_logger.hpp"
 #include "Valle/Modules/acs724.hpp"
 #include "Valle/Modules/ldc1612.hpp"
 #include "Valle/Modules/vca.hpp"
@@ -38,10 +38,11 @@ namespace valle::app
 
     struct Devices
     {
-        using DevicesT = TypeList<DMAControllerDevice<1>, GPIOPortADevice>;
+        using DevicesT = TypeList<DMAMux1ControllerDevice, DMA1ControllerDevice, GPIOPortADevice>;
 
-        [[no_unique_address]] DeviceRef<DMAControllerDevice<1>> dma1;
-        [[no_unique_address]] DeviceRef<GPIOPortADevice>        gpioa;
+        [[no_unique_address]] DeviceRef<DMAMux1ControllerDevice> dmamux1;
+        [[no_unique_address]] DeviceRef<DMA1ControllerDevice>    dma1;
+        [[no_unique_address]] DeviceRef<GPIOPortADevice>         gpioa;
     };
 
 }  // namespace valle::app

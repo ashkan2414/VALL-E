@@ -22,7 +22,7 @@ namespace valle
     template <>
     struct DMAISRRouter<app::TestADCDMAChannelT::skControllerID,
                         app::TestADCDMAChannelT::skChannelID,
-                        DMAInterruptType::kTransferComplete>
+                        DMAChannelInterruptType::kTransferComplete>
     {
         static void handle()
         {

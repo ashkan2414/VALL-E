@@ -1,4 +1,4 @@
-#include "Valle/Device/Devices/hrtim.hpp"
+#include "Valle/Board/Device/Devices/hrtim.hpp"
 
 #include "magic_enum/magic_enum.hpp"
 
@@ -18,7 +18,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool hrtim_controller_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMControllerInterruptType>();
@@ -35,7 +35,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     static inline void hrtim_controller_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalControllerISRRouter<tkControllerID>;
@@ -82,7 +82,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool hrtim_fault_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMFaultInterruptType>();
@@ -99,7 +99,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     static inline void hrtim_fault_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalFaultISRRouter<tkControllerID>;
@@ -150,7 +150,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool hrtim_master_timer_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMMasterTimerInterruptType>();
@@ -167,7 +167,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     static inline void hrtim_master_timer_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalMasterTimerISRRouter<tkControllerID>;
@@ -212,7 +212,7 @@ namespace valle
     // MASTER IRQ HANDLER
     // -----------------------------------------------------------------------------
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool hrtim_master_has_any_granular_isr_handler()
     {
         return CBoundISRRouter<HRTIMGlobalMasterTimerISRRouter<tkControllerID>> ||
@@ -227,7 +227,7 @@ namespace valle
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     static inline void hrtim_master_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalMasterISRRouter<tkControllerID>;
@@ -257,7 +257,7 @@ namespace valle
      * @tparam tkTimerID      HRTIM Timer ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool hrtim_timer_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMTimerInterruptType>();
@@ -275,7 +275,7 @@ namespace valle
      * @tparam tkTimerID      HRTIM Timer ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMID<tkControllerID>)
+        requires(kValidHRTIMControllerID<tkControllerID>)
     static inline void hrtim_timer_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalTimerISRRouter<tkControllerID, tkTimerID>;

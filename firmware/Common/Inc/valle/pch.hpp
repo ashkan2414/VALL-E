@@ -85,6 +85,6 @@
 // Only include your headers here if they are STABLE (not changing often).
 
 #ifdef __cplusplus
-#include "Valle/Device/device_core.hpp"
-#include "Valle/Device/registry.hpp"
+#include "Valle/Board/Device/device_core.hpp"
+#include "Valle/Board/Device/registry.hpp"
 #endif

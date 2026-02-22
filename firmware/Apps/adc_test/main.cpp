@@ -14,8 +14,11 @@ namespace valle
         if constexpr (app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)
         {
             app::g_devices.adc1->enable_interrupts(ADCInterruptConfig{
-                .priority           = 5,
-                .enable_inj_eos_int = true,
+                .priority = 5,
+                .interrupts =
+                    ADCInterruptMask{
+                        .inj_eos = true,
+                    },
             });
             app::g_devices.adc1->start_inject();
         }

@@ -160,8 +160,8 @@ The project is organized to separate hardware abstraction, core logic, and speci
 *   **`Apps/`**: Contains the main entry points for different project targets.
 *   **`Common/`**: The heart of the VALL-E library.
     *   `Inc/Valle/Core/`: Core system components (Logging, Tasks, Timekeeping).
-    *   `Inc/Valle/Device/`: Hardware Abstraction Layer (HAL) traits and registry.
-    *   `Inc/Valle/Drivers/`: High-level drivers for ADC, HRTIM, I2C, and UART.
+    *   `Inc/Valle/Board/Device/`: Hardware Abstraction Layer (HAL) traits and registry.
+    *   `Inc/Valle/Board/Drivers/`: High-level drivers for ADC, HRTIM, I2C, and UART.
     *   `Inc/Valle/Math/`: Control theory components (PID, Biquad filters, Matrix math via Eigen).
     *   `Inc/Valle/Modules/`: Drivers for specific external hardware (ACS724, LDC1612, VCA).
     *   `Inc/Valle/Utils/`: Utility functions and classes (RingBuffer, CircularBuffer, CRC).

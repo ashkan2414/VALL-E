@@ -1,4 +1,4 @@
-#include "Valle/Device/Devices/uart.hpp"
+#include "Valle/Board/Device/Devices/uart.hpp"
 
 #include "magic_enum/magic_enum.hpp"
 
