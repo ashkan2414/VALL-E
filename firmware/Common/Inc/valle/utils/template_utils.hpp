@@ -504,9 +504,9 @@ namespace valle
     // ============================================================================
 
     /**
- * @brief Triggers a compiler error that prints the deduced type T.
- * Usage: InspectType<MyComplexType>{};
- */
+     * @brief Triggers a compiler error that prints the deduced type T.
+     * Usage: InspectType<MyComplexType>{};
+     */
     template <typename... TInspect>
     struct InspectType;  // No definition!
 
@@ -515,5 +515,8 @@ namespace valle
     {
         static_assert(N < 0, "Inspect Value: Triggered intentional compile-time error to inspect value.");
     };
+
+    template <auto T>
+    inline constexpr bool kAlwaysFalse = false;
 
 }  // namespace valle

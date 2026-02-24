@@ -60,12 +60,12 @@ namespace valle::app
                                                                             }},
                           .output_config =
                               {
-                                  .polarity    = HRTIMOutputPolarity::kPositive,
-                                  .idle_mode   = HRTIMOutputIdleMode::kNoIdle,
-                                  .idle_level  = HRTIMOutputIdleLevel::kInactive,
-                                  .fault_state = HRTIMOutputFaultState::kInactive,
+                                  .polarity    = HRTIMTimerOutputPolarity::kPositive,
+                                  .idle_mode   = HRTIMTimerOutputIdleMode::kNoIdle,
+                                  .idle_level  = HRTIMTimerOutputIdleLevel::kInactive,
+                                  .fault_state = HRTIMTimerOutputFaultState::kInactive,
                                   .gpio_config =
-                                      HRTIMOutputGPIOConfig{
+                                      HRTIMTimerOutputGPIOConfig{
                                           .speed = GPIOSpeedMode::kLow,
                                           .pull  = GPIOPullMode::kNoPull,
                                       },

@@ -8,17 +8,17 @@ namespace valle
 {
     struct HRTIMHalfBridgeOutputConfig
     {
-        HRTIMOutputPolarity   polarity    = HRTIMOutputPolarity::kPositive;
-        HRTIMOutputIdleMode   idle_mode   = HRTIMOutputIdleMode::kBurst;
-        HRTIMOutputIdleLevel  idle_level  = HRTIMOutputIdleLevel::kInactive;
-        HRTIMOutputFaultState fault_state = HRTIMOutputFaultState::kInactive;
-        HRTIMOutputGPIOConfig gpio_config{};
+        HRTIMTimerOutputPolarity   polarity    = HRTIMTimerOutputPolarity::kPositive;
+        HRTIMTimerOutputIdleMode   idle_mode   = HRTIMTimerOutputIdleMode::kBurst;
+        HRTIMTimerOutputIdleLevel  idle_level  = HRTIMTimerOutputIdleLevel::kInactive;
+        HRTIMTimerOutputFaultState fault_state = HRTIMTimerOutputFaultState::kInactive;
+        HRTIMTimerOutputGPIOConfig gpio_config{};
     };
 
     struct HRTIMHalfBridgeDriverConfig
     {
         // --- Basic Timing ---
-        uint32_t freq_hz    = 50000;  // PWM Frequency in Hz
+        uint64_t freq_hz    = 50000;  // PWM Frequency in Hz
         uint8_t  repetition = 0;      // Repetition value for interrupt generation
 
         HRTIMTimerInterruptConfig interrupt_config{};
@@ -59,6 +59,9 @@ namespace valle
         using TimerTraitsT              = HRTIMTimerT::TimerTraitsT;
         static constexpr size_t skIndex = HRTIMTimerT::skIndex;
 
+        static constexpr auto skControllerID = HRTIMTimerT::skControllerID;
+        static constexpr auto skTimerID      = HRTIMTimerT::skTimerID;
+
         static_assert(HRTIMTimerT::skHasOutput1Pin && HRTIMTimerT::skHasOutput2Pin,
                       "HRTIMHalfBridgeDriver requires a timer both GPIO outputs for complementary control.");
 
@@ -89,14 +92,71 @@ namespace valle
                 return false;
             }
 
+            if (config.min_duty > config.max_duty)
+            {
+                VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM invalid duty cycle limits: min_duty {} > max_duty {}",
+                                static_cast<int>(skControllerID),
+                                enum_name(skTimerID),
+                                config.min_duty,
+                                config.max_duty);
+                return false;
+            }
+
+            if (config.max_duty > 1.0F)
+            {
+                VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM max_duty {} is above 100%!",
+                                static_cast<int>(skControllerID),
+                                enum_name(skTimerID),
+                                config.max_duty);
+                return false;
+            }
+
+            if (config.min_duty < 0.0F)
+            {
+                VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM min_duty {} is below 0%!",
+                                static_cast<int>(skControllerID),
+                                enum_name(skTimerID),
+                                config.min_duty);
+                return false;
+            }
+
             m_min_duty = config.min_duty;
             m_max_duty = config.max_duty;
 
             // Calculate Period and Prescaler
-            const uint32_t            f_hrtim_hz   = m_timer->get_hrtim_freq_hz();
-            const HRTIMTimerPrescaler prescaler    = m_timer->get_prescaler_for_freq(config.freq_hz);
-            const uint64_t            h_hrck_hz    = m_timer->calculate_hrck_freq_hz(f_hrtim_hz, prescaler);
-            uint16_t                  period_ticks = static_cast<uint16_t>(h_hrck_hz / config.freq_hz);
+            const uint32_t f_hrtim_hz = m_timer->get_hrtim_freq_hz();
+
+            const uint64_t min_freq_hz = m_timer->calculate_min_freq_hz(f_hrtim_hz);
+            if (config.freq_hz < min_freq_hz)
+            {
+                VALLE_LOG_ERROR(
+                    "HRTIM{} Timer {} Half-bridge PWM target frequency {} Hz is too low. Must be above {} Hz.",
+                    static_cast<int>(skControllerID),
+                    enum_name(skTimerID),
+                    config.freq_hz,
+                    min_freq_hz);
+
+                return false;
+            }
+
+            const uint64_t max_freq_hz = m_timer->calculate_max_freq_hz(f_hrtim_hz);
+            if (config.freq_hz > max_freq_hz)
+            {
+                VALLE_LOG_ERROR(
+                    "HRTIM{} Timer {} Half-bridge PWM target frequency {} Hz is too high. Must be below {} Hz.",
+                    static_cast<int>(skControllerID),
+                    enum_name(skTimerID),
+                    config.freq_hz,
+                    max_freq_hz);
+
+                return false;
+            }
+
+            const HRTIMTimerPrescaler prescaler =
+                m_timer->calculate_timer_prescaler_for_freq(f_hrtim_hz, config.freq_hz);
+
+            const uint64_t h_hrck_hz    = m_timer->calculate_hrck_freq_hz(f_hrtim_hz, prescaler);
+            uint16_t       period_ticks = static_cast<uint16_t>(h_hrck_hz / config.freq_hz);
 
             // In Center-Aligned mode (up-down counting), one full cycle consists of counting up
             // to the period and back down to zero. Therefore, the period register must be set
@@ -108,12 +168,12 @@ namespace valle
 
             // Configure Compare Unit 1 (Duty Cycle)
             // Initialize to 50%
-            LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, period_ticks / 2);
-            HRTIMTimerCountingMode counting_mode        = HRTIMTimerCountingMode::kUp;
-            HRTIMOutputSetSource   output1_set_source   = HRTIMOutputSetSource::kNone;
-            HRTIMOutputResetSource output1_reset_source = HRTIMOutputResetSource::kNone;
-            HRTIMOutputSetSource   output2_set_source   = HRTIMOutputSetSource::kNone;
-            HRTIMOutputResetSource output2_reset_source = HRTIMOutputResetSource::kNone;
+            LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, period_ticks / 2);
+            HRTIMTimerCountingMode      counting_mode        = HRTIMTimerCountingMode::kUp;
+            HRTIMTimerOutputSetSource   output1_set_source   = HRTIMTimerOutputSetSource::kNone;
+            HRTIMTimerOutputResetSource output1_reset_source = HRTIMTimerOutputResetSource::kNone;
+            HRTIMTimerOutputSetSource   output2_set_source   = HRTIMTimerOutputSetSource::kNone;
+            HRTIMTimerOutputResetSource output2_reset_source = HRTIMTimerOutputResetSource::kNone;
 
             if (config.center_aligned)
             {
@@ -126,8 +186,8 @@ namespace valle
                 //   Down-count CMP1 match: SET wins (Reset becomes Set)   → output HIGH
                 // This produces a symmetric center-aligned pulse with duty = CMP1/PER,
                 // giving a linear 0–100% duty range with compare = duty * period.
-                output1_set_source   = HRTIMOutputSetSource::kTimerCompare1;
-                output1_reset_source = HRTIMOutputResetSource::kTimerCompare1;
+                output1_set_source   = HRTIMTimerOutputSetSource::kTimerCompare1;
+                output1_reset_source = HRTIMTimerOutputResetSource::kTimerCompare1;
 
                 // Complementary output automatically handled by hardware with deadtime insertion
                 if (!config.deadtime_config.has_value())
@@ -135,8 +195,8 @@ namespace valle
                     // If deadtime is disabled, we can still use the hardware swapping feature
                     // to generate complementary waveforms.
                     // TODO: verify with oscilloscope that this works as expected without deadtime.
-                    output2_set_source   = HRTIMOutputSetSource::kTimerCompare1;
-                    output2_reset_source = HRTIMOutputResetSource::kTimerCompare1;
+                    output2_set_source   = HRTIMTimerOutputSetSource::kTimerCompare1;
+                    output2_reset_source = HRTIMTimerOutputResetSource::kTimerCompare1;
                 }
             }
             else
@@ -144,53 +204,65 @@ namespace valle
                 counting_mode = HRTIMTimerCountingMode::kUp;
 
                 // Logic: HIGH at Period Start, LOW at Compare Match
-                output1_set_source   = HRTIMOutputSetSource::kTimerPeriod;
-                output1_reset_source = HRTIMOutputResetSource::kTimerCompare1;
+                output1_set_source   = HRTIMTimerOutputSetSource::kTimerPeriod;
+                output1_reset_source = HRTIMTimerOutputResetSource::kTimerCompare1;
 
                 // Complementary output automatically handled by hardware with deadtime insertion
                 if (!config.deadtime_config.has_value())
                 {
                     // Logic: HIGH at Compare Match, LOW at Period Start
-                    output2_set_source   = HRTIMOutputSetSource::kTimerCompare1;
-                    output2_reset_source = HRTIMOutputResetSource::kTimerPeriod;
+                    output2_set_source   = HRTIMTimerOutputSetSource::kTimerCompare1;
+                    output2_reset_source = HRTIMTimerOutputResetSource::kTimerPeriod;
                 }
             }
 
             // Configure Timer Time Base
-            m_timer->init_counter(HRTIMTimerCounterConfig{
-                .prescaler     = prescaler,
-                .counter_mode  = HRTIMTimerCounterMode::kContinuous,
-                .counting_mode = counting_mode,
-                .period        = period_ticks,
-                .repetition    = config.repetition,
-            });
+            if (!m_timer->init_counter(HRTIMTimerCounterConfig{
+                    .prescaler     = prescaler,
+                    .counter_mode  = HRTIMTimerCounterMode::kContinuous,
+                    .counting_mode = counting_mode,
+                    .period        = period_ticks,
+                    .repetition    = config.repetition,
+                }))
+            {
+                return false;
+            }
 
-            m_timer->init_output1(
-                HRTIMVirtualOutputConfig{
-                    .set_source   = output1_set_source,
-                    .reset_source = output1_reset_source,
-                    .polarity     = config.output_config.polarity,
-                    .idle_mode    = config.output_config.idle_mode,
-                    .idle_level   = config.output_config.idle_level,
-                    .fault_state  = config.output_config.fault_state,
-                },
-                config.output_config.gpio_config);
+            if (!m_timer->init_output1(
+                    HRTIMTimerVirtualOutputConfig{
+                        .set_source   = output1_set_source,
+                        .reset_source = output1_reset_source,
+                        .polarity     = config.output_config.polarity,
+                        .idle_mode    = config.output_config.idle_mode,
+                        .idle_level   = config.output_config.idle_level,
+                        .fault_state  = config.output_config.fault_state,
+                    },
+                    config.output_config.gpio_config))
+            {
+                return false;
+            }
 
-            m_timer->init_output2(
-                HRTIMVirtualOutputConfig{
-                    .set_source   = output2_set_source,
-                    .reset_source = output2_reset_source,
-                    .polarity     = config.output_config.polarity,
-                    .idle_mode    = config.output_config.idle_mode,
-                    .idle_level   = config.output_config.idle_level,
-                    .fault_state  = config.output_config.fault_state,
-                },
-                config.output_config.gpio_config);
+            if (!m_timer->init_output2(
+                    HRTIMTimerVirtualOutputConfig{
+                        .set_source   = output2_set_source,
+                        .reset_source = output2_reset_source,
+                        .polarity     = config.output_config.polarity,
+                        .idle_mode    = config.output_config.idle_mode,
+                        .idle_level   = config.output_config.idle_level,
+                        .fault_state  = config.output_config.fault_state,
+                    },
+                    config.output_config.gpio_config))
+            {
+                return false;
+            }
 
             // Deadtime (Optional but recommended for H-Bridge)
             if (config.deadtime_config.has_value())
             {
-                m_timer->init_deadtime(config.deadtime_config.value());
+                if (!m_timer->init_deadtime(config.deadtime_config.value()))
+                {
+                    return false;
+                }
             }
             else
             {
@@ -226,7 +298,7 @@ namespace valle
 
         void set_repetition_counter(uint8_t repetition)
         {
-            LL_HRTIM_TIM_SetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, repetition);
+            LL_HRTIM_TIM_SetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, repetition);
         }
 
         // ------------------------------------------------------------------------
@@ -247,7 +319,7 @@ namespace valle
             const uint32_t compare = (uint32_t)(clamped_duty * (float)period);
 
             // Apply Compare Value
-            LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skTimerIdx, compare);
+            LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, compare);
         }
     };
 

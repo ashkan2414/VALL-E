@@ -196,40 +196,40 @@ namespace valle
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID, HRTIMTimerInterruptType tkIntType>
     struct HRTIMTimerInterruptTraits;
 
-#define DEFINE_HRTIM_INT_TRAIT(tkIntType, ll_name)                                                           \
-    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>                                      \
-    struct HRTIMTimerInterruptTraits<tkControllerID, tkTimerID, tkIntType>                                   \
-    {                                                                                                        \
-        static inline void enable()                                                                          \
-        {                                                                                                    \
-            LL_HRTIM_EnableIT_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,                   \
-                                        HRTIMTimerTraits<tkControllerID, tkTimerID>::skTimerIdx);            \
-        }                                                                                                    \
-        static inline void disable()                                                                         \
-        {                                                                                                    \
-            LL_HRTIM_DisableIT_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,                  \
-                                         HRTIMTimerTraits<tkControllerID, tkTimerID>::skTimerIdx);           \
-        }                                                                                                    \
-        static inline bool is_enabled()                                                                      \
-        {                                                                                                    \
-            return LL_HRTIM_IsEnabledIT_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,         \
-                                                  HRTIMTimerTraits<tkControllerID, tkTimerID>::skTimerIdx);  \
-        }                                                                                                    \
-        static inline bool flag_active()                                                                     \
-        {                                                                                                    \
-            return LL_HRTIM_IsActiveFlag_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,        \
-                                                   HRTIMTimerTraits<tkControllerID, tkTimerID>::skTimerIdx); \
-        }                                                                                                    \
-                                                                                                             \
-        static inline bool is_pending()                                                                      \
-        {                                                                                                    \
-            return flag_active() && is_enabled();                                                            \
-        }                                                                                                    \
-        static inline void ack()                                                                             \
-        {                                                                                                    \
-            LL_HRTIM_ClearFlag_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,                  \
-                                         HRTIMTimerTraits<tkControllerID, tkTimerID>::skTimerIdx);           \
-        }                                                                                                    \
+#define DEFINE_HRTIM_INT_TRAIT(tkIntType, ll_name)                                                       \
+    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>                                  \
+    struct HRTIMTimerInterruptTraits<tkControllerID, tkTimerID, tkIntType>                               \
+    {                                                                                                    \
+        static inline void enable()                                                                      \
+        {                                                                                                \
+            LL_HRTIM_EnableIT_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,               \
+                                        HRTIMTimerTraits<tkControllerID, tkTimerID>::skLLID);            \
+        }                                                                                                \
+        static inline void disable()                                                                     \
+        {                                                                                                \
+            LL_HRTIM_DisableIT_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,              \
+                                         HRTIMTimerTraits<tkControllerID, tkTimerID>::skLLID);           \
+        }                                                                                                \
+        static inline bool is_enabled()                                                                  \
+        {                                                                                                \
+            return LL_HRTIM_IsEnabledIT_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,     \
+                                                  HRTIMTimerTraits<tkControllerID, tkTimerID>::skLLID);  \
+        }                                                                                                \
+        static inline bool flag_active()                                                                 \
+        {                                                                                                \
+            return LL_HRTIM_IsActiveFlag_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,    \
+                                                   HRTIMTimerTraits<tkControllerID, tkTimerID>::skLLID); \
+        }                                                                                                \
+                                                                                                         \
+        static inline bool is_pending()                                                                  \
+        {                                                                                                \
+            return flag_active() && is_enabled();                                                        \
+        }                                                                                                \
+        static inline void ack()                                                                         \
+        {                                                                                                \
+            LL_HRTIM_ClearFlag_##ll_name(HRTIMControllerTraits<tkControllerID>::skInstance,              \
+                                         HRTIMTimerTraits<tkControllerID, tkTimerID>::skLLID);           \
+        }                                                                                                \
     };
 
     DEFINE_HRTIM_INT_TRAIT(HRTIMTimerInterruptType::kCompare1, CMP1);
@@ -299,7 +299,7 @@ namespace valle
 
         static void enable_interrupts(const HRTIMTimerInterruptConfig& config)
         {
-            if (!config.interrupts.mask == 0)  // No interrupts enabled
+            if (config.interrupts.mask == 0)  // No interrupts enabled
             {
                 return;
             }

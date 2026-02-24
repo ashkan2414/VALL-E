@@ -34,11 +34,11 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -fdata-sections -ffunction-sec
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions -fno-threadsafe-statics -fno-use-cxa-atexit")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdouble-promotion -Wconversion -fconcepts-diagnostics-depth=10")
 
-set(CMAKE_C_FLAGS_DEBUG "-Og -g3")
-set(CMAKE_CXX_FLAGS_DEBUG "-Og -g3")
+set(CMAKE_C_FLAGS_DEBUG "-O0 -g3")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3")
 
-set(CMAKE_C_FLAGS_RELEASE "-Os -g0 -flto")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os -g0 -flto")
+set(CMAKE_C_FLAGS_RELEASE "-Os -g0")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -g0")
 
 set(CMAKE_EXE_LINKER_FLAGS "${TARGET_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T \"${CMAKE_SOURCE_DIR}/Platform/STM32G474XX_FLASH.ld\"")

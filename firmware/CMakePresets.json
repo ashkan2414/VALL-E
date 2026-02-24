@@ -120,6 +120,29 @@
                 "release",
                 "app-vca-test"
             ]
+        },
+        {
+            "name": "app-sandbox",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "sandbox"
+            }
+        },
+        {
+            "name": "sandbox-debug",
+            "displayName": "Sandbox (Debug)",
+            "inherits": [
+                "debug",
+                "app-sandbox"
+            ]
+        },
+        {
+            "name": "sandbox-release",
+            "displayName": "Sandbox (Release)",
+            "inherits": [
+                "release",
+                "app-sandbox"
+            ]
         }
     ],
     "buildPresets": [
@@ -154,6 +177,14 @@
         {
             "name": "vca-test-release",
             "configurePreset": "vca-test-release"
+        },
+        {
+            "name": "sandbox-debug",
+            "configurePreset": "sandbox-debug"
+        },
+        {
+            "name": "sandbox-release",
+            "configurePreset": "sandbox-release"
         }
     ]
 }
