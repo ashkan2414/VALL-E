@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Valle/Board/Traits/HRTIM/id.hpp"
+#include "Valle/Utils/template_utils.hpp"
 #include "stm32g4xx_ll_bus.h"
 #include "stm32g4xx_ll_hrtim.h"
 
@@ -130,6 +131,18 @@ namespace valle
         kDiv4  = LL_HRTIM_PRESCALERRATIO_DIV4,
     };
 
+    enum class HRTIMTimerDeadtimePrescaler : uint32_t
+    {
+        kMul8  = LL_HRTIM_DT_PRESCALER_MUL8,
+        kMul4  = LL_HRTIM_DT_PRESCALER_MUL4,
+        kMul2  = LL_HRTIM_DT_PRESCALER_MUL2,
+        kDiv1  = LL_HRTIM_DT_PRESCALER_DIV1,
+        kDiv2  = LL_HRTIM_DT_PRESCALER_DIV2,
+        kDiv4  = LL_HRTIM_DT_PRESCALER_DIV4,
+        kDiv8  = LL_HRTIM_DT_PRESCALER_DIV8,
+        kDiv16 = LL_HRTIM_DT_PRESCALER_DIV16,
+    };
+
     enum class HRTIMTimerCounterMode : uint32_t
     {
         kContinuous = LL_HRTIM_MODE_CONTINUOUS,
@@ -143,7 +156,7 @@ namespace valle
         kUpDown = LL_HRTIM_COUNTING_MODE_UP_DOWN,
     };
 
-    enum class HRTIMOutputSetSource : uint32_t
+    enum class HRTIMTimerOutputSetSource : uint32_t
     {
         kNone                       = LL_HRTIM_OUTPUTSET_NONE,
         kResync                     = LL_HRTIM_OUTPUTSET_RESYNC,
@@ -224,7 +237,7 @@ namespace valle
         kUpdate                     = LL_HRTIM_OUTPUTSET_UPDATE,
     };
 
-    enum class HRTIMOutputResetSource : uint32_t
+    enum class HRTIMTimerOutputResetSource : uint32_t
     {
         kNone                       = LL_HRTIM_OUTPUTRESET_NONE,
         kResync                     = LL_HRTIM_OUTPUTRESET_RESYNC,
@@ -305,25 +318,25 @@ namespace valle
         kUpdate                     = LL_HRTIM_OUTPUTRESET_UPDATE,
     };
 
-    enum class HRTIMOutputPolarity : uint32_t
+    enum class HRTIMTimerOutputPolarity : uint32_t
     {
         kPositive = LL_HRTIM_OUT_POSITIVE_POLARITY,  /// Output active high
         kNegative = LL_HRTIM_OUT_NEGATIVE_POLARITY   /// Output active low
     };
 
-    enum class HRTIMOutputIdleMode : uint32_t
+    enum class HRTIMTimerOutputIdleMode : uint32_t
     {
         kNoIdle = LL_HRTIM_OUT_NO_IDLE,          /// Never idle
         kBurst  = LL_HRTIM_OUT_IDLE_WHEN_BURST,  /// Idle during burst mode
     };
 
-    enum class HRTIMOutputIdleLevel : uint32_t
+    enum class HRTIMTimerOutputIdleLevel : uint32_t
     {
         kInactive = LL_HRTIM_OUT_IDLELEVEL_INACTIVE,  /// Inactive when idle
         kActive   = LL_HRTIM_OUT_IDLELEVEL_ACTIVE     /// Active when idle
     };
 
-    enum class HRTIMOutputFaultState : uint32_t
+    enum class HRTIMTimerOutputFaultState : uint32_t
     {
         kInactive = LL_HRTIM_OUT_FAULTSTATE_INACTIVE,   /// Output inactive on fault
         kActive   = LL_HRTIM_OUT_FAULTSTATE_ACTIVE,     /// Output active on fault
@@ -331,13 +344,13 @@ namespace valle
         kHighZ    = LL_HRTIM_OUT_FAULTSTATE_HIGHZ       /// High impedance on fault
     };
 
-    enum class HRTIMOutputChopperMode : uint32_t
+    enum class HRTIMTimerOutputChopperMode : uint32_t
     {
         kDisabled = LL_HRTIM_OUT_CHOPPERMODE_DISABLED,
         kEnabled  = LL_HRTIM_OUT_CHOPPERMODE_ENABLED,
     };
 
-    enum class HRTIMOutputBurstModeEntryMode : uint32_t
+    enum class HRTIMTimerOutputBurstModeEntryMode : uint32_t
     {
         kRegular = LL_HRTIM_OUT_BM_ENTRYMODE_REGULAR,
         kDelayed = LL_HRTIM_OUT_BM_ENTRYMODE_DELAYED,
@@ -354,9 +367,8 @@ namespace valle
     struct HRTIMControllerTraits<1>
     {
         static inline HRTIM_TypeDef* const skInstance = HRTIM1;
-        static constexpr uint32_t          skClock    = LL_APB2_GRP1_PERIPH_HRTIM1;
 
-        static inline void enable_clock()
+        static void enable_clock()
         {
             LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_HRTIM1);
         }
@@ -368,6 +380,41 @@ namespace valle
     template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID>
     struct HRTIMFaultTraits
     {
+    private:
+        [[nodiscard]] static constexpr uint32_t get_ll_id()
+        {
+            if constexpr (tkFaultID == HRTIMFaultID::kFault1)
+            {
+                return LL_HRTIM_FAULT_1;
+            }
+            else if constexpr (tkFaultID == HRTIMFaultID::kFault2)
+            {
+                return LL_HRTIM_FAULT_2;
+            }
+            else if constexpr (tkFaultID == HRTIMFaultID::kFault3)
+            {
+                return LL_HRTIM_FAULT_3;
+            }
+            else if constexpr (tkFaultID == HRTIMFaultID::kFault4)
+            {
+                return LL_HRTIM_FAULT_4;
+            }
+            else if constexpr (tkFaultID == HRTIMFaultID::kFault5)
+            {
+                return LL_HRTIM_FAULT_5;
+            }
+            else if constexpr (tkFaultID == HRTIMFaultID::kFault6)
+            {
+                return LL_HRTIM_FAULT_6;
+            }
+            else
+            {
+                static_assert(kAlwaysFalse<tkFaultID>, "Invalid HRTIMFaultID");
+            }
+        }
+
+    public:
+        static constexpr uint32_t skLLID = get_ll_id();
     };
 
     // ---------------------------------------------------------------------------
@@ -376,6 +423,57 @@ namespace valle
     template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID>
     struct HRTIMEEVTraits
     {
+    private:
+        [[nodiscard]] static constexpr uint32_t get_ll_id()
+        {
+            if constexpr (tkEEVID == HRTIMEEVID::kEEV1)
+            {
+                return LL_HRTIM_EVENT_1;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV2)
+            {
+                return LL_HRTIM_EVENT_2;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV3)
+            {
+                return LL_HRTIM_EVENT_3;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV4)
+            {
+                return LL_HRTIM_EVENT_4;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV5)
+            {
+                return LL_HRTIM_EVENT_5;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV6)
+            {
+                return LL_HRTIM_EVENT_6;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV7)
+            {
+                return LL_HRTIM_EVENT_7;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV8)
+            {
+                return LL_HRTIM_EVENT_8;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV9)
+            {
+                return LL_HRTIM_EVENT_9;
+            }
+            else if constexpr (tkEEVID == HRTIMEEVID::kEEV10)
+            {
+                return LL_HRTIM_EVENT_10;
+            }
+            else
+            {
+                static_assert(kAlwaysFalse<tkEEVID>, "Invalid HRTIMEEVID");
+            }
+        }
+
+    public:
+        static constexpr uint32_t skLLID = get_ll_id();
     };
 
     // ----------------------------------------------------------------------------
@@ -388,6 +486,7 @@ namespace valle
     template <>
     struct HRTIMTimerTraits<1, HRTIMTimerID::kA>
     {
+        static constexpr uint32_t  skLLID     = LL_HRTIM_TIMER_A;
         static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_A;
         static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TA1;
         static constexpr uint32_t  skOutput2  = HRTIM_OUTPUT_TA2;
@@ -398,6 +497,7 @@ namespace valle
     template <>
     struct HRTIMTimerTraits<1, HRTIMTimerID::kB>
     {
+        static constexpr uint32_t  skLLID     = LL_HRTIM_TIMER_B;
         static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_B;
         static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TB1;
         static constexpr uint32_t  skOutput2  = HRTIM_OUTPUT_TB2;
@@ -408,6 +508,7 @@ namespace valle
     template <>
     struct HRTIMTimerTraits<1, HRTIMTimerID::kC>
     {
+        static constexpr uint32_t  skLLID     = LL_HRTIM_TIMER_C;
         static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_C;
         static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TC1;
         static constexpr uint32_t  skOutput2  = HRTIM_OUTPUT_TC2;
@@ -418,6 +519,7 @@ namespace valle
     template <>
     struct HRTIMTimerTraits<1, HRTIMTimerID::kD>
     {
+        static constexpr uint32_t  skLLID     = LL_HRTIM_TIMER_D;
         static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_D;
         static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TD1;
         static constexpr uint32_t  skOutput2  = HRTIM_OUTPUT_TD2;
@@ -428,6 +530,7 @@ namespace valle
     template <>
     struct HRTIMTimerTraits<1, HRTIMTimerID::kE>
     {
+        static constexpr uint32_t  skLLID     = LL_HRTIM_TIMER_E;
         static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_E;
         static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TE1;
         static constexpr uint32_t  skOutput2  = HRTIM_OUTPUT_TE2;
@@ -438,6 +541,7 @@ namespace valle
     template <>
     struct HRTIMTimerTraits<1, HRTIMTimerID::kF>
     {
+        static constexpr uint32_t  skLLID     = LL_HRTIM_TIMER_F;
         static constexpr uint32_t  skTimerIdx = HRTIM_TIMERINDEX_TIMER_F;
         static constexpr uint32_t  skOutput1  = HRTIM_OUTPUT_TF1;
         static constexpr uint32_t  skOutput2  = HRTIM_OUTPUT_TF2;
