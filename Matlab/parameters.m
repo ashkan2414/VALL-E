@@ -1,0 +1,26 @@
+%% Physical Parameters
+min_vca_current_amps = -0.3;
+max_vca_current_amps = 0.3;
+
+
+
+
+%% Physical System Response Constraints
+
+% VCACC = VCA Current Controller
+% take step size to be 10% of current rangeij
+vcacc_step_size = 0.10 * (max_vca_current_amps - min_vca_current_amps);
+vcacc_max_os_percent = 5; % max overshoot in percent
+vcacc_settle_percentage = 5; % Target settle range in percent of step size
+vcacc_max_settle_time = 150e-6; % Target settle time (microseconds)
+vcacc_max_ss_error = 0.02 * vcacc_step_size; % Max steady-state error, 2% of step size
+
+vcacc_constraints = ctrls.constraints( ...
+    vcacc_step_size, ...
+    min_vca_current_amps, ...
+    max_vca_current_amps, ...
+    vcacc_max_os_percent, ...
+    vcacc_settle_percentage, ...
+    vcacc_max_settle_time, ...
+    vcacc_max_ss_error ...
+ );

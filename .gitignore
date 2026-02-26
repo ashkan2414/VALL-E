@@ -54,3 +54,24 @@ compile_commands.json
 
 # CodeQL generated files
 _codeql_detected_source_root
+
+# MATLAB
+*.asv
+*.autosave
+slprj/
+sccprj/
+codegen/
+*_grt_rtw/
+*_ert_rtw/
+*_rtw/
+*.slxc
+*.mexa64
+*.mexw64
+*.mexmaci64
+*.prj
+*.autosave
+*.slx.r20*
+*.mdl.r20*
+*.rtw
+*.tmf
+*.bld

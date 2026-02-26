@@ -1,0 +1,9 @@
+function search_space = design_param_search_space_spiral(sample_time_s, num_poles, rmax, center)
+    [N, R, C] = ndgrid(num_poles, rmax, center);
+    pole_sets = ctrls.spa.generate_spiral_poles(N, R, C);
+    
+    search_space = struct( ...
+        "sample_time_s", sample_time_s, ...
+        "poles", {pole_sets}...
+    );
+end

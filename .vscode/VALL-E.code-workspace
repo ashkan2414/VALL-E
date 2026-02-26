@@ -7,6 +7,10 @@
 		{
 			"path": "../firmware",
 			"name": "firmware"
+		},
+		{
+			"path": "../Matlab",
+			"name": "Matlab"
 		}
 	],
 	"settings": {
