@@ -12,7 +12,7 @@
 #include "Valle/Board/Traits/i2c.hpp"
 #include "Valle/Core/timing.hpp"
 #include "Valle/Utils/circular_queue.hpp"
-#include "Valle/Utils/hal_utils.hpp"
+#include "Valle/core.hpp"
 #include "delegate/delegate.h"
 
 namespace valle

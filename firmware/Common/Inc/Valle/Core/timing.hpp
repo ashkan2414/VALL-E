@@ -234,7 +234,8 @@ namespace valle
      *
      * @tparam TDuration The type of the timeout duration.
      * @tparam TClock The clock type used for timing.
-     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition is met.
+     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition
+     * is met.
      * @param timeout_duration The maximum duration to wait.
      * @return true If the condition became true within the timeout.
      * @return false If the timeout elapsed before the condition became true.
@@ -257,7 +258,8 @@ namespace valle
     /**
      * @brief Waits for a condition to become true or until timeout in milliseconds elapses.
      *
-     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition is met.
+     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition
+     * is met.
      * @param timeout_ms The maximum time to wait in milliseconds.
      * @return true If the condition became true within the timeout.
      * @return false If the timeout elapsed before the condition became true.
@@ -271,7 +273,8 @@ namespace valle
     /**
      * @brief Waits for a condition to become true or until timeout in microseconds elapses.
      *
-     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition is met.
+     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition
+     * is met.
      * @param timeout_us The maximum time to wait in microseconds.
      * @return true If the condition became true within the timeout.
      * @return false If the timeout elapsed before the condition became true.
@@ -285,7 +288,8 @@ namespace valle
     /**
      * @brief Waits for a condition to become true or until timeout in CPU cycles elapses.
      *
-     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition is met.
+     * @param condition The condition to wait for. It should be a delegate that returns a bool. True means the condition
+     * is met.
      * @param timeout_cycles The maximum time to wait in CPU cycles.
      * @return true If the condition became true within the timeout.
      * @return false If the timeout elapsed before the condition became true.

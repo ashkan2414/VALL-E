@@ -99,26 +99,26 @@
             ]
         },
         {
-            "name": "app-vca-test",
+            "name": "app-current-controller",
             "hidden": true,
             "cacheVariables": {
-                "TARGET_APP": "vca_test"
+                "TARGET_APP": "current_controller"
             }
         },
         {
-            "name": "vca-test-debug",
-            "displayName": "VCA Test (Debug)",
+            "name": "current-controller-debug",
+            "displayName": "Current Controller (Debug)",
             "inherits": [
                 "debug",
-                "app-vca-test"
+                "app-current-controller"
             ]
         },
         {
-            "name": "vca-test-release",
-            "displayName": "VCA Test (Release)",
+            "name": "current-controller-release",
+            "displayName": "Current Controller (Release)",
             "inherits": [
                 "release",
-                "app-vca-test"
+                "app-current-controller"
             ]
         },
         {
@@ -171,12 +171,12 @@
             "configurePreset": "pwm-test-release"
         },
         {
-            "name": "vca-test-debug",
-            "configurePreset": "vca-test-debug"
+            "name": "current-controller-debug",
+            "configurePreset": "current-controller-debug"
         },
         {
-            "name": "vca-test-release",
-            "configurePreset": "vca-test-release"
+            "name": "current-controller-release",
+            "configurePreset": "current-controller-release"
         },
         {
             "name": "sandbox-debug",

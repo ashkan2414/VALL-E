@@ -54,7 +54,7 @@ namespace valle
         {
         }
 
-        LinearConverter(const Config& cfg) : m_cfg(cfg)
+        explicit LinearConverter(const Config& cfg) : m_cfg(cfg)
         {
         }
 

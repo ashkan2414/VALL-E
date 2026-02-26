@@ -141,7 +141,7 @@ namespace valle
 
         static constexpr LinearConverter<float>::Config skConverterConfig = {
             .scale  = ModelTraits::skRangeAmps,
-            .offset = -ModelTraits::skMinAmps,
+            .offset = ModelTraits::skMinAmps,
         };
 
         ADCSensorDriver<TADCChannel, ConverterT> m_driver;

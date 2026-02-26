@@ -11,9 +11,8 @@
 #include "Valle/Board/Device/device_core.hpp"
 #include "Valle/Board/Drivers/gpio.hpp"
 #include "Valle/Board/Traits/adc.hpp"
-#include "Valle/Core/Logging/logger.hpp"
 #include "Valle/Core/timing.hpp"
-
+#include "Valle/core.hpp"
 
 namespace valle
 {
@@ -1057,7 +1056,7 @@ namespace valle
                      (tkGroup == ADCChannelGroup::kInject && kValidADCInjectRank<tkRank>))
         [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
-            m_adc.get().template init_channel<tkChannelId, tkGroup, tkRank>(config);
+            m_adc->template init_channel<tkChannelId, tkGroup, tkRank>(config);
             return gpio_init();
         }
 
@@ -1070,7 +1069,7 @@ namespace valle
         template <ADCRegularChannelRank tkRank>
         [[nodiscard]] bool init_as_regular(const ADCChannelConfig& config)
         {
-            m_adc.get().template init_channel_as_regular<skChannelID, tkRank>(config);
+            m_adc->template init_channel_as_regular<skChannelID, tkRank>(config);
             return gpio_init();
         }
 
@@ -1083,7 +1082,7 @@ namespace valle
         template <ADCInjectChannelRank tkRank>
         [[nodiscard]] bool init_as_inject(const ADCChannelConfig& config)
         {
-            m_adc.get().template init_channel_as_inject<skChannelID, tkRank>(config);
+            m_adc->template init_channel_as_inject<skChannelID, tkRank>(config);
             return gpio_init();
         }
 
@@ -1098,7 +1097,7 @@ namespace valle
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline ADCValue read_inject() const
         {
-            return m_adc.get().template read_inject_data<tkRank>();
+            return m_adc->template read_inject_data<tkRank>();
         }
 
         /**
@@ -1108,7 +1107,7 @@ namespace valle
          */
         [[nodiscard]] inline ADCValue read_inject_slow() const
         {
-            return m_adc.get().template read_inject_data_slow<skChannelID>();
+            return m_adc->template read_inject_data_slow<skChannelID>();
         }
 
         /**
@@ -1120,7 +1119,7 @@ namespace valle
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline ADCValue read_regular() const
         {
-            return m_adc.get().template read_regular_data<tkRank>();
+            return m_adc->template read_regular_data<tkRank>();
         }
 
         /**
@@ -1130,7 +1129,7 @@ namespace valle
          */
         [[nodiscard]] inline ADCValue read_regular_slow() const
         {
-            return m_adc.get().template read_regular_data_slow<skChannelID>();
+            return m_adc->template read_regular_data_slow<skChannelID>();
         }
 
         // Read voltage
@@ -1191,7 +1190,7 @@ namespace valle
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_normalized() const
         {
-            return raw_normalized(read_inject<tkRank>());
+            return raw_to_normalized(read_inject<tkRank>());
         }
 
         /**
@@ -1202,7 +1201,7 @@ namespace valle
          */
         [[nodiscard]] inline float read_inject_normalized_slow() const
         {
-            return raw_normalized(read_inject_slow());
+            return raw_to_normalized(read_inject_slow());
         }
 
         /**
@@ -1214,7 +1213,7 @@ namespace valle
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_normalized() const
         {
-            return raw_normalized(read_regular<tkRank>());
+            return raw_to_normalized(read_regular<tkRank>());
         }
 
         /**
@@ -1225,7 +1224,7 @@ namespace valle
          */
         [[nodiscard]] inline float read_regular_normalized_slow() const
         {
-            return raw_normalized(read_regular_slow());
+            return raw_to_normalized(read_regular_slow());
         }
 
         /**
@@ -1234,9 +1233,9 @@ namespace valle
          * @param raw Raw ADC value.
          * @return float Normalized value.
          */
-        [[nodiscard]] inline float raw_normalized(const ADCValue raw) const
+        [[nodiscard]] inline float raw_to_normalized(const ADCValue raw) const
         {
-            return static_cast<float>(raw) / m_adc.get().get_resolution_range();
+            return static_cast<float>(raw) / m_adc->get_resolution_range();
         }
 
         /**
@@ -1247,7 +1246,7 @@ namespace valle
          */
         [[nodiscard]] inline float raw_to_voltage(const ADCValue raw) const
         {
-            return raw_normalized(raw) * 3.3F;
+            return raw_to_normalized(raw) * 3.3F;
         }
 
     private:
@@ -1335,7 +1334,7 @@ namespace valle
          */
         [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
-            return m_channel.get().template init_as_inject<skRank>(config);
+            return m_channel->template init_as_inject<skRank>(config);
         }
 
         // --- Accessors ---
@@ -1346,7 +1345,7 @@ namespace valle
          */
         [[nodiscard]] ADCValue read() const
         {
-            return m_channel.get().template read_inject<skRank>();
+            return m_channel->template read_inject<skRank>();
         }
 
         /**
@@ -1356,7 +1355,7 @@ namespace valle
          */
         [[nodiscard]] float read_voltage() const
         {
-            return m_channel.get().template read_inject_voltage<skRank>();
+            return m_channel->template read_inject_voltage<skRank>();
         }
 
         /**
@@ -1366,7 +1365,7 @@ namespace valle
          */
         [[nodiscard]] float read_normalized() const
         {
-            return m_channel.get().template read_inject_normalized<skRank>();
+            return m_channel->template read_inject_normalized<skRank>();
         }
     };
 
@@ -1502,7 +1501,7 @@ namespace valle
          */
         [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
-            return m_channel.get().template init_as_regular<skRank>(config);
+            return m_channel->template init_as_regular<skRank>(config);
         }
 
         // --- Accessors ---
@@ -1513,7 +1512,7 @@ namespace valle
          */
         [[nodiscard]] ADCValue read() const
         {
-            return m_channel.get().template read_regular<skRank>();
+            return m_channel->template read_regular<skRank>();
         }
 
         /**
@@ -1523,7 +1522,7 @@ namespace valle
          */
         [[nodiscard]] float read_voltage() const
         {
-            return m_channel.get().template read_regular_voltage<skRank>();
+            return m_channel->template read_regular_voltage<skRank>();
         }
 
         /**
@@ -1533,7 +1532,7 @@ namespace valle
          */
         [[nodiscard]] float read_normalized() const
         {
-            return m_channel.get().template read_regular_normalized<skRank>();
+            return m_channel->template read_regular_normalized<skRank>();
         }
     };
 

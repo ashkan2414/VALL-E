@@ -211,11 +211,13 @@ namespace valle
     class BiQuadDF1Norm : public ISystemBlock<BiQuadDF1Norm<T>, T>
     {
     private:
-        BiQuadCoeffsNorm<T> m_coeffs;
+        BiQuadCoeffsNorm<T> m_coeffs{};
         Eigen::Vector<T, 2> m_input_vector{};
         Eigen::Vector<T, 2> m_output_vector{};
 
     public:
+        BiQuadDF1Norm() = default;
+
         // Initialize coefficients and apply gain immediately
         template <typename TCoeffs>
         explicit BiQuadDF1Norm(const TCoeffs& coeffs, T gain = static_cast<T>(1.0))
@@ -253,8 +255,8 @@ namespace valle
     class BiQuadDF1NonNorm : public ISystemBlock<BiQuadDF1NonNorm<T>, T>
     {
     private:
-        BiQuadCoeffsNorm<T> m_coeffs;
-        T                   m_a0;
+        BiQuadCoeffsNorm<T> m_coeffs{};
+        T                   m_a0{};
         Eigen::Vector<T, 2> m_input_vector{};
         Eigen::Vector<T, 2> m_output_vector{};
 

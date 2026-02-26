@@ -1,8 +1,4 @@
-#include "Valle/Core/core.hpp"
-
-#include "Valle/Core/clock.hpp"
-#include "Valle/Core/error.hpp"
-#include "Valle/Core/timing.hpp"
+#include "Valle/core.hpp"
 
 namespace valle
 {

@@ -1,6 +1,5 @@
 #include "Valle/Core/app_bridge.hpp"
-#include "Valle/Core/core.hpp"
-
+#include "Valle/core.hpp"
 
 extern "C" int main()
 {

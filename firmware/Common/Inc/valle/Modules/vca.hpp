@@ -12,6 +12,83 @@
 
 namespace valle
 {
+    template <std::floating_point T>
+    class VCAClosedLoopController : public ISystemBlock<VCAClosedLoopController<T>, T>
+    {
+    public:
+        using ValueT = T;
+
+    private:
+        constexpr static T skPidP = static_cast<T>(0.5);
+        constexpr static T skPidI = static_cast<T>(1.0);
+        constexpr static T skPidD = static_cast<T>(0.0);
+
+        PIDSystem<ValueT> system{};
+
+    public:
+        VCAClosedLoopController() = default;
+
+        explicit VCAClosedLoopController(const ValueT sample_time_s) : system(skPidP, skPidI, skPidD, sample_time_s)
+        {
+        }
+
+        ValueT process_impl(const ValueT reference)
+        {
+            return system.process(reference);
+        }
+
+        void reset_impl()
+        {
+            system.reset();
+        }
+    };
+
+    template <std::floating_point T>
+    class VCAClosedLoopFeedbackController : public ISystemBlock<VCAClosedLoopFeedbackController<T>, T>
+    {
+    public:
+        using ValueT              = T;
+        using CurrentFeedbackFn   = delegate::Delegate<ValueT>;
+        using OpenLoopControllerT = VCAClosedLoopController<ValueT>;
+        using FeedbackSystemT     = ExFeedbackSystem<OpenLoopControllerT, CurrentFeedbackFn>;
+
+    private:
+        FeedbackSystemT m_feedback_system{};  /// Feedback System
+
+    public:
+        VCAClosedLoopFeedbackController() = default;
+
+        VCAClosedLoopFeedbackController(ValueT sample_time_s, CurrentFeedbackFn&& feedback_fn, ValueT min_tolerance)
+            : m_feedback_system(OpenLoopControllerT(sample_time_s), std::move(feedback_fn), min_tolerance)
+        {
+        }
+
+        ValueT process_impl(const ValueT reference)
+        {
+            return m_feedback_system.process(reference);
+        }
+
+        void reset_impl()
+        {
+            m_feedback_system.reset();
+        }
+    };
+
+    template <std::floating_point T>
+    class VCAOpenLoopController : public ISystemBlock<VCAOpenLoopController<T>, T>
+    {
+    public:
+        using ValueT = T;
+
+        static ValueT process_impl(const ValueT reference)
+        {
+            return reference;
+        }
+
+        static void reset_impl()
+        {
+        }
+    };
 
     /**
      * @brief VCAControllerModule (Voice Coil Actuator) Control Modes
@@ -30,7 +107,7 @@ namespace valle
     struct VCAModuleConfig
     {
         // PWM Configuration
-        HRTIMHalfBridgeDriverConfig pwm_config{};
+        HRTIMHalfBridgeDriverConfig half_bridge_config{};
 
         /// Maximum current in Amps
         float max_current_amp = 5.0F;  // NOLINT(readability-magic-numbers)
@@ -52,19 +129,15 @@ namespace valle
         using InjectDevices                    = TypeList<THRTIMDevice>;
         static constexpr uint8_t skDeviceIndex = THRTIMDevice::skIndex;
 
+        using ControllerT = std::conditional_t<tkMode == VCAControlMode::kClosedLoopCurrent,
+                                               VCAClosedLoopFeedbackController<float>,
+                                               VCAOpenLoopController<float>>;
+
     private:
-        using OpenLoopControllerT = PIDSystem<float>;
-        using CurrentFeedbackFn   = delegate::Delegate<float>;
-        using FeedbackSystemT     = ExFeedbackSystem<OpenLoopControllerT, CurrentFeedbackFn>;
-
-        constexpr static float skPidP = 0.5F;
-        constexpr static float skPidI = 1.0F;
-        constexpr static float skPidD = 0.0F;
-
         HRTIMHalfBridgeDriver<THRTIMDevice> m_device;           /// Hardware
-        VCAModuleConfig                     m_config;           /// Configuration
-        FeedbackSystemT                     m_feedback_system;  /// Feedback System
-        std::atomic<float>                  m_setpoint;         /// Current target setpoint (duty or current)
+        float                               m_max_current_amp;  /// Max current limit (for safety)
+        Atomic<float>                       m_setpoint;         /// Current target setpoint (duty or current)
+        ControllerT                         m_controller;       /// Control algorithm (either open-loop or closed-loop)
 
     public:
         VCAControllerModule() = delete;
@@ -74,50 +147,8 @@ namespace valle
          *
          * @param current_feedback_fn function to read the current feedback in Amps.
          */
-        VCAControllerModule(DeviceRef<THRTIMDevice> hw,
-                            const VCAModuleConfig&  config,
-                            CurrentFeedbackFn       current_feedback_fn)
-            : m_device(std::move(hw))
-            , m_config(config)
-            , m_feedback_system(
-                  OpenLoopControllerT(
-                      skPidP, skPidI, skPidD, 1.0F / static_cast<float>(config.pwm_config.get_int_freq_hz())),
-                  std::move(current_feedback_fn),
-                  m_config.target_tolerance_amp)
-            , m_setpoint(0.0F)
+        VCAControllerModule(DeviceRef<THRTIMDevice> hw) : m_device(std::move(hw))
         {
-        }
-
-        /**
-         * @brief Construct a new VCAControllerModule object with default configuration.
-         *
-         * @param current_feedback_fn function to read the current feedback in Amps.
-         */
-        VCAControllerModule(DeviceRef<THRTIMDevice> hw, CurrentFeedbackFn current_feedback_fn)
-            : VCAControllerModule(std::move(hw), VCAModuleConfig{}, std::move(current_feedback_fn))
-        {
-        }
-
-        // Move Constructor
-        VCAControllerModule(VCAControllerModule&& other) noexcept
-            : m_device(std::move(other.m_device))
-            , m_config(other.m_config)
-            , m_feedback_system(std::move(other.m_feedback_system))
-            , m_setpoint(other.m_setpoint.load(std::memory_order_relaxed))
-        {
-        }
-
-        // Move Assignment
-        VCAControllerModule& operator=(VCAControllerModule&& other) noexcept
-        {
-            if (this != &other)
-            {
-                m_device          = std::move(other.m_device);
-                m_config          = other.m_config;
-                m_feedback_system = std::move(other.m_feedback_system);
-                m_setpoint.store(other.m_setpoint.load(std::memory_order_relaxed), std::memory_order_relaxed);
-            }
-            return *this;
         }
 
         // ------------------------------------------------------------------------
@@ -125,31 +156,74 @@ namespace valle
         // ------------------------------------------------------------------------
 
         /**
-         * @brief Initializes the VCAControllerModule hardware and feedback system.
+         * @brief Initializes the VCAControllerModule hardware with open loop duty control.
          *
+         * @param config The configuration for the VCAControllerModule, including PWM settings and max current limit.
+         * @return true if initialization was successful, false otherwise (e.g., hardware init failure, invalid config,
+         * etc.).
          */
-        [[nodiscard]] bool init()
+        [[nodiscard]] bool init(const VCAModuleConfig& config)
+            requires(tkMode == VCAControlMode::kOpenLoopDuty)
         {
-            m_feedback_system.reset();
-            if (!m_device.init(m_config.pwm_config))
+            m_max_current_amp = config.max_current_amp;
+
+            if (!m_device.init(config.half_bridge_config))
             {
                 return false;
             }
 
             // Start at idle
-            if constexpr (tkMode == VCAControlMode::kOpenLoopDuty)
-            {
-                set_target_duty(0.0);
-            }
-            else
-            {
-                set_target_current(0.0);
-            }
-
-            // Update PID sample time based on PWM frequency
-            m_feedback_system.open_loop().set_sample_time(1.0F / static_cast<float>(get_ctrl_loop_freq_hz()));
+            set_target_duty(0.0F);
 
             return true;
+        }
+
+        /**
+         * @brief Initializes the VCAControllerModule hardware with closed loop controller.
+         *
+         * @param config The configuration for the VCAControllerModule, including PWM settings and max current limit.
+         * @param current_feedback_fn A delegate function that returns the current feedback in Amps. This function will
+         * be called at PWM frequency from the control loop, so it should be efficient and ISR safe.
+         */
+        [[nodiscard]] bool init(const VCAModuleConfig&                                             config,
+                                typename VCAClosedLoopFeedbackController<float>::CurrentFeedbackFn current_feedback_fn)
+            requires(tkMode == VCAControlMode::kClosedLoopCurrent)
+        {
+            m_max_current_amp = config.max_current_amp;
+            m_controller      = ControllerT(1.0F / static_cast<float>(config.half_bridge_config.get_int_freq_hz()),
+                                       std::move(current_feedback_fn),
+                                       config.target_tolerance_amp);
+
+            if (!m_device.init(config.half_bridge_config))
+            {
+                return false;
+            }
+
+            // Start at idle
+            set_target_current(0.0F);
+
+            return true;
+        }
+
+        /**
+         * @brief Initializes an ADC trigger for the timer. This allows the timer to trigger ADC conversions at specific
+         * points in the PWM cycle.
+         *
+         * @tparam tkTriggerID The ID of the ADC trigger to configure (e.g., kTrig1, kTrig2, etc.). Each timer has
+         * multiple trigger outputs that can be independently configured.
+         * @param config The configuration for the ADC trigger, including the source event (e.g., timer period, compare
+         * match, etc.) and the rollover mode (when the trigger should occur in up-down counting).
+         * @return true if the ADC trigger was successfully initialized, false otherwise (e.g., invalid trigger ID,
+         * incompatible configuration, etc.).
+         * @return false if the trigger ID is invalid or if the configuration is incompatible with the timer's counting
+         * mode. For example, certain trigger sources may not be valid in center-aligned mode, and the function should
+         * validate this before applying the configuration.
+         */
+        template <HRTIMTimerADCTriggerID tkTriggerID>
+        [[nodiscard]] inline bool init_adc_trigger(
+            const HRTIMTimerADCTriggerConfig<THRTIMDevice::skTimerID, tkTriggerID>& config)
+        {
+            return m_device.init_adc_trigger(config);
         }
 
         /**
@@ -176,75 +250,38 @@ namespace valle
 
         /**
          * @brief Sets the target duty cycle for open-loop control.
-         * @param duty 0.0 to 1.0 (0.5 = Zero Force)
+         * @param duty -1.0 to 1.0 (0.0 = Zero Force)
          */
         void set_target_duty(const float duty)
             requires(tkMode == VCAControlMode::kOpenLoopDuty)
         {
-            m_setpoint.store(duty, std::memory_order_relaxed);
+            m_setpoint.store(std::clamp(duty, -1.0F, 1.0F), std::memory_order_relaxed);
         }
 
         /**
-         * @brief Sets the normalized force output.
-         * @param force -1.0 (Max Reverse) to 1.0 (Max Forward). 0.0 is Idle.
+         * @brief Sets the target current for closed-loop control. The controller will adjust the duty cycle to try to
+         * achieve this current.
+         * @param amps Target current in Amps.
          */
         void set_target_current(const float amps)
             requires(tkMode == VCAControlMode::kClosedLoopCurrent)
         {
-            m_setpoint.store(std::clamp(amps, -m_config.max_current_amp, m_config.max_current_amp),
-                             std::memory_order_relaxed);
-        }
-
-        /**
-         * @brief Gets the control loop frequency in Hz.
-         *
-         * @return uint64_t Control loop frequency.
-         */
-        [[nodiscard]] uint64_t get_ctrl_loop_freq_hz() const
-        {
-            return m_config.pwm_config.get_int_freq_hz();
-        }
-
-        /**
-         * @brief Get the interrupt frequency in Hz.
-         *
-         * @return uint64_t Interrupt frequency.
-         */
-        [[nodiscard]] uint64_t get_int_freq_hz() const
-        {
-            return m_device.get_int_freq_hz();
+            m_setpoint.store(std::clamp(amps, -m_max_current_amp, m_max_current_amp), std::memory_order_relaxed);
         }
 
         /**
          * @brief Runs the control loop. Should be called at PWM frequency via a timer interrupt.
          * @note Hot Path! Keep this function efficient and ISR safe.
          */
-        void run_ctrl_loop()
+        float run_ctrl_loop()
         {
-            const float output_duty = get_controller_output();
+            const float output_duty     = m_controller.process(m_setpoint.load(std::memory_order_relaxed));
+            const float normalized_duty = (output_duty + 1.0F) * 0.5F;
 
-            // Convert (-1.0 to 1.0) -> (0.05 to 0.95 Duty)
-            // Locked Anti-Phase logic handled here
-            const float pwm_reg_val = (output_duty + 1.0F) * 0.5F;
-            m_device.set_duty_cycle(pwm_reg_val);
-        }
+            // Convert (-1.0 to 1.0) -> (0.0 to 1.0 Duty)
+            m_device.set_duty_cycle(normalized_duty);
 
-    private:
-        /**
-         * @brief Gets the controller output based on the current mode.
-         *
-         * @return float Controller output value.
-         */
-        [[nodiscard]] float get_controller_output()
-        {
-            if constexpr (tkMode == VCAControlMode::kOpenLoopDuty)
-            {
-                return m_setpoint.load(std::memory_order_relaxed);
-            }
-            else
-            {
-                return m_feedback_system.process(m_setpoint.load(std::memory_order_relaxed));
-            }
+            return normalized_duty;
         }
     };
 
