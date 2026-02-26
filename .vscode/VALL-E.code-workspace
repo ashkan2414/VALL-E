@@ -9,8 +9,8 @@
 			"name": "firmware"
 		},
 		{
-			"path": "../Matlab",
-			"name": "Matlab"
+			"path": "../matlab",
+			"name": "matlab"
 		}
 	],
 	"settings": {
