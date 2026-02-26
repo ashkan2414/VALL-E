@@ -4,7 +4,7 @@
 
 #include "Valle/Board/Device/device_core.hpp"
 #include "Valle/Board/Traits/adc_clk.hpp"
-#include "Valle/Core/Logging/logger.hpp"
+#include "Valle/core.hpp"
 #include "stm32g4xx_hal_rcc_ex.h"
 
 namespace valle

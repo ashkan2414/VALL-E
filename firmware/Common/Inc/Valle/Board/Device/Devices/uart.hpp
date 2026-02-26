@@ -7,8 +7,7 @@
 #include "Valle/Board/Device/device_core.hpp"
 #include "Valle/Board/Drivers/gpio.hpp"
 #include "Valle/Board/Traits/uart.hpp"
-#include "Valle/Core/Logging/logger.hpp"
-
+#include "Valle/core.hpp"
 
 namespace valle
 {

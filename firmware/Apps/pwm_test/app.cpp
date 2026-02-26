@@ -70,10 +70,11 @@ namespace valle::app
                                           .pull  = GPIOPullMode::kNoPull,
                                       },
                               },
-                          .deadtime_config = HRTIMDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},
+                          .deadtime_config = HRTIMTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},
                           .min_duty        = 0.0F,
                           .max_duty        = 0.95F,
                           .center_aligned  = true,
+                          .compare_unit    = HRTIMTimerCompareUnit::kCompare1,
                       }),
                       "Failed to initialize HRTIM Half Bridge Driver");
     }

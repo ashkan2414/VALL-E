@@ -1,4 +1,4 @@
-#include "Valle/Core/Logging/logger.hpp"
+#include "Valle/core.hpp"
 
 namespace valle
 {
