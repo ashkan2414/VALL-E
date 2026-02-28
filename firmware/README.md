@@ -41,11 +41,11 @@ The recommended workflow is using **Visual Studio Code**.
 5.  Select the build preset for the app and build type (debug or release).
 6.  Click **Build** on the bottom status bar or press `F7`.
 
-The build system uses a modular approach, allowing you to target different applications located in the `Apps/` directory.
+The build system uses a modular approach, allowing you to target different applications located in the `apps/` directory.
 
 ### Adding New Applications
 
-1. Create a new folder under `Apps/`  (e.g. `my_app/`)
+1. Create a new folder under `apps/`  (e.g. `my_app/`)
 2. Define a new app configure preset in [`CMakePresets.json`](CMakePresets.json)
     ```json
     "configurePresets": [
@@ -102,14 +102,14 @@ The build system uses a modular approach, allowing you to target different appli
     ```
 
 ### Adding New Thirdparty Libraries
-All thirdparty libraries are located in the [`Thirdparty/`](Thirdparty/) folder. To add a new library:
-1. Add the library source code to a new folder under `Thirdparty/`.
+All thirdparty libraries are located in the [`thirdparty/`](thirdparty/) folder. To add a new library:
+1. Add the library source code to a new folder under `thirdparty/`.
     - Most libraries should be added as git modules to simplify updates.
     ```bash
-    git submodule add <repo-url> Thirdparty/<library-name>
+    git submodule add <repo-url> thirdparty/<library-name>
     git submodule update --init --recursive
     ```
-2. Modify the [`Thirdparty/CMakeLists.txt`](Thirdparty/CMakeLists.txt) to include the new library.
+2. Modify the [`thirdparty/CMakeLists.txt`](thirdparty/CMakeLists.txt) to include the new library.
     - Follow the existing patterns for adding libraries (e.g. `fmt`, `Eigen`).
     - Most libraries can be added using `add_subdirectory()`.
     - You should not need to modify the main `CMakeLists.txt` file.
@@ -157,19 +157,27 @@ There are pre-configured settings in `.vscode/settings.json` to automatically fo
 The project is organized to separate hardware abstraction, core logic, and specific applications:
 
 *   **`.vscode/`**: Contains build, launch, and task configurations.
-*   **`Apps/`**: Contains the main entry points for different project targets.
-*   **`Common/`**: The heart of the VALL-E library.
-    *   `Inc/valle/core/`: Core system components (Logging, Tasks, Timekeeping).
-    *   `Inc/valle/core/device/`: Hardware Abstraction Layer (HAL) traits and registry.
-    *   `Inc/valle/platform/drivers/`: High-level drivers for ADC, HRTIM, I2C, and UART.
-    *   `Inc/valle/math/`: Control theory components (PID, Biquad filters, Matrix math via Eigen).
-    *   `Inc/valle/platform/modules/`: Drivers for specific external hardware (ACS724, LDC1612, VCA).
-    *   `Inc/valle/utils/`: Utility functions and classes (RingBuffer, CircularBuffer, CRC).
-    *   `Src/`: Implementation files corresponding to the headers in `inc/valle/`.
-*   **`Core/`**: Contains CubeMX-generated initialization code and interrupt service routines.
+*   **`apps/`**: Contains the main entry points for different project targets.
+*   **`ci/`**: Scripts for continuous integration (e.g., building all presets).
 *   **`cmake/`**: Toolchain files and STM32-specific CMake logic.
-*   **`Thirdparty/`**: External dependencies including:
+*   **`common/`**: Platform-independent VALL-E library code.
+    *   `inc/valle/core/`: Core system components (Logging, Timekeeping, device abstraction).
+    *   `inc/valle/core/device/`: Hardware Abstraction Layer (HAL) traits and registry.
+    *   `inc/valle/math/`: Control theory components (PID, Biquad filters, Matrix math via Eigen).
+    *   `inc/valle/utils/`: Utility functions and classes (CircularQueue, enum utilities).
+    *   `src/`: Implementation files corresponding to the headers in `inc/valle/`.
+*   **`platform/`**: Platform-specific implementations.
+    *   `stm32/g474xx/`: STM32G474-specific code.
+        *   `inc/valle/platform/core/`: Platform core components (clock, sync, timing).
+        *   `inc/valle/platform/devices/`: Low-level hardware register maps and device definitions.
+        *   `inc/valle/platform/drivers/`: High-level drivers for ADC, GPIO, HRTIM, I2C, and UART.
+        *   `inc/valle/platform/hardware/`: Hardware peripheral abstractions (ADC, DMA, GPIO, HRTIM, I2C, UART).
+        *   `inc/valle/platform/modules/`: Drivers for specific external hardware (ACS724, LDC1612, VCA).
+        *   `src/`: Implementation files and startup/linker script for the STM32G474.
+*   **`thirdparty/`**: External dependencies including:
+    *   **delegate**: Fast, lightweight C++ delegate/callback library.
     *   **Eigen**: Linear algebra library.
     *   **fmt**: Modern C++ formatting.
     *   **magic_enum**: Static reflection for enums.
+    *   **PortableBitfields**: Portable C++ bitfield abstractions.
     *   **STM32CubeG4**: The standard ST Microelectronics HAL/LL drivers.
