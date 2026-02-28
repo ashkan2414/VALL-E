@@ -1,18 +1,18 @@
-[submodule "firmware/Thirdparty/STM32CubeG4"]
-	path = firmware/Thirdparty/STM32CubeG4
+[submodule "firmware/thirdparty/STM32CubeG4"]
+	path = firmware/thirdparty/STM32CubeG4
 	url = https://github.com/STMicroelectronics/STM32CubeG4.git
-[submodule "firmware/Thirdparty/eigen"]
-	path = firmware/Thirdparty/eigen
+[submodule "firmware/thirdparty/eigen"]
+	path = firmware/thirdparty/eigen
 	url = https://gitlab.com/libeigen/eigen.git
-[submodule "firmware/Thirdparty/delegate"]
-	path = firmware/Thirdparty/delegate
+[submodule "firmware/thirdparty/delegate"]
+	path = firmware/thirdparty/delegate
 	url = https://github.com/bdiamand/Delegate.git
-[submodule "firmware/Thirdparty/PortableBitfields"]
-	path = firmware/Thirdparty/PortableBitfields
+[submodule "firmware/thirdparty/PortableBitfields"]
+	path = firmware/thirdparty/PortableBitfields
 	url = https://github.com/KKoovalsky/PortableBitfields.git
-[submodule "firmware/Thirdparty/magic_enum"]
-	path = firmware/Thirdparty/magic_enum
+[submodule "firmware/thirdparty/magic_enum"]
+	path = firmware/thirdparty/magic_enum
 	url = https://github.com/Neargye/magic_enum.git
-[submodule "firmware/Thirdparty/fmt"]
-	path = firmware/Thirdparty/fmt
+[submodule "firmware/thirdparty/fmt"]
+	path = firmware/thirdparty/fmt
 	url = https://github.com/fmtlib/fmt.git
