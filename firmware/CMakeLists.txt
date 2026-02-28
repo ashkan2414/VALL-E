@@ -114,11 +114,12 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 # ==============================================================================
 # COMPILER FLAGS
 # ==============================================================================
-# target_precompile_headers(
-#     ${CMAKE_PROJECT_NAME} PRIVATE "${VALLE_COMMON_DIR}/pch.hpp"
-#     ${CMAKE_PROJECT_NAME} PRIVATE "${VALLE_PLATFORM_DIR}/pch.hpp"
-#     ${CMAKE_PROJECT_NAME} PRIVATE "${VALLE_THIRDPARTY_DIR}/pch.hpp"
-# )
+target_precompile_headers(
+    ${CMAKE_PROJECT_NAME} PRIVATE
+    "${VALLE_COMMON_DIR}/pch.hpp"
+    "${VALLE_PLATFORM_DIR}/pch.hpp"
+    "${VALLE_THIRDPARTY_DIR}/pch.hpp"
+)
 
 
 # Add the map file to the list of files to be removed with 'clean' target
