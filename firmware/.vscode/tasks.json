@@ -15,6 +15,15 @@
             ],
             "dependsOn": "CMake: build",
             "problemMatcher": []
+        },
+        {
+            "label": "Build All Presets",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "${workspaceFolder}/ci/build_all_presets.py"
+            ],
+            "problemMatcher": []
         }
     ]
 }
