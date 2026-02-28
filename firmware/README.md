@@ -159,13 +159,13 @@ The project is organized to separate hardware abstraction, core logic, and speci
 *   **`.vscode/`**: Contains build, launch, and task configurations.
 *   **`Apps/`**: Contains the main entry points for different project targets.
 *   **`Common/`**: The heart of the VALL-E library.
-    *   `Inc/Valle/Core/`: Core system components (Logging, Tasks, Timekeeping).
-    *   `Inc/Valle/Board/Device/`: Hardware Abstraction Layer (HAL) traits and registry.
-    *   `Inc/Valle/Board/Drivers/`: High-level drivers for ADC, HRTIM, I2C, and UART.
-    *   `Inc/Valle/Math/`: Control theory components (PID, Biquad filters, Matrix math via Eigen).
-    *   `Inc/Valle/Modules/`: Drivers for specific external hardware (ACS724, LDC1612, VCA).
-    *   `Inc/Valle/Utils/`: Utility functions and classes (RingBuffer, CircularBuffer, CRC).
-    *   `Src/`: Implementation files corresponding to the headers in `Inc/Valle/`.
+    *   `Inc/valle/core/`: Core system components (Logging, Tasks, Timekeeping).
+    *   `Inc/valle/core/device/`: Hardware Abstraction Layer (HAL) traits and registry.
+    *   `Inc/valle/platform/drivers/`: High-level drivers for ADC, HRTIM, I2C, and UART.
+    *   `Inc/valle/math/`: Control theory components (PID, Biquad filters, Matrix math via Eigen).
+    *   `Inc/valle/platform/modules/`: Drivers for specific external hardware (ACS724, LDC1612, VCA).
+    *   `Inc/valle/utils/`: Utility functions and classes (RingBuffer, CircularBuffer, CRC).
+    *   `Src/`: Implementation files corresponding to the headers in `inc/valle/`.
 *   **`Core/`**: Contains CubeMX-generated initialization code and interrupt service routines.
 *   **`cmake/`**: Toolchain files and STM32-specific CMake logic.
 *   **`Thirdparty/`**: External dependencies including:

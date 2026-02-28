@@ -11,7 +11,7 @@
             "interface": "swd",
             "runToEntryPoint": "main",
             "cpu": "cortex-m4",
-            "svdFile": "${workspaceFolder}/Platform/STM32G474.svd",
+            "svdFile": "${workspaceFolder}/platform/stm32/g474xx/STM32G474.svd",
             "v1": false,
             "executable": "${command:cmake.launchTargetPath}",
             "preLaunchTask": "CMake: build",
