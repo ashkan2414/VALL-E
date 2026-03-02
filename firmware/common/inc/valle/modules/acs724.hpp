@@ -1,6 +1,9 @@
 #pragma once
 
-#include "valle/platform/drivers/adc.hpp"
+#include <cstdint>
+
+#include "valle/core/device/device.hpp"
+
 
 namespace valle
 {

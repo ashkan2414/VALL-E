@@ -136,27 +136,30 @@ namespace valle::app
             "Failed to initialize Current Sensor");
 
         // TODO: check return value
-        valle::expect(g_drivers.position_sensor.init(LDC161XSensorConfig<1>{
-                          .clock_source           = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0f},
-                          .sample_rate_hz         = 1000,
-                          .deglitch_bandwidth     = LDC161XDeglitchBandwidth::kBand10MHz,
-                          .interrupt_config       = std::nullopt,
-                          .sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode,
-                          .enable_rp_override     = true,
-                          .auto_amplitude_en      = false,
-                          .high_current_drive_en  = true,
-                          .channels               = {LDC161XChannelConfig{
-                                            .coil_config =
-                                  LDC161XCoilConfig{
-                                                    .inductance_uh  = 18.147f,
-                                                    .capacitance_pf = 100.0f,
-                                                    .rp_kohm        = 15.727f,
-                                                    .q_factor       = 35.97f,
-                                  },
-                                            .drive_current = LDC161XIDriveCurrent::from_coil_rp(15.727f, 1.5f),
-                                            .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 0.0f},
-                          }},
-                      }),
+        valle::expect(g_drivers.position_sensor.init(LDC161XSensorModuleConfig<1>{
+                          .i2c_config{},
+                          .sensor_config =
+                              LDC161XSensorConfig<1>{
+                                  .clock_source           = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0f},
+                                  .sample_rate_hz         = 1000,
+                                  .deglitch_bandwidth     = LDC161XDeglitchBandwidth::kBand10MHz,
+                                  .interrupt_config       = std::nullopt,
+                                  .sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode,
+                                  .enable_rp_override     = true,
+                                  .auto_amplitude_en      = false,
+                                  .high_current_drive_en  = true,
+                                  .channels               = {LDC161XChannelConfig{
+                                                    .coil_config =
+                                          LDC161XCoilConfig{
+                                                            .inductance_uh  = 18.147f,
+                                                            .capacitance_pf = 100.0f,
+                                                            .rp_kohm        = 15.727f,
+                                                            .q_factor       = 35.97f,
+                                          },
+                                                    .drive_current = LDC161XIDriveCurrent::from_coil_rp(15.727f, 1.5f),
+                                                    .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 0.0f},
+                                  }},
+                              }}),
                       "Failed to initialize Position Sensor");
     }
 

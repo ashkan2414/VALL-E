@@ -6,6 +6,7 @@
 #include <atomic>
 
 #include "delegate/Delegate.h"
+#include "valle/core/device/device.hpp"
 #include "valle/math/system/blocks/feedback.hpp"
 #include "valle/math/system/blocks/pid.hpp"
 

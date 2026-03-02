@@ -15,7 +15,6 @@
 #include "valle/platform/hardware/i2c.hpp"
 #include "valle/utils/circular_queue.hpp"
 
-
 namespace valle
 {
     // ============================================================================
@@ -1185,8 +1184,9 @@ namespace valle
          * @brief Initializes the I2C Command Buffer Slave Device.
          *
          */
-        inline void init()
+        [[nodiscard]] inline bool init()
         {
+            return true;  // Nothing to do, the controller handles everything
         }
 
         /**
