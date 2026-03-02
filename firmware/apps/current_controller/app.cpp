@@ -6,6 +6,8 @@ VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
 
 namespace valle::app
 {
+    CurrentResponseCollectorT g_current_response_collector;
+
     DriverBuilderReturnT install_drivers(DriverBuilderT&& builder)
     {
         return std::move(builder)

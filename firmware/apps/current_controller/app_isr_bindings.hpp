@@ -45,6 +45,12 @@ namespace valle
             // First read the sampled current sensor and convert
             app::g_drivers.current_sensor.get_adc().on_data_available();
 
+            app::g_current_response_collector.push_data(app::CurrentResponseData{
+                .timestamp        = CycleClock::now(),
+                .target_current   = app::g_drivers.vca_controller.get_target_current(),
+                .measured_current = app::g_drivers.current_sensor.read_amps(),
+            });
+
             // Then run VCA control loop
             g_last_duty_cycle = app::g_drivers.vca_controller.run_ctrl_loop();
         }
