@@ -341,7 +341,7 @@ namespace valle
     concept CHasAdditionalDependDevices =
         requires { typename T::DependDevices; } && TypeListSize<typename T::DependDevices>::value > 0;
 
-    // Helper to get dependencies as a tuple type
+    // Helper to get dependencies as a TypeList type
     template <typename T>
     struct GetAdditionalDependDevices
     {
@@ -358,7 +358,7 @@ namespace valle
     template <typename T>
     concept CHasDependDevices = CHasAdditionalDependDevices<T> || CHasInjectDevices<T>;
 
-    // Helper to get dependencies as a tuple type
+    // Helper to get dependencies as a TypeList type
     template <typename T>
     struct GetDependDevices
     {

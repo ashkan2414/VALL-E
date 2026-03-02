@@ -58,7 +58,12 @@ namespace valle::app
     using UARTLoggerT = UARTLogger<UARTControllerDevice<kLoggerUARTControllerID>>;
 
     using VCAPWMHRTIMTimerDeviceT = HRTIMTimerDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
-    using VCAControllerT          = VCAControllerModule<VCAPWMHRTIMTimerDeviceT, VCAControlMode::kClosedLoopCurrent>;
+
+    using VCAControllerSystemControllerT       = VCAClosedLoopCurrentFeedbackController<float>;
+    using VCAControllerSystemControllerConfigT = typename VCAControllerSystemControllerT::ConfigT;
+
+    using VCAControllerT       = VCAControllerHRTIMModule<VCAPWMHRTIMTimerDeviceT, VCAControllerSystemControllerT>;
+    using VCAControllerConfigT = typename VCAControllerT::ConfigT;
 
     using CurrentSensorADCChannelT    = ADCInjectChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>;
     using CurrentSensorADCControllerT = CurrentSensorADCChannelT::ChannelT::ControllerT;
