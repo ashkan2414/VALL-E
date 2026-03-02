@@ -4,15 +4,16 @@ namespace valle
 {
 
     template <>
-    struct ADCISRRouter<app::CurrentSensorT::ChannelT::skControllerID, ADCInterruptType::kInjectEndOfSequence>
+    struct ADCISRRouter<app::CurrentSensorT::ADCChannelInterfaceT::ChannelT::skControllerID,
+                        ADCInterruptType::kInjectEndOfSequence>
     {
-        static_assert(app::CurrentSensorT::ChannelT::skGroup == ADCChannelGroup::kInject,
+        static_assert(app::CurrentSensorT::ADCChannelInterfaceT::ChannelT::skGroup == ADCChannelGroup::kInject,
                       "ADCISRRouter specialization used for non-inject channel");
 
         static void handle()
         {
             // First read the current sensor and convert
-            app::g_drivers.current_sensor.on_data_available();
+            app::g_drivers.current_sensor.get_adc().on_data_available();
 
             // Then run VCA control loop
             app::g_drivers.vca_controller.run_ctrl_loop();

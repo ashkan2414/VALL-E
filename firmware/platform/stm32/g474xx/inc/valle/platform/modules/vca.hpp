@@ -49,7 +49,7 @@ namespace valle
         // Initialization
         // ------------------------------------------------------------------------
 
-        [[nodiscard]] inline bool init(const ConfigT& config)
+        [[nodiscard]] inline bool init_impl(const ConfigT& config)
         {
             return m_device.init(config);
         }

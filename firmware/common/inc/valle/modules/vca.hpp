@@ -11,6 +11,40 @@
 
 namespace valle
 {
+    // =============================================================================
+    // Half Bridge Interface
+    // =============================================================================
+    template <typename TDerived, typename TConfig>
+    class VCAControllerModuleHalfBridgeInterface
+    {
+    public:
+        using ConfigT = TConfig;
+
+        [[nodiscard]] bool init(const ConfigT& config)
+        {
+            return static_cast<TDerived*>(this)->init_impl(config);
+        }
+
+        void enable()
+        {
+            static_cast<TDerived*>(this)->enable_impl();
+        }
+
+        void disable()
+        {
+            static_cast<TDerived*>(this)->disable_impl();
+        }
+
+        void set_duty_norm(const float normalized_duty)
+        {
+            static_cast<TDerived*>(this)->set_duty_norm_impl(normalized_duty);
+        }
+    };
+
+    // =============================================================================
+    // System Controller
+    // =============================================================================
+
     /**
      * @brief VCAControllerModule (Voice Coil Actuator) Control Modes
      *
@@ -141,32 +175,9 @@ namespace valle
         }
     };
 
-    template <typename TDerived, typename TConfig>
-    class VCAControllerModuleHalfBridgeInterface
-    {
-    public:
-        using ConfigT = TConfig;
-
-        [[nodiscard]] bool init(const ConfigT& config)
-        {
-            return static_cast<TDerived*>(this)->init_impl(config);
-        }
-
-        void enable()
-        {
-            static_cast<TDerived*>(this)->enable_impl();
-        }
-
-        void disable()
-        {
-            static_cast<TDerived*>(this)->disable_impl();
-        }
-
-        void set_duty_norm(const float normalized_duty)
-        {
-            static_cast<TDerived*>(this)->set_duty_norm_impl(normalized_duty);
-        }
-    };
+    // =============================================================================
+    // Module
+    // =============================================================================
 
     /**
      * @brief VCA Controller Module (Voice Coil Actuator) Configuration Structure
