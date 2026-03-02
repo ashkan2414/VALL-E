@@ -1,7 +1,6 @@
 #include "app.hpp"
 #include "valle/core.hpp"
 
-
 namespace valle
 {
     inline float g_last_duty_cycle = 0.5F;
@@ -44,7 +43,7 @@ namespace valle
             app::g_drivers.test_gpio.toggle();
 
             // First read the sampled current sensor and convert
-            app::g_drivers.current_sensor.on_data_available();
+            app::g_drivers.current_sensor.get_adc().on_data_available();
 
             // Then run VCA control loop
             g_last_duty_cycle = app::g_drivers.vca_controller.run_ctrl_loop();

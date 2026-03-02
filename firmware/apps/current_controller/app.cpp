@@ -129,12 +129,12 @@ namespace valle::app
             "Failed to initialize HRTIM ADC Trigger");
 
         valle::expect(
-            g_drivers.current_sensor.init(ACS724Config{.channel_config =
-                                                           ADCChannelConfig{
-                                                               .sampling_time = ADCChannelSampleTime::k12Cycles5,
-                                                               .input_mode    = ADCChannelInputMode::kSingleEnded,
-                                                               .offset        = std::nullopt,
-                                                           }}),
+            g_drivers.current_sensor.init(ACS724ModuleConfig{.channel_config =
+                                                                 ADCChannelConfig{
+                                                                     .sampling_time = ADCChannelSampleTime::k12Cycles5,
+                                                                     .input_mode    = ADCChannelInputMode::kSingleEnded,
+                                                                     .offset        = std::nullopt,
+                                                                 }}),
             "Failed to initialize ACS724 Current Sensor Driver");
 
         valle::expect(g_drivers.test_gpio.init(GPIODigitalOutConfig{

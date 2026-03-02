@@ -127,12 +127,12 @@ namespace valle::app
                       "Failed to initialize HRTIM Half Bridge Driver");
 
         valle::expect(
-            g_drivers.current_sensor.init(ACS724Config{.channel_config =
-                                                           ADCChannelConfig{
-                                                               .sampling_time = ADCChannelSampleTime::k12Cycles5,
-                                                               .input_mode    = ADCChannelInputMode::kSingleEnded,
-                                                               .offset        = std::nullopt,
-                                                           }}),
+            g_drivers.current_sensor.init(ACS724ModuleConfig{.channel_config =
+                                                                 ADCChannelConfig{
+                                                                     .sampling_time = ADCChannelSampleTime::k12Cycles5,
+                                                                     .input_mode    = ADCChannelInputMode::kSingleEnded,
+                                                                     .offset        = std::nullopt,
+                                                                 }}),
             "Failed to initialize Current Sensor");
 
         // TODO: check return value
