@@ -304,6 +304,12 @@ namespace valle
             m_setpoint.store(duty, std::memory_order_relaxed);
         }
 
+        [[nodiscard]] float get_target_duty() const
+            requires(skMode == VCAControlMode::kOpenLoopDuty)
+        {
+            return m_setpoint.load(std::memory_order_relaxed);
+        }
+
         /**
          * @brief Sets the target current for closed-loop control. The controller will adjust the duty cycle to try
          * to achieve this current.
@@ -313,6 +319,16 @@ namespace valle
             requires(skMode == VCAControlMode::kClosedLoopCurrent)
         {
             m_setpoint.store(amps, std::memory_order_relaxed);
+        }
+
+        /**
+         * @brief Gets the target current for closed-loop control.
+         * @return Target current in Amps.
+         */
+        [[nodiscard]] float get_target_current() const
+            requires(skMode == VCAControlMode::kClosedLoopCurrent)
+        {
+            return m_setpoint.load(std::memory_order_relaxed);
         }
 
         /**
