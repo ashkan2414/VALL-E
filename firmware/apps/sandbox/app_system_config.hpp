@@ -16,8 +16,8 @@ namespace valle::app
     };
 
     // HRTIM PWM Config
-    constexpr HRTIMControllerID kPWMHRTIMControllerID = 1;
-    constexpr HRTIMTimerID      kPWMHRTIMTimerID      = HRTIMTimerID::kA;
+    constexpr HRTIMControllerID kVCAPWMHRTIMControllerID = 1;
+    constexpr HRTIMTimerID      kVCAPWMHRTIMTimerID      = HRTIMTimerID::kA;
 
     struct HRTIMControllerCTConfig : HRTIMControllerCTConfigDefaults
     {
@@ -25,8 +25,8 @@ namespace valle::app
 
     struct HRTIMTimerCTConfig : HRTIMTimerCTConfigDefaults
     {
-        using Output1PinT = HRTIMTimerDefaultOutput1PinDevice<kPWMHRTIMControllerID, kPWMHRTIMTimerID>;
-        using Output2PinT = HRTIMTimerDefaultOutput2PinDevice<kPWMHRTIMControllerID, kPWMHRTIMTimerID>;
+        using Output1PinT = HRTIMTimerDefaultOutput1PinDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
+        using Output2PinT = HRTIMTimerDefaultOutput2PinDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
     };
 
     // Current Sensor ADC Config
@@ -50,8 +50,8 @@ namespace valle::app
 }  // namespace valle::app
 
 VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTID, app::UARTControllerCTConfig{});
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(app::kPWMHRTIMControllerID, app::HRTIMControllerCTConfig{});
-VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(app::kPWMHRTIMControllerID, app::kPWMHRTIMTimerID, app::HRTIMTimerCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(app::kVCAPWMHRTIMControllerID, app::HRTIMControllerCTConfig{});
+VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(app::kVCAPWMHRTIMControllerID, app::kVCAPWMHRTIMTimerID, app::HRTIMTimerCTConfig{});
 VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(app::kCurrentSensorADCID, app::ADCControllerCTConfig{});
 VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(app::kPositionSensorI2CID, app::I2CControllerCTConfig{});
 
@@ -64,7 +64,13 @@ namespace valle::app
     using LoggerUARTControllerT = UARTControllerDevice<app::kLoggerUARTID>;
     using UARTLoggerT           = UARTLogger<LoggerUARTControllerT>;
 
-    using VCAControllerT = VCAControllerModule<HRTIMTimerDevice<kPWMHRTIMControllerID, kPWMHRTIMTimerID>>;
+    using VCAPWMHRTIMTimerDeviceT = HRTIMTimerDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
+
+    using VCAControllerSystemControllerT       = VCAClosedLoopCurrentFeedbackController<float>;
+    using VCAControllerSystemControllerConfigT = typename VCAControllerSystemControllerT::ConfigT;
+
+    using VCAControllerT       = VCAControllerHRTIMModule<VCAPWMHRTIMTimerDeviceT, VCAControllerSystemControllerT>;
+    using VCAControllerConfigT = typename VCAControllerT::ConfigT;
 
     using CurrentSensorADCChannelT    = ADCInjectChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>;
     using CurrentSensorADCControllerT = CurrentSensorADCChannelT::ChannelT::ControllerT;

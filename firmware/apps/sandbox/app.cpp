@@ -84,11 +84,12 @@ namespace valle::app
                       }),
                       "Failed to initialize UART Logger Driver");
 
+        const uint32_t vca_pwm_freq_hz = 60000U;  // 60 kHz PWM Frequency
         valle::expect(g_drivers.vca_controller.init(
-                          VCAModuleConfig{
+                          VCAControllerConfigT{
                               .half_bridge_config =
                                   HRTIMHalfBridgeDriverConfig{
-                                      .freq_hz          = 60000,  // 60 kHz PWM Frequency
+                                      .freq_hz          = vca_pwm_freq_hz,
                                       .repetition       = 1,
                                       .rollover_mode    = HRTIMTimerRolloverMode::kPeriodReset,
                                       .interrupt_config = HRTIMTimerInterruptConfig{.priority = 5,
@@ -114,10 +115,15 @@ namespace valle::app
                                       .center_aligned  = true,
                                       .compare_unit    = HRTIMTimerCompareUnit::kCompare1,
                                   },
-
-                              .max_current_amp      = 1.0F,
-                              .target_tolerance_amp = 0.001F},
-                          delegate::Delegate<float>([]() { return g_drivers.current_sensor.read_amps(); })),
+                              .controller_config =
+                                  VCAControllerSystemControllerConfigT{
+                                      // Control loop at PWM frequency
+                                      .sample_time_s        = 1.0F / static_cast<float>(vca_pwm_freq_hz),
+                                      .max_current_amp      = 1.0F,
+                                      .target_tolerance_amp = 0.001F,
+                                      .feedback_fn          = delegate::Delegate<float>(
+                                          []() { return g_drivers.current_sensor.read_amps(); }),
+                                  }}),
                       "Failed to initialize HRTIM Half Bridge Driver");
 
         valle::expect(

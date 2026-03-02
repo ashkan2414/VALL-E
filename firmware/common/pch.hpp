@@ -6,6 +6,7 @@
 // These are the most "expensive" headers to parse repeatedly.
 
 #ifdef __cplusplus
+
 #include <algorithm>
 #include <array>
 #include <atomic>
@@ -16,10 +17,12 @@
 #include <functional>  // std::reference_wrapper
 #include <limits>
 #include <memory>
-#include <tuple>        // Essential for your Registry
-#include <type_traits>  // Essential for your Metaprogramming
+#include <span>
+#include <tuple>        // Essential for Registry
+#include <type_traits>  // Essential for Metaprogramming
 #include <utility>      // std::move, std::forward
 #include <variant>
+
 #endif
 
 // ============================================================================
