@@ -79,7 +79,7 @@ namespace valle::app
     using PositionSensorI2CControllerT = I2CCommandBufferDevice<kPositionSensorI2CID>;
     using PositionSensorI2CSlaveDeviceT =
         I2CCommandBufferSlaveDevice<kPositionSensorI2CID, kPositionSensorI2CAddress, kPositionSensorI2CAddressIs10Bit>;
-    using PositionSensorT = LDC161XSensorDriver<PositionSensorI2CSlaveDeviceT, 1>;
+    using PositionSensorT = LDC161XSensorModule<PositionSensorI2CSlaveDeviceT, 1>;
 
     struct Drivers
     {
