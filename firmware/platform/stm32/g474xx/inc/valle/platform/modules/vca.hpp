@@ -6,7 +6,7 @@
 #include <atomic>
 
 #include "valle/modules/vca.hpp"
-#include "valle/platform/drivers/hrtim_half_bridge.hpp"
+#include "valle/platform/drivers/hrtim/half_bridge.hpp"
 
 namespace valle
 {

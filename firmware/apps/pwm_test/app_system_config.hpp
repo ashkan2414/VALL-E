@@ -2,7 +2,7 @@
 
 #include "valle/core/device/device.hpp"
 #include "valle/core/system/config.hpp"
-#include "valle/platform/drivers/uart_logger.hpp"
+#include "valle/platform/drivers/uart/logger.hpp"
 #include "valle/platform/modules/acs724.hpp"
 #include "valle/platform/modules/ldc1612.hpp"
 #include "valle/platform/modules/vca.hpp"
@@ -26,8 +26,8 @@ namespace valle::app
     constexpr HRTIMTimerID kHRTIMTimerID = HRTIMTimerID::kA;
     struct HRTIMTimerCTConfig : HRTIMTimerCTConfigDefaults
     {
-        using Output1PinT = HRTIMTimerDefaultOutput1PinDevice<kHRTIMControllerID, kHRTIMTimerID>;
-        using Output2PinT = HRTIMTimerDefaultOutput2PinDevice<kHRTIMControllerID, kHRTIMTimerID>;
+        using Output1PinT = GPIOPinA8Device;
+        using Output2PinT = GPIOPinA9Device;
     };
 
 }  // namespace valle::app

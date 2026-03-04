@@ -2,7 +2,7 @@
 
 #include "valle/core/device/device.hpp"
 #include "valle/core/system/config.hpp"
-#include "valle/platform/drivers/uart_logger.hpp"
+#include "valle/platform/drivers/uart/logger.hpp"
 #include "valle/platform/modules/acs724.hpp"
 #include "valle/platform/modules/ldc1612.hpp"
 #include "valle/platform/modules/vca.hpp"

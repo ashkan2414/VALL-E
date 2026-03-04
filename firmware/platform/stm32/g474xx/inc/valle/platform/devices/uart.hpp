@@ -6,7 +6,7 @@
 #include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
 #include "valle/platform/devices/dma.hpp"
-#include "valle/platform/drivers/gpio.hpp"
+#include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/uart.hpp"
 
 namespace valle

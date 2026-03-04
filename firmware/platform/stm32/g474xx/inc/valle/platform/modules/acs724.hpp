@@ -1,7 +1,7 @@
 #pragma once
 
 #include "valle/modules/acs724.hpp"
-#include "valle/platform/drivers/adc.hpp"
+#include "valle/platform/drivers/adc/analog_sensor.hpp"
 
 namespace valle
 {
@@ -34,7 +34,7 @@ namespace valle
             .offset = ModelTraits::skMinAmps,
         };
 
-        ADCSensorDriver<ChannelT, ConverterT> m_driver;
+        ADCAnalogSensorDriver<ChannelT, ConverterT> m_driver;
 
     public:
         ACS724ModuleADCChannelInterface() = delete;
@@ -53,8 +53,8 @@ namespace valle
          */
         [[nodiscard]] bool init_impl(const ACS724ModuleADCChannelInterfaceConfig& config)
         {
-            return m_driver.init(
-                ADCSensorDriverConfig<ConverterT>{.channel_config = config, .converter_config = skConverterConfig});
+            return m_driver.init(ADCAnalogSensorDriverConfig<ConverterT>{.channel_config   = config,
+                                                                         .converter_config = skConverterConfig});
         }
 
         // ------------------------------------------------------------------------

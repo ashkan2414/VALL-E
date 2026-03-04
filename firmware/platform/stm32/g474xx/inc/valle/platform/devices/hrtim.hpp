@@ -7,9 +7,8 @@
 #include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
-#include "valle/platform/drivers/gpio.hpp"
+#include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/hrtim.hpp"
-
 
 namespace valle
 {
