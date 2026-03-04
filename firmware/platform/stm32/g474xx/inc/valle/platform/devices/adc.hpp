@@ -11,7 +11,7 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/adc_clk.hpp"
 #include "valle/platform/devices/dma.hpp"
-#include "valle/platform/drivers/gpio.hpp"
+#include "valle/platform/drivers/gpio/analog_in.hpp"
 #include "valle/platform/hardware/adc.hpp"
 
 namespace valle

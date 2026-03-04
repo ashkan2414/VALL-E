@@ -92,7 +92,7 @@ namespace valle::app
                       }),
                       "Failed to initialize UART Logger Driver");
 
-        valle::expect(g_drivers.test_adc.init(ADCSensorDriverConfig<TestADCConverterT>{
+        valle::expect(g_drivers.test_adc.init(ADCAnalogSensorDriverConfig<TestADCConverterT>{
                           .channel_config = ADCChannelConfig{.sampling_time = ADCChannelSampleTime::k12Cycles5,
                                                              .input_mode    = ADCChannelInputMode::kSingleEnded,
                                                              .offset        = std::nullopt},
