@@ -122,6 +122,29 @@
             ]
         },
         {
+            "name": "app-amt102-test",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "amt102_test"
+            }
+        },
+        {
+            "name": "amt102-test-debug",
+            "displayName": "AMT102 Test (Debug)",
+            "inherits": [
+                "debug",
+                "app-amt102-test"
+            ]
+        },
+        {
+            "name": "amt102-test-release",
+            "displayName": "AMT102 Test (Release)",
+            "inherits": [
+                "release",
+                "app-amt102-test"
+            ]
+        },
+        {
             "name": "app-sandbox",
             "hidden": true,
             "cacheVariables": {
@@ -177,6 +200,14 @@
         {
             "name": "current-controller-release",
             "configurePreset": "current-controller-release"
+        },
+        {
+            "name": "amt102-test-debug",
+            "configurePreset": "amt102-test-debug"
+        },
+        {
+            "name": "amt102-test-release",
+            "configurePreset": "amt102-test-release"
         },
         {
             "name": "sandbox-debug",

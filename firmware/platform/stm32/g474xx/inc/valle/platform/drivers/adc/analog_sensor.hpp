@@ -6,7 +6,6 @@
 #include "valle/math/converters.hpp"
 #include "valle/platform/devices/adc.hpp"
 
-
 namespace valle
 {
 
@@ -94,14 +93,14 @@ namespace valle
     };
 
     template <CADCConverter TConverter = ADCRawValueConverter<IdentityConverter<ADCValue>>>
-    struct ADCSensorDriverConfig
+    struct ADCAnalogSensorDriverConfig
     {
         ADCChannelConfig            channel_config{};
         typename TConverter::Config converter_config{};
     };
 
     template <CDevice TADCChannel, CADCConverter TConverter = ADCRawValueConverter<IdentityConverter<ADCValue>>>
-    class ADCSensorDriver
+    class ADCAnalogSensorDriver
     {
     public:
         using ChannelT      = TADCChannel;
@@ -114,15 +113,15 @@ namespace valle
         std::atomic<ConvertedT>                   m_last_value;
 
     public:
-        ADCSensorDriver() = delete;
+        ADCAnalogSensorDriver() = delete;
 
-        ADCSensorDriver(DeviceRef<ChannelT>&& channel)
+        ADCAnalogSensorDriver(DeviceRef<ChannelT>&& channel)
             : m_channel(std::move(channel)), m_last_value(static_cast<ConvertedT>(0))
         {
         }
 
         // Move constructor (needed because of std::atomic)
-        ADCSensorDriver(ADCSensorDriver&& other) noexcept
+        ADCAnalogSensorDriver(ADCAnalogSensorDriver&& other) noexcept
             : m_channel(std::move(other.m_channel))
             , m_converter(std::move(other.m_converter))
             , m_last_value(other.m_last_value.load(std::memory_order_relaxed))
@@ -130,7 +129,7 @@ namespace valle
         }
 
         // Move assignment (needed because of std::atomic)
-        ADCSensorDriver& operator=(ADCSensorDriver&& other) noexcept
+        ADCAnalogSensorDriver& operator=(ADCAnalogSensorDriver&& other) noexcept
         {
             if (this != &other)
             {
@@ -141,7 +140,7 @@ namespace valle
             return *this;
         }
 
-        [[nodiscard]] bool init(const ADCSensorDriverConfig<TConverter>& config)
+        [[nodiscard]] bool init(const ADCAnalogSensorDriverConfig<TConverter>& config)
         {
             m_converter.init(config.converter_config);
             return m_channel.get().init(config.channel_config);

@@ -14,6 +14,7 @@ endif()
 # STM32CubeMX generated symbols (macros)
 set(stm32cube_defines_syms
 	USE_HAL_DRIVER
+    USE_FULL_LL_DRIVER
 	STM32G474xx
     $<$<CONFIG:Debug>:DEBUG>
 )
