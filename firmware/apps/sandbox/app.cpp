@@ -118,8 +118,8 @@ namespace valle::app
                               .controller_config =
                                   VCAControllerSystemControllerConfigT{
                                       // Control loop at PWM frequency
-                                      .sample_time_s        = 1.0F / static_cast<float>(vca_pwm_freq_hz),
-                                      .max_current_amp      = 1.0F,
+                                      .sample_time     = DurationSecondsF(1.0F / static_cast<float>(vca_pwm_freq_hz)),
+                                      .max_current_amp = 1.0F,
                                       .target_tolerance_amp = 0.001F,
                                       .feedback_fn          = delegate::Delegate<float>(
                                           []() { return g_drivers.current_sensor.read_amps(); }),

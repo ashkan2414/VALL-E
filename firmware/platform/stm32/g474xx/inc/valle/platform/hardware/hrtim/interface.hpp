@@ -471,108 +471,108 @@ namespace valle
 
     enum class HRTIMTimerMasterADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcMasterCompare1  = LL_HRTIM_ADCTRIG_SRC24_MCMP1,
-        kSrcMasterCompare2  = LL_HRTIM_ADCTRIG_SRC24_MCMP2,
-        kSrcMasterCompare3  = LL_HRTIM_ADCTRIG_SRC24_MCMP3,
-        kSrcMasterCompare4  = LL_HRTIM_ADCTRIG_SRC24_MCMP4,
-        kSrcMasterPeriod    = LL_HRTIM_ADCTRIG_SRC24_MPER,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kCompare1        = LL_HRTIM_ADCTRIG_SRC24_MCMP1,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_MCMP2,
+        kCompare3        = LL_HRTIM_ADCTRIG_SRC24_MCMP3,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_MCMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC24_MPER,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
     };
 
     enum class HRTIMTimerAADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
-        kSrcTimerACompare2  = LL_HRTIM_ADCTRIG_SRC24_TIMACMP2,
-        kSrcTimerACompare4  = LL_HRTIM_ADCTRIG_SRC24_TIMACMP4,
-        kSrcTimerAPeriod    = LL_HRTIM_ADCTRIG_SRC24_TIMAPER,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_TIMACMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_TIMACMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMAPER,
     };
 
     enum class HRTIMTimerBADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
-        kSrcTimerBCompare2  = LL_HRTIM_ADCTRIG_SRC24_TIMBCMP2,
-        kSrcTimerBCompare4  = LL_HRTIM_ADCTRIG_SRC24_TIMBCMP4,
-        kSrcTimerBPeriod    = LL_HRTIM_ADCTRIG_SRC24_TIMBPER,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_TIMBCMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_TIMBCMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMBPER,
     };
 
     enum class HRTIMTimerCADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
-        kSrcTimerCCompare2  = LL_HRTIM_ADCTRIG_SRC24_TIMCCMP2,
-        kSrcTimerCCompare4  = LL_HRTIM_ADCTRIG_SRC24_TIMCCMP4,
-        kSrcTimerCPeriod    = LL_HRTIM_ADCTRIG_SRC24_TIMCPER,
-        kSrcTimerCReset     = LL_HRTIM_ADCTRIG_SRC24_TIMCRST,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_TIMCCMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_TIMCCMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMCPER,
+        kReset           = LL_HRTIM_ADCTRIG_SRC24_TIMCRST,
     };
 
     enum class HRTIMTimerDADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
-        kSrcTimerDCompare2  = LL_HRTIM_ADCTRIG_SRC24_TIMDCMP2,
-        kSrcTimerDCompare4  = LL_HRTIM_ADCTRIG_SRC24_TIMDCMP4,
-        kSrcTimerDPeriod    = LL_HRTIM_ADCTRIG_SRC24_TIMDPER,
-        kSrcTimerDReset     = LL_HRTIM_ADCTRIG_SRC24_TIMDRST,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_TIMDCMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_TIMDCMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMDPER,
+        kReset           = LL_HRTIM_ADCTRIG_SRC24_TIMDRST,
     };
 
     enum class HRTIMTimerEADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
-        kSrcTimerECompare2  = LL_HRTIM_ADCTRIG_SRC24_TIMECMP2,
-        kSrcTimerECompare3  = LL_HRTIM_ADCTRIG_SRC24_TIMECMP3,
-        kSrcTimerECompare4  = LL_HRTIM_ADCTRIG_SRC24_TIMECMP4,
-        kSrcTimerEReset     = LL_HRTIM_ADCTRIG_SRC24_TIMERST,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_TIMECMP2,
+        kCompare3        = LL_HRTIM_ADCTRIG_SRC24_TIMECMP3,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_TIMECMP4,
+        kReset           = LL_HRTIM_ADCTRIG_SRC24_TIMERST,
     };
 
     enum class HRTIMTimerFADCTriggerSourceID24 : uint32_t
     {
-        kSrcNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
-        kSrcExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
-        kSrcExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
-        kSrcExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
-        kSrcExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
-        kSrcExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
-        kSrcTimerFCompare2  = LL_HRTIM_ADCTRIG_SRC24_TIMFCMP2,
-        kSrcTimerFCompare3  = LL_HRTIM_ADCTRIG_SRC24_TIMFCMP3,
-        kSrcTimerFCompare4  = LL_HRTIM_ADCTRIG_SRC24_TIMFCMP4,
-        kSrcTimerFPeriod    = LL_HRTIM_ADCTRIG_SRC24_TIMFPER,
+        kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC24_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC24_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC24_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC24_TIMFCMP2,
+        kCompare3        = LL_HRTIM_ADCTRIG_SRC24_TIMFCMP3,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC24_TIMFCMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMFPER,
     };
 
     enum class HRTIMTimerMasterADCTriggerSourceID579 : uint32_t
     {
-        kMasterCompare1 = LL_HRTIM_ADCTRIG_SRC579_MCMP1,
-        kMasterCompare2 = LL_HRTIM_ADCTRIG_SRC579_MCMP2,
-        kMasterCompare3 = LL_HRTIM_ADCTRIG_SRC579_MCMP3,
-        kMasterCompare4 = LL_HRTIM_ADCTRIG_SRC579_MCMP4,
-        kMasterPeriod   = LL_HRTIM_ADCTRIG_SRC579_MPER,
+        kCompare1       = LL_HRTIM_ADCTRIG_SRC579_MCMP1,
+        kCompare2       = LL_HRTIM_ADCTRIG_SRC579_MCMP2,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_MCMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_MCMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_MPER,
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
@@ -587,10 +587,10 @@ namespace valle
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
         kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC579_EEV4,
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
-        kTimerACompare3 = LL_HRTIM_ADCTRIG_SRC579_TIMA_CMP3,
-        kTimerACompare4 = LL_HRTIM_ADCTRIG_SRC579_TIMA_CMP4,
-        kTimerAPeriod   = LL_HRTIM_ADCTRIG_SRC579_TIMA_PER,
-        kTimerAReset    = LL_HRTIM_ADCTRIG_SRC579_TIMA_RST,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_TIMA_CMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_TIMA_CMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMA_PER,
+        kReset          = LL_HRTIM_ADCTRIG_SRC579_TIMA_RST,
     };
 
     enum class HRTIMTimerBADCTriggerSourceID579 : uint32_t
@@ -600,10 +600,10 @@ namespace valle
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
         kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC579_EEV4,
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
-        kTimerBCompare3 = LL_HRTIM_ADCTRIG_SRC579_TIMB_CMP3,
-        kTimerBCompare4 = LL_HRTIM_ADCTRIG_SRC579_TIMB_CMP4,
-        kTimerBPeriod   = LL_HRTIM_ADCTRIG_SRC579_TIMB_PER,
-        kTimerBReset    = LL_HRTIM_ADCTRIG_SRC579_TIMB_RST,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_TIMB_CMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_TIMB_CMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMB_PER,
+        kReset          = LL_HRTIM_ADCTRIG_SRC579_TIMB_RST,
     };
 
     enum class HRTIMTimerCADCTriggerSourceID579 : uint32_t
@@ -613,9 +613,9 @@ namespace valle
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
         kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC579_EEV4,
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
-        kTimerCCompare3 = LL_HRTIM_ADCTRIG_SRC579_TIMC_CMP3,
-        kTimerCCompare4 = LL_HRTIM_ADCTRIG_SRC579_TIMC_CMP4,
-        kTimerCPeriod   = LL_HRTIM_ADCTRIG_SRC579_TIMC_PER,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_TIMC_CMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_TIMC_CMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMC_PER,
     };
 
     enum class HRTIMTimerDADCTriggerSourceID579 : uint32_t
@@ -625,9 +625,9 @@ namespace valle
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
         kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC579_EEV4,
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
-        kTimerDCompare3 = LL_HRTIM_ADCTRIG_SRC579_TIMD_CMP3,
-        kTimerDCompare4 = LL_HRTIM_ADCTRIG_SRC579_TIMD_CMP4,
-        kTimerDPeriod   = LL_HRTIM_ADCTRIG_SRC579_TIMD_PER,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_TIMD_CMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_TIMD_CMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMD_PER,
     };
 
     enum class HRTIMTimerEADCTriggerSourceID579 : uint32_t
@@ -637,9 +637,9 @@ namespace valle
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
         kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC579_EEV4,
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
-        kTimerECompare3 = LL_HRTIM_ADCTRIG_SRC579_TIME_CMP3,
-        kTimerECompare4 = LL_HRTIM_ADCTRIG_SRC579_TIME_CMP4,
-        kTimerEPeriod   = LL_HRTIM_ADCTRIG_SRC579_TIME_PER,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_TIME_CMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_TIME_CMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIME_PER,
     };
 
     enum class HRTIMTimerFADCTriggerSourceID579 : uint32_t
@@ -649,101 +649,101 @@ namespace valle
         kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC579_EEV3,
         kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC579_EEV4,
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
-        kTimerFCompare2 = LL_HRTIM_ADCTRIG_SRC579_TIMF_CMP2,
-        kTimerFCompare3 = LL_HRTIM_ADCTRIG_SRC579_TIMF_CMP3,
-        kTimerFCompare4 = LL_HRTIM_ADCTRIG_SRC579_TIMF_CMP4,
-        kTimerFPeriod   = LL_HRTIM_ADCTRIG_SRC579_TIMF_PER,
-        kTimerFReset    = LL_HRTIM_ADCTRIG_SRC579_TIMF_RST,
+        kCompare2       = LL_HRTIM_ADCTRIG_SRC579_TIMF_CMP2,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC579_TIMF_CMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC579_TIMF_CMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMF_PER,
+        kReset          = LL_HRTIM_ADCTRIG_SRC579_TIMF_RST,
     };
 
     enum class HRTIMTimerMasterADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810MasterCompare1  = LL_HRTIM_ADCTRIG_SRC6810_MCMP1,
-        kSrc6810MasterCompare2  = LL_HRTIM_ADCTRIG_SRC6810_MCMP2,
-        kSrc6810MasterCompare3  = LL_HRTIM_ADCTRIG_SRC6810_MCMP3,
-        kSrc6810MasterCompare4  = LL_HRTIM_ADCTRIG_SRC6810_MCMP4,
-        kSrc6810MasterPeriod    = LL_HRTIM_ADCTRIG_SRC6810_MPER,
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kMasterCompare1  = LL_HRTIM_ADCTRIG_SRC6810_MCMP1,
+        kMasterCompare2  = LL_HRTIM_ADCTRIG_SRC6810_MCMP2,
+        kMasterCompare3  = LL_HRTIM_ADCTRIG_SRC6810_MCMP3,
+        kMasterCompare4  = LL_HRTIM_ADCTRIG_SRC6810_MCMP4,
+        kMasterPeriod    = LL_HRTIM_ADCTRIG_SRC6810_MPER,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
     };
 
     enum class HRTIMTimerAADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
-        kSrc6810TimerACompare2  = LL_HRTIM_ADCTRIG_SRC6810_TIMA_CMP2,
-        kSrc6810TimerACompare4  = LL_HRTIM_ADCTRIG_SRC6810_TIMA_CMP4,
-        kSrc6810TimerAPeriod    = LL_HRTIM_ADCTRIG_SRC6810_TIMA_PER,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC6810_TIMA_CMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC6810_TIMA_CMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMA_PER,
     };
 
     enum class HRTIMTimerBADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
-        kSrc6810TimerBCompare2  = LL_HRTIM_ADCTRIG_SRC6810_TIMB_CMP2,
-        kSrc6810TimerBCompare4  = LL_HRTIM_ADCTRIG_SRC6810_TIMB_CMP4,
-        kSrc6810TimerBPeriod    = LL_HRTIM_ADCTRIG_SRC6810_TIMB_PER,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC6810_TIMB_CMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC6810_TIMB_CMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMB_PER,
     };
 
     enum class HRTIMTimerCADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
-        kSrc6810TimerCCompare2  = LL_HRTIM_ADCTRIG_SRC6810_TIMC_CMP2,
-        kSrc6810TimerCCompare4  = LL_HRTIM_ADCTRIG_SRC6810_TIMC_CMP4,
-        kSrc6810TimerCPeriod    = LL_HRTIM_ADCTRIG_SRC6810_TIMC_PER,
-        kSrc6810TimerCReset     = LL_HRTIM_ADCTRIG_SRC6810_TIMC_RST,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC6810_TIMC_CMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC6810_TIMC_CMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMC_PER,
+        kReset           = LL_HRTIM_ADCTRIG_SRC6810_TIMC_RST,
     };
 
     enum class HRTIMTimerDADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
-        kSrc6810TimerDCompare2  = LL_HRTIM_ADCTRIG_SRC6810_TIMD_CMP2,
-        kSrc6810TimerDCompare4  = LL_HRTIM_ADCTRIG_SRC6810_TIMD_CMP4,
-        kSrc6810TimerDPeriod    = LL_HRTIM_ADCTRIG_SRC6810_TIMD_PER,
-        kSrc6810TimerDReset     = LL_HRTIM_ADCTRIG_SRC6810_TIMD_RST,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC6810_TIMD_CMP2,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC6810_TIMD_CMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMD_PER,
+        kReset           = LL_HRTIM_ADCTRIG_SRC6810_TIMD_RST,
     };
 
     enum class HRTIMTimerEADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
-        kSrc6810TimerECompare2  = LL_HRTIM_ADCTRIG_SRC6810_TIME_CMP2,
-        kSrc6810TimerECompare3  = LL_HRTIM_ADCTRIG_SRC6810_TIME_CMP3,
-        kSrc6810TimerECompare4  = LL_HRTIM_ADCTRIG_SRC6810_TIME_CMP4,
-        kSrc6810TimerEReset     = LL_HRTIM_ADCTRIG_SRC6810_TIME_RST,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC6810_TIME_CMP2,
+        kCompare3        = LL_HRTIM_ADCTRIG_SRC6810_TIME_CMP3,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC6810_TIME_CMP4,
+        kReset           = LL_HRTIM_ADCTRIG_SRC6810_TIME_RST,
     };
 
     enum class HRTIMTimerFADCTriggerSourceID6810 : uint32_t
     {
-        kSrc6810ExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
-        kSrc6810ExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
-        kSrc6810ExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
-        kSrc6810ExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
-        kSrc6810ExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
-        kSrc6810TimerFCompare2  = LL_HRTIM_ADCTRIG_SRC6810_TIMF_CMP2,
-        kSrc6810TimerFCompare3  = LL_HRTIM_ADCTRIG_SRC6810_TIMF_CMP3,
-        kSrc6810TimerFCompare4  = LL_HRTIM_ADCTRIG_SRC6810_TIMF_CMP4,
-        kSrc6810TimerFPeriod    = LL_HRTIM_ADCTRIG_SRC6810_TIMF_PER,
+        kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
+        kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
+        kExternalEvent8  = LL_HRTIM_ADCTRIG_SRC6810_EEV8,
+        kExternalEvent9  = LL_HRTIM_ADCTRIG_SRC6810_EEV9,
+        kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
+        kCompare2        = LL_HRTIM_ADCTRIG_SRC6810_TIMF_CMP2,
+        kCompare3        = LL_HRTIM_ADCTRIG_SRC6810_TIMF_CMP3,
+        kCompare4        = LL_HRTIM_ADCTRIG_SRC6810_TIMF_CMP4,
+        kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMF_PER,
     };
 
     template <HRTIMTimerID tkTimerID>

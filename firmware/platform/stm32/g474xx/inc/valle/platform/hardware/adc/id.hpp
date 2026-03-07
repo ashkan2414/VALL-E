@@ -2,12 +2,13 @@
 
 #include <stdint.h>
 
+#include <magic_enum/magic_enum.hpp>
+
 namespace valle
 {
 
     static constexpr size_t kADCMaxRegChannels = 16;
     static constexpr size_t kADCMaxInjChannels = 4;
-    static constexpr size_t kADCMaxChannelId   = 20;
 
     using ADCValue = uint16_t;
 
@@ -18,37 +19,39 @@ namespace valle
 
     enum class ADCChannelID : uint32_t
     {
-        kChannel0              = LL_ADC_CHANNEL_0,
-        kChannel1              = LL_ADC_CHANNEL_1,
-        kChannel2              = LL_ADC_CHANNEL_2,
-        kChannel3              = LL_ADC_CHANNEL_3,
-        kChannel4              = LL_ADC_CHANNEL_4,
-        kChannel5              = LL_ADC_CHANNEL_5,
-        kChannel6              = LL_ADC_CHANNEL_6,
-        kChannel7              = LL_ADC_CHANNEL_7,
-        kChannel8              = LL_ADC_CHANNEL_8,
-        kChannel9              = LL_ADC_CHANNEL_9,
-        kChannel10             = LL_ADC_CHANNEL_10,
-        kChannel11             = LL_ADC_CHANNEL_11,
-        kChannel12             = LL_ADC_CHANNEL_12,
-        kChannel13             = LL_ADC_CHANNEL_13,
-        kChannel14             = LL_ADC_CHANNEL_14,
-        kChannel15             = LL_ADC_CHANNEL_15,
-        kChannel16             = LL_ADC_CHANNEL_16,
-        kChannel17             = LL_ADC_CHANNEL_17,
-        kChannel18             = LL_ADC_CHANNEL_18,
-        kChannelVRefInt        = LL_ADC_CHANNEL_VREFINT,
-        kChannelTempSensorADC1 = LL_ADC_CHANNEL_TEMPSENSOR_ADC1,
-        kChannelTempSensorADC5 = LL_ADC_CHANNEL_TEMPSENSOR_ADC5,
-        kChannelVBat           = LL_ADC_CHANNEL_VBAT,
-        kChannelVOPAmp1        = LL_ADC_CHANNEL_VOPAMP1,
-        kChannelVOPAmp2        = LL_ADC_CHANNEL_VOPAMP2,
-        kChannelVOPAmp3ADC2    = LL_ADC_CHANNEL_VOPAMP3_ADC2,
-        kChannelVOPAmp3ADC3    = LL_ADC_CHANNEL_VOPAMP3_ADC3,
-        kChannelVOPAmp4        = LL_ADC_CHANNEL_VOPAMP4,
-        kChannelVOPAmp5        = LL_ADC_CHANNEL_VOPAMP5,
-        kChannelVOPAmp6        = LL_ADC_CHANNEL_VOPAMP6,
+        kChannel0 = 0,
+        kChannel1,
+        kChannel2,
+        kChannel3,
+        kChannel4,
+        kChannel5,
+        kChannel6,
+        kChannel7,
+        kChannel8,
+        kChannel9,
+        kChannel10,
+        kChannel11,
+        kChannel12,
+        kChannel13,
+        kChannel14,
+        kChannel15,
+        kChannel16,
+        kChannel17,
+        kChannel18,
+        kChannelVRefInt,
+        kChannelTempSensorADC1,
+        kChannelTempSensorADC5,
+        kChannelVBat,
+        kChannelVOPAmp1,
+        kChannelVOPAmp2,
+        kChannelVOPAmp3ADC2,
+        kChannelVOPAmp3ADC3,
+        kChannelVOPAmp4,
+        kChannelVOPAmp5,
+        kChannelVOPAmp6,
     };
+
+    static constexpr size_t kNumADCChannels = magic_enum::enum_count<ADCChannelID>();
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
     constexpr bool kValidADCChannelID =

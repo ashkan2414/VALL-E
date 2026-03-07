@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
+#include <chrono>
+
 #include "stm32g4xx_ll_adc.h"
 #include "valle/platform/hardware/ADC/id.hpp"
 #include "valle/platform/hardware/adc_clk.hpp"
-
 
 namespace valle
 {
@@ -29,6 +31,31 @@ namespace valle
     {
         kNone     = LL_ADC_LP_MODE_NONE,  /// No low power
         kAutoWait = LL_ADC_LP_AUTOWAIT,   /// Auto wait between conversions
+    };
+
+    enum class ADCCommonSamplingTime : uint32_t
+    {
+        kDefault                   = LL_ADC_SAMPLINGTIME_COMMON_DEFAULT,
+        k3P5CyclesReplace2P5Cycles = LL_ADC_SAMPLINGTIME_COMMON_3C5_REPL_2C5,
+    };
+
+    enum class ADCInjectGroupQueueMode : uint32_t
+    {
+        kDisable             = LL_ADC_INJ_QUEUE_DISABLE,
+        k2ContextsLastActive = LL_ADC_INJ_QUEUE_2CONTEXTS_LAST_ACTIVE,
+        k2ContextsEndEmpty   = LL_ADC_INJ_QUEUE_2CONTEXTS_END_EMPTY
+    };
+
+    enum class ADCInjectGroupTriggerMode : uint32_t
+    {
+        kIndependent      = LL_ADC_INJ_TRIG_INDEPENDENT,
+        kFromRegularGroup = LL_ADC_INJ_TRIG_FROM_GRP_REGULAR
+    };
+
+    enum class ADCInjectGroupSequencerDiscontinuityMode : uint32_t
+    {
+        kDisable = LL_ADC_INJ_SEQ_DISCONT_DISABLE,
+        k1Rank   = LL_ADC_INJ_SEQ_DISCONT_1RANK
     };
 
     enum class ADCInjectGroupTriggerSource : uint32_t
@@ -169,17 +196,17 @@ namespace valle
         k256x = LL_ADC_OVS_RATIO_256
     };
 
-    enum class ADCOversamplingShiftBits : uint32_t
+    enum class ADCOversamplingShift : uint32_t
     {
         kNone   = LL_ADC_OVS_SHIFT_NONE,
-        kRight1 = LL_ADC_OVS_SHIFT_RIGHT_1,
-        kRight2 = LL_ADC_OVS_SHIFT_RIGHT_2,
-        kRight3 = LL_ADC_OVS_SHIFT_RIGHT_3,
-        kRight4 = LL_ADC_OVS_SHIFT_RIGHT_4,
-        kRight5 = LL_ADC_OVS_SHIFT_RIGHT_5,
-        kRight6 = LL_ADC_OVS_SHIFT_RIGHT_6,
-        kRight7 = LL_ADC_OVS_SHIFT_RIGHT_7,
-        kRight8 = LL_ADC_OVS_SHIFT_RIGHT_8
+        kDiv2   = LL_ADC_OVS_SHIFT_RIGHT_1,
+        kDiv4   = LL_ADC_OVS_SHIFT_RIGHT_2,
+        kDiv8   = LL_ADC_OVS_SHIFT_RIGHT_3,
+        kDiv16  = LL_ADC_OVS_SHIFT_RIGHT_4,
+        kDiv32  = LL_ADC_OVS_SHIFT_RIGHT_5,
+        kDiv64  = LL_ADC_OVS_SHIFT_RIGHT_6,
+        kDiv128 = LL_ADC_OVS_SHIFT_RIGHT_7,
+        kDiv256 = LL_ADC_OVS_SHIFT_RIGHT_8
     };
 
     enum class ADCOversamplingScope : uint32_t
@@ -279,6 +306,90 @@ namespace valle
         static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC5;
     };
 
+    // -------------------------------------------------------------------------
+    // Channel Traits
+    // -------------------------------------------------------------------------
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    struct ADCChannelTraits
+    {
+    private:
+        [[nodiscard]] static consteval uint32_t get_ll_channel_id()
+        {
+            switch (tkChannelID)
+            {
+                case ADCChannelID::kChannel0:
+                    return LL_ADC_CHANNEL_0;
+                case ADCChannelID::kChannel1:
+                    return LL_ADC_CHANNEL_1;
+                case ADCChannelID::kChannel2:
+                    return LL_ADC_CHANNEL_2;
+                case ADCChannelID::kChannel3:
+                    return LL_ADC_CHANNEL_3;
+                case ADCChannelID::kChannel4:
+                    return LL_ADC_CHANNEL_4;
+                case ADCChannelID::kChannel5:
+                    return LL_ADC_CHANNEL_5;
+                case ADCChannelID::kChannel6:
+                    return LL_ADC_CHANNEL_6;
+                case ADCChannelID::kChannel7:
+                    return LL_ADC_CHANNEL_7;
+                case ADCChannelID::kChannel8:
+                    return LL_ADC_CHANNEL_8;
+                case ADCChannelID::kChannel9:
+                    return LL_ADC_CHANNEL_9;
+                case ADCChannelID::kChannel10:
+                    return LL_ADC_CHANNEL_10;
+                case ADCChannelID::kChannel11:
+                    return LL_ADC_CHANNEL_11;
+                case ADCChannelID::kChannel12:
+                    return LL_ADC_CHANNEL_12;
+                case ADCChannelID::kChannel13:
+                    return LL_ADC_CHANNEL_13;
+                case ADCChannelID::kChannel14:
+                    return LL_ADC_CHANNEL_14;
+                case ADCChannelID::kChannel15:
+                    return LL_ADC_CHANNEL_15;
+                case ADCChannelID::kChannel16:
+                    return LL_ADC_CHANNEL_16;
+                case ADCChannelID::kChannel17:
+                    return LL_ADC_CHANNEL_17;
+                case ADCChannelID::kChannel18:
+                    return LL_ADC_CHANNEL_18;
+                case ADCChannelID::kChannelVRefInt:
+                    return LL_ADC_CHANNEL_VREFINT;
+                case ADCChannelID::kChannelTempSensorADC1:
+                    return LL_ADC_CHANNEL_TEMPSENSOR_ADC1;
+                case ADCChannelID::kChannelTempSensorADC5:
+                    return LL_ADC_CHANNEL_TEMPSENSOR_ADC5;
+                case ADCChannelID::kChannelVBat:
+                    return LL_ADC_CHANNEL_VBAT;
+                case ADCChannelID::kChannelVOPAmp1:
+                    return LL_ADC_CHANNEL_VOPAMP1;
+                case ADCChannelID::kChannelVOPAmp2:
+                    return LL_ADC_CHANNEL_VOPAMP2;
+                case ADCChannelID::kChannelVOPAmp3ADC2:
+                    return LL_ADC_CHANNEL_VOPAMP3_ADC2;
+                case ADCChannelID::kChannelVOPAmp3ADC3:
+                    return LL_ADC_CHANNEL_VOPAMP3_ADC3;
+                case ADCChannelID::kChannelVOPAmp4:
+                    return LL_ADC_CHANNEL_VOPAMP4;
+                case ADCChannelID::kChannelVOPAmp5:
+                    return LL_ADC_CHANNEL_VOPAMP5;
+                case ADCChannelID::kChannelVOPAmp6:
+                    return LL_ADC_CHANNEL_VOPAMP6;
+                default:
+                    return 0;
+            }
+        }
+
+    public:
+        static constexpr ADCControllerID skControllerID = tkControllerID;
+        static constexpr ADCChannelID    skChannelID    = tkChannelID;
+        static constexpr uint32_t        skChannelIdx   = static_cast<uint32_t>(tkChannelID);
+        static constexpr uint32_t        skLLChannelID  = get_ll_channel_id();
+    };
+
     // ============================================================================
     // RANK TRAITS
     // ============================================================================
@@ -302,6 +413,23 @@ namespace valle
                     return LL_ADC_INJ_SEQ_SCAN_ENABLE_4RANKS;
                 default:
                     return LL_ADC_INJ_SEQ_SCAN_DISABLE;
+            }
+        }
+
+        static constexpr uint32_t sequence_length_to_count(const uint32_t sequence_length)
+        {
+            switch (sequence_length)
+            {
+                case LL_ADC_INJ_SEQ_SCAN_DISABLE:
+                    return 1;
+                case LL_ADC_INJ_SEQ_SCAN_ENABLE_2RANKS:
+                    return 2;
+                case LL_ADC_INJ_SEQ_SCAN_ENABLE_3RANKS:
+                    return 3;
+                case LL_ADC_INJ_SEQ_SCAN_ENABLE_4RANKS:
+                    return 4;
+                default:
+                    return 1;
             }
         }
 
@@ -495,6 +623,519 @@ namespace valle
     {
         static constexpr uint32_t skRank = tkRank;
         static constexpr uint32_t skReg  = ADCRegularGroupTraits::rank_to_rank_reg(tkRank);
+    };
+
+    // ============================================================================
+    // INTERFACE
+    // ============================================================================
+
+    struct ADCRootInterface
+    {
+        static constexpr uint32_t calculate_clock_freq_hz(const uint32_t               async_clock_freq_hz,
+                                                          const ADCAsyncClockPrescaler prescaler)
+        {
+            return ADCClockRootInterface::calculate_clock_freq_hz(async_clock_freq_hz, prescaler);
+        }
+
+        static constexpr uint32_t calculate_clock_freq_hz(const uint32_t              sync_clock_freq_hz,
+                                                          const ADCSyncClockPrescaler prescaler)
+        {
+            return ADCClockRootInterface::calculate_clock_freq_hz(sync_clock_freq_hz, prescaler);
+        }
+
+        static constexpr float get_channel_sample_time_cycles(const ADCChannelSampleTime sample_time)
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (sample_time)
+            {
+                case ADCChannelSampleTime::k2Cycles5:
+                    return 2.5F;
+                case ADCChannelSampleTime::k6Cycles5:
+                    return 6.5F;
+                case ADCChannelSampleTime::k12Cycles5:
+                    return 12.5F;
+                case ADCChannelSampleTime::k24Cycles5:
+                    return 24.5F;
+                case ADCChannelSampleTime::k47Cycles5:
+                    return 47.5F;
+                case ADCChannelSampleTime::k92Cycles5:
+                    return 92.5F;
+                case ADCChannelSampleTime::k247Cycles5:
+                    return 247.5F;
+                case ADCChannelSampleTime::k640Cycles5:
+                    return 640.5F;
+                default:
+                    return 0.0F;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        static constexpr uint32_t get_oversampling_ratio_factor(const ADCOversamplingRatio oversampling_ratio)
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (oversampling_ratio)
+            {
+                case ADCOversamplingRatio::k2x:
+                    return 2;
+                case ADCOversamplingRatio::k4x:
+                    return 4;
+                case ADCOversamplingRatio::k8x:
+                    return 8;
+                case ADCOversamplingRatio::k16x:
+                    return 16;
+                case ADCOversamplingRatio::k32x:
+                    return 32;
+                case ADCOversamplingRatio::k64x:
+                    return 64;
+                case ADCOversamplingRatio::k128x:
+                    return 128;
+                case ADCOversamplingRatio::k256x:
+                    return 256;
+                default:
+                    return 1;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        static constexpr DurationSecondsF calculate_channel_sample_time_s(
+            const uint32_t                            clock_freq_hz,
+            const ADCChannelSampleTime                sample_time,
+            const std::optional<ADCOversamplingRatio> oversampling_ratio)
+        {
+            const float    cycles = get_channel_sample_time_cycles(sample_time);
+            const uint32_t oversampling_factor =
+                oversampling_ratio.has_value() ? get_oversampling_ratio_factor(oversampling_ratio.value()) : 1;
+            const float duration_s =
+                (cycles * static_cast<float>(oversampling_factor)) / static_cast<float>(clock_freq_hz);
+            return DurationSecondsF(duration_s);
+        }
+    };
+
+    template <ADCControllerID tkControllerID>
+    struct ADCControllerInterface
+    {
+        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+
+        // ----------------------------------------------------------------------------
+        // CORE
+        // ----------------------------------------------------------------------------
+        [[nodiscard]] static bool disable()
+        {
+            if (LL_ADC_IsEnabled(ControllerTraitsT::skInstance))
+            {
+                LL_ADC_Disable(ControllerTraitsT::skInstance);
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] static bool enable()
+        {
+            // Enable ADC
+            // Wait for ADC ready with precise timeout
+            // RM0440: Typically a few ADC clock cycles, allow up to 100 µs for safety
+            LL_ADC_Enable(ControllerTraitsT::skInstance);
+            const bool adc_ready = wait_for_with_timeout_us(
+                []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100u);
+
+            // If timeout occurred, ADC is not ready
+            return adc_ready;
+        }
+
+        [[nodiscard]] static bool enabled()
+        {
+            return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0;
+        }
+
+        [[nodiscard]] static bool disable_deep_power_mode()
+        {
+            if (LL_ADC_IsDeepPowerDownEnabled(ControllerTraitsT::skInstance) != 0UL)
+            {
+                // Disable ADC deep power down mode
+                LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
+
+                // System was in deep power down mode, calibration must
+                // be relaunched or a previously saved calibration factor
+                // re-applied once the ADC voltage regulator is enabled
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] static bool enable_voltage_regulator()
+        {
+            if (LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 0UL)
+            {
+                // Enable ADC internal voltage regulator
+                LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
+
+                // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
+                // wait for 100 to be safe.
+                delay_us_busy(100u);
+            }
+
+            if (LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 0UL)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] static bool calibrate()
+        {
+            // Calibration with precise timeout
+            // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
+            // At 40 MHz ADC clock: ~3 µs typical, allow up to 100 µs for safety
+            //
+            // NOTE: If ADC clock frequency changes at runtime (e.g., entering
+            // low-power mode), calibration must be re-run.
+            LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
+            const bool calibration_success = wait_for_with_timeout_us(
+                []() { return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) == 0; }, 100u);
+
+            // If timeout occurred, calibration failed
+            return calibration_success;
+        }
+
+        // -----------------------------------------------------------------------------
+        // CONFIGURATION
+        // -----------------------------------------------------------------------------
+        static void set_resolution(const ADCResolution resolution)
+        {
+            LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(resolution));
+        }
+
+        static void set_data_alignment(const ADCDataAlignment data_alignment)
+        {
+            LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, static_cast<uint32_t>(data_alignment));
+        }
+
+        static void set_low_power_mode(const ADCLowPowerMode low_power_mode)
+        {
+            LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(low_power_mode));
+        }
+
+        static void set_gain_compensation(const uint16_t gain_compensation)
+        {
+            LL_ADC_SetGainCompensation(ControllerTraitsT::skInstance, static_cast<uint32_t>(gain_compensation));
+        }
+
+        static void set_common_sample_time(const ADCCommonSamplingTime sampling_time)
+        {
+            LL_ADC_SetSamplingTimeCommonConfig(ControllerTraitsT::skInstance, static_cast<uint32_t>(sampling_time));
+        }
+
+        static void set_oversampling_scope(const ADCOversamplingScope scope)
+        {
+            LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, static_cast<uint32_t>(scope));
+        }
+
+        static void set_oversampling_ratio_shift(const ADCOversamplingRatio ratio, const ADCOversamplingShift shift)
+        {
+            LL_ADC_ConfigOverSamplingRatioShift(
+                ControllerTraitsT::skInstance, static_cast<uint32_t>(ratio), static_cast<uint32_t>(shift));
+        }
+
+        // ----------------------------------------------------------------------------
+        // CONVERSION CONTROL
+        // ----------------------------------------------------------------------------
+        /**
+         * @brief ARM THE TRIGGER (The most important part)
+         * If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
+         * If Trigger is Software: ADC converts immediately.
+         */
+        static void start_inject()
+        {
+            LL_ADC_INJ_StartConversion(ControllerTraitsT::skInstance);
+        }
+
+        static void stop_inject()
+        {
+            LL_ADC_INJ_StopConversion(ControllerTraitsT::skInstance);
+        }
+
+        /**
+         * @brief ARM THE TRIGGER (The most important part)
+         * If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
+         * If Trigger is Software: ADC converts immediately.
+         */
+        static void start_regular()
+        {
+            LL_ADC_REG_StartConversion(ControllerTraitsT::skInstance);
+        }
+
+        static void stop_regular()
+        {
+            LL_ADC_REG_StopConversion(ControllerTraitsT::skInstance);
+        }
+
+        // ----------------------------------------------------------------------------
+        // RESOLUTION INFO
+        // ----------------------------------------------------------------------------
+        [[nodiscard]] static uint8_t get_resolution_bits()
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (LL_ADC_GetResolution(ControllerTraitsT::skInstance))
+            {
+                case LL_ADC_RESOLUTION_12B:
+                    return 12;
+                case LL_ADC_RESOLUTION_10B:
+                    return 10;
+                case LL_ADC_RESOLUTION_8B:
+                    return 8;
+                case LL_ADC_RESOLUTION_6B:
+                    return 6;
+                default:
+                    return 12;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        [[nodiscard]] static uint32_t get_resolution_range()
+        {
+            const uint8_t res_bits = get_resolution_bits();
+            return (1UL << res_bits) - 1UL;
+        }
+
+        [[nodiscard]] static uint8_t get_oversampling_ratio_factor()
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (LL_ADC_GetOverSamplingRatio(ControllerTraitsT::skInstance))
+            {
+                case LL_ADC_OVS_RATIO_2:
+                    return 2;
+                case LL_ADC_OVS_RATIO_4:
+                    return 4;
+                case LL_ADC_OVS_RATIO_8:
+                    return 8;
+                case LL_ADC_OVS_RATIO_16:
+                    return 16;
+                case LL_ADC_OVS_RATIO_32:
+                    return 32;
+                case LL_ADC_OVS_RATIO_64:
+                    return 64;
+                case LL_ADC_OVS_RATIO_128:
+                    return 128;
+                case LL_ADC_OVS_RATIO_256:
+                    return 256;
+                default:
+                    return 1;  // No oversampling
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        [[nodiscard]] static uint8_t get_oversampling_shift_bits()
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (LL_ADC_GetOverSamplingShift(ControllerTraitsT::skInstance))
+            {
+                case LL_ADC_OVS_SHIFT_NONE:
+                    return 0;
+                case LL_ADC_OVS_SHIFT_RIGHT_1:
+                    return 1;
+                case LL_ADC_OVS_SHIFT_RIGHT_2:
+                    return 2;
+                case LL_ADC_OVS_SHIFT_RIGHT_3:
+                    return 3;
+                case LL_ADC_OVS_SHIFT_RIGHT_4:
+                    return 4;
+                case LL_ADC_OVS_SHIFT_RIGHT_5:
+                    return 5;
+                case LL_ADC_OVS_SHIFT_RIGHT_6:
+                    return 6;
+                case LL_ADC_OVS_SHIFT_RIGHT_7:
+                    return 7;
+                case LL_ADC_OVS_SHIFT_RIGHT_8:
+                    return 8;
+                default:
+                    return 0;  // No shift
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        [[nodiscard]] static uint32_t get_effective_resolution_range()
+        {
+            // Max value of a single ADC conversion
+            const uint32_t max_single_sample = get_resolution_range();
+
+            // Max value when 'ovs_ratio' samples are accumulated
+            const uint32_t max_accumulated = max_single_sample * get_oversampling_ratio_factor();
+
+            // Hardware shifts the accumulated sum right
+            const uint32_t effective_max = max_accumulated >> get_oversampling_shift_bits();
+
+            // The ADC Data Register is 16 bits.
+            // If the math results in > 65535, the hardware truncates the top bits!
+            return std::min(effective_max, static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()));
+        }
+    };
+
+    template <ADCControllerID tkControllerID>
+    struct ADCInjectGroupInterface
+    {
+        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+
+        static void set_queue_mode(const ADCInjectGroupQueueMode queue_mode)
+        {
+            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(queue_mode));
+        }
+
+        static void set_trigger_mode(const ADCInjectGroupTriggerMode trigger_mode)
+        {
+            LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_mode));
+        }
+
+        static void set_sequencer_discontinuity_mode(const ADCInjectGroupSequencerDiscontinuityMode discontinuity_mode)
+        {
+            LL_ADC_INJ_SetSequencerDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(discontinuity_mode));
+        }
+
+        static void set_trigger_source(const ADCInjectGroupTriggerSource trigger_source)
+        {
+            LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
+        }
+
+        static void set_trigger_edge(const ADCInjectGroupTriggerEdge trigger_edge)
+        {
+            LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
+        }
+
+        static void config_trigger(const ADCInjectGroupTriggerSource trigger_source,
+                                   const ADCInjectGroupTriggerEdge   trigger_edge)
+        {
+            set_trigger_source(trigger_source);
+            if (trigger_source != ADCInjectGroupTriggerSource::kSoftware)
+            {
+                set_trigger_edge(trigger_edge);
+            }
+        }
+
+        // Sequence Config
+        static void set_sequencer_length(const uint32_t inj_count)
+        {
+            LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
+                                          ADCInjectGroupTraits::count_to_sequence_length(inj_count));
+        }
+
+        [[nodiscard]] static uint32_t get_sequencer_length()
+        {
+            return ADCInjectGroupTraits::sequence_length_to_count(
+                LL_ADC_INJ_GetSequencerLength(ControllerTraitsT::skInstance));
+        }
+
+        template <ADCChannelID tkChannelID>
+        static void set_sequencer_ranks(const ADCInjectChannelRank rank)
+        {
+            using ChannelTraitsT = ADCChannelTraits<tkControllerID, tkChannelID>;
+            LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
+                                         ADCInjectGroupTraits::rank_to_rank_reg(rank),
+                                         ChannelTraitsT::skLLChannelID);
+        }
+
+        [[nodiscard]] static uint32_t read(const ADCInjectChannelRank rank)
+        {
+            return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
+                                                   ADCInjectGroupTraits::rank_to_rank_reg(rank));
+        }
+    };
+
+    template <ADCControllerID tkControllerID>
+    struct ADCRegularGroupInterface
+    {
+        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+
+        static void set_oversampling_mode(const ADCRegularGroupOversamplingMode oversampling_mode)
+        {
+            LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(oversampling_mode));
+        }
+
+        static void set_trigger_source(const ADCRegularGroupTriggerSource trigger_source)
+        {
+            LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
+        }
+
+        static void set_trigger_edge(const ADCRegularGroupTriggerEdge trigger_edge)
+        {
+            LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
+        }
+
+        static void config_trigger(const ADCRegularGroupTriggerSource trigger_source,
+                                   const ADCRegularGroupTriggerEdge   trigger_edge)
+        {
+            set_trigger_source(trigger_source);
+            if (trigger_source != ADCRegularGroupTriggerSource::kSoftware)
+            {
+                set_trigger_edge(trigger_edge);
+            }
+        }
+
+        static void set_overrun_behavior(const ADCRegularGroupOverrunBehavior overrun_behavior)
+        {
+            LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, static_cast<uint32_t>(overrun_behavior));
+        }
+
+        static void set_conversion_mode(const ADCRegularGroupConversionMode conversion_mode)
+        {
+            LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(conversion_mode));
+        }
+
+        // Sequence Config
+        static void set_sequencer_length(const uint32_t reg_count)
+        {
+            LL_ADC_REG_SetSequencerLength(ControllerTraitsT::skInstance,
+                                          ADCRegularGroupTraits::count_to_sequence_length(reg_count));
+        }
+
+        [[nodiscard]] static uint32_t get_sequencer_length()
+        {
+            return ADCRegularGroupTraits::sequence_length_to_count(
+                LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
+        }
+
+        template <ADCChannelID tkChannelID>
+        static void set_sequencer_ranks(const ADCRegularChannelRank rank)
+        {
+            using ChannelTraitsT = ADCChannelTraits<tkControllerID, tkChannelID>;
+            LL_ADC_REG_SetSequencerRanks(ControllerTraitsT::skInstance,
+                                         ADCRegularGroupTraits::rank_to_rank_reg(rank),
+                                         ChannelTraitsT::skLLChannelID);
+        }
+
+        static void set_dma_transfer(const ADCRegularGroupDMATransfer dma_transfer)
+        {
+            LL_ADC_REG_SetDMATransfer(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_transfer));
+        }
+    };
+
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+    struct ADCChannelInterface
+    {
+        static constexpr ADCControllerID skControllerID = tkControllerID;
+        static constexpr ADCChannelID    skChannelID    = tkChannelID;
+
+        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+        using ChannelTraitsT    = ADCChannelTraits<tkControllerID, tkChannelID>;
+
+        static void set_sampling_time(const ADCChannelSampleTime sample_time)
+        {
+            LL_ADC_SetChannelSamplingTime(
+                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelID, static_cast<uint32_t>(sample_time));
+        }
+
+        static void set_input_mode(const ADCChannelInputMode input_mode)
+        {
+            LL_ADC_SetChannelSingleDiff(
+                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelID, static_cast<uint32_t>(input_mode));
+        }
+
+        static void config_offset(const ADCChannelOffsetIdx offset_idx, const uint32_t offset_value)
+        {
+            LL_ADC_SetOffset(ControllerTraitsT::skInstance,
+                             static_cast<uint32_t>(offset_idx),
+                             ChannelTraitsT::skLLChannelID,
+                             offset_value);
+        }
     };
 
 }  // namespace valle

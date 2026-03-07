@@ -32,13 +32,14 @@ namespace valle::app
 
     constexpr HRTIMTimerADCTriggerID kVCAPWMHRTIMTimerCurrentSensorADCTriggerID = HRTIMTimerADCTriggerID::kTrig1;
 
-    // Current Sensor ADC Channel (pin PB0, A3)
-    constexpr ADCControllerID kCurrentSensorADCID        = 3;
-    constexpr ADCChannelID    kCurrentSensorADCChannelId = ADCChannelID::kChannel12;
+    // Current Sensor ADC Channel (pin PA0, A0)
+    constexpr ADCControllerID kCurrentSensorADCID        = 1;
+    constexpr ADCChannelID    kCurrentSensorADCChannelId = ADCChannelID::kChannel1;
 
-    using TestADCDMAChannelT = DMA2Channel1Device;
+    using CurrentSensorADCDMAChannelT = DMA1Channel2Device;
     struct ADCControllerCTConfig : ADCControllerCTConfigDefaults
     {
+        using DMAChannelT = CurrentSensorADCDMAChannelT;
     };
 
 }  // namespace valle::app
@@ -65,7 +66,12 @@ namespace valle::app
     using VCAControllerT       = VCAControllerHRTIMModule<VCAPWMHRTIMTimerDeviceT, VCAControllerSystemControllerT>;
     using VCAControllerConfigT = typename VCAControllerT::ConfigT;
 
-    using CurrentSensorADCChannelT    = ADCInjectChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>;
+    // Set to false to use regular channel instead (not recommended, less accurate timing)
+    static constexpr bool kCurrentSensorUseInject = true;
+    using CurrentSensorADCChannelT =
+        std::conditional_t<kCurrentSensorUseInject,
+                           ADCInjectChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>,
+                           ADCRegularChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>>;
     using CurrentSensorADCControllerT = CurrentSensorADCChannelT::ChannelT::ControllerT;
     using CurrentSensorT              = ACS724Module<CurrentSensorADCChannelT, ACS724Model::k2P5ABi>;
 
@@ -88,16 +94,16 @@ namespace valle::app
                                   DMAMux1ControllerDevice,
                                   DMA1ControllerDevice,
                                   HRTIM1ControllerDevice,
-                                  ADC345ClockDevice,
-                                  ADC3ControllerDevice>;
+                                  ADC12ClockDevice,
+                                  ADC1ControllerDevice>;
 
         [[no_unique_address]] DeviceRef<GPIOPortADevice>         gpioa;
         [[no_unique_address]] DeviceRef<GPIOPortBDevice>         gpiob;
         [[no_unique_address]] DeviceRef<DMAMux1ControllerDevice> dmamux1;
         [[no_unique_address]] DeviceRef<DMA1ControllerDevice>    dma1;
         [[no_unique_address]] DeviceRef<HRTIM1ControllerDevice>  hrtim1;
-        [[no_unique_address]] DeviceRef<ADC345ClockDevice>       adc345_clk;
-        [[no_unique_address]] DeviceRef<ADC3ControllerDevice>    adc3;
+        [[no_unique_address]] DeviceRef<ADC12ClockDevice>        adc12_clk;
+        [[no_unique_address]] DeviceRef<ADC1ControllerDevice>    adc1;
     };
 
 }  // namespace valle::app

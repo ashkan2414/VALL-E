@@ -52,7 +52,7 @@ namespace valle
 
         template <uint8_t tkWriteBytes>
         [[nodiscard]] bool register_write_blocking_impl(const std::span<const std::byte, tkWriteBytes>& write_data,
-                                                        std::chrono::milliseconds                       timeout_ms)
+                                                        TimeoutMillis                                   timeout_ms)
         {
             // Build the command sequence (Single Write)
             auto write_commands = I2CTransactionGenerator<>::begin().write(std::span(write_data)).build();
@@ -65,7 +65,7 @@ namespace valle
         template <uint8_t tkReadBytes>
         [[nodiscard]] bool register_read_blocking_impl(LDC161XReg                               reg,
                                                        const std::span<std::byte, tkReadBytes>& data_out,
-                                                       std::chrono::milliseconds                timeout_ms)
+                                                       TimeoutMillis                            timeout_ms)
         {
             static_assert(sizeof(reg) == 1, "Register address must be 1 byte");
 
