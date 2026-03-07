@@ -61,7 +61,8 @@ namespace valle
     {
         using ValueT = T;
 
-        ValueT sample_time_s = 0.0F;  // Control loop sample time in seconds (e.g., 1 ms)
+        std::chrono::duration<ValueT> sample_time =
+            std::chrono::duration<ValueT>(0.0F);  // Control loop sample time in seconds (e.g., 1 ms)
     };
 
     template <std::floating_point T>
@@ -82,7 +83,7 @@ namespace valle
     public:
         VCACurrentController() = default;
 
-        explicit VCACurrentController(const ConfigT& config) : system(skPidP, skPidI, skPidD, config.sample_time_s)
+        explicit VCACurrentController(const ConfigT& config) : system(skPidP, skPidI, skPidD, config.sample_time)
         {
         }
 
@@ -103,9 +104,9 @@ namespace valle
         using ValueT            = T;
         using CurrentFeedbackFn = delegate::Delegate<ValueT>;
 
-        ValueT sample_time_s   = 0.0F;  // Control loop sample time in seconds (e.g., 1 ms)
-        ValueT max_current_amp = 0.0F;  // Max current limit (for safety)
-        ValueT target_tolerance_amp =
+        std::chrono::duration<ValueT> sample_time     = 0.0F;  // Control loop sample time in seconds (e.g., 1 ms)
+        ValueT                        max_current_amp = 0.0F;  // Max current limit (for safety)
+        ValueT                        target_tolerance_amp =
             0.0F;  // Target current tolerance in Amps (used to determine when to disable the output for safety)
         CurrentFeedbackFn feedback_fn{};  // Function to read current feedback (e.g., from a sensor)
     };
@@ -129,7 +130,7 @@ namespace valle
         VCAClosedLoopCurrentFeedbackController() = default;
 
         explicit VCAClosedLoopCurrentFeedbackController(const ConfigT& config)
-            : m_feedback_system(OpenLoopControllerT(VCAClosedLoopControllerConfig<ValueT>{config.sample_time_s}),
+            : m_feedback_system(OpenLoopControllerT(VCAClosedLoopControllerConfig<ValueT>{config.sample_time}),
                                 std::move(config.feedback_fn),
                                 config.target_tolerance_amp)
             , m_max_current_amp(std::abs(config.max_current_amp))

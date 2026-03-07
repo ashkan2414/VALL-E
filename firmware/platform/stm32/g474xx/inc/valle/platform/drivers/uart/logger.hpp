@@ -28,10 +28,10 @@ namespace valle
             return m_uart->init(config);
         }
 
-        void output(const std::string_view message)
+        void output_sync(const std::string_view message)
         {
             m_uart->transmit(std::span(reinterpret_cast<const std::byte*>(message.data()), message.size()),
-                             std::chrono::milliseconds(100));
+                             TimeoutMillis(100));
         }
 
         void output_async(const std::string_view message)
@@ -58,7 +58,7 @@ namespace valle
     {                                                           \
         void log_output_handler(const std::string_view message) \
         {                                                       \
-            (instance).output_async(message);                   \
+            (instance).output_sync(message);                    \
         }                                                       \
     }
 

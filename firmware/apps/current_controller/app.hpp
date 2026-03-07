@@ -28,6 +28,8 @@ namespace valle::app
     public:
         void start_capture()
         {
+            CriticalSection cs;
+            m_data_queue.clear();
             m_capturing.store(true, std::memory_order_release);
         }
 
@@ -48,7 +50,7 @@ namespace valle::app
                 return false;
             }
 
-            m_data_queue.push(data);
+            (void)m_data_queue.push(data);
             return true;
         }
 
@@ -65,11 +67,14 @@ namespace valle::app
         }
     };
 
-    static constexpr size_t kTargetSettleTimeMicros = 150;
-    static constexpr size_t kCaptureSteps           = 10;
-    static constexpr size_t kCaptureDurationMicros  = kTargetSettleTimeMicros * kCaptureSteps;
+    constexpr uint32_t kVCAPWMFreqHz          = 60000U;         // 60 kHz PWM Frequency
+    constexpr uint32_t kCurrentSamplingFreqHz = kVCAPWMFreqHz;  // Sample at PWM frequency for synchronization
+
+    static constexpr auto   kTargetSettleTime = DurationMicros(150);
+    static constexpr size_t kCaptureSteps     = 10;
+    static constexpr auto   kCaptureDuration  = kTargetSettleTime * kCaptureSteps;
     static constexpr size_t kCaptureSamples =
-        (kCaptureDurationMicros * 60000U) / 1'000'000U;  // Assuming 60kHz control loop
+        std::chrono::duration_cast<DurationMicros>(kCaptureDuration).count() * kVCAPWMFreqHz / 1'000'000U;
 
     using CurrentResponseCollectorT = DataCollector<CurrentResponseData, kCaptureSamples, true>;
 
