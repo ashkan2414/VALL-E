@@ -3,7 +3,6 @@
 #include "app.hpp"
 #include "valle/core/app_bridge.hpp"
 
-
 namespace valle
 {
     void app::main()

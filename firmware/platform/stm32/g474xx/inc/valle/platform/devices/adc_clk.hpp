@@ -77,58 +77,53 @@ namespace valle
          * @param config ADC Clock configuration.
          * @note The ADC has certain clock speed limitations depending on use. Refer to Table 66. ADC characteristics
          * in the datasheet.
-         *
          */
         [[nodiscard]] bool init(const ADCClockConfig& config)
         {
-            // TODO: Validate clock speed based on system clock and prescaler
-            const bool result = std::visit(
-                Overloaded{
-                    [](const ADCAsyncClockConfig& async_config)
-                    {
-                        // Configure Asynchronous Clock (RCC Multiplexer)
-                        RCC_PeriphCLKInitTypeDef clk_init{};
+            // Configure the RCC clock multiplexer (must be done before enabling the peripheral clock)
+            const bool rcc_ok =
+                std::visit(Overloaded{[](const ADCAsyncClockConfig& async_config)
+                                      {
+                                          RCC_PeriphCLKInitTypeDef clk_init{};
+                                          clk_init.PeriphClockSelection = ClockTraitsT::skPeripClock;
 
-                        clk_init.PeriphClockSelection = ClockTraitsT::skPeripClock;
+                                          if constexpr (skClockID == ADCClockID::kADC12)
+                                          {
+                                              clk_init.Adc12ClockSelection =
+                                                  ClockTraitsT::get_async_clock_selection(async_config.source);
+                                          }
+                                          else if constexpr (skClockID == ADCClockID::kADC345)
+                                          {
+                                              clk_init.Adc345ClockSelection =
+                                                  ClockTraitsT::get_async_clock_selection(async_config.source);
+                                          }
 
-                        if constexpr (skClockID == ADCClockID::kADC12)
-                        {
-                            clk_init.Adc12ClockSelection = ClockTraitsT::get_async_clock_selection(async_config.source);
-                        }
-                        else if constexpr (skClockID == ADCClockID::kADC345)
-                        {
-                            clk_init.Adc345ClockSelection =
-                                ClockTraitsT::get_async_clock_selection(async_config.source);
-                        }
-                        else
-                        {
-                            static_assert(false, "Unhandled ADCClockID in ADCClockDevice initialization");
-                        }
+                                          return HAL_RCCEx_PeriphCLKConfig(&clk_init) == HAL_OK;
+                                      },
+                                      [](const ADCSyncClockConfig& sync_config)
+                                      {
+                                          return true;  // No RCC multiplexer config needed for synchronous clock
+                                      }},
+                           config);
 
-                        if (HAL_RCCEx_PeriphCLKConfig(&clk_init) != HAL_OK)
-                        {
-                            VALLE_LOG_FATAL("ADC clock configuration failed");
-                            return false;
-                        }
-
-                        LL_ADC_SetCommonClock(ClockTraitsT::skCommon, static_cast<uint32_t>(async_config.prescaler));
-                        return true;
-                    },
-                    [](const ADCSyncClockConfig& sync_config)
-                    {
-                        // Configure Synchronous Clock
-                        LL_ADC_SetCommonClock(ClockTraitsT::skCommon, static_cast<uint32_t>(sync_config.prescaler));
-                        return true;
-                    }},
-                config);
-
-            if (!result)
+            if (!rcc_ok)
             {
-                return result;
+                VALLE_LOG_FATAL("ADC clock configuration failed");
+                return false;
             }
 
-            // Enable Clock
-            LL_AHB2_GRP1_EnableClock(ClockTraitsT::skClockBusEnable);
+            // Enable the ADC peripheral clock (REQUIRED before writing to any ADC registers)
+            ClockTraitsT::enable_clock();
+
+            // Now we can safely configure the ADC Common Control Register (ADC_CCR)
+            std::visit(
+                Overloaded{
+                    [](const ADCAsyncClockConfig& async_config)
+                    { LL_ADC_SetCommonClock(ClockTraitsT::skCommon, static_cast<uint32_t>(async_config.prescaler)); },
+                    [](const ADCSyncClockConfig& sync_config)
+                    { LL_ADC_SetCommonClock(ClockTraitsT::skCommon, static_cast<uint32_t>(sync_config.prescaler)); }},
+                config);
+
             return true;
         }
 

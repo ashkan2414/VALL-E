@@ -51,6 +51,11 @@ namespace valle
         static constexpr uint32_t               skClockBusEnable = LL_AHB2_GRP1_PERIPH_ADC12;
         static inline ADC_Common_TypeDef* const skCommon         = ADC12_COMMON;
 
+        static void enable_clock()
+        {
+            LL_AHB2_GRP1_EnableClock(skClockBusEnable);
+        }
+
         static constexpr uint32_t get_async_clock_selection(const ADCAsyncClockSource source)
         {
             switch (source)
@@ -72,6 +77,11 @@ namespace valle
         static constexpr uint32_t               skClockBusEnable = LL_AHB2_GRP1_PERIPH_ADC345;
         static inline ADC_Common_TypeDef* const skCommon         = ADC345_COMMON;
 
+        static void enable_clock()
+        {
+            LL_AHB2_GRP1_EnableClock(skClockBusEnable);
+        }
+
         static constexpr uint32_t get_async_clock_selection(const ADCAsyncClockSource source)
         {
             switch (source)
@@ -83,6 +93,77 @@ namespace valle
                 default:
                     return RCC_ADC345CLKSOURCE_SYSCLK;
             }
+        }
+    };
+
+    // ============================================================================
+    // INTERFACE
+    // ============================================================================
+
+    struct ADCClockRootInterface
+    {
+        static constexpr uint32_t get_prescaler_factor(const ADCAsyncClockPrescaler prescaler)
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (prescaler)
+            {
+                case ADCAsyncClockPrescaler::kDiv1:
+                    return 1;
+                case ADCAsyncClockPrescaler::kDiv2:
+                    return 2;
+                case ADCAsyncClockPrescaler::kDiv4:
+                    return 4;
+                case ADCAsyncClockPrescaler::kDiv6:
+                    return 6;
+                case ADCAsyncClockPrescaler::kDiv8:
+                    return 8;
+                case ADCAsyncClockPrescaler::kDiv10:
+                    return 10;
+                case ADCAsyncClockPrescaler::kDiv12:
+                    return 12;
+                case ADCAsyncClockPrescaler::kDiv16:
+                    return 16;
+                case ADCAsyncClockPrescaler::kDiv32:
+                    return 32;
+                case ADCAsyncClockPrescaler::kDiv64:
+                    return 64;
+                case ADCAsyncClockPrescaler::kDiv128:
+                    return 128;
+                case ADCAsyncClockPrescaler::kDiv256:
+                    return 256;
+                default:
+                    return 1;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        static constexpr uint32_t get_prescaler_factor(const ADCSyncClockPrescaler prescaler)
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (prescaler)
+            {
+                case ADCSyncClockPrescaler::kDiv1:
+                    return 1;
+                case ADCSyncClockPrescaler::kDiv2:
+                    return 2;
+                case ADCSyncClockPrescaler::kDiv4:
+                    return 4;
+                default:
+                    return 1;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
+
+        static constexpr uint32_t calculate_clock_freq_hz(const uint32_t               async_clock_freq_hz,
+                                                          const ADCAsyncClockPrescaler prescaler)
+        {
+            return async_clock_freq_hz / get_prescaler_factor(prescaler);
+        }
+
+        static constexpr uint32_t calculate_clock_freq_hz(const uint32_t              sync_clock_freq_hz,
+                                                          const ADCSyncClockPrescaler prescaler)
+        {
+            return sync_clock_freq_hz / get_prescaler_factor(prescaler);
         }
     };
 

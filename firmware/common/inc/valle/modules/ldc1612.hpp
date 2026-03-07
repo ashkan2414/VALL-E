@@ -615,7 +615,7 @@ namespace valle
 
         template <uint8_t tkWriteBytes>
         [[nodiscard]] bool register_write_blocking(const std::span<const std::byte, tkWriteBytes>& write_data,
-                                                   std::chrono::milliseconds                       timeout_ms)
+                                                   TimeoutMillis                                   timeout_ms)
         {
             return static_cast<TDerived*>(this)->template register_write_blocking_impl<tkWriteBytes>(write_data,
                                                                                                      timeout_ms);
@@ -624,7 +624,7 @@ namespace valle
         template <uint8_t tkReadBytes>
         [[nodiscard]] bool register_read_blocking(LDC161XReg                               reg,
                                                   const std::span<std::byte, tkReadBytes>& data_out,
-                                                  std::chrono::milliseconds                timeout_ms)
+                                                  TimeoutMillis                            timeout_ms)
         {
             static_assert(sizeof(reg) == 1, "Register address must be 1 byte");
 
@@ -636,9 +636,7 @@ namespace valle
         // overloads
         // ---------------------------------------------------------------------------
         template <typename TValue>
-        [[nodiscard]] bool register_write_blocking(LDC161XReg                reg,
-                                                   const TValue&             value,
-                                                   std::chrono::milliseconds timeout_ms)
+        [[nodiscard]] bool register_write_blocking(LDC161XReg reg, const TValue& value, TimeoutMillis timeout_ms)
         {
             return register_write_blocking<sizeof(TValue)>(
                 reg,
@@ -649,7 +647,7 @@ namespace valle
         template <uint8_t tkWriteBytes>
         [[nodiscard]] bool register_write_blocking(LDC161XReg                                      reg,
                                                    const std::span<const std::byte, tkWriteBytes>& data,
-                                                   std::chrono::milliseconds                       timeout_ms)
+                                                   TimeoutMillis                                   timeout_ms)
         {
             // Prepare data in the stable member buffer
             std::array<std::byte, tkWriteBytes + 1> write_data;
@@ -661,9 +659,7 @@ namespace valle
         }
 
         template <typename TValue>
-        [[nodiscard]] bool register_read_blocking(LDC161XReg                reg,
-                                                  TValue&                   value_out,
-                                                  std::chrono::milliseconds timeout_ms)
+        [[nodiscard]] bool register_read_blocking(LDC161XReg reg, TValue& value_out, TimeoutMillis timeout_ms)
         {
             return register_read_blocking<sizeof(TValue)>(
                 reg,
@@ -720,7 +716,7 @@ namespace valle
         using I2CInterfaceT = TI2CInterface;
         using ConfigT       = LDC161XSensorModuleConfigX<typename I2CInterfaceT::ConfigT, tkNumChannels>;
         using SensorConfigT = LDC161XSensorConfig<tkNumChannels>;
-        static constexpr std::chrono::milliseconds skDefaultTimeout = std::chrono::milliseconds(50);
+        static constexpr TimeoutMillis skDefaultTimeout = TimeoutMillis(50);
 
         using InjectDevices = typename GetInjectDevices<I2CInterfaceT>::type;
         using DependDevices = typename GetAdditionalDependDevices<I2CInterfaceT>::type;
@@ -767,7 +763,7 @@ namespace valle
             delay_ms(10);  // Allow time for reset to complete
         }
 
-        [[nodiscard]] uint16_t read_manufacturer_id(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] uint16_t read_manufacturer_id(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             uint16_t manufacturer_id;
             m_i2c.register_read_blocking(LDC161XReg::kReadManufacturerID, manufacturer_id, timeout_ms);
@@ -776,24 +772,24 @@ namespace valle
                 .at<LDC161XManufacturerIDRegFields::kManufacturerID>();
         }
 
-        [[nodiscard]] bool verify_manufacturer_id(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] bool verify_manufacturer_id(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             return read_manufacturer_id(timeout_ms) == LDC161XTraits::skManufacturerID;
         }
 
-        [[nodiscard]] uint16_t read_device_id(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] uint16_t read_device_id(const TimeoutMillis = skDefaultTimeout)
         {
             uint16_t device_id;
             m_i2c.register_read_blocking(LDC161XReg::kReadDeviceID, device_id, timeout_ms);
             return LDC161XDeviceIDReg(std::move(device_id)).at<LDC161XDeviceIDRegFields::kDeviceID>();
         }
 
-        [[nodiscard]] bool verify_device_id(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] bool verify_device_id(const TimeoutMillis = skDefaultTimeout)
         {
             return read_device_id(timeout_ms) == LDC161XTraits::skDeviceID;
         }
 
-        [[nodiscard]] bool verify_device_connected(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] bool verify_device_connected(const TimeoutMillis
         {
             return verify_manufacturer_id(timeout_ms) && verify_device_id(timeout_ms);
         }
@@ -863,7 +859,7 @@ namespace valle
                 LDC161XTraits::skChannelDriveCurrentReg<tkChannel>, chan_config.idrive.serialize(), skDefaultTimeout);
         }
 
-        [[nodiscard]] LDC161XStatusReg read_status(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] LDC161XStatusReg read_status(const DurationMillistTimeout)
         {
             uint16_t status_raw;
             m_i2c.register_read_blocking(LDC161XReg::kStatus, status_raw, timeout_ms);
@@ -872,7 +868,7 @@ namespace valle
 
         template <uint8_t tkChannel>
             requires(tkChannel >= 0 && tkChannel < tkNumChannels)
-        [[nodiscard]] uint32_t read_data_raw(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] uint32_t read_data_raw(const DurationMillistTimeout)
         {
             static_assert(tkChannel < tkNumChannels, "Channel index out of range");
 
@@ -887,7 +883,7 @@ namespace valle
 
         template <uint8_t tkChannel>
             requires(tkChannel >= 0 && tkChannel < tkNumChannels)
-        [[nodiscard]] double read_frequency(const std::chrono::milliseconds timeout_ms = skDefaultTimeout)
+        [[nodiscard]] double read_frequency(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             const uint32_t raw_data = read_data_raw<tkChannel>(timeout_ms);
             return m_ch_freq_converters[tkChannel].convert(raw_data);

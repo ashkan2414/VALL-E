@@ -62,21 +62,13 @@ namespace valle
 
         static void init()
         {
-            static bool initialized = false;
-            if (initialized)
-            {
-                return;
-            }
-
             CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
             DWT->CYCCNT = 0;
             DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
-            initialized = true;
         }
 
         static time_point now() noexcept
         {
-            // Ensure DWT is enabled
             return time_point(duration(DWT->CYCCNT));
         }
     };
@@ -147,15 +139,35 @@ namespace valle
     using Timer          = GenericTimer<SystemClock>;
     using PrecisionTimer = GenericTimer<CycleClock>;
 
+    using SystemDuration = typename SystemClock::duration;
+    using CycleDuration  = typename CycleClock::duration;
+
+    using DurationSeconds = std::chrono::duration<uint32_t>;
+    using DurationMillis  = std::chrono::duration<uint32_t, std::milli>;
+    using DurationMicros  = std::chrono::duration<uint64_t, std::micro>;
+
+    using DurationSecondsF = std::chrono::duration<float>;
+    using DurationMillisF  = std::chrono::duration<float, std::milli>;
+    using DurationMicrosF  = std::chrono::duration<float, std::micro>;
+
+    using TimeoutSeconds = DurationSeconds;
+    using TimeoutMillis  = DurationMillis;
+    using TimeoutMicros  = DurationMicros;
+
     template <typename TDuration>
-    using ClockForDuration = std::conditional_t<TDuration::period::den >= 1000, SystemClock, CycleClock>;
+    using ClockForDuration = std::conditional_t<(TDuration{1} >= DurationMillis{1}), SystemClock, CycleClock>;
 
     // =========================================================================
     // DELAY UTILITIES
     // =========================================================================
+    template <typename T>
+    concept CDelayDurationRep = std::is_integral_v<T> && std::is_unsigned_v<T> && !std::is_floating_point_v<T>;
 
-    template <typename TDuration, typename TClock = ClockForDuration<TDuration>, bool tkBusyWait>
-    inline void delay(TDuration wait_duration) noexcept
+    template <typename TDuration>
+    concept CDelayDuration = CDelayDurationRep<typename TDuration::rep>;
+
+    template <CDelayDuration TDuration, typename TClock = ClockForDuration<TDuration>, bool tkBusyWait>
+    inline void delay_base(TDuration wait_duration) noexcept
     {
         const auto end_time = TClock::now() + std::chrono::duration_cast<typename TClock::duration>(wait_duration);
         while (TClock::now() < end_time)
@@ -171,10 +183,23 @@ namespace valle
         }
     }
 
+    template <CDelayDuration TDuration, typename TClock = ClockForDuration<TDuration>>
+    inline void delay(TDuration wait_duration) noexcept
+    {
+        delay_base<TDuration, TClock, false>(wait_duration);
+    }
+
+    template <CDelayDuration TDuration, typename TClock = ClockForDuration<TDuration>>
+    inline void delay_busy(TDuration wait_duration) noexcept
+    {
+        delay_base<TDuration, TClock, true>(wait_duration);
+    }
+
     template <bool tkBusyWait>
     inline void delay_ms_base(const uint32_t ms_delay) noexcept
     {
-        delay<std::chrono::milliseconds, SystemClock, tkBusyWait>(std::chrono::milliseconds(ms_delay));
+        using DurationT = std::chrono::duration<uint32_t, std::milli>;
+        delay_base<DurationT, SystemClock, tkBusyWait>(DurationT(ms_delay));
     }
 
     inline void delay_ms(const uint32_t ms_delay) noexcept
@@ -187,23 +212,20 @@ namespace valle
         delay_ms_base<true>(ms_delay);
     }
 
-    template <typename T, bool tkBusyWait>
-        requires(std::is_convertible_v<T, uint32_t> || std::is_floating_point_v<T>)
+    template <CDelayDurationRep T, bool tkBusyWait>
     inline void delay_us_base(const T us_delay) noexcept
     {
         using DurationT = std::chrono::duration<T, std::micro>;
-        delay<DurationT, CycleClock, tkBusyWait>(DurationT(us_delay));
+        delay_base<DurationT, CycleClock, tkBusyWait>(DurationT(us_delay));
     }
 
-    template <typename T>
-        requires(std::is_convertible_v<T, uint32_t> || std::is_floating_point_v<T>)
+    template <CDelayDurationRep T>
     inline void delay_us(const T us_delay) noexcept
     {
         delay_us_base<T, false>(us_delay);
     }
 
-    template <typename T>
-        requires(std::is_convertible_v<T, uint32_t> || std::is_floating_point_v<T>)
+    template <CDelayDurationRep T>
     inline void delay_us_busy(const T us_delay) noexcept
     {
         delay_us_base<T, true>(us_delay);
@@ -212,7 +234,7 @@ namespace valle
     template <bool tkBusyWait>
     inline void delay_cycles_base(const uint32_t cycles) noexcept
     {
-        delay<cycle_ticks, CycleClock, tkBusyWait>(cycle_ticks(cycles));
+        delay_base<cycle_ticks, CycleClock, tkBusyWait>(cycle_ticks(cycles));
     }
 
     inline void delay_cycles(const uint32_t cycles) noexcept
@@ -266,8 +288,7 @@ namespace valle
      */
     inline bool wait_for_with_timeout_ms(delegate::Delegate<bool>&& condition, const uint32_t timeout_ms)
     {
-        return wait_for_with_timeout<std::chrono::milliseconds, SystemClock>(std::move(condition),
-                                                                             std::chrono::milliseconds(timeout_ms));
+        return wait_for_with_timeout<DurationMillis, SystemClock>(std::move(condition), DurationMillis(timeout_ms));
     }
 
     /**
@@ -281,8 +302,7 @@ namespace valle
      */
     inline bool wait_for_with_timeout_us(delegate::Delegate<bool>&& condition, const uint32_t timeout_us)
     {
-        return wait_for_with_timeout<std::chrono::microseconds, CycleClock>(std::move(condition),
-                                                                            std::chrono::microseconds(timeout_us));
+        return wait_for_with_timeout<DurationMicros, CycleClock>(std::move(condition), DurationMicros(timeout_us));
     }
 
     /**

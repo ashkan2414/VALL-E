@@ -25,16 +25,16 @@ namespace valle
         requires(kValidADCControllerID<tkControllerID>)
     class ADCControllerDevice;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
     class ADCChannelDevice;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCInjectRank<tkRank>)
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCInjectRank<tkRank>)
     class ADCInjectChannelDevice;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId, ADCRegularChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCRegularRank<tkRank>)
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCRegularRank<tkRank>)
     class ADCRegularChannelDevice;
 
     // ============================================================================
@@ -199,7 +199,7 @@ namespace valle
         ADCOversamplingRatio ratio = ADCOversamplingRatio::k2x;
 
         // Right shift bits (0 to 8)
-        ADCOversamplingShiftBits shift = ADCOversamplingShiftBits::kNone;
+        ADCOversamplingShift shift = ADCOversamplingShift::kNone;
 
         // Oversampling behavior when both groups are selected
         ADCOversamplingScope scope = ADCOversamplingScope::kDisable;
@@ -305,8 +305,16 @@ namespace valle
         static constexpr ADCControllerID skControllerID = tkControllerID;
         using ControllerTraitsT                         = ADCControllerTraits<skControllerID>;
         using ControllerDeviceTraitsT                   = ADCControllerDeviceTraits<skControllerID>;
-        using ClockDeviceT                              = typename ControllerDeviceTraitsT::ADCClockDeviceT;
-        using InterruptControllerT                      = ADCInterruptController<skControllerID>;
+        using InterfaceT                                = ADCControllerInterface<skControllerID>;
+        using InjectGroupInterfaceT                     = ADCInjectGroupInterface<skControllerID>;
+        using RegularGroupInterfaceT                    = ADCRegularGroupInterface<skControllerID>;
+
+        template <ADCChannelID tkChannelID>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+        using ChannelTraitsT = ADCChannelTraits<tkControllerID, tkChannelID>;
+
+        using ClockDeviceT         = typename ControllerDeviceTraitsT::ADCClockDeviceT;
+        using InterruptControllerT = ADCInterruptController<skControllerID>;
 
         using CTConfigTraitT             = ADCControllerCTConfigTraits<skControllerID>;
         static constexpr auto skCTConfig = CTConfigTraitT::skConfig;
@@ -318,7 +326,18 @@ namespace valle
         using InjectDevices = std::conditional_t<skHasDMA, TypeList<DMAChannelT>, TypeList<>>;
 
     private:
-        static constexpr uint8_t skChannelRankFreeFlag = 0xFF;
+        template <std::size_t... I>
+        [[nodiscard]] static constexpr auto make_channel_traits(std::index_sequence<I...>)
+        {
+            constexpr auto channels = magic_enum::enum_values<ADCChannelID>();
+
+            return std::tuple<ChannelTraitsT<channels[I]>...>{};
+        }
+
+        static constexpr auto skChannelTraits =
+            make_channel_traits(std::make_index_sequence<magic_enum::enum_count<ADCChannelID>()>{});
+
+        [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelT> m_dma;
 
         // --- Storage ---
         // volatile is CRITICAL for DMA buffer
@@ -330,32 +349,27 @@ namespace valle
         alignas(32) volatile ADCValue m_dma_buffer[kADCMaxRegChannels];
 
         // Mappings
-        uint8_t m_reg_cidx_to_rank_map[kADCMaxChannelId];  // Ch -> Rank (1-16) (rank-1 for dma idx)
-        uint8_t m_inj_cidx_to_rank_map[kADCMaxChannelId];  // Ch -> Rank (1-4)
+        // Ch -> Rank (1-4)
+        std::array<std::optional<ADCInjectChannelRank>, kNumADCChannels> m_inj_cidx_to_rank_map{};
 
-        [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelT>      m_dma;
-        std::conditional_t<skHasDMA, ADCRegularGroupDMAConfig, std::monostate> m_dma_config;
+        // Ch -> Rank (1-16) (rank-1 for dma idx)
+        std::array<std::optional<ADCRegularChannelRank>, kNumADCChannels> m_reg_cidx_to_rank_map{};
 
-        // Store data alignment for DMA configuration
-        ADCDataAlignment     m_data_alignment = ADCDataAlignment::kRight;
-        ADCInjectGroupConfig m_inj_config{};
+        // Cached values for optimization
+        uint32_t m_effective_resolution_range = 4095;
+        float    m_ref_voltage                = 3.3F;
 
     public:
         ADCControllerDevice(DeviceRef<DMAChannelT>&& dma_channel)
             requires(skHasDMA)
-
             : m_dma(std::move(dma_channel))
         {
-            std::fill(std::begin(m_reg_cidx_to_rank_map), std::end(m_reg_cidx_to_rank_map), skChannelRankFreeFlag);
-            std::fill(std::begin(m_inj_cidx_to_rank_map), std::end(m_inj_cidx_to_rank_map), skChannelRankFreeFlag);
             std::fill(std::begin(m_dma_buffer), std::end(m_dma_buffer), 0);
         }
 
         ADCControllerDevice()
             requires(!skHasDMA)
         {
-            std::fill(std::begin(m_reg_cidx_to_rank_map), std::end(m_reg_cidx_to_rank_map), skChannelRankFreeFlag);
-            std::fill(std::begin(m_inj_cidx_to_rank_map), std::end(m_inj_cidx_to_rank_map), skChannelRankFreeFlag);
             std::fill(std::begin(m_dma_buffer), std::end(m_dma_buffer), 0);
         }
 
@@ -366,78 +380,30 @@ namespace valle
          *
          * @param config ADC Peripheral Configuration.
          */
-        [[nodiscard]] bool init(const ADCControllerConfig& config)
+        [[nodiscard]] bool init()
         {
-            if constexpr (skHasDMA)
+            if (!InterfaceT::disable())
             {
-                m_dma_config = config.reg.dma;
-            }
-
-            // Store data alignment for DMA width calculation
-            m_data_alignment = config.data_alignment;
-            m_inj_config     = config.inj;
-
-            if (LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 0)
-            {
-                LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
-                LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
-
-                // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
-                // wait for 100 to be safe.
-                delay_us_busy(100u);
-            }
-
-            // Calibration with precise timeout
-            // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
-            // At 40 MHz ADC clock: ~3 µs typical, allow up to 1 ms for safety
-            //
-            // NOTE: If ADC clock frequency changes at runtime (e.g., entering
-            // low-power mode), calibration must be re-run.
-            LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
-            const bool calibration_success = wait_for_with_timeout_us(
-                []() { return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) == 0; }, 1000u);
-
-            // If timeout occurred, calibration failed
-            if (!calibration_success)
-            {
-                VALLE_LOG_FATAL("ADC calibration timeout");
+                VALLE_LOG_FATAL("Failed to disable ADC");
                 return false;
             }
 
-            // Global Configuration
-            LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.resolution));
-            LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.data_alignment));
-            LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.low_power));
-
-            // Inject Group Configuration (must be done before enable)
-            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance,
-                                    LL_ADC_INJ_QUEUE_DISABLE);  // Queue mode not supported
-            LL_ADC_INJ_SetTrigAuto(
-                ControllerTraitsT::skInstance,
-                config.inj.auto_trigger_from_regular ? LL_ADC_INJ_TRIG_FROM_GRP_REGULAR : LL_ADC_INJ_TRIG_INDEPENDENT);
-
-            // Regular Group Configuration
-            LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance,
-                                        static_cast<uint32_t>(config.reg.trigger_source));
-            if (config.reg.trigger_source != ADCRegularGroupTriggerSource::kSoftware)
+            if (!InterfaceT::disable_deep_power_mode())
             {
-                LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance,
-                                          static_cast<uint32_t>(config.reg.trigger_edge));
+                VALLE_LOG_FATAL("Failed to disable ADC deep power mode");
+                return false;
             }
-            LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, static_cast<uint32_t>(config.reg.overrun));
-            LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance,
-                                         static_cast<uint32_t>(config.reg.conversion_mode));
 
-            // Oversampling Configuration
-            if (config.oversampling.has_value())
+            if (!InterfaceT::enable_voltage_regulator())
             {
-                ADCOversamplingConfig ovs_cfg = config.oversampling.value();
-                LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, static_cast<uint32_t>(ovs_cfg.scope));
-                LL_ADC_ConfigOverSamplingRatioShift(ControllerTraitsT::skInstance,
-                                                    static_cast<uint32_t>(ovs_cfg.ratio),
-                                                    static_cast<uint32_t>(ovs_cfg.shift));
-                LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance,
-                                              static_cast<uint32_t>(config.reg.oversampling_mode));
+                VALLE_LOG_FATAL("Failed to enable ADC internal regulator");
+                return false;
+            }
+
+            if (!InterfaceT::calibrate())
+            {
+                VALLE_LOG_FATAL("ADC calibration failed");
+                return false;
             }
 
             return true;
@@ -447,21 +413,21 @@ namespace valle
         /**
          * @brief Initialize ADC Channel with given configuration and group/rank.
          *
-         * @tparam tkChannelId Channel ID to initialize.
+         * @tparam tkChannelID Channel ID to initialize.
          * @tparam tkGroup Channel Group (Regular/Inject).
          * @tparam tkRank Rank in Sequence.
          */
-        template <ADCChannelID tkChannelId, ADCChannelGroup tkGroup, uint8_t tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+        template <ADCChannelID tkChannelID, ADCChannelGroup tkGroup, uint8_t tkRank>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID>)
         auto init_channel(const ADCChannelConfig& config)
         {
             if constexpr (tkGroup == ADCChannelGroup::kRegular)
             {
-                init_channel_as_regular<tkChannelId, tkRank>(config);
+                init_channel_as_regular<tkChannelID, tkRank>(config);
             }
             else if constexpr (tkGroup == ADCChannelGroup::kInject)
             {
-                init_channel_as_inject<tkChannelId, tkRank>(config);
+                init_channel_as_inject<tkChannelID, tkRank>(config);
             }
             else
             {
@@ -472,156 +438,96 @@ namespace valle
         /**
          * @brief Initialize ADC channel as an Inject Channel.
          *
-         * @tparam tkChannelId Channel ID to initialize.
+         * @tparam tkChannelID Channel ID to initialize.
          * @tparam tkRank Rank in Inject Sequence (1-4).
          */
-        template <ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCInjectRank<tkRank>)
+        template <ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCInjectRank<tkRank>)
         void init_channel_as_inject(const ADCChannelConfig& cfg)
         {
-            init_channel_core<tkChannelId>(cfg);
-            return register_inject_sequence<tkChannelId, tkRank>();
+            init_channel_core<tkChannelID>(cfg);
+            return register_inject_sequence<tkChannelID, tkRank>();
         }
 
         /**
          * @brief Initialize ADC channel as a Regular Channel.
          *
-         * @tparam tkChannelId Channel ID to initialize.
+         * @tparam tkChannelID Channel ID to initialize.
          * @tparam tkRank Rank in Regular Sequence (1-16).
          */
-        template <ADCChannelID tkChannelId, ADCRegularChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCRegularRank<tkRank>)
+        template <ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCRegularRank<tkRank>)
         void init_channel_as_regular(const ADCChannelConfig& cfg)
         {
-            init_channel_core<tkChannelId>(cfg);
-            return register_regular_sequence<tkChannelId, tkRank>();
+            init_channel_core<tkChannelID>(cfg);
+            return register_regular_sequence<tkChannelID, tkRank>();
         }
 
         /**
          * @brief Post init called after init and channel registration. Sets up sequences and starts ADC.
          *
          */
-        [[nodiscard]] bool post_init()
+        [[nodiscard]] bool post_init(const ADCControllerConfig& config)
         {
-            const uint8_t reg_count =
-                static_cast<uint8_t>(std::count_if(std::begin(m_reg_cidx_to_rank_map),
-                                                   std::end(m_reg_cidx_to_rank_map),
-                                                   [](const uint8_t v) { return v != skChannelRankFreeFlag; }));
+            const uint8_t inj_count = static_cast<uint8_t>(std::count_if(std::begin(m_inj_cidx_to_rank_map),
+                                                                         std::end(m_inj_cidx_to_rank_map),
+                                                                         [](const auto& v) { return v.has_value(); }));
 
-            // Regular Sequence Config
-            if (reg_count > 0)
+            const uint8_t reg_count = static_cast<uint8_t>(std::count_if(std::begin(m_reg_cidx_to_rank_map),
+                                                                         std::end(m_reg_cidx_to_rank_map),
+                                                                         [](const auto& v) { return v.has_value(); }));
+
+            // Global Configuration
+            InterfaceT::set_resolution(config.resolution);
+            InterfaceT::set_data_alignment(config.data_alignment);
+            InterfaceT::set_low_power_mode(config.low_power);
+            InterfaceT::set_gain_compensation(0);  // No gain compensation
+            InterfaceT::set_common_sample_time(ADCCommonSamplingTime::kDefault);
+
+            // Oversampling Configuration
+            if (config.oversampling.has_value())
             {
-                LL_ADC_REG_SetSequencerLength(ControllerTraitsT::skInstance,
-                                              ADCRegularGroupTraits::count_to_sequence_length(reg_count));
-
-                for (uint32_t i = 0; i < kADCMaxChannelId; ++i)
-                {
-                    if (m_reg_cidx_to_rank_map[i] != skChannelRankFreeFlag)
-                    {
-                        const uint32_t ch = __LL_ADC_DECIMAL_NB_TO_CHANNEL(i);
-                        LL_ADC_REG_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                                     ADCRegularGroupTraits::rank_to_rank_reg(m_reg_cidx_to_rank_map[i]),
-                                                     ch);
-                    }
-                }
-
-                if constexpr (skHasDMA)
-                {
-                    ADCRegularGroupDMATransfer dma_transfer = m_dma_config.circular_mode
-                                                                  ? ADCRegularGroupDMATransfer::kUnlimited
-                                                                  : ADCRegularGroupDMATransfer::kLimited;
-                    LL_ADC_REG_SetDMATransfer(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_transfer));
-
-                    static_assert(sizeof(ADCValue) == 2 || sizeof(ADCValue) == 4, "ADCValue must be 2 or 4 bytes");
-
-                    // Match DMA width to ADC alignment
-                    // RM0440 Section 21.4.20: Left-aligned ADC data requires 32-bit DMA
-                    DMADataWidth dma_width;
-                    if (m_data_alignment == ADCDataAlignment::kLeft)
-                    {
-                        // Left-aligned: Always use 32-bit (word) transfer
-                        dma_width = DMADataWidth::kWord;
-                    }
-                    else
-                    {
-                        // Right-aligned: Use ADCValue size (16-bit or 32-bit)
-                        dma_width = sizeof(ADCValue) == 2 ? DMADataWidth::kHalfWord : DMADataWidth::kWord;
-                    }
-
-                    // Configure DMA Channel
-                    if (!m_dma->init(DMAChannelConfig{
-                            .direction         = DMADirection::kPeriphToMem,
-                            .priority          = m_dma_config.priority,
-                            .mode              = m_dma_config.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
-                            .periph_data_width = dma_width,
-                            .memory_data_width = dma_width,
-                            .inc_periph        = false,
-                            .inc_memory        = true,
-                            .request_id        = ControllerTraitsT::skDMAMuxRequest,
-
-                        }))
-                    {
-                        VALLE_LOG_FATAL("ADC DMA Channel initialization failed");
-                        return false;
-                    }
-                }
-                else
-                {
-                    LL_ADC_REG_SetDMATransfer(ControllerTraitsT::skInstance,
-                                              static_cast<uint32_t>(ADCRegularGroupDMATransfer::kNone));
-                }
+                ADCOversamplingConfig ovs_cfg = config.oversampling.value();
+                InterfaceT::set_oversampling_scope(ovs_cfg.scope);
+                InterfaceT::set_oversampling_ratio_shift(ovs_cfg.ratio, ovs_cfg.shift);
+                RegularGroupInterfaceT::set_oversampling_mode(config.reg.oversampling_mode);
             }
 
-            // Wait for ADC ready with precise timeout
-            // RM0440: Typically a few ADC clock cycles, allow up to 100 µs for safety
-            LL_ADC_Enable(ControllerTraitsT::skInstance);
-            const bool adc_ready = wait_for_with_timeout_us(
-                []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100u);
-
-            if (!adc_ready)
+            if (!post_init_inj_pre_enable(inj_count, config.inj))
             {
-                VALLE_LOG_FATAL("ADC enable timeout");
                 return false;
             }
 
-            // Inject Group Configuration (after enable)
-            LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance,
-                                        static_cast<uint32_t>(m_inj_config.trigger_source));
-            if (m_inj_config.trigger_source != ADCInjectGroupTriggerSource::kSoftware)
+            if (!post_init_reg_pre_enable(reg_count, config.reg, config.data_alignment))
             {
-                LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance,
-                                          static_cast<uint32_t>(m_inj_config.trigger_edge));
+                return false;
             }
 
-            const uint8_t inj_count =
-                static_cast<uint8_t>(std::count_if(std::begin(m_inj_cidx_to_rank_map),
-                                                   std::end(m_inj_cidx_to_rank_map),
-                                                   [](const uint8_t v) { return v != skChannelRankFreeFlag; }));
-
-            // Inject Sequence Config
-            if (inj_count > 0)
+            // Enable ADC
+            if (!InterfaceT::enable())
             {
-                LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
-                                              ADCInjectGroupTraits::count_to_sequence_length(inj_count));
-
-                for (uint32_t i = 0; i < kADCMaxChannelId; ++i)
-                {
-                    if (m_inj_cidx_to_rank_map[i] != skChannelRankFreeFlag)
-                    {
-                        const uint32_t ch = __LL_ADC_DECIMAL_NB_TO_CHANNEL(i);
-                        LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                                     ADCInjectGroupTraits::rank_to_rank_reg(m_inj_cidx_to_rank_map[i]),
-                                                     ch);
-                    }
-                }
+                VALLE_LOG_FATAL("ADC enable failed");
+                return false;
             }
+
+            if (!post_init_inj_post_enable(inj_count, config.inj))
+            {
+                return false;
+            }
+
+            if (!post_init_reg_post_enable(reg_count, config.reg))
+            {
+                return false;
+            }
+
+            m_effective_resolution_range = InterfaceT::get_effective_resolution_range();
 
             return true;
         }
 
         [[nodiscard]] bool initialized() const
         {
-            return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0;
+            return InterfaceT::enabled();
         }
 
         // --- Control API (Called by Application) ---
@@ -665,12 +571,9 @@ namespace valle
          * @brief Rearm Inject Conversions.
          *
          */
-        static void trigger_inject()
+        void trigger_inject()
         {
-            // ARM THE TRIGGER (The most important part)
-            // If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
-            // If Trigger is Software: ADC converts immediately.
-            LL_ADC_INJ_StartConversion(ControllerTraitsT::skInstance);
+            InterfaceT::start_inject();
         }
 
         /**
@@ -679,7 +582,7 @@ namespace valle
          */
         void stop_inject()
         {
-            LL_ADC_INJ_StopConversion(ControllerTraitsT::skInstance);
+            InterfaceT::stop_inject();
         }
 
         /**
@@ -701,16 +604,10 @@ namespace valle
 
             if constexpr (skHasDMA)
             {
-                if (m_dma_config.interrupts.has_value())
-                {
-                    m_dma->enable_interrupts(m_dma_config.interrupts.value());
-                }
-
                 // Start DMA Transfer
                 const uint32_t adc_dr_addr = reinterpret_cast<uint32_t>(&(ControllerTraitsT::skInstance->DR));
                 const uint32_t buffer_addr = reinterpret_cast<uint32_t>(m_dma_buffer);
-                const uint32_t reg_count   = ADCRegularGroupTraits::sequence_length_to_count(
-                    LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
+                const uint32_t reg_count   = RegularGroupInterfaceT::get_sequencer_length();
                 m_dma->start_periph_to_mem(adc_dr_addr, buffer_addr, reg_count);
             }
 
@@ -724,12 +621,9 @@ namespace valle
          * @brief Rearm Regular Conversions.
          *
          */
-        static void trigger_regular()
+        void trigger_regular()
         {
-            // ARM THE TRIGGER (The most important part)
-            // If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
-            // If Trigger is Software: ADC converts immediately.
-            LL_ADC_REG_StartConversion(ControllerTraitsT::skInstance);
+            InterfaceT::start_regular();
         }
 
         /**
@@ -738,45 +632,10 @@ namespace valle
          */
         void stop_regular()
         {
-            LL_ADC_REG_StopConversion(ControllerTraitsT::skInstance);
+            InterfaceT::stop_regular();
             if constexpr (skHasDMA)
             {
                 m_dma->disable_interrupts();
-            }
-        }
-
-        // --- Resolution Info ---
-        [[nodiscard]] static inline float get_resolution_bits()
-        {
-            switch (LL_ADC_GetResolution(ControllerTraitsT::skInstance))
-            {
-                case LL_ADC_RESOLUTION_12B:
-                    return 12.0F;
-                case LL_ADC_RESOLUTION_10B:
-                    return 10.0F;
-                case LL_ADC_RESOLUTION_8B:
-                    return 8.0F;
-                case LL_ADC_RESOLUTION_6B:
-                    return 6.0F;
-                default:
-                    return 12.0F;
-            }
-        }
-
-        [[nodiscard]] static inline float get_resolution_range()
-        {
-            switch (LL_ADC_GetResolution(ControllerTraitsT::skInstance))
-            {
-                case LL_ADC_RESOLUTION_12B:
-                    return 4095.0F;
-                case LL_ADC_RESOLUTION_10B:
-                    return 1023.0F;
-                case LL_ADC_RESOLUTION_8B:
-                    return 255.0F;
-                case LL_ADC_RESOLUTION_6B:
-                    return 63.0F;
-                default:
-                    return 4095.0F;  // assume 12-bit
             }
         }
 
@@ -791,20 +650,21 @@ namespace valle
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] constexpr inline ADCValue read_inject_data() const
         {
-            return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
-                                                   ADCInjectGroupTraits::rank_to_rank_reg(tkRank));
+            return read_inject_data(tkRank);
         }
 
         /**
          * @brief Read data from Inject Channel (Slow).
          *
-         * @tparam tkChannelId Channel ID to read.
+         * @tparam tkChannelID Channel ID to read.
          * @return ADCValue Raw ADC value.
          */
-        template <ADCChannelID tkChannelId>
+        template <ADCChannelID tkChannelID>
         [[nodiscard]] constexpr inline ADCValue read_inject_data_slow()
         {
-            return read_inject_data(get_adc_channel_rank_inject<tkChannelId>());
+            const auto rank = get_adc_channel_rank_inject<tkChannelID>();
+            expect(rank.has_value(), "Channel not registered in inject sequence");
+            return read_inject_data(rank.value());
         }
 
         /**
@@ -823,94 +683,260 @@ namespace valle
         /**
          * @brief Read data from Regular Channel (Slow).
          *
-         * @tparam tkChannelId Channel ID to read.
+         * @tparam tkChannelID Channel ID to read.
          * @return ADCValue Raw ADC value.
          */
-        template <ADCChannelID tkChannelId>
+        template <ADCChannelID tkChannelID>
         [[nodiscard]] constexpr inline ADCValue read_regular_data_slow()
         {
-            return read_regular_data(get_adc_channel_rank_regular<tkChannelId>());
+            const auto rank = get_adc_channel_rank_regular<tkChannelID>();
+            expect(rank.has_value(), "Channel not registered in regular sequence");
+            return read_regular_data(rank.value());
+        }
+
+        /**
+         * @brief Convert raw ADC value to normalized float (0.0 to 1.0).
+         *
+         * @param raw Raw ADC value.
+         * @return float Normalized value.
+         */
+        [[nodiscard]] constexpr float raw_to_normalized(const ADCValue raw) const
+        {
+            return static_cast<float>(raw) / m_effective_resolution_range;
+        }
+
+        /**
+         * @brief Convert raw ADC value to voltage (Volts).
+         *
+         * @param raw Raw ADC value.
+         * @return float Voltage in Volts.
+         */
+        [[nodiscard]] constexpr float raw_to_voltage(const ADCValue raw) const
+        {
+            return raw_to_normalized(raw) * m_ref_voltage;
         }
 
     private:
         /**
-         * @brief Get the ADC Channel Index from Channel ID.
+         * @brief Helper function to iterate over all channel traits with an index sequence.
          *
-         * @tparam tkChannelId Channel ID.
-         * @return uint32_t Channel Index.
+         * @tparam TFunc Type of the function to apply to each channel trait.
+         * @tparam I Index sequence for tuple unpacking.
+         * @param func The function to apply to each channel trait.
          */
-        template <ADCChannelID tkChannelId>
-        [[nodiscard]] static inline uint32_t get_adc_channel_idx()
+        template <typename TFunc, std::size_t... I>
+        static constexpr void for_each_channel_impl(TFunc&& func, std::index_sequence<I...>)
         {
-            return __LL_ADC_CHANNEL_TO_DECIMAL_NB(static_cast<uint32_t>(tkChannelId));
+            (func(std::get<I>(skChannelTraits)), ...);  // fold expression over tuple
+        }
+
+        /**
+         * @brief Iterate over all channel traits and apply the given function.
+         *
+         * @tparam TFunc Type of the function to apply to each channel trait. Should be callable with a single argument
+         * of type ChannelTraitsT<tkChannelID>.
+         * @param func The function to apply to each channel trait.
+         */
+        template <typename TFunc>
+        static constexpr void for_each_channel(TFunc&& func)
+        {
+            constexpr auto N = std::tuple_size_v<std::remove_reference_t<decltype(skChannelTraits)>>;
+            for_each_channel_impl(std::forward<TFunc>(func), std::make_index_sequence<N>{});
+        }
+
+        [[nodiscard]] bool post_init_inj_pre_enable(const uint32_t inj_count, const ADCInjectGroupConfig& config)
+        {
+            if (inj_count == 0)
+            {
+                return true;  // No inject channels configured, skip inject group setup
+            }
+
+            // Core Config
+            InjectGroupInterfaceT::set_queue_mode(ADCInjectGroupQueueMode::kDisable);  // Queue mode not supported
+            InjectGroupInterfaceT::set_trigger_mode(config.auto_trigger_from_regular
+                                                        ? ADCInjectGroupTriggerMode::kFromRegularGroup
+                                                        : ADCInjectGroupTriggerMode::kIndependent);
+            InjectGroupInterfaceT::set_sequencer_discontinuity_mode(
+                ADCInjectGroupSequencerDiscontinuityMode::kDisable);  // Discontinuity not supported
+            return true;
+        }
+
+        [[nodiscard]] bool post_init_reg_pre_enable(const uint32_t               reg_count,
+                                                    const ADCRegularGroupConfig& config,
+                                                    ADCDataAlignment             data_alignment)
+        {
+            if (reg_count == 0)
+            {
+                return true;  // No regular channels configured, skip regular group setup
+            }
+
+            // Core Config
+            RegularGroupInterfaceT::config_trigger(config.trigger_source, config.trigger_edge);
+            RegularGroupInterfaceT::set_overrun_behavior(config.overrun);
+            RegularGroupInterfaceT::set_conversion_mode(config.conversion_mode);
+
+            // Sequence Config
+            RegularGroupInterfaceT::set_sequencer_length(reg_count);
+
+            for_each_channel(
+                [this](const auto& channel_trait)
+                {
+                    using ChannelTraitT = std::decay_t<decltype(channel_trait)>;
+                    const auto& rank    = m_reg_cidx_to_rank_map[ChannelTraitT::skChannelIdx];
+
+                    if (rank.has_value())
+                    {
+                        RegularGroupInterfaceT::template set_sequencer_ranks<ChannelTraitT::skChannelID>(rank.value());
+                    }
+                });
+
+            // DMA Configuration
+            if constexpr (skHasDMA)
+            {
+                ADCRegularGroupDMATransfer dma_transfer = config.dma.circular_mode
+                                                              ? ADCRegularGroupDMATransfer::kUnlimited
+                                                              : ADCRegularGroupDMATransfer::kLimited;
+                RegularGroupInterfaceT::set_dma_transfer(dma_transfer);
+
+                static_assert(sizeof(ADCValue) == 2 || sizeof(ADCValue) == 4, "ADCValue must be 2 or 4 bytes");
+
+                // Match DMA width to ADC alignment
+                // RM0440 Section 21.4.20: Left-aligned ADC data requires 32-bit DMA
+                DMADataWidth dma_width;
+                if (data_alignment == ADCDataAlignment::kLeft)
+                {
+                    // Left-aligned: Always use 32-bit (word) transfer
+                    dma_width = DMADataWidth::kWord;
+                }
+                else
+                {
+                    // Right-aligned: Use ADCValue size (16-bit or 32-bit)
+                    dma_width = sizeof(ADCValue) == 2 ? DMADataWidth::kHalfWord : DMADataWidth::kWord;
+                }
+
+                // Configure DMA Channel
+                if (!m_dma->init(DMAChannelConfig{
+                        .direction         = DMADirection::kPeriphToMem,
+                        .priority          = config.dma.priority,
+                        .mode              = config.dma.circular_mode ? DMAMode::kCircular : DMAMode::kNormal,
+                        .periph_data_width = dma_width,
+                        .memory_data_width = dma_width,
+                        .inc_periph        = false,
+                        .inc_memory        = true,
+                        .request_id        = ControllerTraitsT::skDMAMuxRequest,
+
+                    }))
+                {
+                    VALLE_LOG_FATAL("ADC DMA Channel initialization failed");
+                    return false;
+                }
+
+                if (config.dma.interrupts.has_value())
+                {
+                    m_dma->enable_interrupts(config.dma.interrupts.value());
+                }
+            }
+            else
+            {
+                RegularGroupInterfaceT::set_dma_transfer(ADCRegularGroupDMATransfer::kNone);
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] bool post_init_inj_post_enable(const uint32_t inj_count, const ADCInjectGroupConfig& config)
+        {
+            if (inj_count == 0)
+            {
+                return true;  // No inject channels configured, skip inject group setup
+            }
+
+            // Core Config
+            InjectGroupInterfaceT::config_trigger(config.trigger_source, config.trigger_edge);
+
+            // Sequence Config
+            InjectGroupInterfaceT::set_sequencer_length(inj_count);
+
+            for_each_channel(
+                [this](const auto& channel_trait)
+                {
+                    using ChannelTraitT = std::decay_t<decltype(channel_trait)>;
+                    const auto rank     = m_inj_cidx_to_rank_map[ChannelTraitT::skChannelIdx];
+
+                    if (rank.has_value())
+                    {
+                        InjectGroupInterfaceT::template set_sequencer_ranks<ChannelTraitT::skChannelID>(rank.value());
+                    }
+                });
+
+            return true;
+        }
+
+        [[nodiscard]] bool post_init_reg_post_enable(const uint32_t reg_count, const ADCRegularGroupConfig& config)
+        {
+            return true;
         }
 
         /**
          * @brief Get the ADC Channel Rank in Regular Sequence.
          *
-         * @tparam tkChannelId The ID of the channel.
-         * @return uint8_t Rank (1-16).
+         * @tparam tkChannelID The ID of the channel.
+         * @return std::optional<uint8_t> Rank (1-16).
          */
-        template <ADCChannelID tkChannelId>
-        [[nodiscard]] constexpr inline ADCRegularChannelRank get_adc_channel_rank_regular() const
+        template <ADCChannelID tkChannelID>
+        [[nodiscard]] constexpr inline std::optional<ADCRegularChannelRank> get_adc_channel_rank_regular() const
         {
-            const uint32_t idx = get_adc_channel_idx<tkChannelId>();
+            constexpr uint32_t idx = ChannelTraitsT<tkChannelID>::skChannelIdx;
             return m_reg_cidx_to_rank_map[idx];
         }
 
         /**
          * @brief Get the ADC Channel Rank in Inject Sequence.
          *
-         * @tparam tkChannelId The ID of the channel.
-         * @return uint8_t Rank (1-4).
+         * @tparam tkChannelID The ID of the channel.
+         * @return std::optional<uint8_t> Rank (1-4).
          */
-        template <ADCChannelID tkChannelId>
-        [[nodiscard]] constexpr inline ADCInjectChannelRank get_adc_channel_rank_inject() const
+        template <ADCChannelID tkChannelID>
+        [[nodiscard]] constexpr inline std::optional<ADCInjectChannelRank> get_adc_channel_rank_inject() const
         {
-            const uint32_t idx = get_adc_channel_idx<tkChannelId>();
+            constexpr uint32_t idx = ChannelTraitsT<tkChannelID>::skChannelIdx;
             return m_inj_cidx_to_rank_map[idx];
         }
 
         /**
          * @brief Configure and register this channel.
          *
-         * @tparam tkChannelId The ID of the channel to configure.
+         * @tparam tkChannelID The ID of the channel to configure.
          * @param cfg        Physics configuration (Sampling time, Single/Diff, etc.)
          */
-        template <ADCChannelID tkChannelId>
-            requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+        template <ADCChannelID tkChannelID>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID>)
         void init_channel_core(const ADCChannelConfig& cfg)
         {
-            LL_ADC_SetChannelSamplingTime(ControllerTraitsT::skInstance,
-                                          static_cast<uint32_t>(tkChannelId),
-                                          static_cast<uint32_t>(cfg.sampling_time));
-            LL_ADC_SetChannelSingleDiff(ControllerTraitsT::skInstance,
-                                        static_cast<uint32_t>(tkChannelId),
-                                        static_cast<uint32_t>(cfg.input_mode));
+            using ChannelInterfaceT = ADCChannelInterface<tkControllerID, tkChannelID>;
+
+            ChannelInterfaceT::set_sampling_time(cfg.sampling_time);
+            ChannelInterfaceT::set_input_mode(cfg.input_mode);
 
             if (cfg.offset.has_value())
             {
                 ADCChannelOffsetConfig offset_cfg = cfg.offset.value();
-
-                LL_ADC_SetOffset(ControllerTraitsT::skInstance,
-                                 static_cast<uint32_t>(offset_cfg.idx),
-                                 static_cast<uint32_t>(tkChannelId),
-                                 offset_cfg.value);
+                ChannelInterfaceT::config_offset(offset_cfg.idx, offset_cfg.value);
             }
         }
 
         /**
          * @brief Registers a channel for the inject conversion sequence.
          *
-         * @tparam tkChannelId The ID of the channel to register.
+         * @tparam tkChannelID The ID of the channel to register.
          * @tparam tkRank Rank in Inject Sequence (1-4).
          */
-        template <ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCInjectRank<tkRank>)
+        template <ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCInjectRank<tkRank>)
         void register_inject_sequence()
         {
-            const uint32_t idx = get_adc_channel_idx<tkChannelId>();
-            if (idx < kADCMaxChannelId && m_inj_cidx_to_rank_map[idx] == skChannelRankFreeFlag)
+            constexpr uint32_t idx = ChannelTraitsT<tkChannelID>::skChannelIdx;
+            if (!m_inj_cidx_to_rank_map[idx].has_value())
             {
                 m_inj_cidx_to_rank_map[idx] = tkRank;
             }
@@ -919,15 +945,15 @@ namespace valle
         /**
          * @brief Registers a channel for the regular conversion sequence.
          *
-         * @tparam tkChannelId The ID of the channel to register.
+         * @tparam tkChannelID The ID of the channel to register.
          * @tparam tkRank The rank in the regular sequence (1-16).
          */
-        template <ADCChannelID tkChannelId, ADCRegularChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelId> && kValidADCRegularRank<tkRank>)
+        template <ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
+            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCRegularRank<tkRank>)
         void register_regular_sequence()
         {
-            const uint32_t idx = get_adc_channel_idx<tkChannelId>();
-            if (m_reg_cidx_to_rank_map[idx] == skChannelRankFreeFlag)
+            constexpr uint32_t idx = ChannelTraitsT<tkChannelID>::skChannelIdx;
+            if (!m_reg_cidx_to_rank_map[idx].has_value())
             {
                 m_reg_cidx_to_rank_map[idx] = tkRank;
             }
@@ -941,8 +967,7 @@ namespace valle
          */
         [[nodiscard]] inline ADCValue read_inject_data(const ADCInjectChannelRank rank) const
         {
-            return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
-                                                   ADCInjectGroupTraits::rank_to_rank_reg(rank));
+            return InjectGroupInterfaceT::read(rank);
         }
 
         /**
@@ -999,8 +1024,8 @@ namespace valle
         using type = GPIOPinDevice<T::skPort, T::skPin>;
     };
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
     class ADCChannelDevice
     {
     public:
@@ -1008,14 +1033,16 @@ namespace valle
         {
         };
 
-        using ControllerT              = ADCControllerDevice<tkControllerID>;
-        using PinT                     = typename ADCPinDevice<ADCPinMap<tkControllerID, tkChannelId>>::type;
+        static constexpr ADCControllerID skControllerID = tkControllerID;
+        static constexpr ADCChannelID    skChannelID    = tkChannelID;
+        using ControllerT                               = ADCControllerDevice<tkControllerID>;
+        using ControllerTraitsT                         = ADCControllerTraits<tkControllerID>;
+        using ChannelTraitsT                            = ADCChannelTraits<tkControllerID, tkChannelID>;
+
+        using PinT                     = typename ADCPinDevice<ADCPinMap<tkControllerID, tkChannelID>>::type;
         static constexpr bool skHasPin = !CNullGPIOPinDevice<PinT>;
 
         using InjectDevices = std::conditional_t<skHasPin, TypeList<ControllerT, PinT>, TypeList<ControllerT>>;
-
-        static constexpr ADCControllerID skControllerID = tkControllerID;
-        static constexpr ADCChannelID    skChannelID    = tkChannelId;
 
         template <ADCControllerID tkCID, ADCChannelID tkChID, ADCInjectChannelRank tkRank>
             requires(kValidADCChannelID<tkCID, tkChID> && kValidADCInjectRank<tkRank>)
@@ -1056,7 +1083,7 @@ namespace valle
                      (tkGroup == ADCChannelGroup::kInject && kValidADCInjectRank<tkRank>))
         [[nodiscard]] bool init(const ADCChannelConfig& config)
         {
-            m_adc->template init_channel<tkChannelId, tkGroup, tkRank>(config);
+            m_adc->template init_channel<tkChannelID, tkGroup, tkRank>(config);
             return gpio_init();
         }
 
@@ -1227,26 +1254,14 @@ namespace valle
             return raw_to_normalized(read_regular_slow());
         }
 
-        /**
-         * @brief Convert raw ADC value to normalized float (0.0 to 1.0).
-         *
-         * @param raw Raw ADC value.
-         * @return float Normalized value.
-         */
-        [[nodiscard]] inline float raw_to_normalized(const ADCValue raw) const
+        [[nodiscard]] constexpr float raw_to_normalized(const ADCValue raw) const
         {
-            return static_cast<float>(raw) / m_adc->get_resolution_range();
+            return m_adc->raw_to_normalized(raw);
         }
 
-        /**
-         * @brief Convert raw ADC value to voltage (Volts).
-         *
-         * @param raw Raw ADC value.
-         * @return float Voltage in Volts.
-         */
-        [[nodiscard]] inline float raw_to_voltage(const ADCValue raw) const
+        [[nodiscard]] constexpr float raw_to_voltage(const ADCValue raw) const
         {
-            return raw_to_normalized(raw) * 3.3F;
+            return m_adc->raw_to_voltage(raw);
         }
 
     private:
@@ -1301,8 +1316,8 @@ namespace valle
     // ADC INJECTED CHANNEL (UNIQUE DEVICE)
     // ============================================================================
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId, ADCInjectChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId> &&
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID> &&
                  kValidADCInjectRank<tkRank>)  // Only 4 inject channels supported
     class ADCInjectChannelDevice
     {
@@ -1311,11 +1326,11 @@ namespace valle
         {
         };
 
-        using ChannelT      = ADCChannelDevice<tkControllerID, tkChannelId>;
+        using ChannelT      = ADCChannelDevice<tkControllerID, tkChannelID>;
         using InjectDevices = TypeList<ChannelT>;
 
         static constexpr ADCControllerID      skControllerID = tkControllerID;
-        static constexpr ADCChannelID         skChannelID    = tkChannelId;
+        static constexpr ADCChannelID         skChannelID    = tkChannelID;
         static constexpr ADCChannelGroup      skGroup        = ADCChannelGroup::kInject;
         static constexpr ADCInjectChannelRank skRank         = tkRank;
 
@@ -1373,43 +1388,43 @@ namespace valle
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelRank1Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 1>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCInjectChannelRank1Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 1>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelRank2Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 2>;
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelRank3Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 3>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCInjectChannelRank2Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 2>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCInjectChannelRank3Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 3>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCInjectChannelRank4Device = ADCInjectChannelDevice<tkControllerID, tkChannelId, 4>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCInjectChannelRank4Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 4>;
 
     namespace detail
     {
         // Helper to unpack the Index Sequence alongside the Channel Pack
-        template <ADCControllerID tkControllerID, typename TIndexSeq, ADCChannelID... tkChannelIds>
+        template <ADCControllerID tkControllerID, typename TIndexSeq, ADCChannelID... tkChannelIDs>
         struct MakeInjectSequenceImpl;
 
-        template <ADCControllerID tkControllerID, size_t... Is, ADCChannelID... tkChannelIds>
-        struct MakeInjectSequenceImpl<tkControllerID, std::index_sequence<Is...>, tkChannelIds...>
+        template <ADCControllerID tkControllerID, size_t... Is, ADCChannelID... tkChannelIDs>
+        struct MakeInjectSequenceImpl<tkControllerID, std::index_sequence<Is...>, tkChannelIDs...>
         {
             // Expand both packs: Channel[i] paired with Rank[i + 1]
-            using type = TypeList<ADCInjectChannelDevice<tkControllerID, tkChannelIds, (Is + 1)>...>;
+            using type = TypeList<ADCInjectChannelDevice<tkControllerID, tkChannelIDs, (Is + 1)>...>;
         };
     }  // namespace detail
 
-    template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIds>
-        requires((kValidADCChannelID<tkControllerID, tkChannelIds> && ...) &&
-                 (sizeof...(tkChannelIds) <= kADCMaxInjChannels))
+    template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIDs>
+        requires((kValidADCChannelID<tkControllerID, tkChannelIDs> && ...) &&
+                 (sizeof...(tkChannelIDs) <= kADCMaxInjChannels))
     using ADCInjectChannelDeviceSequence =
         typename detail::MakeInjectSequenceImpl<tkControllerID,
-                                                std::make_index_sequence<sizeof...(tkChannelIds)>,  // Generates 0,
+                                                std::make_index_sequence<sizeof...(tkChannelIDs)>,  // Generates 0,
                                                                                                     // 1, 2...
-                                                tkChannelIds...>::type;
+                                                tkChannelIDs...>::type;
 
 #define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, rank) \
     using ADC##controller_id##InjectChannel0Rank##rank##Device =                \
@@ -1469,8 +1484,8 @@ namespace valle
     // ADC REGULAR CHANNEL (UNIQUE DEVICE)
     // ============================================================================
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId, ADCRegularChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId> &&
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID> &&
                  kValidADCRegularRank<tkRank>)  // Only 16 regular channels supported
     class ADCRegularChannelDevice
     {
@@ -1479,10 +1494,10 @@ namespace valle
         {
         };
 
-        using ChannelT                                        = ADCChannelDevice<tkControllerID, tkChannelId>;
+        using ChannelT                                        = ADCChannelDevice<tkControllerID, tkChannelID>;
         using InjectDevices                                   = TypeList<ChannelT>;
         static constexpr ADCControllerID       skControllerID = tkControllerID;
-        static constexpr ADCChannelID          skChannelID    = tkChannelId;
+        static constexpr ADCChannelID          skChannelID    = tkChannelID;
         static constexpr ADCChannelGroup       skGroup        = ADCChannelGroup::kRegular;
         static constexpr ADCRegularChannelRank skRank         = tkRank;
 
@@ -1540,92 +1555,92 @@ namespace valle
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank1Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 1>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank1Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 1>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank2Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 2>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank2Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 2>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank3Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 3>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank3Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 3>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank4Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 4>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank4Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 4>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank5Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 5>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank5Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 5>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank6Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 6>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank6Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 6>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank7Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 7>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank7Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 7>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank8Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 8>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank8Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 8>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank9Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 9>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank9Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 9>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank10Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 10>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank10Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 10>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank11Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 11>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank11Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 11>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank12Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 12>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank12Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 12>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank13Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 13>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank13Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 13>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank14Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 14>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank14Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 14>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank15Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 15>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank15Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 15>;
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelId>
-        requires(kValidADCChannelID<tkControllerID, tkChannelId>)
-    using ADCRegularChannelRank16Device = ADCRegularChannelDevice<tkControllerID, tkChannelId, 16>;
+    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
+        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
+    using ADCRegularChannelRank16Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 16>;
 
     namespace detail
     {
         // Helper to unpack the Index Sequence alongside the Channel Pack
-        template <ADCControllerID tkControllerID, typename TIndexSeq, ADCChannelID... tkChannelIds>
+        template <ADCControllerID tkControllerID, typename TIndexSeq, ADCChannelID... tkChannelIDs>
         struct MakeRegularSequenceImpl;
 
-        template <ADCControllerID tkControllerID, size_t... Is, ADCChannelID... tkChannelIds>
-        struct MakeRegularSequenceImpl<tkControllerID, std::index_sequence<Is...>, tkChannelIds...>
+        template <ADCControllerID tkControllerID, size_t... Is, ADCChannelID... tkChannelIDs>
+        struct MakeRegularSequenceImpl<tkControllerID, std::index_sequence<Is...>, tkChannelIDs...>
         {
             // Expand both packs: Channel[i] paired with Rank[i + 1]
-            using type = TypeList<ADCRegularChannelDevice<tkControllerID, tkChannelIds, (Is + 1)>...>;
+            using type = TypeList<ADCRegularChannelDevice<tkControllerID, tkChannelIDs, (Is + 1)>...>;
         };
     }  // namespace detail
 
-    template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIds>
-        requires((kValidADCChannelID<tkControllerID, tkChannelIds> && ...) &&
-                 (sizeof...(tkChannelIds) <= kADCMaxRegChannels))
+    template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIDs>
+        requires((kValidADCChannelID<tkControllerID, tkChannelIDs> && ...) &&
+                 (sizeof...(tkChannelIDs) <= kADCMaxRegChannels))
     using ADCRegularChannelDeviceSequence =
         typename detail::MakeRegularSequenceImpl<tkControllerID,
-                                                 std::make_index_sequence<sizeof...(tkChannelIds)>,  // Generates 0,
+                                                 std::make_index_sequence<sizeof...(tkChannelIDs)>,  // Generates 0,
                                                                                                      // 1, 2...
-                                                 tkChannelIds...>::type;
+                                                 tkChannelIDs...>::type;
 
 #define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, rank) \
     using ADC##controller_id##RegularChannel0Rank##rank##Device =                \

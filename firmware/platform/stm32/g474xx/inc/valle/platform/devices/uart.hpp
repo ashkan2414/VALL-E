@@ -5,6 +5,7 @@
 
 #include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
+#include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/uart.hpp"
@@ -381,12 +382,13 @@ namespace valle
         }
 
         // --- API ---
-        HAL_StatusTypeDef transmit(std::span<const std::byte> data, std::chrono::milliseconds timeout_ms)
+        // NOLINTNEXTLINE(bugprone-easily--parameters)
+        HAL_StatusTypeDef transmit(std::span<const std::byte> data, TimeoutMillis timeout_ms)
         {
             return HAL_UART_Transmit(&m_huart,
                                      reinterpret_cast<const uint8_t*>(data.data()),
                                      static_cast<uint16_t>(data.size()),
-                                     timeout_ms.count());
+                                     std::chrono::duration_cast<CycleDuration>(timeout_ms).count());
         }
 
         HAL_StatusTypeDef transmit_async(std::span<const std::byte> data)
