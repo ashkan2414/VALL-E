@@ -11,21 +11,8 @@ if((CMAKE_C_STANDARD EQUAL 90) OR (CMAKE_C_STANDARD EQUAL 99))
 endif()
 
 
-# STM32CubeMX generated symbols (macros)
-set(stm32cube_defines_syms
-	USE_HAL_DRIVER
-    USE_FULL_LL_DRIVER
-	STM32G474xx
-    $<$<CONFIG:Debug>:DEBUG>
-)
-
-# STM32CubeMX generated include paths
-set(stm32cube_include_dirs
-    ${STM32CUBE_DIR}/Drivers/STM32G4xx_HAL_Driver/Inc
-    ${STM32CUBE_DIR}/Drivers/CMSIS/Device/ST/STM32G4xx/Include
-    ${STM32CUBE_DIR}/Drivers/CMSIS/Core/Include
-    ${VALLE_PLATFORM_DIR}/inc
-)
+# Create stm32cube_Drivers static library
+add_library(stm32g4_drivers OBJECT)
 
 # STM32 HAL/LL Drivers sources (exclude templates)
 file(GLOB stm32cube_drivers_src
@@ -34,14 +21,24 @@ file(GLOB stm32cube_drivers_src
     ${STM32CUBE_DIR}/Drivers/CMSIS/Device/ST/STM32G4xx/Source/Templates/system_stm32g4xx.c
 )
 list(FILTER stm32cube_drivers_src EXCLUDE REGEX "template")
-
-# Create stm32cube_Drivers static library
-add_library(stm32g4_drivers OBJECT)
 target_sources(stm32g4_drivers PRIVATE ${stm32cube_drivers_src})
-target_include_directories(stm32g4_drivers SYSTEM PUBLIC ${stm32cube_include_dirs})
-target_compile_definitions(stm32g4_drivers PUBLIC ${stm32cube_defines_syms})
+
+# STM32 HAL/LL Drivers headers
+target_include_directories(stm32g4_drivers SYSTEM PUBLIC
+    ${STM32CUBE_DIR}/Drivers/STM32G4xx_HAL_Driver/Inc
+    ${STM32CUBE_DIR}/Drivers/CMSIS/Device/ST/STM32G4xx/Include
+    ${STM32CUBE_DIR}/Drivers/CMSIS/Core/Include
+    ${VALLE_TARGET_PLATFORM_DIR}/inc
+)
+
+# Define platform-specific macros for the STM32G4 series
+target_compile_definitions(stm32g4_drivers PUBLIC
+	USE_HAL_DRIVER
+    USE_FULL_LL_DRIVER
+	STM32G474xx
+    $<$<CONFIG:Debug>:DEBUG>
+)
+
 target_compile_options(stm32g4_drivers PRIVATE -w)
 
 
-# Add libraries to the project
-target_link_libraries(${CMAKE_PROJECT_NAME} stm32g4_drivers)

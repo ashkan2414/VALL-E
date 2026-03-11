@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.22)
+
+add_subdirectory(shared)
+add_subdirectory(platform)
+
+add_library(valle_app_common INTERFACE)
+target_link_libraries(valle_app_common INTERFACE valle_app_common_shared valle_app_common_platform)
