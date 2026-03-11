@@ -4,13 +4,12 @@
 #include <chrono>
 
 #include "stm32g4xx_ll_adc.h"
-#include "valle/core.hpp"
 #include "valle/platform/hardware/adc/id.hpp"
 #include "valle/platform/hardware/adc_clk.hpp"
 #include "valle/platform/hardware/dma.hpp"
 
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // ENUMERATIONS
@@ -1157,4 +1156,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

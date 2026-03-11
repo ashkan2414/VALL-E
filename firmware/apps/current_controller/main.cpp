@@ -8,21 +8,13 @@ namespace valle
 {
     void app::main()
     {
-        Timing::delay_ms(3000);
+        TimingContext::delay_ms(3000);
 
         app::init();
-        if constexpr (kCurrentSensorUseInject)
-        {
-            app::g_drivers.root.adc1().start_inject();
-        }
-        else
-        {
-            app::g_drivers.root.adc1().start_regular();
-        }
-        app::g_drivers.vca_controller.enable();
+        app::start_vca_controller();
 
         VALLE_LOG_INFO("Initialized!");
-        Timing::delay_ms(1000);
+        TimingContext::delay_ms(1000);
 
         constexpr float kCmdBaselineA = 0.0F;
         constexpr float kCmdStepA     = 0.06F;
@@ -33,7 +25,7 @@ namespace valle
             VALLE_LOG_INFO("Starting step response capture #{}", ++counter);
             VALLE_LOG_INFO("Settling to baseline...");
             app::g_drivers.vca_controller.set_target_current(kCmdBaselineA);
-            Timing::delay_ms(1000);
+            TimingContext::delay_ms(1000);
 
             VALLE_LOG_INFO("Starting step response capture...");
 
@@ -41,9 +33,9 @@ namespace valle
             for (size_t i = 0; i < app::kCaptureSteps / 2; ++i)
             {
                 app::g_drivers.vca_controller.set_target_current(kCmdStepA);
-                Timing::delay(app::kTargetSettleTime);
+                TimingContext::delay(app::kTargetSettleTime);
                 app::g_drivers.vca_controller.set_target_current(kCmdBaselineA);
-                Timing::delay(app::kTargetSettleTime);
+                TimingContext::delay(app::kTargetSettleTime);
             }
             app::g_current_response_collector.stop_capture();
 
@@ -72,10 +64,10 @@ namespace valle
 
             app::g_drivers.vca_controller.set_target_current(0.0F);
             VALLE_LOG_INFO("Step response capture complete. Restarting in 3 seconds...");
-            Timing::delay_ms(3000);
+            TimingContext::delay_ms(3000);
         }
 
-        app::g_drivers.vca_controller.disable();
+        app::stop_vca_controller();
 
         while (true)
         {

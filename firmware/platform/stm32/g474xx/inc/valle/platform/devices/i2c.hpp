@@ -8,13 +8,13 @@
 #include <span>
 #include <variant>
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
 #include "valle/platform/hardware/i2c.hpp"
 #include "valle/utils/circular_queue.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // ============================================================================
     // FOWARD DECLARATIONS
@@ -71,7 +71,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \
-    namespace valle                                                                                             \
+    namespace valle::platform                                                                                   \
     {                                                                                                           \
         template <>                                                                                             \
         struct I2CControllerCTConfigTraits<(tkControllerID)>                                                    \
@@ -1263,10 +1263,10 @@ namespace valle
     template <uint8_t tkTransactionQueueSize = 10>
     using I2C4CommandBufferDevice = I2CCommandBufferDevice<4, tkTransactionQueueSize>;
 
-}  // namespace valle
+}  // namespace valle::platform
 
 #define VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(instance)                                                       \
-    namespace valle                                                                                              \
+    namespace valle::platform                                                                                    \
     {                                                                                                            \
         template <>                                                                                              \
         struct I2CISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID,                           \

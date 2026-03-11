@@ -3,11 +3,11 @@
 #include <variant>
 
 #include "stm32g4xx_hal_rcc_ex.h"
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/adc_clk.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =============================================================================
     // FORWARD DECLARATIONS
@@ -141,4 +141,4 @@ namespace valle
     using ADC12ClockDevice  = ADCClockDevice<ADCClockID::kADC12>;
     using ADC345ClockDevice = ADCClockDevice<ADCClockID::kADC345>;
 
-}  // namespace valle
+}  // namespace valle::platform

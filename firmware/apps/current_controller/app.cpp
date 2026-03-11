@@ -119,4 +119,22 @@ namespace valle::app
         }
     }
 
+    void start_vca_controller()
+    {
+        if constexpr (kCurrentSensorUseInject)
+        {
+            app::g_drivers.root.adc1().start_inject();
+        }
+        else
+        {
+            app::g_drivers.root.adc1().start_regular();
+        }
+        app::g_drivers.vca_controller.enable();
+    }
+
+    void stop_vca_controller()
+    {
+        app::g_drivers.vca_controller.disable();
+    }
+
 }  // namespace valle::app

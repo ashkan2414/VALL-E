@@ -1,11 +1,11 @@
 #pragma once
 
 #include "stm32g4xx_ll_tim.h"
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/tim.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =============================================================================
     // FORWARD DECLARATIONS
@@ -113,7 +113,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(tkControllerID, config)                      \
-    namespace valle                                                                          \
+    namespace valle::platform                                                                \
     {                                                                                        \
         template <>                                                                          \
         struct TIMControllerCTConfigTraits<(tkControllerID)>                                 \
@@ -332,7 +332,7 @@ namespace valle
         [[nodiscard]] bool init()
         {
             TraitsT::enable_clock();
-            PlatformTimingUtils::delay_cycles(10U);  // NOLINT(readability-magic-numbers)
+            TimingContext::delay_cycles(10U);  // NOLINT(readability-magic-numbers)
 
             return true;
         }
@@ -605,4 +605,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

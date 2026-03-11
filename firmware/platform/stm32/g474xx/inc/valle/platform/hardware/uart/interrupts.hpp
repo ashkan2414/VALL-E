@@ -2,7 +2,7 @@
 
 #include "valle/platform/hardware/uart/interface.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // INTERRUPT TRAITS
@@ -336,4 +336,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

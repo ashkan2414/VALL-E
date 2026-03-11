@@ -1,5 +1,5 @@
 
-namespace valle
+namespace valle::platform
 {
     extern "C"
     {
@@ -31,4 +31,4 @@ namespace valle
         {
         }
     }
-}  // namespace valle
+}  // namespace valle::platform

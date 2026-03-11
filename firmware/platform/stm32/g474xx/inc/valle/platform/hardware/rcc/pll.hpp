@@ -5,11 +5,11 @@
 #include <string_view>
 
 #include "stm32g4xx_ll_rcc.h"
-#include "valle/core.hpp"
+#include "valle/platform/core/error.hpp"
 #include "valle/platform/hardware/power.hpp"
 
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // ENUMERATIONS
@@ -577,4 +577,4 @@ namespace valle
             return calculate_q_output_freq_hz(vco_hz, get_q_divider());
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

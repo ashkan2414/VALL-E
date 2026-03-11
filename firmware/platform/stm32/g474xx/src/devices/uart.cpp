@@ -6,7 +6,7 @@
 #include "app_isr_bindings.hpp"
 #endif
 
-namespace valle
+namespace valle::platform
 {
     /**
      * @brief Check if any granular ISR handler is bound for this UART.
@@ -129,4 +129,4 @@ namespace valle
             uart_irq_handler<UARTControllerID::kLPUART1>();
         }
     }
-}  // namespace valle
+}  // namespace valle::platform

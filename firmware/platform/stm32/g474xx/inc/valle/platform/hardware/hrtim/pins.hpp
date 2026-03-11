@@ -3,8 +3,7 @@
 #include "valle/platform/hardware/gpio.hpp"
 #include "valle/platform/hardware/hrtim/id.hpp"
 
-
-namespace valle
+namespace valle::platform
 {
     // ---------------------------------------------------------------------------
     // HRTIM CONTROLLER
@@ -513,4 +512,4 @@ namespace valle
                          tkPinType,
                          kHRTIMTimerPinOutputIndex<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>>::skAF;
 
-}  // namespace valle
+}  // namespace valle::platform

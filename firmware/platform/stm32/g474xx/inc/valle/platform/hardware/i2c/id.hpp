@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <variant>
 
-
-namespace valle
+namespace valle::platform
 {
 
     using I2CControllerID = uint8_t;
@@ -39,4 +38,4 @@ namespace valle
     using I2CSlaveAddressVariant = std::variant<I2C7BitSlaveAddress, I2C10BitSlaveAddress>;
     using I2CDMATransferContext  = I2CSlaveAddressVariant;
 
-}  // namespace valle
+}  // namespace valle::platform

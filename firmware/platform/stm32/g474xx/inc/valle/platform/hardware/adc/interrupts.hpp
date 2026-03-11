@@ -2,7 +2,7 @@
 
 #include "valle/platform/hardware/ADC/interface.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // INTERRUPT TRAITS
@@ -240,4 +240,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

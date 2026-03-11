@@ -6,9 +6,9 @@
 #include "app_platform_config.hpp"
 #endif
 
-namespace valle
+namespace valle::platform
 {
     using PlatformCTConfigTraitsT    = PlatformCTConfigTraits<void>;
     using PlatformCTConfigT          = typename PlatformCTConfigTraits<void>::ConfigT;
     constexpr auto kPlatformCTConfig = PlatformCTConfigTraits<void>::skConfig;
-}  // namespace valle
+}  // namespace valle::platform

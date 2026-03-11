@@ -1,10 +1,10 @@
 #pragma once
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/rcc/lsco.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =============================================================================
     // FORWARD DECLARATIONS
@@ -65,4 +65,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

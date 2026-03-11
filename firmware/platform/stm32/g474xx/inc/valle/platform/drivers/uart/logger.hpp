@@ -1,9 +1,9 @@
 #pragma once
 
-#include "valle/core/logging/core.hpp"
+#include "valle/base/logging/config_base.hpp"
 #include "valle/platform/devices/uart.hpp"
 
-namespace valle
+namespace valle::platform
 {
 
     template <typename TUARTControllerDevice>
@@ -50,11 +50,11 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform
 
 // Put this in app_log_config.hpp to bind the logger instance
 #define VALLE_DEFINE_UART_LOGGER_HANDLER(instance)              \
-    namespace valle                                             \
+    namespace valle::platform                                   \
     {                                                           \
         void log_output_handler(const std::string_view message) \
         {                                                       \
@@ -64,7 +64,7 @@ namespace valle
 
 // Put these in app_isr_bindings.hpp to bind your instance
 #define VALLE_BIND_UART_LOGGER_DMA_ISR_ROUTER(instance)                                            \
-    namespace valle                                                                                \
+    namespace valle::platform                                                                      \
     {                                                                                              \
         static_assert(std::remove_cvref_t<decltype((instance))>::ControllerT::skHasDMATx,          \
                       "Instance does not have DMA TX capability");                                 \
@@ -81,7 +81,7 @@ namespace valle
     }
 
 #define VALLE_BIND_UART_LOGGER_UART_ISR_ROUTER(instance)                                                   \
-    namespace valle                                                                                        \
+    namespace valle::platform                                                                              \
     {                                                                                                      \
         template <>                                                                                        \
         struct UARTGlobalISRRouter<std::remove_cvref_t<decltype((instance))>::ControllerT::skControllerID> \

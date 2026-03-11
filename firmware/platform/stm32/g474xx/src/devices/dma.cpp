@@ -6,7 +6,7 @@
 #include "app_isr_bindings.hpp"
 #endif
 
-namespace valle
+namespace valle::platform
 {
     /**
      * @brief Check if any granular ISR handler is bound for this DMA Channel.
@@ -156,4 +156,4 @@ namespace valle
         }
     }
 
-}  // namespace valle
+}  // namespace valle::platform

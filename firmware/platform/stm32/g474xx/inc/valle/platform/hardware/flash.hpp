@@ -5,7 +5,7 @@
 #include "stm32g4xx_ll_system.h"
 #include "valle/platform/hardware/power.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // ENUMERATIONS
@@ -79,8 +79,8 @@ namespace valle
 
         [[nodiscard]] static bool wait_for_latency(const FlashLatency latency, const uint32_t timeout_count)
         {
-            return PlatformTimingUtils::wait_for_with_timeout_countdown(
-                [&]() -> bool { return is_latency_active(latency); }, timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([&]() -> bool { return is_latency_active(latency); },
+                                                                  timeout_count);
         }
 
         /**
@@ -199,4 +199,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

@@ -2,7 +2,7 @@
 
 #include "valle/platform/devices/gpio.hpp"
 
-namespace valle
+namespace valle::platform
 {
 
     struct GPIODigitalInConfig
@@ -53,4 +53,4 @@ namespace valle
             return m_inverted ? !state : state;
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

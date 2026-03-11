@@ -36,7 +36,7 @@
 #define VALLE_PWR_HAS_SRAM2_RETENTION 1
 #endif
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // ENUMERATIONS
@@ -716,4 +716,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

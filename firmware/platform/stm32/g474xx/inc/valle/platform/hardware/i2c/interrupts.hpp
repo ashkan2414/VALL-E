@@ -2,7 +2,7 @@
 
 #include "valle/platform/hardware/i2c/interface.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // I2C INTERRUPT TRAITS
@@ -341,4 +341,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

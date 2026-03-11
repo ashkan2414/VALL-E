@@ -1,9 +1,9 @@
 #pragma once
 
-#include "valle/modules/acs724.hpp"
+#include "valle/base/modules/acs724.hpp"
 #include "valle/platform/drivers/adc/analog_sensor.hpp"
 
-namespace valle
+namespace valle::platform
 {
     using ACS724ModuleADCChannelInterfaceConfig = ADCChannelConfig;
 
@@ -86,4 +86,4 @@ namespace valle
     template <typename TADCChannel, ACS724Model tkModel>
     using ACS724Module = ACS724ModuleX<ACS724ModuleADCChannelInterface<TADCChannel, tkModel>, tkModel>;
 
-}  // namespace valle
+}  // namespace valle::platform

@@ -2,7 +2,7 @@
 
 #include "valle/platform/hardware/hrtim/interface.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // HRTIM CONTROLLER INTERRUPTS
@@ -601,4 +601,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

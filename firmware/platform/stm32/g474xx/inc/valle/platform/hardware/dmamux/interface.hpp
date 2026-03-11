@@ -4,7 +4,7 @@
 #include "stm32g4xx_ll_dmamux.h"
 #include "valle/platform/hardware/dmamux/id.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // ENUMERATIONS
@@ -168,4 +168,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

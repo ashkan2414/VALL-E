@@ -4,7 +4,7 @@
 #include "stm32g4xx_hal_gpio.h"
 #include "valle/platform/hardware/gpio/id.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // ENUMERATIONS
@@ -157,4 +157,4 @@ namespace valle
         static constexpr uint16_t skPinMask = (1UL << tkPinID);  // NOLINT(hicpp-signed-bitwise)
     };
 
-}  // namespace valle
+}  // namespace valle::platform

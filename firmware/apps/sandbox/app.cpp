@@ -28,34 +28,14 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](CoreSystemDriver& dev) { (void)dev; },
-            [](DMAMux1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
-            [](DMA1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](DMA2ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMA2 Controller Device"); },
             [](GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
             [](GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
             [](HRTIM1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize HRTIM1 Controller Device"); },
-            [](ADC345ClockDevice& dev)
-            {
-                expect(dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
-                                                    .prescaler = ADCAsyncClockPrescaler::kDiv8}),
-                       "Failed to initialize ADC Clock Device");
-            },
-            [](ADC3ControllerDevice& dev)
-            {
-                expect(dev.init(ADCControllerConfig{
-                           .resolution     = ADCResolution::k12Bit,
-                           .data_alignment = ADCDataAlignment::kRight,
-                           .low_power      = ADCLowPowerMode::kNone,
-                           .inj =
-                               ADCInjectGroupConfig{
-                                   .trigger_source = ADCInjectGroupTriggerSource::kExtHrtimTRG1,
-                                   .trigger_edge   = ADCInjectGroupTriggerEdge::kRising,
-                               },
-                           .reg          = ADCRegularGroupConfig{},  // Not used
-                           .oversampling = std::nullopt              // No oversampling by default
-                       }),
-                       "Failed to initialize ADC3 Controller Device");
-            },
+            [](DMAMux1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
+            [](DMA1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
+            [](ADC12ClockDevice& dev)
+            { expect(dev.init(kCurrentSensorADCClockConfig), "Failed to initialize ADC 12 Clock Device"); },
+            [](ADC1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize ADC1 Controller Device"); },
             [](I2C1CommandBufferDevice<>& dev)
             {
                 expect(dev.init(I2CCommandBufferDeviceConfig{
@@ -172,15 +152,17 @@ namespace valle::app
     {
         g_drivers.root.foreach_reverse(DeviceInitOverloaded{
             [](CoreSystemDriver& dev) { (void)dev; },
+            [](GPIOPortADevice& dev) { expect(dev.post_init(), "Failed to post-initialize GPIO Port A Device"); },
+            [](GPIOPortBDevice& dev) { expect(dev.post_init(), "Failed to post-initialize GPIO Port B Device"); },
+            [](HRTIM1ControllerDevice& dev)
+            { expect(dev.post_init(), "Failed to post-initialize HRTIM1 Controller Device"); },
             [](DMAMux1ControllerDevice& dev)
-            { expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller"); },
-            [](DMA1ControllerDevice& dev) { expect(dev.post_init(), "Failed to post-initialize DMA1 Controller"); },
-            [](DMA2ControllerDevice& dev) { expect(dev.post_init(), "Failed to post-initialize DMA2 Controller"); },
-            [](GPIOPortADevice& dev) { expect(dev.post_init(), "Failed to post-initialize GPIO Port A"); },
-            [](GPIOPortBDevice& dev) { expect(dev.post_init(), "Failed to post-initialize GPIO Port B"); },
-            [](HRTIM1ControllerDevice& dev) { expect(dev.post_init(), "Failed to post-initialize HRTIM1 Controller"); },
-            [](ADC345ClockDevice& dev) { expect(dev.post_init(), "Failed to post-initialize ADC Clock Device"); },
-            [](ADC3ControllerDevice& dev) { expect(dev.post_init(), "Failed to post-initialize ADC Controller"); },
+            { expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller Device"); },
+            [](DMA1ControllerDevice& dev)
+            { expect(dev.post_init(), "Failed to post-initialize DMA1 Controller Device"); },
+            [](ADC12ClockDevice& dev) { expect(dev.post_init(), "Failed to post-initialize ADC 12 Clock Device"); },
+            [](ADC1ControllerDevice& dev)
+            { expect(dev.post_init(kCurrentSensorADCConfig), "Failed to post-initialize ADC 1 Controller Device"); },
             [](I2C1CommandBufferDevice<>& dev)
             { expect(dev.post_init(), "Failed to post-initialize I2C Command Buffer"); },
         });
@@ -198,21 +180,35 @@ namespace valle::app
         init_root();
         init_drivers();
         post_init_root();
+
+        if constexpr (kCurrentSensorUseInject)
+        {
+            app::g_drivers.root.adc1().enable_interrupts(ADCInterruptConfig{
+                .priority = 5,
+                .interrupts =
+                    ADCInterruptMask{
+                        .inj_eos = true,
+                    },
+            });
+        }
     }
 
     void start_vca_controller()
     {
-        // Start current sensor ADC conversions
-        g_devices.adc3->enable_interrupts(ADCInterruptConfig{
-            .priority = 5,
-            .interrupts =
-                ADCInterruptMask{
-                    .inj_eos = true,
-                },
-        });
-        g_devices.adc3->start_inject();
+        if constexpr (kCurrentSensorUseInject)
+        {
+            app::g_drivers.root.adc1().start_inject();
+        }
+        else
+        {
+            app::g_drivers.root.adc1().start_regular();
+        }
+        app::g_drivers.vca_controller.enable();
+    }
 
-        g_drivers.vca_controller.enable();
+    void stop_vca_controller()
+    {
+        app::g_drivers.vca_controller.disable();
     }
 
 }  // namespace valle::app

@@ -6,7 +6,7 @@
 #include "valle/platform/hardware/gpio.hpp"
 #include "valle/platform/hardware/tim/id.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // ---------------------------------------------------------------------------
     // TIMER PIN TYPES
@@ -400,4 +400,4 @@ namespace valle
     constexpr GPIOAlternativeFunction kTIMPinAF =
         TIMPinMap<tkID, tkPinType, kTIMPinOutputIndex<tkID, tkPinType, tkPort, tkPin>>::skAF;
 
-}  // namespace valle
+}  // namespace valle::platform

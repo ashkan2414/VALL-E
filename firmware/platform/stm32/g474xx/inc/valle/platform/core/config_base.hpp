@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace valle
+namespace valle::platform
 {
     struct PlatformTimingCTDefaultConfig
     {
@@ -31,4 +31,4 @@ namespace valle
         using TimingConfigT            = decltype(skConfig.timing_config); \
     };
 
-}  // namespace valle
+}  // namespace valle::platform

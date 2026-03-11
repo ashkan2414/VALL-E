@@ -1,10 +1,10 @@
 #pragma once
 
-#include "valle/modules/ldc1612.hpp"
+#include "valle/base/modules/ldc1612.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/i2c.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct LDC161XSensorModuleI2CInterfaceConfig
     {
@@ -91,4 +91,4 @@ namespace valle
     using LDC161XSensorModule =
         LDC161XSensorModuleX<LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels>, tkNumChannels>;
 
-}  // namespace valle
+}  // namespace valle::platform

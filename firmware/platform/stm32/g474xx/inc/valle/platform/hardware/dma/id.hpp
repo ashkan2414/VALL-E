@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace valle
+namespace valle::platform
 {
     using DMAControllerID = uint8_t;
 
@@ -20,4 +20,4 @@ namespace valle
         DMAChannelID    channel_id    = 0;
     };
 
-}  // namespace valle
+}  // namespace valle::platform

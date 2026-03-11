@@ -1,12 +1,12 @@
 #pragma once
 
 #include "stm32g4xx_ll_bus.h"
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dmamux.hpp"
 #include "valle/platform/hardware/dma.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
 
     // ============================================================================
@@ -407,4 +407,4 @@ namespace valle
     using DMA2Channel7Device = DMAChannelDevice<2, 7>;
     using DMA2Channel8Device = DMAChannelDevice<2, 8>;
 
-}  // namespace valle
+}  // namespace valle::platform

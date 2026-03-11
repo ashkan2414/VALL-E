@@ -6,7 +6,7 @@
 #include "valle/math/converters.hpp"
 #include "valle/platform/devices/adc.hpp"
 
-namespace valle
+namespace valle::platform
 {
 
     enum class ADCConverterTag
@@ -181,4 +181,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

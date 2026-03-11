@@ -6,14 +6,14 @@
 #include <optional>
 #include <variant>
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/adc_clk.hpp"
 #include "valle/platform/devices/dma.hpp"
 #include "valle/platform/drivers/gpio/analog_in.hpp"
 #include "valle/platform/hardware/adc.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // ============================================================================
     // FORWARD DECLARATIONS
@@ -117,7 +117,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \
-    namespace valle                                                                                             \
+    namespace valle::platform                                                                                   \
     {                                                                                                           \
         template <>                                                                                             \
         struct ADCControllerCTConfigTraits<(tkControllerID)>                                                    \
@@ -753,7 +753,7 @@ namespace valle
         [[nodiscard]] static bool enable()
         {
             InterfaceT::enable();
-            const bool adc_ready = PlatformTimingUtils::wait_for_with_timeout_us(
+            const bool adc_ready = TimingContext::wait_for_with_timeout_us(
                 []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100U);
 
             // If timeout occurred, ADC is not ready
@@ -772,7 +772,7 @@ namespace valle
                 // be relaunched or a previously saved calibration factor
                 // re-applied once the ADC voltage regulator is enabled
 
-                PlatformTimingUtils::delay_ms_busy(10u);  // Short delay to ensure deep power down is fully exited
+                TimingContext::delay_ms_busy(10u);  // Short delay to ensure deep power down is fully exited
             }
 
             if (InterfaceT::deep_power_down_enabled())
@@ -792,7 +792,7 @@ namespace valle
 
                 // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
                 // wait for 100 to be safe.
-                PlatformTimingUtils::delay_ms_busy(100u);
+                TimingContext::delay_ms_busy(100u);
             }
 
             if (!InterfaceT::internal_regulator_enabled())
@@ -812,7 +812,7 @@ namespace valle
             // NOTE: If ADC clock frequency changes at runtime (e.g., entering
             // low-power mode), calibration must be re-run.
             InterfaceT::start_calibration();
-            const bool calibration_success = PlatformTimingUtils::wait_for_with_timeout_us(
+            const bool calibration_success = TimingContext::wait_for_with_timeout_us(
                 []() { return InterfaceT::is_calibration_ongoing() == 0; }, 100u);
 
             // If timeout occurred, calibration failed
@@ -1821,4 +1821,4 @@ namespace valle
 #undef DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK
 #undef DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES
 
-}  // namespace valle
+}  // namespace valle::platform

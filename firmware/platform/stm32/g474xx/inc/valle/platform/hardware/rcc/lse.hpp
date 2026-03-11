@@ -2,7 +2,7 @@
 
 #include "stm32g4xx_ll_rcc.h"
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // ENUMERATIONS
@@ -83,4 +83,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

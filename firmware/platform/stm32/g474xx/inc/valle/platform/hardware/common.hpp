@@ -3,7 +3,7 @@
 #include "valle/platform/hardware/adc.hpp"
 #include "valle/platform/hardware/hrtim.hpp"
 
-namespace valle
+namespace valle::platform
 {
     constexpr HRTIMTimerADCTriggerID adc_trigger_to_hrtim_trigger(ADCInjectGroupTriggerSource trigger)
     {
@@ -122,4 +122,4 @@ namespace valle
         }
     }
 
-}  // namespace valle
+}  // namespace valle::platform

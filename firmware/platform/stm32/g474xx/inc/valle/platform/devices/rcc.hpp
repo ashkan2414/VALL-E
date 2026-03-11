@@ -3,7 +3,6 @@
 #include <optional>
 #include <string_view>
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/rcc/hse.hpp"
 #include "valle/platform/devices/rcc/hsi.hpp"
@@ -14,7 +13,8 @@
 #include "valle/platform/devices/rcc/pll.hpp"
 #include "valle/platform/devices/rcc/sct.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =============================================================================
     // FORWARD DECLARATIONS
@@ -512,4 +512,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

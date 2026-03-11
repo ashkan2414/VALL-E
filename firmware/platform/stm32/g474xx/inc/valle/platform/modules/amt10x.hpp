@@ -1,9 +1,9 @@
 #pragma once
 
-#include "valle/modules/amt10x.hpp"
+#include "valle/base/modules/amt10x.hpp"
 #include "valle/platform/drivers/tim/quad_encoder.hpp"
 
-namespace valle
+namespace valle::platform
 {
     using AMT10xModuleTIMEncoderInterfaceConfig = TIMQuadEncoderConfig;
 
@@ -101,4 +101,4 @@ namespace valle
     template <typename TControllerDevice, AMT10xPPR tkPPR>
     using AMT10xTIMEncoderModule = AMT10xModuleX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>, tkPPR>;
 
-}  // namespace valle
+}  // namespace valle::platform

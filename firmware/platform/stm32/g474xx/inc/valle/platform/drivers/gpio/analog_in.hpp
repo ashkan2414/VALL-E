@@ -2,7 +2,7 @@
 
 #include "valle/platform/devices/gpio.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct GPIOAnalogInConfig
     {
@@ -38,4 +38,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

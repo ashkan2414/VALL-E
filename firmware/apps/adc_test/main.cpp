@@ -8,7 +8,7 @@ namespace valle
 {
     void app::main()
     {
-        Timing::delay_ms(1000);
+        TimingContext::delay_ms(1000);
 
         app::init();
 
@@ -30,7 +30,7 @@ namespace valle
 
         while (true)
         {
-            Timing::delay_ms(100);
+            TimingContext::delay_ms(100);
 
             // Software trigger for Regular group
             if constexpr (!app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)

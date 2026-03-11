@@ -2,7 +2,7 @@
 
 #include "valle/platform/devices/gpio.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct GPIODigitalOutConfig
     {
@@ -57,4 +57,4 @@ namespace valle
             return (TGpioPin::skPort->ODR & TGpioPin::skPinMask) != 0;
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

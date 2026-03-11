@@ -3,7 +3,7 @@
 #include "valle/platform/hardware/ADC/id.hpp"
 #include "valle/platform/hardware/gpio.hpp"
 
-namespace valle
+namespace valle::platform
 {
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
     struct ADCPinMap
@@ -113,4 +113,4 @@ namespace valle
                            (ADCPinMap<tkControllerID, tkChannelID>::skPort == tkPortID) &&
                            (ADCPinMap<tkControllerID, tkChannelID>::skPin == tkPin);
 
-}  // namespace valle
+}  // namespace valle::platform

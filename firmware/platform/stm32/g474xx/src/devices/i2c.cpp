@@ -6,7 +6,7 @@
 #include "app_isr_bindings.hpp"
 #endif
 
-namespace valle
+namespace valle::platform
 {
     /**
      * @brief Check if any granular ISR handler is bound for this I2C.
@@ -161,4 +161,4 @@ namespace valle
             i2c_error_irq_handler<4>();
         }
     }
-}  // namespace valle
+}  // namespace valle::platform

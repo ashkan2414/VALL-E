@@ -14,7 +14,7 @@ namespace valle
         while (true)
         {
             VALLE_LOG_INFO("Hello World #{}!", counter++);
-            Timing::delay_ms(1000);
+            TimingContext::delay_ms(1000);
         }
     }
 

@@ -2,7 +2,7 @@
 
 #include "valle/platform/devices/tim.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct TIMQuadEncoderConfig
     {
@@ -90,4 +90,4 @@ namespace valle
             InterfaceT::set_counter(val);
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

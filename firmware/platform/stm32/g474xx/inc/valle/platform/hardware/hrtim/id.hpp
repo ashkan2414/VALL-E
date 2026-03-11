@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace valle
+namespace valle::platform
 {
     using HRTIMControllerID = uint8_t;
 
@@ -43,4 +43,4 @@ namespace valle
         kEEV10,
     };
 
-}  // namespace valle
+}  // namespace valle::platform

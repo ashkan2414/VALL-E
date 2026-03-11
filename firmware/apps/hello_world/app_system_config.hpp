@@ -1,7 +1,6 @@
 #pragma once
 
-#include "valle/core/device/device.hpp"
-#include "valle/core/system/config.hpp"
+#include "valle/base/hardware_build/config_base.hpp"
 #include "valle/platform/drivers/core_system.hpp"
 #include "valle/platform/drivers/uart/logger.hpp"
 
@@ -35,7 +34,7 @@ namespace valle
         // ============================================================================
         // Root Driver
         // ============================================================================
-        using RootDevicesT = RootDevicesFromDrivers<MainDriversT>;
+        using RootDevicesT = RootDevicesFromDriverList<MainDriversT>;
         struct RootDriver : PackedDriverBase<RootDevicesT>
         {
             using BaseT = PackedDriverBase<RootDevicesT>;
@@ -50,14 +49,14 @@ namespace valle
         {
             using DriversT = typename TypeListAddFront<RootDriver, MainDriversT>::type;
 
-            RootDriver  root;
+            RootDriver       root;
             CoreSystemDriver core;
-            UARTLoggerT uart_logger;
+            UARTLoggerT      uart_logger;
         };
 
     }  // namespace app
 
-    struct AppSystemConfig : SystemConfigBase<app::Drivers>
+    struct AppHardwareBuildConfig : SystemConfigBase<app::Drivers>
     {
     };
 

@@ -4,7 +4,7 @@
 #include "valle/platform/hardware/dma.hpp"
 #include "valle/platform/hardware/uart/id.hpp"
 
-namespace valle
+namespace valle::platform
 {
 
     // ============================================================================
@@ -184,4 +184,4 @@ namespace valle
             __HAL_RCC_LPUART1_CLK_ENABLE();
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

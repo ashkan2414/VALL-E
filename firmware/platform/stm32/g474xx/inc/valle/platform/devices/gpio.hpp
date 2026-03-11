@@ -1,10 +1,10 @@
 #pragma once
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/gpio.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =============================================================================
     // Forward Declarations
@@ -295,4 +295,4 @@ namespace valle
     using GPIOPinF14Device = GPIOPinDevice<GPIOPortID::kF, 14>;
     using GPIOPinF15Device = GPIOPinDevice<GPIOPortID::kF, 15>;
 
-}  // namespace valle
+}  // namespace valle::platform

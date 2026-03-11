@@ -1,6 +1,6 @@
 #pragma once
 
-#include "valle/core/system/hardware.hpp"
+#include "valle/base/hardware_build/build.hpp"
 
 namespace valle::app
 {

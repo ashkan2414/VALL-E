@@ -3,7 +3,7 @@
 #include "stm32g4xx_ll_adc.h"
 #include "stm32g4xx_ll_bus.h"
 
-namespace valle
+namespace valle::platform
 {
     enum class ADCClockID : uint32_t
     {
@@ -172,4 +172,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

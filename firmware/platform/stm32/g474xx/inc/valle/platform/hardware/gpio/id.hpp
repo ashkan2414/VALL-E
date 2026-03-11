@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace valle
+namespace valle::platform
 {
     enum class GPIOPortID
     {
@@ -20,4 +20,4 @@ namespace valle
     template <GPIOPortID tkPortID, GPIOPinID tkPinID>
     constexpr bool kValidGPIOPinID = (tkPinID < 16);
 
-}  // namespace valle
+}  // namespace valle::platform

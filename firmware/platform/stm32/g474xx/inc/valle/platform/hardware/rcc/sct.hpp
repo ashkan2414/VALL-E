@@ -7,7 +7,7 @@
 #include "stm32g4xx_ll_rcc.h"
 #include "valle/platform/hardware/power.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // ENUMERATIONS
@@ -512,4 +512,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

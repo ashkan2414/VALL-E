@@ -1,8 +1,9 @@
 #pragma once
 
-#include "valle/core/device/device.hpp"
-#include "valle/core/system/config.hpp"
+#include "valle/app/vca_current_controller_config.hpp"
+#include "valle/base/hardware_build/config_base.hpp"
 #include "valle/platform/drivers/core_system.hpp"
+#include "valle/platform/drivers/gpio/digital_out.hpp"
 #include "valle/platform/drivers/uart/logger.hpp"
 #include "valle/platform/modules/acs724.hpp"
 #include "valle/platform/modules/ldc1612.hpp"
@@ -10,31 +11,11 @@
 
 namespace valle::app
 {
-    constexpr UARTControllerID kLoggerUARTID = UARTControllerID::kLPUART1;
-    struct UARTControllerCTConfig : UARTControllerCTDefaultConfig<kLoggerUARTID>
+    // Logger
+    constexpr UARTControllerID kLoggerUARTControllerID = UARTControllerID::kLPUART1;
+    struct UARTControllerCTConfig : UARTControllerCTDefaultConfig<kLoggerUARTControllerID>
     {
         using DMAChannelTxT = DMA1Channel1Device;
-    };
-
-    // HRTIM PWM Config
-    constexpr HRTIMControllerID kVCAPWMHRTIMControllerID = 1;
-    constexpr HRTIMTimerID      kVCAPWMHRTIMTimerID      = HRTIMTimerID::kA;
-
-    struct HRTIMControllerCTConfig : HRTIMControllerCTDefaultConfig
-    {
-    };
-
-    struct HRTIMTimerCTConfig : HRTIMTimerCTDefaultConfig
-    {
-        using Output1PinT = HRTIMTimerDefaultOutput1PinDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
-        using Output2PinT = HRTIMTimerDefaultOutput2PinDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
-    };
-
-    // Current Sensor ADC Config
-    constexpr ADCControllerID kCurrentSensorADCID        = 3;
-    constexpr ADCChannelID    kCurrentSensorADCChannelId = ADCChannelID::kChannel12;
-    struct ADCControllerCTConfig : ADCControllerCTDefaultConfig
-    {
     };
 
     // Position Sensor I2C Controller Config
@@ -50,10 +31,8 @@ namespace valle::app
 
 }  // namespace valle::app
 
-VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTID, app::UARTControllerCTConfig{});
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(app::kVCAPWMHRTIMControllerID, app::HRTIMControllerCTConfig{});
-VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(app::kVCAPWMHRTIMControllerID, app::kVCAPWMHRTIMTimerID, app::HRTIMTimerCTConfig{});
-VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(app::kCurrentSensorADCID, app::ADCControllerCTConfig{});
+// Bind compile-time configurations
+VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTControllerID, app::UARTControllerCTConfig{});
 VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(app::kPositionSensorI2CID, app::I2CControllerCTConfig{});
 
 namespace valle
@@ -63,20 +42,7 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using LoggerUARTControllerT = UARTControllerDevice<app::kLoggerUARTID>;
-        using UARTLoggerT           = UARTLogger<LoggerUARTControllerT>;
-
-        using VCAPWMHRTIMTimerDeviceT = HRTIMTimerDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
-
-        using VCAControllerSystemControllerT       = VCAClosedLoopCurrentFeedbackController<float>;
-        using VCAControllerSystemControllerConfigT = typename VCAControllerSystemControllerT::ConfigT;
-
-        using VCAControllerT       = VCAControllerHRTIMModule<VCAPWMHRTIMTimerDeviceT, VCAControllerSystemControllerT>;
-        using VCAControllerConfigT = typename VCAControllerT::ConfigT;
-
-        using CurrentSensorADCChannelT = ADCInjectChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>;
-        using CurrentSensorADCControllerT = CurrentSensorADCChannelT::ChannelT::ControllerT;
-        using CurrentSensorT              = ACS724Module<CurrentSensorADCChannelT, ACS724Model::k2P5ABi>;
+        using UARTLoggerT = UARTLogger<UARTControllerDevice<kLoggerUARTControllerID>>;
 
         using PositionSensorI2CControllerT  = I2CCommandBufferDevice<kPositionSensorI2CID>;
         using PositionSensorI2CSlaveDeviceT = I2CCommandBufferSlaveDevice<kPositionSensorI2CID,
@@ -84,13 +50,16 @@ namespace valle
                                                                           kPositionSensorI2CAddressIs10Bit>;
         using PositionSensorT               = LDC161XSensorModule<PositionSensorI2CSlaveDeviceT, 1>;
 
+        using TestGPIODriverT = GPIODigitalOutDriver<GPIOPinB6Device>;
+
         // Declare Main Driver List
-        using MainDriversT = TypeList<CoreSystemDriver, UARTLoggerT, VCAControllerT, CurrentSensorT, PositionSensorT>;
+        using MainDriversT =
+            TypeList<CoreSystemDriver, UARTLoggerT, VCAControllerT, CurrentSensorT, PositionSensorT, TestGPIODriverT>;
 
         // ============================================================================
         // Root Driver
         // ============================================================================
-        using RootDevicesT = RootDevicesFromDrivers<MainDriversT>;
+        using RootDevicesT = RootDevicesFromDriverList<MainDriversT>;
         struct RootDriver : PackedDriverBase<RootDevicesT>
         {
             using BaseT = PackedDriverBase<RootDevicesT>;
@@ -110,15 +79,16 @@ namespace valle
 
             RootDriver       root;
             CoreSystemDriver core;
-            UARTLoggerT     uart_logger;
-            VCAControllerT  vca_controller;
-            CurrentSensorT  current_sensor;
-            PositionSensorT position_sensor;
+            UARTLoggerT      uart_logger;
+            VCAControllerT   vca_controller;
+            CurrentSensorT   current_sensor;
+            PositionSensorT  position_sensor;
+            TestGPIODriverT  test_gpio;
         };
 
     }  // namespace app
 
-    struct AppSystemConfig : SystemConfigBase<app::Drivers>
+    struct AppHardwareBuildConfig : SystemConfigBase<app::Drivers>
     {
     };
 

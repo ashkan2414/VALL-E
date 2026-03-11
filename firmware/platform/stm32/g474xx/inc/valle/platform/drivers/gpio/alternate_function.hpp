@@ -2,7 +2,7 @@
 
 #include "valle/platform/devices/gpio.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct GPIOAlternativeFunctionConfig
     {
@@ -39,4 +39,4 @@ namespace valle
                                                   .alternate = tkAfIdx});
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

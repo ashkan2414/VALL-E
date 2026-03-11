@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace valle
+namespace valle::platform
 {
     enum UARTControllerID : uint8_t
     {
@@ -14,4 +14,4 @@ namespace valle
         kLPUART1 = 6,
     };
 
-}  // namespace valle
+}  // namespace valle::platform

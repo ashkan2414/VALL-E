@@ -4,11 +4,10 @@
 #include <atomic>
 #include <cstdint>
 
-#include "valle/modules/vca.hpp"
+#include "valle/base/modules/vca.hpp"
 #include "valle/platform/drivers/hrtim/half_bridge.hpp"
 
-
-namespace valle
+namespace valle::platform
 {
 
     using VCAControllerHRTIMHalfBridgeInterfaceConfig = HRTIMHalfBridgeDriverConfig;
@@ -112,4 +111,4 @@ namespace valle
     using VCAControllerHRTIMModule =
         VCAControllerModuleX<VCAControllerHRTIMHalfBridgeInterface<THRTIMDevice>, TController>;
 
-}  // namespace valle
+}  // namespace valle::platform

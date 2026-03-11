@@ -4,13 +4,13 @@
 #include <cstdint>
 
 #include "stm32g4xx_ll_bus.h"
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/rcc.hpp"
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/hrtim.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
 
     // =============================================================================
@@ -89,7 +89,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(tkControllerID, config)                        \
-    namespace valle                                                                            \
+    namespace valle::platform                                                                  \
     {                                                                                          \
         template <>                                                                            \
         struct HRTIMControllerCTConfigTraits<(tkControllerID)>                                 \
@@ -200,7 +200,7 @@ namespace valle
 
             // Wait for clock to stabilize
             // RM0440: Allow a few APB2 cycles for clock propagation
-            PlatformTimingUtils::delay_cycles_busy(10);
+            TimingContext::delay_cycles_busy(10);
 
             // Start DLL Calibration
             LL_HRTIM_StartDLLCalibration(ControllerTraitsT::skInstance);
@@ -208,7 +208,7 @@ namespace valle
             // Wait for calibration to finish with precise timeout
             // RM0440 Section 29.3.15: DLL calibration time = 14 µs typical
             // Allow up to 100 µs
-            const bool calibration_success = PlatformTimingUtils::wait_for_with_timeout_us(
+            const bool calibration_success = TimingContext::wait_for_with_timeout_us(
                 []() { return LL_HRTIM_IsActiveFlag_DLLRDY(ControllerTraitsT::skInstance) != 0; }, 100);
 
             if (!calibration_success)
@@ -269,7 +269,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_HRTIM_FAULT_CT_CONFIG(tkControllerID, tkFaultID, config)                          \
-    namespace valle                                                                                    \
+    namespace valle::platform                                                                          \
     {                                                                                                  \
         template <>                                                                                    \
         struct HRTIMFaultCTConfigTraits<(tkControllerID), (tkFaultID)>                                 \
@@ -466,7 +466,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_HRTIM_EEV_CT_CONFIG(tkControllerID, tkEEVID, config)                          \
-    namespace valle                                                                                \
+    namespace valle::platform                                                                      \
     {                                                                                              \
         template <>                                                                                \
         struct HRTIMEEVCTConfigTraits<(tkControllerID), (tkEEVID)>                                 \
@@ -712,7 +712,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(tkControllerID, tkTimerID, config)                          \
-    namespace valle                                                                                    \
+    namespace valle::platform                                                                          \
     {                                                                                                  \
         template <>                                                                                    \
         struct HRTIMTimerCTConfigTraits<(tkControllerID), (tkTimerID)>                                 \
@@ -1295,4 +1295,4 @@ namespace valle
     using HRTIM1TimerEDevice = HRTIMTimerDevice<1, HRTIMTimerID::kE>;
     using HRTIM1TimerFDevice = HRTIMTimerDevice<1, HRTIMTimerID::kF>;
 
-}  // namespace valle
+}  // namespace valle::platform

@@ -2,11 +2,11 @@
 
 #include "stm32g4xx_ll_bus.h"
 #include "stm32g4xx_ll_hrtim.h"
-#include "valle/core.hpp"
 #include "valle/platform/hardware/hrtim/id.hpp"
 #include "valle/utils/template_utils.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // ============================================================================
     // ENUMERATIONS
@@ -1595,4 +1595,4 @@ namespace valle
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

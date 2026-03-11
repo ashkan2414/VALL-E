@@ -7,7 +7,7 @@
 #include "valle/platform/devices/power.hpp"
 #include "valle/platform/devices/rcc.hpp"
 
-namespace valle
+namespace valle::platform
 {
 
     struct CoreSystemConfig
@@ -60,4 +60,4 @@ namespace valle
             return true;
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace valle
+namespace valle::platform
 {
     enum class TIMControllerID : uint32_t
     {
@@ -29,4 +29,4 @@ namespace valle
         kCh6,
     };
 
-}  // namespace valle
+}  // namespace valle::platform

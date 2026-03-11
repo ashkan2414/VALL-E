@@ -2,7 +2,6 @@
 
 #include <optional>
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/power.hpp"
 #include "valle/platform/devices/rcc/hse.hpp"
@@ -10,7 +9,8 @@
 #include "valle/platform/hardware/rcc/pll.hpp"
 #include "valle/platform/hardware/rcc/sct.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =============================================================================
     // FORWARD DECLARATIONS
@@ -370,15 +370,15 @@ namespace valle
     private:
         [[nodiscard]] static bool wait_for_ready(const uint32_t timeout_count)
         {
-            return PlatformTimingUtils::wait_for_with_timeout_countdown([]() { return InterfaceT::is_ready(); },
-                                                                        timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([]() { return InterfaceT::is_ready(); },
+                                                                  timeout_count);
         }
 
         [[nodiscard]] static bool wait_for_not_ready(const uint32_t timeout_count)
         {
-            return PlatformTimingUtils::wait_for_with_timeout_countdown(
-                []() -> bool { return !InterfaceT::is_ready(); }, timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !InterfaceT::is_ready(); },
+                                                                  timeout_count);
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

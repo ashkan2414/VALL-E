@@ -6,7 +6,7 @@
 #include "app_isr_bindings.hpp"
 #endif
 
-namespace valle
+namespace valle::platform
 {
     /**
      * @brief Check if any granular ISR handler is bound for this ADC.
@@ -114,4 +114,4 @@ namespace valle
             adc_irq_handler<5>();
         }
     }
-}  // namespace valle
+}  // namespace valle::platform

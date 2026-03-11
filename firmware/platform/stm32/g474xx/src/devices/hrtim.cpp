@@ -6,7 +6,7 @@
 #include "app_isr_bindings.hpp"
 #endif
 
-namespace valle
+namespace valle::platform
 {
 
     // -----------------------------------------------------------------------------
@@ -375,4 +375,4 @@ namespace valle
         }
     }
 
-}  // namespace valle
+}  // namespace valle::platform

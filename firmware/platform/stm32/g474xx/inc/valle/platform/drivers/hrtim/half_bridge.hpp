@@ -4,7 +4,7 @@
 
 #include "valle/platform/devices/hrtim.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct HRTIMHalfBridgeOutputConfig
     {
@@ -365,4 +365,4 @@ namespace valle
     using HRTIM1TimerEHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerEDevice>;
     using HRTIM1TimerFHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerFDevice>;
 
-}  // namespace valle
+}  // namespace valle::platform

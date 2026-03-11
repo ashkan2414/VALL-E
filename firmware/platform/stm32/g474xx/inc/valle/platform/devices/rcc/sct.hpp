@@ -3,8 +3,6 @@
 #include <stm32g4xx_hal.h>
 #include <system_stm32g4xx.h>
 
-#include "valle/core/device/device.hpp"
-#include "valle/core/timing.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/power.hpp"
 #include "valle/platform/devices/rcc/hse.hpp"
@@ -13,7 +11,7 @@
 #include "valle/platform/hardware/flash.hpp"
 #include "valle/platform/hardware/rcc/sct.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // =============================================================================
     // FORWARD DECLARATIONS
@@ -356,7 +354,7 @@ namespace valle
             InterfaceT::set_apb2_prescaler(config.apb2_prescaler);
 
             // Short delay to ensure APB prescaler changes take effect before frequency checks below
-            PlatformTimingUtils::delay_countdown(2000U);
+            TimingContext::delay_countdown(2000U);
 
             // ---------------------------------------------------------------------
             // Decrease FLASH latency afterward if allowed
@@ -365,7 +363,7 @@ namespace valle
             {
                 FlashInterface::set_latency(required_flash_latency);
 
-                expect(PlatformTimingUtils::wait_for_with_timeout_countdown(
+                expect(TimingContext::wait_for_with_timeout_countdown(
                            [&]() -> bool { return FlashInterface::get_latency() == required_flash_latency; },
                            InterfaceT::skDefaultSourceSwitchTimeoutCount),
                        "FLASH latency failed to decrease within timeout");
@@ -380,9 +378,9 @@ namespace valle
     private:
         [[nodiscard]] static bool wait_for_source_active(const SCTSource source, const uint32_t timeout_count)
         {
-            return PlatformTimingUtils::wait_for_with_timeout_countdown(
+            return TimingContext::wait_for_with_timeout_countdown(
                 [source]() -> bool { return InterfaceT::is_source_active(source); }, timeout_count);
         }
     };
 
-}  // namespace valle
+}  // namespace valle::platform

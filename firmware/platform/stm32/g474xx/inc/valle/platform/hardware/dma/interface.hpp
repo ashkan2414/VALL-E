@@ -5,7 +5,7 @@
 #include "valle/platform/hardware/dma/id.hpp"
 #include "valle/platform/hardware/dmamux.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // ============================================================================
     // ENUMERATIONS
@@ -289,4 +289,4 @@ namespace valle
         static constexpr IRQn_Type skIRQn = get_irq_n();
     };
 
-}  // namespace valle
+}  // namespace valle::platform

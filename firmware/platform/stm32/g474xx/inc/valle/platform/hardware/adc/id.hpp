@@ -3,8 +3,7 @@
 #include <cstdint>
 #include <magic_enum/magic_enum.hpp>
 
-
-namespace valle
+namespace valle::platform
 {
 
     static constexpr size_t kADCMaxRegChannels = 16;
@@ -67,4 +66,4 @@ namespace valle
     template <ADCRegularChannelRank tkRank>
     constexpr bool kValidADCRegularRank = (tkRank >= 1 && tkRank <= 16);
 
-}  // namespace valle
+}  // namespace valle::platform

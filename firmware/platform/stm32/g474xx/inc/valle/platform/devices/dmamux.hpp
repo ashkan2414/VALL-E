@@ -1,11 +1,11 @@
 #pragma once
 
 #include "stm32g4xx_ll_bus.h"
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/dmamux.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // ============================================================================
     // FORWARD DECLARATIONS
@@ -71,4 +71,4 @@ namespace valle
 
     using DMAMux1ControllerDevice = DMAMuxControllerDevice<1>;
 
-}  // namespace valle
+}  // namespace valle::platform

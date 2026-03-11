@@ -3,8 +3,7 @@
 #include "valle/platform/hardware/gpio.hpp"
 #include "valle/platform/hardware/uart/id.hpp"
 
-
-namespace valle
+namespace valle::platform
 {
     enum class UARTPinType : uint8_t
     {
@@ -142,4 +141,4 @@ namespace valle
     REGISTER_UART_PIN(UARTControllerID::kLPUART1, GPIOPortID::kG, 7, UARTPinType::kTx, GPIOAlternativeFunction::kAF8);
     REGISTER_UART_PIN(UARTControllerID::kLPUART1, GPIOPortID::kG, 8, UARTPinType::kRx, GPIOAlternativeFunction::kAF8);
 
-}  // namespace valle
+}  // namespace valle::platform

@@ -5,12 +5,13 @@
 #include <chrono>
 #include <cstdint>
 
-#include "valle/core/timing.hpp"
+#include "valle/base/platform_support/system_backend/timing.hpp"
 #include "valle/platform/core/clock.hpp"
 #include "valle/platform/core/config.hpp"
 #include "valle/platform/hardware/rcc.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
     // =========================================================================
     // CLOCKS
@@ -70,17 +71,10 @@ namespace valle
     };
 
     // =========================================================================
-    // Timers
-    // =========================================================================
-
-    using Timer          = GenericTimer<SystemClock>;
-    using PrecisionTimer = GenericTimer<CycleClock>;
-
-    // =========================================================================
     // WAIT POLICY
     // =========================================================================
 
-    struct PlatformWaitPolicy
+    struct TimingWaitPolicy
     {
         static void wait()
         {
@@ -94,15 +88,17 @@ namespace valle
     };
 
     // =========================================================================
-    // TIMING UTILS
+    // TIMING CONTEXT
     // =========================================================================
 
-    struct PlatformTimingUtils : public TimingUtilsBase<PlatformWaitPolicy, SystemClock, CycleClock>
+    struct TimingContext
+        : public platform_support::system_backend::TimingContextBase<TimingWaitPolicy, SystemClock, CycleClock>
     {
         // =========================================================================
         // CYCLE UTILS
         // =========================================================================
-        using CyclesTraitsT = ClockTimingTraits<CycleClock, typename CycleClock::period>;
+        using CyclesTraitsT =
+            platform_support::system_backend::PeriodTimingTraits<typename CycleClock::period, CycleClock>;
 
         using DurationCyclesRepT = typename CyclesTraitsT::DurationRepT;
         using DurationCyclesT    = typename CyclesTraitsT::DurationT;
@@ -113,7 +109,9 @@ namespace valle
         using TimeoutCyclesRepT = typename CyclesTraitsT::TimeoutRepT;
         using TimeoutCyclesT    = typename CyclesTraitsT::TimeoutT;
 
-        using TimingUtilsCycleT = ClockTimingUtils<CyclesTraitsT, PlatformWaitPolicy>;
+        using TimerCycleT = typename CyclesTraitsT::TimerT;
+
+        using TimingUtilsCycleT = platform_support::system_backend::PeriodTimingUtils<CyclesTraitsT, TimingWaitPolicy>;
 
         static void delay_cycles(const DelayCyclesRepT cycles_delay) noexcept
         {
@@ -135,7 +133,7 @@ namespace valle
          * @return true If the condition became true within the timeout.
          * @return false If the timeout elapsed before the condition became true.
          */
-        template <CConditionFunc TFunc>
+        template <CTimeoutConditionFunc TFunc>
         [[nodiscard]] static bool wait_for_with_timeout_cycles(TFunc&&                 condition,
                                                                const TimeoutCyclesRepT timeout_cycles)
         {
@@ -144,35 +142,4 @@ namespace valle
         }
     };
 
-    // =========================================================================
-    // Global namespace aliases
-    // =========================================================================
-    using DurationSecondsRep = typename PlatformTimingUtils::DurationSecondsRepT;
-    using DurationSeconds    = typename PlatformTimingUtils::DurationSecondsT;
-    using DelaySecondsRep    = typename PlatformTimingUtils::DelaySecondsRepT;
-    using DelaySeconds       = typename PlatformTimingUtils::DelaySecondsT;
-    using TimeoutSecondsRep  = typename PlatformTimingUtils::TimeoutSecondsRepT;
-    using TimeoutSeconds     = typename PlatformTimingUtils::TimeoutSecondsT;
-
-    using DurationMillisRep = typename PlatformTimingUtils::DurationMillisRepT;
-    using DurationMillis    = typename PlatformTimingUtils::DurationMillisT;
-    using DelayMillisRep    = typename PlatformTimingUtils::DelayMillisRepT;
-    using DelayMillis       = typename PlatformTimingUtils::DelayMillisT;
-    using TimeoutMillisRep  = typename PlatformTimingUtils::TimeoutMillisRepT;
-    using TimeoutMillis     = typename PlatformTimingUtils::TimeoutMillisT;
-
-    using DurationMicrosRep = typename PlatformTimingUtils::DurationMicrosRepT;
-    using DurationMicros    = typename PlatformTimingUtils::DurationMicrosT;
-    using DelayMicrosRep    = typename PlatformTimingUtils::DelayMicrosRepT;
-    using DelayMicros       = typename PlatformTimingUtils::DelayMicrosT;
-    using TimeoutMicrosRep  = typename PlatformTimingUtils::TimeoutMicrosRepT;
-    using TimeoutMicros     = typename PlatformTimingUtils::TimeoutMicrosT;
-
-    using DurationCyclesRep = typename PlatformTimingUtils::DurationCyclesRepT;
-    using DurationCycles    = typename PlatformTimingUtils::DurationCyclesT;
-    using DelayCyclesRep    = typename PlatformTimingUtils::DelayCyclesRepT;
-    using DelayCycles       = typename PlatformTimingUtils::DelayCyclesT;
-    using TimeoutCyclesRep  = typename PlatformTimingUtils::TimeoutCyclesRepT;
-    using TimeoutCycles     = typename PlatformTimingUtils::TimeoutCyclesT;
-
-}  // namespace valle
+}  // namespace valle::platform

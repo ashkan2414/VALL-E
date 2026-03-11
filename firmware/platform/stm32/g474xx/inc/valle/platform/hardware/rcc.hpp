@@ -8,7 +8,7 @@
 #include "valle/platform/hardware/rcc/pll.hpp"
 #include "valle/platform/hardware/rcc/sct.hpp"
 
-namespace valle
+namespace valle::platform
 {
     struct RCCInterface
     {
@@ -112,4 +112,4 @@ namespace valle
             return SCTInterface::calculate_pclk2_freq_hz(get_hclk_freq_hz(), SCTInterface::get_apb2_prescaler());
         }
     };
-}  // namespace valle
+}  // namespace valle::platform

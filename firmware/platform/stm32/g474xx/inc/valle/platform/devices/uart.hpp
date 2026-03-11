@@ -3,13 +3,13 @@
 #include <chrono>
 #include <span>
 
-#include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/uart.hpp"
 
-namespace valle
+
+namespace valle::platform
 {
 
     // ============================================================================
@@ -88,7 +88,7 @@ namespace valle
     };
 
 #define VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(tkControllerID, config)                                            \
-    namespace valle                                                                                               \
+    namespace valle::platform                                                                                     \
     {                                                                                                             \
         template <>                                                                                               \
         struct UARTControllerCTConfigTraits<(tkControllerID)>                                                     \
@@ -427,11 +427,11 @@ namespace valle
     using UART5ControllerDevice   = UARTControllerDevice<kUART5>;
     using LPUART1ControllerDevice = UARTControllerDevice<kLPUART1>;  // Usually the main USB UART
 
-}  // namespace valle
+}  // namespace valle::platform
 
 // Put these in app_isr_bindings.hpp to bind your instance
 #define VALLE_BIND_UART_DMA_ISR_ROUTER(instance)                                                            \
-    namespace valle                                                                                         \
+    namespace valle::platform                                                                               \
     {                                                                                                       \
         static_assert(std::remove_cvref_t<decltype((instance))>::skHasDMATx,                                \
                       "Instance does not have DMA TX capability");                                          \
@@ -447,7 +447,7 @@ namespace valle
     }
 
 #define VALLE_BIND_UART_ISR_ROUTER(instance)                                                  \
-    namespace valle                                                                           \
+    namespace valle::platform                                                                 \
     {                                                                                         \
         template <>                                                                           \
         struct UARTGlobalISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID> \

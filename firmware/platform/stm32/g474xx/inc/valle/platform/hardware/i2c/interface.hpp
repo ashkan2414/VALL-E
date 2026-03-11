@@ -4,7 +4,7 @@
 #include "valle/platform/hardware/dma.hpp"
 #include "valle/platform/hardware/i2c/id.hpp"
 
-namespace valle
+namespace valle::platform
 {
 
     // ============================================================================
@@ -80,4 +80,4 @@ namespace valle
         static constexpr IRQn_Type       skErrorIRQn       = I2C4_ER_IRQn;
     };
 
-}  // namespace valle
+}  // namespace valle::platform

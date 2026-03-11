@@ -3,7 +3,7 @@
 #include "stm32g4xx_ll_tim.h"
 #include "valle/platform/hardware/tim/id.hpp"
 
-namespace valle
+namespace valle::platform
 {
     // =========================================================================
     // ENUMERATIONS
@@ -925,4 +925,4 @@ namespace valle
             }
         }
     };
-}  // namespace valle
+}  // namespace valle::platform
