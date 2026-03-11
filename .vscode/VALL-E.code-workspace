@@ -29,11 +29,12 @@
 			"Thirdparty"
 		],
 		"clang-tidy.buildPath": "${workspaceFolder}/firmware/build/vca-test-debug",
-		"clang-tidy.lintOnSave": true,
+		"clang-tidy.lintOnSave": false,
 		"C_Cpp.formatting": "clangFormat",
 		"[cpp]": {
 			"editor.defaultFormatter": "xaver.clang-format",
-		}
+		},
+		"files.autoSave": "onFocusChange"
 	},
 	"extensions": {
 		"recommendations": [
