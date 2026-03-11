@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <variant>
+
 
 namespace valle
 {

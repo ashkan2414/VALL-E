@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <magic_enum/magic_enum.hpp>
+
 
 namespace valle
 {

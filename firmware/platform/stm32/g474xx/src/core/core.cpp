@@ -6,13 +6,6 @@ namespace valle
     {
         /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
         HAL_Init();
-
-        /* Configure the system clock */
-        config_system_clock();
-
-        /* Configure system timers */
-        SystemClock::init();
-        CycleClock::init();
     }
 
     extern "C"

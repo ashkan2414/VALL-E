@@ -950,7 +950,7 @@ namespace valle
             }
             else
             {
-                static_assert(kAlwaysFalse<tkFaultID>, "Invalid HRTIMFaultID");
+                static_assert(kAlwaysFalseV<tkFaultID>, "Invalid HRTIMFaultID");
             }
         }
 
@@ -1009,7 +1009,7 @@ namespace valle
             }
             else
             {
-                static_assert(kAlwaysFalse<tkEEVID>, "Invalid HRTIMEEVID");
+                static_assert(kAlwaysFalseV<tkEEVID>, "Invalid HRTIMEEVID");
             }
         }
 
@@ -1126,11 +1126,6 @@ namespace valle
         // -------------------------------------------------------------------------
         // TIMING
         // -------------------------------------------------------------------------
-        [[nodiscard]] static uint32_t get_freq_hz()
-        {
-            return get_apb2_timer_clock_freq();
-        }
-
         [[nodiscard]] static HRTIMTimerPrescaler get_timer_prescaler()
         {
             return static_cast<HRTIMTimerPrescaler>(
@@ -1203,9 +1198,9 @@ namespace valle
                    (1 << prescaler_num);
         }
 
-        [[nodiscard]] static uint64_t get_hrck_freq_hz()
+        [[nodiscard]] static uint64_t get_hrck_freq_hz(const uint32_t f_hrtim_hz)
         {
-            return calculate_hrck_freq_hz(get_freq_hz(), get_timer_prescaler());
+            return calculate_hrck_freq_hz(f_hrtim_hz, get_timer_prescaler());
         }
 
         // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
@@ -1215,9 +1210,9 @@ namespace valle
             return f_hrck_hz / (period_ticks + 1);
         }
 
-        [[nodiscard]] static uint64_t get_timer_freq_hz()
+        [[nodiscard]] static uint64_t get_timer_freq_hz(const uint32_t f_hrtim_hz)
         {
-            return calculate_timer_freq_hz(get_hrck_freq_hz(), get_period_ticks());
+            return calculate_timer_freq_hz(get_hrck_freq_hz(f_hrtim_hz), get_period_ticks());
         }
 
         // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
@@ -1227,9 +1222,9 @@ namespace valle
             return f_timer_hz / (repetition + 1);
         }
 
-        [[nodiscard]] static uint64_t get_int_freq_hz()
+        [[nodiscard]] static uint64_t get_int_freq_hz(const uint32_t f_hrtim_hz)
         {
-            return calculate_int_freq_hz(get_timer_freq_hz(), get_repetition());
+            return calculate_int_freq_hz(get_timer_freq_hz(f_hrtim_hz), get_repetition());
         }
 
         [[nodiscard]] static constexpr uint64_t calculate_min_freq_hz(const uint32_t f_hrtim_hz)
@@ -1484,7 +1479,7 @@ namespace valle
             }
             else
             {
-                static_assert(kAlwaysFalse<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
+                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
             }
         }
 
@@ -1532,7 +1527,7 @@ namespace valle
             }
             else
             {
-                static_assert(kAlwaysFalse<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
+                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
             }
         }
 
@@ -1576,7 +1571,7 @@ namespace valle
             }
             else
             {
-                static_assert(kAlwaysFalse<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
+                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
             }
         }
 

@@ -1,7 +1,13 @@
 #pragma once
 
+#include <algorithm>
+#include <cstdint>
+#include <cstdlib>
+#include <limits>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
+#include <utility>
 
 namespace valle
 {
@@ -50,27 +56,52 @@ namespace valle
     };
 
     // ----------------------------------------------------------------------------
-    // TypeListAdd: add T to TList
+    // TypeListAddBack: add T to back of TList
     // ----------------------------------------------------------------------------
     template <typename T, typename TList>
-    struct TypeListAdd;
+    struct TypeListAddBack;
 
     template <typename T, typename... Ts>
-    struct TypeListAdd<T, TypeList<Ts...>>
+    struct TypeListAddBack<T, TypeList<Ts...>>
     {
         using type = TypeList<Ts..., T>;
     };
 
     // ----------------------------------------------------------------------------
-    // TypeListAddUnique: add T to TList if not present
+    // TypeListAddFront: add T to front of TList
     // ----------------------------------------------------------------------------
     template <typename T, typename TList>
-    struct TypeListAddUnique;
+    struct TypeListAddFront;
+
     template <typename T, typename... Ts>
-    struct TypeListAddUnique<T, TypeList<Ts...>>
+    struct TypeListAddFront<T, TypeList<Ts...>>
+    {
+        using type = TypeList<T, Ts...>;
+    };
+
+    // ----------------------------------------------------------------------------
+    // TypeListAddUniqueBack: add T to back of TList if not present
+    // ----------------------------------------------------------------------------
+    template <typename T, typename TList>
+    struct TypeListAddUniqueBack;
+    template <typename T, typename... Ts>
+    struct TypeListAddUniqueBack<T, TypeList<Ts...>>
     {
         using type =
             std::conditional_t<TypeListContains<T, TypeList<Ts...>>::value, TypeList<Ts...>, TypeList<Ts..., T>>;
+    };
+
+    // ----------------------------------------------------------------------------
+    // TypeListAddUniqueFront: add T to front of TList if not present
+    // ----------------------------------------------------------------------------
+    template <typename T, typename TList>
+    struct TypeListAddUniqueFront;
+
+    template <typename T, typename... Ts>
+    struct TypeListAddUniqueFront<T, TypeList<Ts...>>
+    {
+        using type =
+            std::conditional_t<TypeListContains<T, TypeList<Ts...>>::value, TypeList<Ts...>, TypeList<T, Ts...>>;
     };
 
     // ----------------------------------------------------------------------------
@@ -143,7 +174,7 @@ namespace valle
         struct Helper<Acc, TypeList<H, T...>>
         {
             using NextAcc =
-                std::conditional_t<TypeListContains<H, Acc>::value, Acc, typename TypeListAddUnique<H, Acc>::type>;
+                std::conditional_t<TypeListContains<H, Acc>::value, Acc, typename TypeListAddUniqueBack<H, Acc>::type>;
             using type = typename Helper<NextAcc, TypeList<T...>>::type;
         };
 
@@ -221,7 +252,7 @@ namespace valle
         static constexpr bool skSeen = TypeListContains<Head, Out>::value;
 
         // Add if new
-        using NextOut = std::conditional_t<skSeen, Out, typename TypeListAdd<Head, Out>::type>;
+        using NextOut = std::conditional_t<skSeen, Out, typename TypeListAddBack<Head, Out>::type>;
 
         using type = typename TypeListUniqueLowCard<TypeList<Tail...>, NextOut>::type;
     };
@@ -256,6 +287,30 @@ namespace valle
     struct TypeListToTuple<TypeList<Ts...>>
     {
         using type = std::tuple<Ts...>;
+    };
+
+    // ----------------------------------------------------------------------------
+    // TupleToTypeList: convert std::tuple to TypeList
+    // ----------------------------------------------------------------------------
+    template <typename TTuple>
+    struct TupleToTypeList;
+
+    template <typename... Ts>
+    struct TupleToTypeList<std::tuple<Ts...>>
+    {
+        using type = TypeList<Ts...>;
+    };
+
+    // ----------------------------------------------------------------------------
+    // TransformTypeList: apply a template transformation to each type in a TypeList
+    // ----------------------------------------------------------------------------
+    template <typename TList, template <typename> typename TTransform>
+    struct TransformTypeList;
+
+    template <template <typename> typename TTransform, typename... Ts>
+    struct TransformTypeList<TypeList<Ts...>, TTransform>
+    {
+        using type = TypeList<typename TTransform<Ts>::type...>;
     };
 
     // ----------------------------------------------------------------------------
@@ -423,14 +478,15 @@ namespace valle
     namespace detail
     {
         template <typename TTuple, template <class> class TPred, std::size_t... I>
-        constexpr auto filter_tuple_values_impl(TTuple&& t, std::index_sequence<I...>)
+        constexpr auto filter_tuple_values_impl(TTuple&& tuple, std::index_sequence<I...> indices)
         {
+            (void)indices;  // Silence unused parameter warning
             return std::tuple_cat((
-                [&t]() constexpr
+                [&tuple]() constexpr
                 {
                     if constexpr (TPred<std::tuple_element_t<I, std::remove_reference_t<TTuple>>>::value)
                     {
-                        return std::tuple{std::get<I>(std::forward<TTuple>(t))};
+                        return std::tuple{std::get<I>(std::forward<TTuple>(tuple))};
                     }
                     else
                     {
@@ -441,11 +497,12 @@ namespace valle
     }  // namespace detail
 
     template <template <class> class TPred, typename TTuple>
-    constexpr auto filter_tuple_values(TTuple&& t)
+    constexpr auto filter_tuple_values(TTuple&& tuple)
     {
-        constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<TTuple>>;
+        constexpr std::size_t tuple_size = std::tuple_size_v<std::remove_reference_t<TTuple>>;
 
-        return detail::filter_tuple_values_impl<TTuple, TPred>(std::forward<TTuple>(t), std::make_index_sequence<N>{});
+        return detail::filter_tuple_values_impl<TTuple, TPred>(std::forward<TTuple>(tuple),
+                                                               std::make_index_sequence<tuple_size>{});
     }
 
     // ============================================================================
@@ -500,6 +557,43 @@ namespace valle
     Overloaded(Ts...) -> Overloaded<Ts...>;
 
     // ============================================================================
+    // Integral Utils
+    // ============================================================================
+
+    namespace detail
+    {
+        // Helper to find the smallest unsigned type from a list that can hold Value
+        template <std::uintmax_t Value, typename... UnsignedTypes>
+        struct SmallestUnsignedForValueImpl;
+
+        // Base case: if only one type remains, we must pick it (or add error handling)
+        template <std::uintmax_t Value, typename T>
+        struct SmallestUnsignedForValueImpl<Value, T>
+        {
+            using type = T;
+        };
+
+        // Recursive case: check if the first type in the list is large enough
+        template <std::uintmax_t Value, typename T, typename... Rest>
+        struct SmallestUnsignedForValueImpl<Value, T, Rest...>
+        {
+            using type = std::conditional_t<(Value <= std::numeric_limits<T>::max()),
+                                            T,
+                                            typename SmallestUnsignedForValueImpl<Value, Rest...>::type>;
+        };
+
+    }  // namespace detail
+
+    template <typename TSigned>
+        requires(std::is_signed_v<TSigned>)
+    using SmallestUnsignedFittingRange =
+        typename detail::SmallestUnsignedForValueImpl<static_cast<std::uintmax_t>(std::numeric_limits<TSigned>::max()),
+                                                      std::uint8_t,
+                                                      std::uint16_t,
+                                                      std::uint32_t,
+                                                      std::uint64_t>::type;
+
+    // ============================================================================
     // Debugging
     // ============================================================================
 
@@ -517,6 +611,8 @@ namespace valle
     };
 
     template <auto T>
-    inline constexpr bool kAlwaysFalse = false;
+    inline constexpr bool kAlwaysFalseV = false;
 
+    template <typename T>
+    inline constexpr bool kAlwaysFalseT = false;
 }  // namespace valle

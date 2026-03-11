@@ -11,7 +11,7 @@ namespace valle
             app::main();
 
             /* Trap: We should never get here. If the App exits, we hang. */
-            while (1)
+            while (true)
             {
             }
         }

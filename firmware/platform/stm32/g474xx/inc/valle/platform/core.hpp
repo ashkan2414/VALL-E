@@ -1,5 +1,6 @@
 #pragma once
 
+#include "valle/core.hpp"
 #include "valle/platform/core/clock.hpp"
 #include "valle/platform/core/sync.hpp"
 #include "valle/platform/core/timing.hpp"

@@ -6,7 +6,6 @@
 #include <optional>
 #include <variant>
 
-#include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/adc_clk.hpp"
@@ -100,7 +99,7 @@ namespace valle
     // -----------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct ADCControllerCTConfigDefaults
+    struct ADCControllerCTDefaultConfig
     {
         using DMAChannelT = DMANullChannelDevice;
     };
@@ -114,7 +113,7 @@ namespace valle
         requires(kValidADCControllerID<tkControllerID>)
     struct ADCControllerCTConfigTraits
     {
-        static constexpr auto skConfig = ADCControllerCTConfigDefaults{};
+        static constexpr auto skConfig = ADCControllerCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \
@@ -356,8 +355,9 @@ namespace valle
         std::array<std::optional<ADCRegularChannelRank>, kNumADCChannels> m_reg_cidx_to_rank_map{};
 
         // Cached values for optimization
-        uint32_t m_effective_resolution_range = 4095;
-        float    m_ref_voltage                = 3.3F;
+        uint32_t m_inject_effective_resolution_range  = 4095;
+        uint32_t m_regular_effective_resolution_range = 4095;
+        float    m_ref_voltage                        = 3.3F;
 
     public:
         ADCControllerDevice(DeviceRef<DMAChannelT>&& dma_channel)
@@ -382,25 +382,25 @@ namespace valle
          */
         [[nodiscard]] bool init()
         {
-            if (!InterfaceT::disable())
+            if (!disable())
             {
                 VALLE_LOG_FATAL("Failed to disable ADC");
                 return false;
             }
 
-            if (!InterfaceT::disable_deep_power_mode())
+            if (!disable_deep_power_mode())
             {
                 VALLE_LOG_FATAL("Failed to disable ADC deep power mode");
                 return false;
             }
 
-            if (!InterfaceT::enable_voltage_regulator())
+            if (!enable_voltage_regulator())
             {
                 VALLE_LOG_FATAL("Failed to enable ADC internal regulator");
                 return false;
             }
 
-            if (!InterfaceT::calibrate())
+            if (!calibrate())
             {
                 VALLE_LOG_FATAL("ADC calibration failed");
                 return false;
@@ -504,7 +504,7 @@ namespace valle
             }
 
             // Enable ADC
-            if (!InterfaceT::enable())
+            if (!enable())
             {
                 VALLE_LOG_FATAL("ADC enable failed");
                 return false;
@@ -520,14 +520,15 @@ namespace valle
                 return false;
             }
 
-            m_effective_resolution_range = InterfaceT::get_effective_resolution_range();
+            m_inject_effective_resolution_range  = InterfaceT::get_inject_group_effective_resolution_range();
+            m_regular_effective_resolution_range = InterfaceT::get_regular_group_effective_resolution_range();
 
             return true;
         }
 
         [[nodiscard]] bool initialized() const
         {
-            return InterfaceT::enabled();
+            return InterfaceT::is_enabled();
         }
 
         // --- Control API (Called by Application) ---
@@ -695,28 +696,129 @@ namespace valle
         }
 
         /**
-         * @brief Convert raw ADC value to normalized float (0.0 to 1.0).
+         * @brief Convert raw ADC value from inject group to normalized float (0.0 to 1.0).
          *
          * @param raw Raw ADC value.
          * @return float Normalized value.
          */
-        [[nodiscard]] constexpr float raw_to_normalized(const ADCValue raw) const
+        [[nodiscard]] constexpr float raw_to_normalized_inject(const ADCValue raw) const
         {
-            return static_cast<float>(raw) / m_effective_resolution_range;
+            return static_cast<float>(raw) / m_inject_effective_resolution_range;
         }
 
         /**
-         * @brief Convert raw ADC value to voltage (Volts).
+         * @brief Convert raw ADC value from regular group to normalized float (0.0 to 1.0).
+         *
+         * @param raw Raw ADC value.
+         * @return float Normalized value.
+         */
+        [[nodiscard]] constexpr float raw_to_normalized_regular(const ADCValue raw) const
+        {
+            return static_cast<float>(raw) / m_regular_effective_resolution_range;
+        }
+
+        /**
+         * @brief Convert raw ADC value from inject group to voltage (Volts).
          *
          * @param raw Raw ADC value.
          * @return float Voltage in Volts.
          */
-        [[nodiscard]] constexpr float raw_to_voltage(const ADCValue raw) const
+        [[nodiscard]] constexpr float raw_to_voltage_inject(const ADCValue raw) const
         {
-            return raw_to_normalized(raw) * m_ref_voltage;
+            return raw_to_normalized_inject(raw) * m_ref_voltage;
+        }
+
+        /**
+         * @brief Convert raw ADC value from regular group to voltage (Volts).
+         *
+         * @param raw Raw ADC value.
+         * @return float Voltage in Volts.
+         */
+        [[nodiscard]] constexpr float raw_to_voltage_regular(const ADCValue raw) const
+        {
+            return raw_to_normalized_regular(raw) * m_ref_voltage;
         }
 
     private:
+        [[nodiscard]] static bool disable()
+        {
+            if (InterfaceT::is_enabled())
+            {
+                InterfaceT::disable();
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] static bool enable()
+        {
+            InterfaceT::enable();
+            const bool adc_ready = PlatformTimingUtils::wait_for_with_timeout_us(
+                []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100U);
+
+            // If timeout occurred, ADC is not ready
+            return adc_ready;
+        }
+
+        [[nodiscard]] bool disable_deep_power_mode()
+        {
+            if (InterfaceT::deep_power_down_enabled())
+            {
+                // Disable ADC deep power down mode to allow access to internal
+                // voltage regulator and calibration
+                InterfaceT::disable_deep_power_down();
+
+                // System was in deep power down mode, calibration must
+                // be relaunched or a previously saved calibration factor
+                // re-applied once the ADC voltage regulator is enabled
+
+                PlatformTimingUtils::delay_ms_busy(10u);  // Short delay to ensure deep power down is fully exited
+            }
+
+            if (InterfaceT::deep_power_down_enabled())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] bool enable_voltage_regulator()
+        {
+            if (!InterfaceT::internal_regulator_enabled())
+            {
+                // Enable ADC internal voltage regulator
+                InterfaceT::enable_internal_regulator();
+
+                // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
+                // wait for 100 to be safe.
+                PlatformTimingUtils::delay_ms_busy(100u);
+            }
+
+            if (!InterfaceT::internal_regulator_enabled())
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        [[nodiscard]] bool calibrate()
+        {
+            // Calibration with precise timeout
+            // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
+            // At 40 MHz ADC clock: ~3 µs typical, allow up to 100 µs for safety
+            //
+            // NOTE: If ADC clock frequency changes at runtime (e.g., entering
+            // low-power mode), calibration must be re-run.
+            InterfaceT::start_calibration();
+            const bool calibration_success = PlatformTimingUtils::wait_for_with_timeout_us(
+                []() { return InterfaceT::is_calibration_ongoing() == 0; }, 100u);
+
+            // If timeout occurred, calibration failed
+            return calibration_success;
+        }
+
         /**
          * @brief Helper function to iterate over all channel traits with an index sequence.
          *
@@ -1170,7 +1272,7 @@ namespace valle
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_voltage() const
         {
-            return raw_to_voltage(read_inject<tkRank>());
+            return raw_to_voltage_inject(read_inject<tkRank>());
         }
 
         /**
@@ -1180,7 +1282,7 @@ namespace valle
          */
         [[nodiscard]] inline float read_inject_voltage_slow() const
         {
-            return raw_to_voltage(read_inject_slow());
+            return raw_to_voltage_inject(read_inject_slow());
         }
 
         /**
@@ -1193,7 +1295,7 @@ namespace valle
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_voltage() const
         {
-            return raw_to_voltage(read_regular<tkRank>());
+            return raw_to_voltage_regular(read_regular<tkRank>());
         }
 
         /**
@@ -1203,7 +1305,7 @@ namespace valle
          */
         [[nodiscard]] inline float read_regular_voltage_slow() const
         {
-            return raw_to_voltage(read_regular_slow());
+            return raw_to_voltage_regular(read_regular_slow());
         }
 
         // Read normalized
@@ -1217,7 +1319,7 @@ namespace valle
             requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_normalized() const
         {
-            return raw_to_normalized(read_inject<tkRank>());
+            return raw_to_normalized_inject(read_inject<tkRank>());
         }
 
         /**
@@ -1228,7 +1330,7 @@ namespace valle
          */
         [[nodiscard]] inline float read_inject_normalized_slow() const
         {
-            return raw_to_normalized(read_inject_slow());
+            return raw_to_normalized_inject(read_inject_slow());
         }
 
         /**
@@ -1240,7 +1342,7 @@ namespace valle
             requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_normalized() const
         {
-            return raw_to_normalized(read_regular<tkRank>());
+            return raw_to_normalized_regular(read_regular<tkRank>());
         }
 
         /**
@@ -1251,17 +1353,27 @@ namespace valle
          */
         [[nodiscard]] inline float read_regular_normalized_slow() const
         {
-            return raw_to_normalized(read_regular_slow());
+            return raw_to_normalized_regular(read_regular_slow());
         }
 
-        [[nodiscard]] constexpr float raw_to_normalized(const ADCValue raw) const
+        [[nodiscard]] constexpr float raw_to_normalized_inject(const ADCValue raw) const
         {
-            return m_adc->raw_to_normalized(raw);
+            return m_adc->raw_to_normalized_inject(raw);
         }
 
-        [[nodiscard]] constexpr float raw_to_voltage(const ADCValue raw) const
+        [[nodiscard]] constexpr float raw_to_normalized_regular(const ADCValue raw) const
         {
-            return m_adc->raw_to_voltage(raw);
+            return m_adc->raw_to_normalized_regular(raw);
+        }
+
+        [[nodiscard]] constexpr float raw_to_voltage_inject(const ADCValue raw) const
+        {
+            return m_adc->raw_to_voltage_inject(raw);
+        }
+
+        [[nodiscard]] constexpr float raw_to_voltage_regular(const ADCValue raw) const
+        {
+            return m_adc->raw_to_voltage_regular(raw);
         }
 
     private:

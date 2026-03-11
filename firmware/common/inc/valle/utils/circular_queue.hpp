@@ -325,7 +325,7 @@ namespace valle
             {
                 if constexpr (tkOverwrite)
                 {
-                    discard();  // Remove the oldest element when overwriting is enabled
+                    (void)discard();  // Remove the oldest element when overwriting is enabled
                 }
                 else
                 {
@@ -350,7 +350,7 @@ namespace valle
             {
                 if constexpr (tkOverwrite)
                 {
-                    discard();  // Remove the oldest element when overwriting is enabled
+                    (void)discard();  // Remove the oldest element when overwriting is enabled
                 }
                 else
                 {

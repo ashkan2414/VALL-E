@@ -1,14 +1,13 @@
 #pragma once
 
-#include <stdint.h>
+#include <delegate/delegate.h>
 
+#include <cstdint>
 #include <expected>
 #include <optional>
 #include <span>
 #include <variant>
 
-#include "delegate/delegate.h"
-#include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
@@ -50,7 +49,7 @@ namespace valle
     // ---------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // ---------------------------------------------------------------------------
-    struct I2CControllerCTConfigDefaults
+    struct I2CControllerCTDefaultConfig
     {
         using DMAChannelRxT = DMANullChannelDevice;
         using DMAChannelTxT = DMANullChannelDevice;
@@ -68,7 +67,7 @@ namespace valle
         requires(kValidI2CControllerID<tkControllerID>)
     struct I2CControllerCTConfigTraits
     {
-        static constexpr auto skConfig = I2CControllerCTConfigDefaults{};
+        static constexpr auto skConfig = I2CControllerCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \

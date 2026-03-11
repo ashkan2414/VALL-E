@@ -6,7 +6,7 @@ namespace valle
 {
     struct LoggingConfig
         : public LoggingConfigBase<LogConfig{
-              .kEnabled = true, .kMaxMessageLength = 512, .kLogLevel = LogLevel::kInfo, .kPrintSourceLocation = true}>
+              .kEnabled = true, .kMaxMessageLength = 512, .kLogLevel = LogLevel::kInfo, .kPrintSourceLocation = false}>
     {
     };
 }  // namespace valle

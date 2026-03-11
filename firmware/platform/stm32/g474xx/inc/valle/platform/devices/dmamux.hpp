@@ -2,6 +2,7 @@
 
 #include "stm32g4xx_ll_bus.h"
 #include "valle/core/device/device.hpp"
+#include "valle/platform/core.hpp"
 #include "valle/platform/hardware/dmamux.hpp"
 
 namespace valle

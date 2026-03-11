@@ -1,12 +1,12 @@
 #pragma once
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 
 #include "valle/modules/vca.hpp"
 #include "valle/platform/drivers/hrtim/half_bridge.hpp"
+
 
 namespace valle
 {

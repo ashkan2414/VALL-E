@@ -6,6 +6,5 @@
 
 namespace valle::app
 {
-    extern std::atomic<uint32_t> g_rep_counter;
-    void                         init();
+    void init();
 }  // namespace valle::app

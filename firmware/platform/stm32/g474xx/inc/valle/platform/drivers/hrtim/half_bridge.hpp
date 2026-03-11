@@ -134,7 +134,7 @@ namespace valle
             m_max_duty     = config.max_duty;
 
             // Calculate Period and Prescaler
-            const uint32_t f_hrtim_hz = InterfaceT::get_freq_hz();
+            const uint32_t f_hrtim_hz = m_timer->get_freq_hz();
 
             const uint64_t min_freq_hz = InterfaceT::calculate_min_freq_hz(f_hrtim_hz);
             if (config.freq_hz < min_freq_hz)

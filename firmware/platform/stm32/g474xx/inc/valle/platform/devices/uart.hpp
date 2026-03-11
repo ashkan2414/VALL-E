@@ -3,7 +3,6 @@
 #include <chrono>
 #include <span>
 
-#include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
@@ -56,7 +55,7 @@ namespace valle
 
     // TODO: Add RX DMA Channel as well
     template <UARTControllerID tkControllerID>
-    struct UARTControllerCTConfigDefaults
+    struct UARTControllerCTDefaultConfig
     {
         using TxPinT        = UARTDefaultTxGPIOPin<tkControllerID>;
         using RxPinT        = UARTDefaultRxGPIOPin<tkControllerID>;
@@ -85,7 +84,7 @@ namespace valle
     template <UARTControllerID tkControllerID>
     struct UARTControllerCTConfigTraits
     {
-        static constexpr auto skConfig = UARTControllerCTConfigDefaults<tkControllerID>{};
+        static constexpr auto skConfig = UARTControllerCTDefaultConfig<tkControllerID>{};
     };
 
 #define VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(tkControllerID, config)                                            \
@@ -382,13 +381,13 @@ namespace valle
         }
 
         // --- API ---
-        // NOLINTNEXTLINE(bugprone-easily--parameters)
-        HAL_StatusTypeDef transmit(std::span<const std::byte> data, TimeoutMillis timeout_ms)
+        // NOLINTNEXTLINE(bugprone-easily-swapable-parameters)
+        HAL_StatusTypeDef transmit(std::span<const std::byte> data, TimeoutMillis timeout)
         {
             return HAL_UART_Transmit(&m_huart,
                                      reinterpret_cast<const uint8_t*>(data.data()),
                                      static_cast<uint16_t>(data.size()),
-                                     std::chrono::duration_cast<CycleDuration>(timeout_ms).count());
+                                     timeout.count());
         }
 
         HAL_StatusTypeDef transmit_async(std::span<const std::byte> data)

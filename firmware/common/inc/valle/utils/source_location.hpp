@@ -1,10 +1,8 @@
 #pragma once
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <source_location>
 #include <string_view>
-
 
 namespace valle
 {

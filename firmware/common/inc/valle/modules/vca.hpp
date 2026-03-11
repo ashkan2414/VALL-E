@@ -1,11 +1,9 @@
 #pragma once
 
-#include <stdint.h>
-
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 
-#include "delegate/Delegate.h"
 #include "valle/core/device/device.hpp"
 #include "valle/math/system/blocks/feedback.hpp"
 #include "valle/math/system/blocks/pid.hpp"
@@ -101,14 +99,12 @@ namespace valle
     template <std::floating_point T>
     struct VCAClosedLoopCurrentFeedbackControllerConfig
     {
-        using ValueT            = T;
-        using CurrentFeedbackFn = delegate::Delegate<ValueT>;
+        using ValueT = T;
 
         std::chrono::duration<ValueT> sample_time     = 0.0F;  // Control loop sample time in seconds (e.g., 1 ms)
         ValueT                        max_current_amp = 0.0F;  // Max current limit (for safety)
         ValueT                        target_tolerance_amp =
             0.0F;  // Target current tolerance in Amps (used to determine when to disable the output for safety)
-        CurrentFeedbackFn feedback_fn{};  // Function to read current feedback (e.g., from a sensor)
     };
 
     template <std::floating_point T>
@@ -117,9 +113,8 @@ namespace valle
     public:
         using ValueT                           = T;
         using ConfigT                          = VCAClosedLoopCurrentFeedbackControllerConfig<ValueT>;
-        using CurrentFeedbackFn                = typename ConfigT::CurrentFeedbackFn;
         using OpenLoopControllerT              = VCACurrentController<ValueT>;
-        using FeedbackSystemT                  = ExFeedbackSystem<OpenLoopControllerT, CurrentFeedbackFn>;
+        using FeedbackSystemT                  = ExFeedbackSystem2<OpenLoopControllerT>;
         static constexpr VCAControlMode skMode = VCAControlMode::kClosedLoopCurrent;
 
     private:
@@ -131,7 +126,6 @@ namespace valle
 
         explicit VCAClosedLoopCurrentFeedbackController(const ConfigT& config)
             : m_feedback_system(OpenLoopControllerT(VCAClosedLoopControllerConfig<ValueT>{config.sample_time}),
-                                std::move(config.feedback_fn),
                                 config.target_tolerance_amp)
             , m_max_current_amp(std::abs(config.max_current_amp))
         {
@@ -140,6 +134,11 @@ namespace valle
         ValueT process_impl(const ValueT reference)
         {
             return m_feedback_system.process(std::clamp(reference, -m_max_current_amp, m_max_current_amp));
+        }
+
+        void set_feedback(const ValueT feedback)
+        {
+            m_feedback_system.set_feedback(feedback);
         }
 
         void reset_impl()
@@ -336,7 +335,25 @@ namespace valle
          * @brief Runs the control loop. Should be called at PWM frequency via a timer interrupt.
          * @note Hot Path! Keep this function efficient and ISR safe.
          */
+        float run_ctrl_loop(const float feedback_amps)
+            requires(skMode == VCAControlMode::kClosedLoopCurrent)
+        {
+            m_controller.set_feedback(feedback_amps);
+            return run_ctrl_loop_impl();
+        }
+
+        /**
+         * @brief Runs the control loop. Should be called at PWM frequency via a timer interrupt.
+         * @note Hot Path! Keep this function efficient and ISR safe.
+         */
         float run_ctrl_loop()
+            requires(skMode == VCAControlMode::kOpenLoopDuty)
+        {
+            return run_ctrl_loop_impl();
+        }
+
+    private:
+        float run_ctrl_loop_impl()
         {
             const float output_duty = m_controller.process(m_setpoint.load(std::memory_order_relaxed));
 

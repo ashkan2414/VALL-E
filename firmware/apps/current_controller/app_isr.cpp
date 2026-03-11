@@ -1,5 +1,4 @@
 #include "app_isr_bindings.hpp"
-#include "valle/core.hpp"
 
 namespace valle
 {
@@ -42,14 +41,16 @@ namespace valle
         // First read the sampled current sensor and convert
         app::g_drivers.current_sensor.get_adc().on_data_available();
 
+        const float measured_current = app::g_drivers.current_sensor.read_amps();
+
         app::g_current_response_collector.push_data(app::CurrentResponseData{
             .timestamp        = CycleClock::now(),
             .target_current   = app::g_drivers.vca_controller.get_target_current(),
-            .measured_current = app::g_drivers.current_sensor.read_amps(),
+            .measured_current = measured_current,
         });
 
         // Then run VCA control loop
-        g_last_duty_cycle = app::g_drivers.vca_controller.run_ctrl_loop();
+        g_last_duty_cycle = app::g_drivers.vca_controller.run_ctrl_loop(measured_current);
     }
 
     void on_pwm_repetition()

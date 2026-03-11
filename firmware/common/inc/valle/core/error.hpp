@@ -4,12 +4,25 @@
 
 namespace valle
 {
+    void panic_impl(std::string_view message, SourceLocation location = {});
+
     /**
      * @brief This function logs a panic message and halts the system.
      * @param message The panic message to log.
      * @param location The source location where the panic occurred.
      */
-    void panic(std::string_view message, SourceLocation location = {});
+    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+    constexpr void panic(std::string_view message, SourceLocation location = {})
+    {
+        if (std::is_constant_evaluated())
+        {
+            __builtin_trap();
+        }
+        else
+        {
+            panic_impl(message, location);
+        }
+    }
 
     /**
      * @brief This function checks a condition and panics if the condition is false.
@@ -17,9 +30,9 @@ namespace valle
      * @param message The panic message to log if the condition is false.
      * @param location The source location where the panic occurred.
      */
-    inline void expect(const bool             condition,
-                       const std::string_view message,
-                       SourceLocation         location = SourceLocation::current())
+    constexpr void expect(const bool             condition,
+                          const std::string_view message,
+                          SourceLocation         location = SourceLocation::current())
     {
         if (!condition)
         {

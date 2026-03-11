@@ -1,7 +1,7 @@
 #include <random>
 
 #include "app.hpp"
-#include "valle/core/app_bridge.hpp"
+#include "valle/app_bridge.hpp"
 
 namespace valle
 {
@@ -13,7 +13,7 @@ namespace valle
 
         app::start_vca_controller();
 
-        while (1)
+        while (true)
         {
             app::g_drivers.vca_controller.set_target_current(0.0F);  // Set target current to 0.0 Amps
         }

@@ -1,9 +1,8 @@
 #pragma once
 
 #include "stm32g4xx_ll_tim.h"
-#include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
-#include "valle/platform/core/timing.hpp"
+#include "valle/platform/core.hpp"
 #include "valle/platform/hardware/tim.hpp"
 
 namespace valle
@@ -54,7 +53,7 @@ namespace valle
     // -----------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct TIMControllerCTConfigDefaults
+    struct TIMControllerCTDefaultConfig
     {
         using Ch1PinT   = GPIONullPinDevice;
         using Ch2PinT   = GPIONullPinDevice;
@@ -110,7 +109,7 @@ namespace valle
     template <TIMControllerID tkControllerID>
     struct TIMControllerCTConfigTraits
     {
-        static constexpr auto skConfig = TIMControllerCTConfigDefaults{};
+        static constexpr auto skConfig = TIMControllerCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(tkControllerID, config)                      \
@@ -333,7 +332,7 @@ namespace valle
         [[nodiscard]] bool init()
         {
             TraitsT::enable_clock();
-            delay_cycles(10U);  // NOLINT(readability-magic-numbers)
+            PlatformTimingUtils::delay_cycles(10U);  // NOLINT(readability-magic-numbers)
 
             return true;
         }

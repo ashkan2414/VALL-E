@@ -17,7 +17,6 @@
 #include "valle/utils/enum_utils.hpp"
 #include "valle/utils/source_location.hpp"
 
-
 #if __has_include("app_log_config.hpp")
 #include "app_log_config.hpp"
 #else
@@ -35,7 +34,8 @@ namespace valle
 
     struct LogEmptySourceLocation
     {
-        explicit consteval LogEmptySourceLocation(std::source_location loc = std::source_location::current())
+        // NOLINTNEXTLINE(hicpp-explicit-conversions)
+        consteval LogEmptySourceLocation(std::source_location loc = std::source_location::current())
         {
             (void)loc;
         }

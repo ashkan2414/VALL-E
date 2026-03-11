@@ -4,8 +4,11 @@
 #include <chrono>
 
 #include "stm32g4xx_ll_adc.h"
-#include "valle/platform/hardware/ADC/id.hpp"
+#include "valle/core.hpp"
+#include "valle/platform/hardware/adc/id.hpp"
 #include "valle/platform/hardware/adc_clk.hpp"
+#include "valle/platform/hardware/dma.hpp"
+
 
 namespace valle
 {
@@ -719,83 +722,49 @@ namespace valle
         // ----------------------------------------------------------------------------
         // CORE
         // ----------------------------------------------------------------------------
-        [[nodiscard]] static bool disable()
+        static void disable()
         {
-            if (LL_ADC_IsEnabled(ControllerTraitsT::skInstance))
-            {
-                LL_ADC_Disable(ControllerTraitsT::skInstance);
-            }
-
-            return true;
+            LL_ADC_Disable(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] static bool enable()
+        static void enable()
         {
-            // Enable ADC
-            // Wait for ADC ready with precise timeout
-            // RM0440: Typically a few ADC clock cycles, allow up to 100 µs for safety
             LL_ADC_Enable(ControllerTraitsT::skInstance);
-            const bool adc_ready = wait_for_with_timeout_us(
-                []() { return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0; }, 100u);
-
-            // If timeout occurred, ADC is not ready
-            return adc_ready;
         }
 
-        [[nodiscard]] static bool enabled()
+        [[nodiscard]] static bool is_enabled()
         {
-            return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0;
+            return LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        [[nodiscard]] static bool disable_deep_power_mode()
+        [[nodiscard]] static bool deep_power_down_enabled()
         {
-            if (LL_ADC_IsDeepPowerDownEnabled(ControllerTraitsT::skInstance) != 0UL)
-            {
-                // Disable ADC deep power down mode
-                LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
-
-                // System was in deep power down mode, calibration must
-                // be relaunched or a previously saved calibration factor
-                // re-applied once the ADC voltage regulator is enabled
-            }
-
-            return true;
+            return LL_ADC_IsDeepPowerDownEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        [[nodiscard]] static bool enable_voltage_regulator()
+        static void disable_deep_power_down()
         {
-            if (LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 0UL)
-            {
-                // Enable ADC internal voltage regulator
-                LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
-
-                // RM0440 Section 21.4.6: tADCVREG_STUP = 20 µs (typ)
-                // wait for 100 to be safe.
-                delay_us_busy(100u);
-            }
-
-            if (LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 0UL)
-            {
-                return false;
-            }
-
-            return true;
+            LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] static bool calibrate()
+        [[nodiscard]] static bool internal_regulator_enabled()
         {
-            // Calibration with precise timeout
-            // RM0440 Section 21.4.6: tCAL = 116 ADC clock cycles
-            // At 40 MHz ADC clock: ~3 µs typical, allow up to 100 µs for safety
-            //
-            // NOTE: If ADC clock frequency changes at runtime (e.g., entering
-            // low-power mode), calibration must be re-run.
+            return LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 1UL;
+        }
+
+        static void enable_internal_regulator()
+        {
+            LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
+        }
+
+        [[nodiscard]] static bool is_calibration_ongoing()
+        {
+            return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) != 0;
+        }
+
+        static void start_calibration()
+        {
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
-            const bool calibration_success = wait_for_with_timeout_us(
-                []() { return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) == 0; }, 100u);
-
-            // If timeout occurred, calibration failed
-            return calibration_success;
         }
 
         // -----------------------------------------------------------------------------
@@ -829,6 +798,36 @@ namespace valle
         static void set_oversampling_scope(const ADCOversamplingScope scope)
         {
             LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, static_cast<uint32_t>(scope));
+        }
+
+        [[nodiscard]] static ADCOversamplingScope get_oversampling_scope()
+        {
+            return static_cast<ADCOversamplingScope>(LL_ADC_GetOverSamplingScope(ControllerTraitsT::skInstance));
+        }
+
+        [[nodiscard]] static bool inject_group_oversampling_enabled()
+        {
+            switch (get_oversampling_scope())
+            {
+                case ADCOversamplingScope::kInject:
+                case ADCOversamplingScope::kInjectRegularResumed:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        [[nodiscard]] static bool regular_group_oversampling_enabled()
+        {
+            switch (get_oversampling_scope())
+            {
+                case ADCOversamplingScope::kRegularContinued:
+                case ADCOversamplingScope::kRegularResumed:
+                case ADCOversamplingScope::kInjectRegularResumed:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         static void set_oversampling_ratio_shift(const ADCOversamplingRatio ratio, const ADCOversamplingShift shift)
@@ -968,6 +967,26 @@ namespace valle
             // The ADC Data Register is 16 bits.
             // If the math results in > 65535, the hardware truncates the top bits!
             return std::min(effective_max, static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()));
+        }
+
+        [[nodiscard]] static uint32_t get_inject_group_effective_resolution_range()
+        {
+            if (inject_group_oversampling_enabled())
+            {
+                return get_effective_resolution_range();
+            }
+
+            return get_resolution_range();
+        }
+
+        [[nodiscard]] static uint32_t get_regular_group_effective_resolution_range()
+        {
+            if (regular_group_oversampling_enabled())
+            {
+                return get_effective_resolution_range();
+            }
+
+            return get_resolution_range();
         }
     };
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "stm32g4xx_ll_bus.h"
-#include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
+#include "valle/platform/core.hpp"
 #include "valle/platform/devices/dmamux.hpp"
 #include "valle/platform/hardware/dma.hpp"
 

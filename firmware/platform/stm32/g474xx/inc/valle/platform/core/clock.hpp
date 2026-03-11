@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "stm32g4xx.h"
 #include "stm32g4xx_hal_rcc.h"
@@ -9,11 +9,6 @@
 namespace valle
 {
     constexpr uint32_t kSystemClockFreqHz = 170'000'000;  // 170 MHz
-
-    /**
-     * @brief System Clock Configuration
-     */
-    void config_system_clock();
 
     // =========================================================================
     // UTILITY FUNCTIONS

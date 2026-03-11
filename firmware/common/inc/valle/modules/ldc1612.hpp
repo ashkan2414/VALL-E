@@ -6,6 +6,7 @@
 
 #include "valle/core/device/device.hpp"
 #include "valle/math/converters.hpp"
+#include "valle/timing.hpp"
 
 namespace valle
 {
@@ -760,7 +761,7 @@ namespace valle
             LDC161XResetReg reset_reg;
             reset_reg.at<LDC161XResetRegFields::kResetDev>() = 1U;
             m_i2c.register_write_blocking(LDC161XReg::kDeviceReset, reset_reg.serialize(), skDefaultTimeout);
-            delay_ms(10);  // Allow time for reset to complete
+            Timing::delay_ms(10);  // Allow time for reset to complete
         }
 
         [[nodiscard]] uint16_t read_manufacturer_id(const TimeoutMillis timeout_ms = skDefaultTimeout)
@@ -777,19 +778,19 @@ namespace valle
             return read_manufacturer_id(timeout_ms) == LDC161XTraits::skManufacturerID;
         }
 
-        [[nodiscard]] uint16_t read_device_id(const TimeoutMillis = skDefaultTimeout)
+        [[nodiscard]] uint16_t read_device_id(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             uint16_t device_id;
             m_i2c.register_read_blocking(LDC161XReg::kReadDeviceID, device_id, timeout_ms);
             return LDC161XDeviceIDReg(std::move(device_id)).at<LDC161XDeviceIDRegFields::kDeviceID>();
         }
 
-        [[nodiscard]] bool verify_device_id(const TimeoutMillis = skDefaultTimeout)
+        [[nodiscard]] bool verify_device_id(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             return read_device_id(timeout_ms) == LDC161XTraits::skDeviceID;
         }
 
-        [[nodiscard]] bool verify_device_connected(const TimeoutMillis
+        [[nodiscard]] bool verify_device_connected(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             return verify_manufacturer_id(timeout_ms) && verify_device_id(timeout_ms);
         }
@@ -859,7 +860,7 @@ namespace valle
                 LDC161XTraits::skChannelDriveCurrentReg<tkChannel>, chan_config.idrive.serialize(), skDefaultTimeout);
         }
 
-        [[nodiscard]] LDC161XStatusReg read_status(const DurationMillistTimeout)
+        [[nodiscard]] LDC161XStatusReg read_status(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             uint16_t status_raw;
             m_i2c.register_read_blocking(LDC161XReg::kStatus, status_raw, timeout_ms);
@@ -868,7 +869,7 @@ namespace valle
 
         template <uint8_t tkChannel>
             requires(tkChannel >= 0 && tkChannel < tkNumChannels)
-        [[nodiscard]] uint32_t read_data_raw(const DurationMillistTimeout)
+        [[nodiscard]] uint32_t read_data_raw(const TimeoutMillis timeout_ms = skDefaultTimeout)
         {
             static_assert(tkChannel < tkNumChannels, "Channel index out of range");
 

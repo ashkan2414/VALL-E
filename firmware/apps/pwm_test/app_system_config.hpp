@@ -2,29 +2,28 @@
 
 #include "valle/core/device/device.hpp"
 #include "valle/core/system/config.hpp"
+#include "valle/platform/drivers/core_system.hpp"
+#include "valle/platform/drivers/hrtim/half_bridge.hpp"
 #include "valle/platform/drivers/uart/logger.hpp"
-#include "valle/platform/modules/acs724.hpp"
-#include "valle/platform/modules/ldc1612.hpp"
-#include "valle/platform/modules/vca.hpp"
 
 namespace valle::app
 {
     // Logger
     constexpr UARTControllerID kLoggerUARTControllerID = UARTControllerID::kLPUART1;
-    struct UARTControllerCTConfig : UARTControllerCTConfigDefaults<kLoggerUARTControllerID>
+    struct UARTControllerCTConfig : UARTControllerCTDefaultConfig<kLoggerUARTControllerID>
     {
         using DMAChannelTxT = DMA1Channel1Device;
     };
 
     // HRTIM Controller
     constexpr HRTIMControllerID kHRTIMControllerID = 1;
-    struct HRTIMControllerCTConfig : HRTIMControllerCTConfigDefaults
+    struct HRTIMControllerCTConfig : HRTIMControllerCTDefaultConfig
     {
     };
 
     // HRTIM Timer
     constexpr HRTIMTimerID kHRTIMTimerID = HRTIMTimerID::kA;
-    struct HRTIMTimerCTConfig : HRTIMTimerCTConfigDefaults
+    struct HRTIMTimerCTConfig : HRTIMTimerCTDefaultConfig
     {
         using Output1PinT = GPIOPinA8Device;
         using Output2PinT = GPIOPinA9Device;
@@ -37,42 +36,49 @@ VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTControllerID, app::UARTCo
 VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(app::kHRTIMControllerID, app::HRTIMControllerCTConfig{});
 VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(app::kHRTIMControllerID, app::kHRTIMTimerID, app::HRTIMTimerCTConfig{});
 
-namespace valle::app
+namespace valle
 {
-
-    // ============================================================================
-    // Driver Configurations
-    // ============================================================================
-    using UARTLoggerT = UARTLogger<UARTControllerDevice<kLoggerUARTControllerID>>;
-
-    using HRTIMTimerDeviceT      = HRTIMTimerDevice<kHRTIMControllerID, kHRTIMTimerID>;
-    using HRTIMHalfBridgeDriverT = HRTIMHalfBridgeDriver<HRTIMTimerDeviceT>;
-
-    struct Drivers
+    namespace app
     {
-        using DriversT = TypeList<UARTLoggerT, HRTIMHalfBridgeDriverT>;
+        // ============================================================================
+        // Drivers
+        // ============================================================================
+        using UARTLoggerT = UARTLogger<UARTControllerDevice<kLoggerUARTControllerID>>;
 
-        UARTLoggerT            uart_logger;
-        HRTIMHalfBridgeDriverT hb_driver;
+        using HRTIMTimerDeviceT      = HRTIMTimerDevice<kHRTIMControllerID, kHRTIMTimerID>;
+        using HRTIMHalfBridgeDriverT = HRTIMHalfBridgeDriver<HRTIMTimerDeviceT>;
+
+        // Declare Main Driver List
+        using MainDriversT = TypeList<CoreSystemDriver, UARTLoggerT, HRTIMHalfBridgeDriverT>;
+
+        // ============================================================================
+        // Root Driver
+        // ============================================================================
+        using RootDevicesT = RootDevicesFromDrivers<MainDriversT>;
+        struct RootDriver : PackedDriverBase<RootDevicesT>
+        {
+            using BaseT = PackedDriverBase<RootDevicesT>;
+            using BaseT::BaseT;
+        };
+
+        // ============================================================================
+        // Drivers Container
+        // ============================================================================
+
+        struct Drivers
+        {
+            using DriversT = typename TypeListAddFront<RootDriver, MainDriversT>::type;
+
+            RootDriver             root;
+            CoreSystemDriver       core;
+            UARTLoggerT            uart_logger;
+            HRTIMHalfBridgeDriverT hb_driver;
+        };
+
+    }  // namespace app
+
+    struct AppSystemConfig : SystemConfigBase<app::Drivers>
+    {
     };
 
-    struct Devices
-    {
-        using DevicesT =
-            TypeList<GPIOPortADevice, HRTIM1ControllerDevice, DMAMux1ControllerDevice, DMA1ControllerDevice>;
-
-        [[no_unique_address]] DeviceRef<GPIOPortADevice>         gpioa;
-        [[no_unique_address]] DeviceRef<HRTIM1ControllerDevice>  hrtim1;
-        [[no_unique_address]] DeviceRef<DMAMux1ControllerDevice> dmamux1;
-        [[no_unique_address]] DeviceRef<DMA1ControllerDevice>    dma1;
-    };
-
-}  // namespace valle::app
-
-namespace valle::system
-{
-    struct Config : ConfigBase<app::Drivers, app::Devices>
-    {
-    };
-
-}  // namespace valle::system
+}  // namespace valle

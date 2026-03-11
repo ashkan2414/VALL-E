@@ -3,6 +3,7 @@
 #include <variant>
 
 #include "stm32g4xx_hal.h"
+#include "valle/logging.hpp"
 
 namespace valle
 {
@@ -43,7 +44,42 @@ namespace valle
     {
         __disable_irq();
         g_fault_context = std::move(context);
-        while (1)
+
+        std::visit(Overloaded{[](const PanicSourceInfo& info)
+                              {
+                                  VALLE_LOG_ERROR("Panic: {} at {}:{} in function {}",
+                                                  info.message,
+                                                  info.location.file_name,
+                                                  info.location.line,
+                                                  info.location.function_name);
+                              },
+                              [](const AssertSourceInfo& info)
+                              { VALLE_LOG_ERROR("Assert failed at {}:{}", info.file, info.line); },
+                              [](const FaultInterruptContextInfo& info)
+                              {
+                                  VALLE_LOG_ERROR("Fault interrupt: {}",
+                                                  [&info]() -> std::string_view
+                                                  {
+                                                      switch (info.fault_type)
+                                                      {
+                                                          case FaultInterruptType::kHardFault:
+                                                              return "HardFault";
+                                                          case FaultInterruptType::kMemManageFault:
+                                                              return "MemManageFault";
+                                                          case FaultInterruptType::kBusFault:
+                                                              return "BusFault";
+                                                          case FaultInterruptType::kUsageFault:
+                                                              return "UsageFault";
+                                                          case FaultInterruptType::kNMI:
+                                                              return "NMI";
+                                                          default:
+                                                              return "Unknown";
+                                                      }
+                                                  }());
+                              }},
+                   g_fault_context.source_info);
+
+        while (true)
         {
         }
     }
@@ -54,7 +90,7 @@ namespace valle
      * @param location The source location where the panic occurred.
      */
     // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-    void panic(std::string_view message, SourceLocation location)
+    void panic_impl(std::string_view message, SourceLocation location)
     {
         fault_handler(FaultContext{.source_info = PanicSourceInfo{
                                        .message  = message,

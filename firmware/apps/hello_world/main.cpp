@@ -1,8 +1,8 @@
 #include <random>
 
 #include "app.hpp"
-#include "valle/core/app_bridge.hpp"
-
+#include "valle/app_bridge.hpp"
+#include "valle/timing.hpp"
 
 namespace valle
 {
@@ -11,10 +11,10 @@ namespace valle
         app::init();
 
         uint64_t counter = 1;
-        while (1)
+        while (true)
         {
             VALLE_LOG_INFO("Hello World #{}!", counter++);
-            delay_ms(1000);
+            Timing::delay_ms(1000);
         }
     }
 

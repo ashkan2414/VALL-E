@@ -4,9 +4,9 @@
 #include <cstdint>
 
 #include "stm32g4xx_ll_bus.h"
-#include "valle/core.hpp"
 #include "valle/core/device/device.hpp"
 #include "valle/platform/core.hpp"
+#include "valle/platform/devices/rcc.hpp"
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/hrtim.hpp"
 
@@ -55,7 +55,7 @@ namespace valle
     // -----------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct HRTIMControllerCTConfigDefaults
+    struct HRTIMControllerCTDefaultConfig
     {
         using SCInPinT  = GPIONullPinDevice;
         using SCOutPinT = GPIONullPinDevice;
@@ -85,7 +85,7 @@ namespace valle
     template <HRTIMControllerID tkControllerID>
     struct HRTIMControllerCTConfigTraits
     {
-        static constexpr auto skConfig = HRTIMControllerCTConfigDefaults{};
+        static constexpr auto skConfig = HRTIMControllerCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(tkControllerID, config)                        \
@@ -193,14 +193,14 @@ namespace valle
         {
         }
 
-        [[nodiscard]] inline bool init()
+        [[nodiscard]] bool init()
         {
             // Enable Bus Clock
             ControllerTraitsT::enable_clock();
 
             // Wait for clock to stabilize
             // RM0440: Allow a few APB2 cycles for clock propagation
-            delay_cycles(10);
+            PlatformTimingUtils::delay_cycles_busy(10);
 
             // Start DLL Calibration
             LL_HRTIM_StartDLLCalibration(ControllerTraitsT::skInstance);
@@ -208,7 +208,7 @@ namespace valle
             // Wait for calibration to finish with precise timeout
             // RM0440 Section 29.3.15: DLL calibration time = 14 µs typical
             // Allow up to 100 µs
-            const bool calibration_success = wait_for_with_timeout_us(
+            const bool calibration_success = PlatformTimingUtils::wait_for_with_timeout_us(
                 []() { return LL_HRTIM_IsActiveFlag_DLLRDY(ControllerTraitsT::skInstance) != 0; }, 100);
 
             if (!calibration_success)
@@ -220,7 +220,7 @@ namespace valle
             return true;
         }
 
-        [[nodiscard]] inline bool post_init()
+        [[nodiscard]] bool post_init()
         {
             // Do nothing for now
             return true;
@@ -240,7 +240,7 @@ namespace valle
     // -----------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct HRTIMFaultCTConfigDefaults
+    struct HRTIMFaultCTDefaultConfig
     {
         using PinT = GPIONullPinDevice;
     };
@@ -265,7 +265,7 @@ namespace valle
     template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID>
     struct HRTIMFaultCTConfigTraits
     {
-        static constexpr auto skConfig = HRTIMFaultCTConfigDefaults{};
+        static constexpr auto skConfig = HRTIMFaultCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_HRTIM_FAULT_CT_CONFIG(tkControllerID, tkFaultID, config)                          \
@@ -437,7 +437,7 @@ namespace valle
     // -----------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct HRTIMEEVCTConfigDefaults
+    struct HRTIMEEVCTDefaultConfig
     {
         using PinT = GPIONullPinDevice;
     };
@@ -462,7 +462,7 @@ namespace valle
     template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID>
     struct HRTIMEEVCTConfigTraits
     {
-        static constexpr auto skConfig = HRTIMEEVCTConfigDefaults{};
+        static constexpr auto skConfig = HRTIMEEVCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_HRTIM_EEV_CT_CONFIG(tkControllerID, tkEEVID, config)                          \
@@ -620,7 +620,7 @@ namespace valle
     // COMPILE TIME CONFIGURATIONS
     // ---------------------------------------------------------------------------
 
-    struct HRTIMTimerCTConfigDefaults
+    struct HRTIMTimerCTDefaultConfig
     {
         using Output1PinT = GPIONullPinDevice;
         using Output2PinT = GPIONullPinDevice;
@@ -708,7 +708,7 @@ namespace valle
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
     struct HRTIMTimerCTConfigTraits
     {
-        static constexpr auto skConfig = HRTIMTimerCTConfigDefaults{};
+        static constexpr auto skConfig = HRTIMTimerCTDefaultConfig{};
     };
 
 #define VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(tkControllerID, tkTimerID, config)                          \
@@ -900,6 +900,7 @@ namespace valle
             std::conditional_t<skHasEEV10, HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV10>, HRTIMNullEEVDevice>;
 
         using InjectDevices = FilterNullDevices<TypeList<ControllerT,
+                                                         RCCInfoDevice<>,
                                                          Output1PinT,
                                                          Output2PinT,
                                                          Fault1DeviceT,
@@ -920,7 +921,9 @@ namespace valle
                                                          EEV10DeviceT>>;
 
     private:
-        [[no_unique_address]] DeviceRef<ControllerT>                           m_controller;
+        [[no_unique_address]] DeviceRef<ControllerT>     m_controller;
+        [[no_unique_address]] DeviceRef<RCCInfoDevice<>> m_rcc_info;
+
         Output1PinDriverT                                                      m_output1_pin;
         Output2PinDriverT                                                      m_output2_pin;
         [[no_unique_address]] ConditionalDeviceRef<skHasFault1, Fault1DeviceT> m_fault1_device;
@@ -944,6 +947,7 @@ namespace valle
         template <typename... TArgs>
         explicit HRTIMTimerDevice(TArgs&&... args)
             : m_controller(extract_device_ref<true, ControllerT>(std::forward<TArgs>(args)...))
+            , m_rcc_info(extract_device_ref<true, RCCInfoDevice<>>(std::forward<TArgs>(args)...))
             , m_output1_pin(extract_device_ref<skHasOutput1Pin, Output1PinT>(std::forward<TArgs>(args)...))
             , m_output2_pin(extract_device_ref<skHasOutput2Pin, Output2PinT>(std::forward<TArgs>(args)...))
             , m_fault1_device(extract_device_ref<skHasFault1, Fault1DeviceT>(std::forward<TArgs>(args)...))
@@ -1110,7 +1114,7 @@ namespace valle
             // Validate deadtime against hardware limits
             // RM0440 Section 29.3.12: Max deadtime = 511 × tDTG where tDTG = tHRCK × 2^DTPRSC
             // At 170 MHz with max prescaler (7): 511 × (1/(8×170MHz)) × 128 ≈ 48 µs
-            const uint32_t f_hrtim_hz = InterfaceT::get_freq_hz();
+            const uint32_t f_hrtim_hz = get_freq_hz();
 
             const float min_requested_ns = std::min<float>(config.fall_ns, config.rise_ns);
             const float max_requested_ns = std::max<float>(config.fall_ns, config.rise_ns);
@@ -1168,6 +1172,14 @@ namespace valle
             LL_HRTIM_DT_SetRisingValue(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, 0);
             LL_HRTIM_DT_SetFallingValue(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, 0);
             LL_HRTIM_TIM_DisableDeadTime(ControllerTraitsT::skInstance, TimerTraitsT::skLLID);
+        }
+
+        // ------------------------------------------------------------------------
+        // INFO
+        // ------------------------------------------------------------------------
+        [[nodiscard]] uint32_t get_freq_hz()
+        {
+            return m_rcc_info->get_apb2_timer_freq_hz();
         }
 
         // ------------------------------------------------------------------------

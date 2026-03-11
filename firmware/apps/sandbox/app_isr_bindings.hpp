@@ -26,4 +26,4 @@ namespace valle
 VALLE_BIND_UART_LOGGER_ISR_ROUTERS(app::g_drivers.uart_logger);
 
 // Bind I2C Command Buffer Device ISRs
-VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(app::g_devices.i2c1.get());
+VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(app::g_drivers.root.i2c1());

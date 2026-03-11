@@ -1,9 +1,7 @@
 #pragma once
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <string_view>
-
 
 namespace valle
 {

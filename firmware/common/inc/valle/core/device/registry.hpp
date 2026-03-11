@@ -122,11 +122,11 @@ namespace valle
             struct FindReady;
 
             // Internal Search
-            template <typename Head, typename... Tail>
-            struct FindReady<TypeList<Head, Tail...>>
+            template <typename THead, typename... TTail>
+            struct FindReady<TypeList<THead, TTail...>>
             {
                 using type = std::
-                    conditional_t<IsReady<Head, TSorted>::value, Head, typename FindReady<TypeList<Tail...>>::type>;
+                    conditional_t<IsReady<THead, TSorted>::value, THead, typename FindReady<TypeList<TTail...>>::type>;
             };
             // Not Found Case (End of recursion)
             template <typename... Empty>
@@ -151,7 +151,7 @@ namespace valle
 
             // Move ReadyT from Pending to Sorted
             using NextPendingT = typename TypeListRemove<ReadyT, PendingT>::type;
-            using NextSortedT  = typename TypeListAddUnique<ReadyT, TSorted>::type;
+            using NextSortedT  = typename TypeListAddUniqueBack<ReadyT, TSorted>::type;
 
             // Recurse or Finish
             using type = typename TopoSort<NextPendingT, NextSortedT>::type;
@@ -356,17 +356,17 @@ namespace valle
     struct DeviceRefRegistry
     {
         using DeviceRefRegistryTag = void;
-        using TRegistryTuple       = std::tuple<TCurrentRefs...>;
+        using RegistryTupleT       = std::tuple<TCurrentRefs...>;
 
         template <CHasInjectDevices TConsumer>
         using DeviceRefRegistryAfterClaim =
             decltype(std::declval<DeviceRefRegistry<TCurrentRefs...>>().template claim<TConsumer>().second);
 
-        TRegistryTuple refs{};
+        RegistryTupleT refs{};
 
         DeviceRefRegistry() = delete;
 
-        constexpr explicit DeviceRefRegistry(TRegistryTuple&& ref_tuple) : refs(std::move(ref_tuple))
+        constexpr explicit DeviceRefRegistry(RegistryTupleT&& ref_tuple) : refs(std::move(ref_tuple))
         {
         }
 
@@ -407,7 +407,7 @@ namespace valle
             using NeedsT = typename GetInjectDevices<TConsumer>::type;
 
             // Use the BatchClaimer to do everything in one pass
-            auto result = detail::BatchClaimer<TRegistryTuple, NeedsT>::run(std::move(refs));
+            auto result = detail::BatchClaimer<RegistryTupleT, NeedsT>::run(std::move(refs));
 
             return std::pair{std::move(result.first), make_from_tuple(std::move(result.second))};
         }
@@ -440,7 +440,7 @@ namespace valle
         template <CSharedDevice TDevice>
         [[nodiscard]] DeviceRef<TDevice> get_ref() const
         {
-            constexpr size_t   idx = TupleIndex<DeviceRef<TDevice>, TRegistryTuple>::value;
+            constexpr size_t   idx = TupleIndex<DeviceRef<TDevice>, RegistryTupleT>::value;
             DeviceRef<TDevice> ref = std::get<idx>(refs);
             return ref;
         }
@@ -547,6 +547,9 @@ namespace valle
         template <>
         struct DeviceStorageImpl<>
         {
+            template <CDevice TDevice>
+            static constexpr bool skHasDevice = false;
+
             template <CDeviceRefRegistry TRegistry>
             explicit DeviceStorageImpl(TRegistry&&)
             {
@@ -557,11 +560,15 @@ namespace valle
             }
         };
 
-        template <CDevice Head, CDevice... Tail>
-        struct DeviceStorageImpl<Head, Tail...>
+        template <CDevice THead, CDevice... TTail>
+        struct DeviceStorageImpl<THead, TTail...>
         {
-            Head                       item{};
-            DeviceStorageImpl<Tail...> next{};
+            THead                       item{};
+            DeviceStorageImpl<TTail...> next{};
+
+            template <CDevice TDevice>
+            static constexpr bool skHasDevice =
+                std::is_same_v<TDevice, THead> || DeviceStorageImpl<TTail...>::template skHasDevice<TDevice>;
 
             /**
              * @brief Constructor that builds the device storage by claiming devices from the registry.
@@ -571,7 +578,7 @@ namespace valle
              */
             template <CDeviceRefRegistry TRegistry>
             explicit DeviceStorageImpl(TRegistry&& registry)
-                : DeviceStorageImpl(std::move(registry).template claim<Head>())
+                : DeviceStorageImpl(std::move(registry).template claim<THead>())
             {
             }
 
@@ -593,7 +600,7 @@ namespace valle
             template <typename TDevice>
             [[nodiscard]] TDevice& get()
             {
-                if constexpr (std::is_same_v<TDevice, Head>)
+                if constexpr (std::is_same_v<TDevice, THead>)
                 {
                     return item;
                 }
@@ -613,7 +620,7 @@ namespace valle
             template <CDeviceRefRegistry TRegistry>
             auto export_registry(TRegistry&& registry)
             {
-                auto [_, filtered] = std::move(registry).template claim<Head>();
+                auto [_, filtered] = std::move(registry).template claim<THead>();
                 return next.export_registry(std::move(filtered).add(item));
             }
 
@@ -638,7 +645,7 @@ namespace valle
             template <typename TDeps, CDeviceRefRegistry TFiltered>
             // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
             explicit DeviceStorageImpl(std::pair<TDeps, TFiltered>&& args)
-                : item(std::make_from_tuple<Head>(std::move(args.first))), next(std::move(args.second).add(item))
+                : item(std::make_from_tuple<THead>(std::move(args.first))), next(std::move(args.second).add(item))
             {
             }
         };
@@ -659,7 +666,8 @@ namespace valle
         using Devices    = TypeList<TDevices...>;
         using FullList   = typename detail::ExpandDeps<Devices>::type;
         using SortedList = typename detail::TopoSort<FullList, TypeList<>>::type;
-        using Storage    = typename detail::MakeDeviceStorage<SortedList>::type;
+
+        using Storage = typename detail::MakeDeviceStorage<SortedList>::type;
 
         friend system::internal::GlobalDeviceStorageAccessor;  // Allow access to get()
 
@@ -667,6 +675,9 @@ namespace valle
 
     public:
         using RegistryT = decltype(std::declval<Storage>().export_registry());
+
+        template <CDevice TDevice>
+        static constexpr bool skHasDevice = Storage::template skHasDevice<TDevice>;
 
         DeviceStorage() : m_storage()
         {

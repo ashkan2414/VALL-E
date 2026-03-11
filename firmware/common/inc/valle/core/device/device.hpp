@@ -12,39 +12,72 @@ namespace valle
     // DEVICE DESCRIPTORS
     // =============================================================================
 
-    template <bool tkShared = false>
+    enum class DeviceType
+    {
+        kUnique,
+        kShared,
+        kInterface,
+        kNull
+    };
+
+    template <DeviceType tkDeviceType>
     struct DeviceDescriptor
     {
-        constexpr static bool skIsShared = tkShared;
+        constexpr static DeviceType skDeviceType = tkDeviceType;
+        constexpr static bool       skNeedsInit  = true;
     };
 
-    using UniqueDeviceDescriptor = DeviceDescriptor<false>;
-    using SharedDeviceDescriptor = DeviceDescriptor<true>;
+    using UniqueDeviceDescriptor    = DeviceDescriptor<DeviceType::kUnique>;
+    using SharedDeviceDescriptor    = DeviceDescriptor<DeviceType::kShared>;
+    using ProxyDeviceDescriptor     = SharedDeviceDescriptor;
+    using InterfaceDeviceDescriptor = DeviceDescriptor<DeviceType::kInterface>;
+    using NullDeviceDescriptor      = DeviceDescriptor<DeviceType::kNull>;
 
-    struct InterfaceDeviceDescriptor
-    {
-        using InterfaceDeviceDescriptorTag = void;
-    };
-
-    struct NullDeviceDescriptor
-    {
-        using NullDeviceDescriptorTag = void;
-    };
+    template <typename TDevice>
+    static constexpr DeviceType kDeviceType = TDevice::Descriptor::skDeviceType;
 
     template <typename T>
     concept CDevice = requires { typename T::Descriptor; };
 
+    template <typename T, DeviceType tkDeviceType>
+    concept CDeviceOfType = CDevice<T> && kDeviceType<T> == tkDeviceType;
+
     template <typename T>
-    concept CUniqueDevice = CDevice<T> && !T::Descriptor::skIsShared;
+    concept CUniqueDevice = CDeviceOfType<T, DeviceType::kUnique>;
     template <typename T>
-    concept CSharedDevice = CDevice<T> && T::Descriptor::skIsShared;
+    concept CSharedDevice = CDeviceOfType<T, DeviceType::kShared>;
     template <typename T>
-    concept CInterfaceDevice = CDevice<T> && requires { typename T::Descriptor::InterfaceDeviceDescriptorTag; };
+    concept CInterfaceDevice = CDeviceOfType<T, DeviceType::kInterface>;
     template <typename T>
-    concept CNullDevice = CDevice<T> && requires { typename T::Descriptor::NullDeviceDescriptorTag; };
+    concept CNullDevice = CDeviceOfType<T, DeviceType::kNull>;
 
     template <typename T>
     concept CHasChildrenDevices = CDevice<T> && requires { typename T::Descriptor::Children; };
+
+    // ============================================================================
+    // Initialization Traits
+    // ============================================================================
+
+    template <CDevice TDevice>
+    inline constexpr bool kDeviceNeedsInit = requires {
+        { TDevice::Descriptor::skNeedsInit } -> std::convertible_to<bool>;
+    } ? static_cast<bool>(TDevice::Descriptor::skNeedsInit) : true;
+
+    template <class... Ts>
+    struct DeviceInitOverloaded : Ts...
+    {
+        using Ts::operator()...;
+
+        void operator()(auto& dev) const
+        {
+            using DeviceT = std::remove_cvref_t<decltype(dev)>;
+            static_assert(CDevice<DeviceT>, "default_init_device can only be used with valid devices");
+            constexpr bool needs_init = kDeviceNeedsInit<DeviceT>;
+            static_assert(!needs_init || kAlwaysFalseT<DeviceT>, "Device needs explicit initialization");
+        }
+    };
+    template <class... Ts>
+    DeviceInitOverloaded(Ts...) -> DeviceInitOverloaded<Ts...>;
 
     // =============================================================================
     // SYSTEM HARDWARE SINGLETON ACCESS
@@ -79,7 +112,7 @@ namespace valle
     // DEVICE REFERENCE WRAPPERS
     // =============================================================================
 
-    template <typename TDevice>
+    template <CUniqueDevice TDevice>
     class UniqueDeviceRef
     {
     public:
@@ -143,7 +176,7 @@ namespace valle
         UniqueDeviceRef& operator=(const UniqueDeviceRef&) = delete;
     };
 
-    template <typename TDevice>
+    template <CSharedDevice TDevice>
     class SharedDeviceRef
     {
     public:
@@ -155,30 +188,6 @@ namespace valle
         explicit SharedDeviceRef(const DeviceT& device) noexcept
         {
             (void)device;  // Silence unused parameter warning
-        }
-
-        // Copy Constructor
-        SharedDeviceRef(const SharedDeviceRef& other) noexcept
-        {
-            (void)other;  // Silence unused parameter warning
-        }
-
-        // Move Constructor
-        SharedDeviceRef(SharedDeviceRef&& other) noexcept
-        {
-            (void)other;  // Silence unused parameter warning
-        }
-
-        // Copy Assignment
-        SharedDeviceRef& operator=(const SharedDeviceRef& other) noexcept
-        {
-            return *this;
-        }
-
-        // Move Assignment
-        SharedDeviceRef& operator=(SharedDeviceRef&& other) noexcept
-        {
-            return *this;
         }
 
         // Access the underlying Device
@@ -214,7 +223,7 @@ namespace valle
         }
     };
 
-    template <typename TDevice>
+    template <CNullDevice TDevice>
     class NullDeviceRef
     {
     public:
@@ -225,12 +234,40 @@ namespace valle
         }
     };
 
+    namespace detail
+    {
+        template <CDevice TDevice, DeviceType tkDeviceType>
+        struct DeviceRefSelector;
+
+        // unique device
+        template <CDevice TDevice>
+            requires(kDeviceType<TDevice> == DeviceType::kUnique)
+        struct DeviceRefSelector<TDevice, DeviceType::kUnique>
+        {
+            using type = UniqueDeviceRef<TDevice>;
+        };
+
+        // shared device
+        template <CDevice TDevice>
+            requires(kDeviceType<TDevice> == DeviceType::kShared)
+        struct DeviceRefSelector<TDevice, DeviceType::kShared>
+        {
+            using type = SharedDeviceRef<TDevice>;
+        };
+
+        // null device
+        template <CDevice TDevice>
+            requires(kDeviceType<TDevice> == DeviceType::kNull)
+        struct DeviceRefSelector<TDevice, DeviceType::kNull>
+        {
+            using type = NullDeviceRef<TDevice>;
+        };
+
+    }  // namespace detail
+
     template <CDevice TDevice>
         requires(!CInterfaceDevice<TDevice>)
-    using DeviceRef = std::conditional_t<
-        CNullDevice<TDevice>,
-        NullDeviceRef<TDevice>,
-        std::conditional_t<CSharedDevice<TDevice>, SharedDeviceRef<TDevice>, UniqueDeviceRef<TDevice>>>;
+    using DeviceRef = typename detail::DeviceRefSelector<TDevice, kDeviceType<TDevice>>::type;
 
     template <bool tkCondition, typename TDevice, typename TFalseRef = std::monostate>
     using ConditionalDeviceRef = std::conditional_t<tkCondition, DeviceRef<TDevice>, TFalseRef>;
@@ -296,6 +333,30 @@ namespace valle
         // This expands the incoming Ts... into one flat tuple of leaf devices
         using Devices = typename TypeListMergeUniqueMulti<typename detail::DeviceFlattener<Ts>::type...>::type;
     };
+
+    // =============================================================================
+    // Device Dependency Introspection Helpers
+    // =============================================================================
+    template <typename T>
+    struct ToDeviceRef
+    {
+        using type = DeviceRef<T>;
+    };
+
+    template <typename TDeviceList>
+    using ToDeviceRefTuple = typename TypeListToTuple<typename TransformTypeList<TDeviceList, ToDeviceRef>::type>::type;
+
+    template <typename T>
+    struct ToDevice
+    {
+        using type = typename T::DeviceT;
+    };
+
+    template <typename TDeviceRefList>
+    using ToDeviceTuple = typename TypeListToTuple<typename TransformTypeList<TDeviceRefList, ToDevice>::type>::type;
+
+    template <typename TDeviceRefList>
+    using ToDeviceTypeList = typename TupleToTypeList<ToDeviceTuple<TDeviceRefList>>::type;
 
     // =============================================================================
     // DEPENDENCY INSPECTION HELPERS
@@ -455,4 +516,128 @@ namespace valle
         }
     }
 
+    // =============================================================================
+    // PACKED DRIVER BASE
+    // ============================================================================
+    template <typename TDeviceList>
+    class PackedDriverBase
+    {
+    public:
+        using InjectDevices = TDeviceList;
+        using DeviceTuple   = ToDeviceRefTuple<InjectDevices>;
+
+        [[no_unique_address]] DeviceTuple devices;
+
+        PackedDriverBase() = delete;
+
+        template <typename... TArgs>
+            requires(std::constructible_from<DeviceTuple, TArgs...>)
+        explicit constexpr PackedDriverBase(TArgs&&... args) : devices(std::forward<TArgs>(args)...)
+        {
+        }
+
+        template <typename TDevice>
+        constexpr auto& get()
+        {
+            return std::get<DeviceRef<TDevice>>(devices).get();
+        }
+
+        template <typename TDevice>
+        constexpr const auto& get() const
+        {
+            return std::get<DeviceRef<TDevice>>(devices).get();
+        }
+
+        template <typename TVisitor>
+        constexpr decltype(auto) visit(TVisitor&& visitor)
+        {
+            return std::apply([&visitor](auto&... device_refs) -> decltype(auto)
+                              { return std::forward<TVisitor>(visitor)(device_refs.get()...); },
+                              devices);
+        }
+
+        template <typename TVisitor>
+        constexpr decltype(auto) visit(TVisitor&& visitor) const
+        {
+            return std::apply([&visitor](const auto&... device_refs) -> decltype(auto)
+                              { return std::forward<TVisitor>(visitor)(device_refs.get()...); },
+                              devices);
+        }
+
+        template <typename TVisitor>
+        constexpr void foreach (TVisitor&& visitor)
+        {
+            std::apply(
+                [&visitor](auto&... device_refs)
+                {
+                    // Call the visitor as an lvalue (no std::forward here)
+                    (visitor(device_refs.get()), ...);
+                },
+                devices);
+        }
+
+        template <typename TVisitor>
+        constexpr void foreach_reverse(TVisitor&& visitor)
+        {
+            constexpr auto size = std::tuple_size_v<DeviceTuple>;
+
+            if constexpr (size > 0)
+            {
+                // Create a sequence 0, 1, 2, ... N-1
+                [&]<std::size_t... Is>(std::index_sequence<Is...>)
+                {
+                    // Use the comma fold expression, but subtract the index from (size - 1)
+                    // This results in indices: (N-1), (N-2), ... 0
+                    (visitor(std::get<size - 1 - Is>(devices).get()), ...);
+                }(std::make_index_sequence<size>{});
+            }
+        }
+
+        template <typename TVisitor>
+        constexpr void foreach (TVisitor&& visitor) const
+        {
+            std::apply([&visitor](const auto&... device_refs) { (visitor(device_refs.get()), ...); }, devices);
+        }
+
+        template <typename TVisitor>
+        constexpr void foreach_reverse(TVisitor&& visitor) const
+        {
+            constexpr auto size = std::tuple_size_v<DeviceTuple>;
+
+            if constexpr (size > 0)
+            {
+                // Create a sequence 0, 1, 2, ... N-1
+                [&]<std::size_t... Is>(std::index_sequence<Is...>)
+                {
+                    // Use the comma fold expression, but subtract the index from (size - 1)
+                    // This results in indices: (N-1), (N-2), ... 0
+                    (visitor(std::get<size - 1 - Is>(devices).get()), ...);
+                }(std::make_index_sequence<size>{});
+            }
+        }
+
+        template <typename TDevice, typename TVisitor>
+        constexpr decltype(auto) visit_one(TVisitor&& visitor)
+        {
+            return std::forward<TVisitor>(visitor)(get<TDevice>());
+        }
+
+        template <typename TDevice, typename TVisitor>
+        constexpr decltype(auto) visit_one(TVisitor&& visitor) const
+        {
+            return std::forward<TVisitor>(visitor)(get<TDevice>());
+        }
+    };
+
 }  // namespace valle
+
+#define VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(member_name, device_type) \
+    constexpr auto& member_name()                                            \
+    {                                                                        \
+        return this->template get<device_type>();                            \
+    }                                                                        \
+                                                                             \
+    constexpr const auto& member_name() const                                \
+    {                                                                        \
+        return this->template get<device_type>();                            \
+    }

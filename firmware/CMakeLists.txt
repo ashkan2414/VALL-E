@@ -10,6 +10,8 @@ set(TARGET_PLATFORM "stm32/g474xx" CACHE STRING "Select Target Platform: stm32/g
 set(VALLE_FIRMWARE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(VALLE_COMMON_DIR "${VALLE_FIRMWARE_DIR}/common")
 set(VALLE_PLATFORM_DIR "${VALLE_FIRMWARE_DIR}/platform/${TARGET_PLATFORM}")
+set(VALLE_SYSTEM_DIR "${VALLE_FIRMWARE_DIR}/system")
+set(VALLE_APP_COMMON_DIR "${VALLE_FIRMWARE_DIR}/apps/common")
 set(VALLE_APP_DIR "${VALLE_FIRMWARE_DIR}/apps/${TARGET_APP}")
 set(VALLE_THIRDPARTY_DIR "${VALLE_FIRMWARE_DIR}/thirdparty")
 
@@ -71,16 +73,7 @@ add_subdirectory(thirdparty)
 # SOURCE FILE MANAGEMENT
 # ==============================================================================
 
-# A. Add the Selected Application Entry Point
-file(GLOB TARGET_APP_SOURCES
-    "${VALLE_APP_DIR}/*.cpp"
-    "${VALLE_APP_DIR}/*.c"
-    "${VALLE_APP_DIR}/**/*.cpp"
-    "${VALLE_APP_DIR}/**/*.c"
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${TARGET_APP_SOURCES})
-
-# B. Add Common User Libraries (PID, Sensors, Utils)
+# Add Common User Libraries (PID, Sensors, Utils)
 # We use GLOB_RECURSE to automatically find any .c/.cpp files in Common/
 file(GLOB_RECURSE COMMON_SOURCES
     "${VALLE_COMMON_DIR}/src/*.cpp"
@@ -90,7 +83,7 @@ file(GLOB_RECURSE COMMON_SOURCES
 )
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${COMMON_SOURCES})
 
-# C. Auto-Discovery in Platform
+# Auto-Discovery in Platform
 # This finds any .cpp or .c file you add to platform/src,
 file(GLOB PLATFORM_SOURCES
     "${VALLE_PLATFORM_DIR}/src/*.cpp"
@@ -101,13 +94,42 @@ file(GLOB PLATFORM_SOURCES
 set(PLATFORM_SOURCES ${PLATFORM_SOURCES} "${VALLE_PLATFORM_DIR}/startup.s")
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${PLATFORM_SOURCES})
 
+# This finds any .cpp or .c file you add to system/src,
+file(GLOB SYSTEM_SOURCES
+    "${VALLE_SYSTEM_DIR}/src/*.cpp"
+    "${VALLE_SYSTEM_DIR}/src/*.c"
+    "${VALLE_SYSTEM_DIR}/src/**/*.cpp"
+    "${VALLE_SYSTEM_DIR}/src/**/*.c"
+)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SYSTEM_SOURCES})
+
+file(GLOB APP_COMMON_SOURCES
+    "${VALLE_APP_COMMON_DIR}/src/*.cpp"
+    "${VALLE_APP_COMMON_DIR}/src/*.c"
+    "${VALLE_APP_COMMON_DIR}/src/**/*.cpp"
+    "${VALLE_APP_COMMON_DIR}/src/**/*.c"
+
+)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${APP_COMMON_SOURCES})
+
+# Add the Selected Application Entry Point
+file(GLOB TARGET_APP_SOURCES
+    "${VALLE_APP_DIR}/*.cpp"
+    "${VALLE_APP_DIR}/*.c"
+    "${VALLE_APP_DIR}/**/*.cpp"
+    "${VALLE_APP_DIR}/**/*.c"
+)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${TARGET_APP_SOURCES})
+
 
 # ==============================================================================
 # INCLUDE DIRECTORIES
 # ==============================================================================
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${VALLE_PLATFORM_DIR}/inc                  # Platform headers (stm32g4xx_hal_conf.h, etc)
     ${VALLE_COMMON_DIR}/inc                    # Application Common headers
+    ${VALLE_PLATFORM_DIR}/inc                  # Platform headers (stm32g4xx_hal_conf.h, etc)
+    ${VALLE_SYSTEM_DIR}/inc                    # System headers (main.cpp, etc)
+    ${VALLE_APP_COMMON_DIR}/inc                # App Common headers
     ${VALLE_APP_DIR}                           # The specific App's local headers
 )
 

@@ -9,7 +9,6 @@ namespace valle
     {
         static void handle()
         {
-            app::g_rep_counter.fetch_add(1, std::memory_order_relaxed);
         }
     };
 

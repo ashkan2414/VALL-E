@@ -1,6 +1,7 @@
 #include "app.hpp"
 
-#include "valle/core/error.hpp"
+#include "valle/app/system_config.hpp"
+#include "valle/error.hpp"
 
 VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
 
@@ -8,31 +9,36 @@ namespace valle::app
 {
     DriverBuilderReturnT install_drivers(DriverBuilderT&& builder)
     {
-        return std::move(builder).template install<UARTLoggerT>().template install<TestADCDriverT>().yield();
+        return std::move(builder)
+            .template install<RootDriver>()
+            .template install<CoreSystemDriver>()
+            .template install<UARTLoggerT>()
+            .template install<TestADCDriverT>()
+            .yield();
     }
 
     /**
      * @brief Initialize shared devices.
      *
      */
-    static void init_shared()
+    static void init_root()
     {
-        g_ref_registry.foreach_shared(Overloaded{
+        g_drivers.root.foreach (DeviceInitOverloaded{
+            [](CoreSystemDriver& dev) { (void)dev; },
             [](ADC12ClockDevice& dev)
             {
-                valle::expect(dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
-                                                           .prescaler = ADCAsyncClockPrescaler::kDiv8}),
-                              "Failed to initialize ADC12 Clock Device");
+                expect(dev.init(ADCAsyncClockConfig{.source    = ADCAsyncClockSource::kSysclk,
+                                                    .prescaler = ADCAsyncClockPrescaler::kDiv8}),
+                       "Failed to initialize ADC12 Clock Device");
             },
-            [](ADC1ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize Test ADC Controller"); },
-            [](DMAMux1ControllerDevice& dev)
-            { valle::expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
+            [](ADC1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize Test ADC Controller"); },
+            [](DMAMux1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
 
-            [](DMA1ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
+            [](DMA1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
 
-            [](DMA2ControllerDevice& dev) { valle::expect(dev.init(), "Failed to initialize DMA2 Controller Device"); },
+            [](DMA2ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMA2 Controller Device"); },
 
-            [](GPIOPortADevice& dev) { valle::expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
         }  // namespace valle
         );
     }
@@ -43,40 +49,40 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        valle::expect(g_drivers.uart_logger.init(UARTControllerConfig{
-                          .baud_rate         = UARTBaudRate::kBaud230400,
-                          .word_length       = UARTWordLength::kBits8,
-                          .stop_bits         = UARTStopBits::kBits1,
-                          .parity            = UARTParity::kNone,
-                          .transfer_mode     = UARTTransferMode::kTxRx,
-                          .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
-                          .dma_priority      = DMAPriority::kHigh,
-                          .dma_int_priority  = 5,
-                          .uart_int_priority = 5,
-                      }),
-                      "Failed to initialize UART Logger Driver");
+        expect(g_drivers.uart_logger.init(UARTControllerConfig{
+                   .baud_rate         = UARTBaudRate::kBaud230400,
+                   .word_length       = UARTWordLength::kBits8,
+                   .stop_bits         = UARTStopBits::kBits1,
+                   .parity            = UARTParity::kNone,
+                   .transfer_mode     = UARTTransferMode::kTxRx,
+                   .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
+                   .dma_priority      = DMAPriority::kHigh,
+                   .dma_int_priority  = 5,
+                   .uart_int_priority = 5,
+               }),
+               "Failed to initialize UART Logger Driver");
 
-        valle::expect(g_drivers.test_adc.init(ADCAnalogSensorDriverConfig<TestADCConverterT>{
-                          .channel_config = ADCChannelConfig{.sampling_time = ADCChannelSampleTime::k12Cycles5,
-                                                             .input_mode    = ADCChannelInputMode::kSingleEnded,
-                                                             .offset        = std::nullopt},
-                          .converter_config{}}),
-                      "Failed to initialize Test ADC Driver");
+        expect(g_drivers.test_adc.init(ADCAnalogSensorDriverConfig<TestADCConverterT>{
+                   .channel_config = ADCChannelConfig{.sampling_time = ADCChannelSampleTime::k12Cycles5,
+                                                      .input_mode    = ADCChannelInputMode::kSingleEnded,
+                                                      .offset        = std::nullopt},
+                   .converter_config{}}),
+               "Failed to initialize Test ADC Driver");
     }
 
     /**
      * @brief Post-initialize shared devices.
      *
      */
-    static void post_init_shared()
+    static void post_init_root()
     {
-        g_ref_registry.foreach_shared(Overloaded{
-            [](ADC12ClockDevice& dev)
-            { valle::expect(dev.post_init(), "Failed to post-initialize ADC12 Clock Device"); },
+        g_drivers.root.foreach_reverse(DeviceInitOverloaded{
+            [](CoreSystemDriver& dev) { (void)dev; },
+            [](ADC12ClockDevice& dev) { expect(dev.post_init(), "Failed to post-initialize ADC12 Clock Device"); },
 
             [](ADC1ControllerDevice& dev)
             {
-                valle::expect(
+                expect(
                     dev.post_init(ADCControllerConfig{
                         .resolution     = ADCResolution::k12Bit,
                         .data_alignment = ADCDataAlignment::kRight,
@@ -112,16 +118,15 @@ namespace valle::app
             },
 
             [](DMAMux1ControllerDevice& dev)
-            { valle::expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller Device"); },
+            { expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller Device"); },
 
             [](DMA1ControllerDevice& dev)
-            { valle::expect(dev.post_init(), "Failed to post-initialize DMA1 Controller Device"); },
+            { expect(dev.post_init(), "Failed to post-initialize DMA1 Controller Device"); },
 
             [](DMA2ControllerDevice& dev)
-            { valle::expect(dev.post_init(), "Failed to post-initialize DMA2 Controller Device"); },
+            { expect(dev.post_init(), "Failed to post-initialize DMA2 Controller Device"); },
 
-            [](GPIOPortADevice& dev)
-            { valle::expect(dev.post_init(), "Failed to post-initialize GPIO Port A Device"); },
+            [](GPIOPortADevice& dev) { expect(dev.post_init(), "Failed to post-initialize GPIO Port A Device"); },
         });
     }
 
@@ -131,9 +136,12 @@ namespace valle::app
      */
     void init()
     {
-        init_shared();
+        // Core System Device must be initialized first since other devices may depend on it for clock configuration
+        expect(g_drivers.core.init(kDefaultCoreSystemConfig), "Failed to initialize Core System Device");
+
+        init_root();
         init_drivers();
-        post_init_shared();
+        post_init_root();
     }
 
 }  // namespace valle::app
