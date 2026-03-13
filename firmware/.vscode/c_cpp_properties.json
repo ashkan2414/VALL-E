@@ -4,8 +4,10 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/Common/Inc",
-                "${workspaceFolder}/Core/Inc",
+                "${workspaceFolder}/src/base/inc",
+                "${workspaceFolder}/src/platform/stm32/g474xx/inc",
+                "${workspaceFolder}/src/system/inc",
+                "${workspaceFolder}/src/apps/common/inc",
                 "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/CMSIS/Core/Include",
                 "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/CMSIS/Device/ST/STM32G4xx/Include",
                 "${workspaceFolder}/Thirdparty/STM32CubeG4/Drivers/STM32G4xx_HAL_Driver/Inc",

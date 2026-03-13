@@ -8,25 +8,34 @@ set(TARGET_PLATFORM "stm32/g474xx" CACHE STRING "Select Target Platform: stm32/g
 
 
 set(VALLE_FIRMWARE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(VALLE_COMMON_DIR "${VALLE_FIRMWARE_DIR}/common")
-set(VALLE_PLATFORM_DIR "${VALLE_FIRMWARE_DIR}/platform/${TARGET_PLATFORM}")
-set(VALLE_SYSTEM_DIR "${VALLE_FIRMWARE_DIR}/system")
-set(VALLE_APP_COMMON_DIR "${VALLE_FIRMWARE_DIR}/apps/common")
-set(VALLE_APP_DIR "${VALLE_FIRMWARE_DIR}/apps/${TARGET_APP}")
 set(VALLE_THIRDPARTY_DIR "${VALLE_FIRMWARE_DIR}/thirdparty")
+set(VALLE_SOURCE_DIR ${VALLE_FIRMWARE_DIR}/src)
+set(VALLE_BASE_DIR "${VALLE_SOURCE_DIR}/base")
+set(VALLE_PLATFORM_DIR "${VALLE_SOURCE_DIR}/platform")
+set(VALLE_TARGET_PLATFORM_DIR "${VALLE_PLATFORM_DIR}/${TARGET_PLATFORM}")
+set(VALLE_SYSTEM_DIR "${VALLE_SOURCE_DIR}/system")
+set(VALLE_APP_DIR "${VALLE_SOURCE_DIR}/apps")
+set(VALLE_APP_COMMON_DIR "${VALLE_APP_DIR}/common")
+set(VALLE_TARGET_APP_DIR "${VALLE_APP_DIR}/${TARGET_APP}")
 
 # Sanity Check: Ensure the requested Application exists
-if(NOT EXISTS "${VALLE_APP_DIR}")
-    message(FATAL_ERROR "Error: Application folder 'apps/${TARGET_APP}' not found! Check spelling or create the folder.")
+if(NOT EXISTS "${VALLE_TARGET_APP_DIR}")
+    message(FATAL_ERROR "Error: Application folder 'src/apps/${TARGET_APP}' not found! Check spelling or create the folder.")
 else()
     message(STATUS "CONFIGURING FOR TARGET APPLICATION: ${TARGET_APP}")
 endif()
 
-IF (NOT EXISTS "${VALLE_PLATFORM_DIR}")
-    message(FATAL_ERROR "Error: Platform folder 'platform/${TARGET_PLATFORM}' not found! Check spelling or create the folder.")
-ELSE()
+# Sanity Check: Ensure the requested Platform exists
+if(NOT EXISTS "${VALLE_TARGET_PLATFORM_DIR}")
+    message(FATAL_ERROR "Error: Platform folder 'src/platform/${TARGET_PLATFORM}' not found! Check spelling or create the folder.")
+else()
     message(STATUS "CONFIGURING FOR TARGET PLATFORM: ${TARGET_PLATFORM}")
-ENDIF()
+endif()
+
+set(VALLE_APP_INTEGRATION_INCLUDE_DIRS
+    ${VALLE_APP_COMMON_DIR}/inc
+    ${VALLE_TARGET_APP_DIR}
+)
 
 # ==============================================================================
 # PROJECT SETUP & STANDARDS
@@ -62,94 +71,34 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 # THIRDPARTY LIBRARY INTEGRATION
 # ==============================================================================
 # Create the final executable artifact
-add_executable(${CMAKE_PROJECT_NAME})
-
-target_link_libraries(${CMAKE_PROJECT_NAME} ${TOOLCHAIN_LINK_LIBRARIES})
+add_executable(${CMAKE_PROJECT_NAME} "${VALLE_SOURCE_DIR}/main.cpp")
 
 # Add the Thirdparty directory
 add_subdirectory(thirdparty)
 
-# ==============================================================================
-# SOURCE FILE MANAGEMENT
-# ==============================================================================
-
-# Add Common User Libraries (PID, Sensors, Utils)
-# We use GLOB_RECURSE to automatically find any .c/.cpp files in Common/
-file(GLOB_RECURSE COMMON_SOURCES
-    "${VALLE_COMMON_DIR}/src/*.cpp"
-    "${VALLE_COMMON_DIR}/src/*.c"
-    "${VALLE_COMMON_DIR}/src/**/*.cpp"
-    "${VALLE_COMMON_DIR}/src/**/*.c"
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${COMMON_SOURCES})
-
-# Auto-Discovery in Platform
-# This finds any .cpp or .c file you add to platform/src,
-file(GLOB PLATFORM_SOURCES
-    "${VALLE_PLATFORM_DIR}/src/*.cpp"
-    "${VALLE_PLATFORM_DIR}/src/*.c"
-    "${VALLE_PLATFORM_DIR}/src/**/*.cpp"
-    "${VALLE_PLATFORM_DIR}/src/**/*.c"
-)
-set(PLATFORM_SOURCES ${PLATFORM_SOURCES} "${VALLE_PLATFORM_DIR}/startup.s")
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${PLATFORM_SOURCES})
-
-# This finds any .cpp or .c file you add to system/src,
-file(GLOB SYSTEM_SOURCES
-    "${VALLE_SYSTEM_DIR}/src/*.cpp"
-    "${VALLE_SYSTEM_DIR}/src/*.c"
-    "${VALLE_SYSTEM_DIR}/src/**/*.cpp"
-    "${VALLE_SYSTEM_DIR}/src/**/*.c"
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SYSTEM_SOURCES})
-
-file(GLOB APP_COMMON_SOURCES
-    "${VALLE_APP_COMMON_DIR}/src/*.cpp"
-    "${VALLE_APP_COMMON_DIR}/src/*.c"
-    "${VALLE_APP_COMMON_DIR}/src/**/*.cpp"
-    "${VALLE_APP_COMMON_DIR}/src/**/*.c"
-
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${APP_COMMON_SOURCES})
-
-# Add the Selected Application Entry Point
-file(GLOB TARGET_APP_SOURCES
-    "${VALLE_APP_DIR}/*.cpp"
-    "${VALLE_APP_DIR}/*.c"
-    "${VALLE_APP_DIR}/**/*.cpp"
-    "${VALLE_APP_DIR}/**/*.c"
-)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${TARGET_APP_SOURCES})
-
-
-# ==============================================================================
-# INCLUDE DIRECTORIES
-# ==============================================================================
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    ${VALLE_COMMON_DIR}/inc                    # Application Common headers
-    ${VALLE_PLATFORM_DIR}/inc                  # Platform headers (stm32g4xx_hal_conf.h, etc)
-    ${VALLE_SYSTEM_DIR}/inc                    # System headers (main.cpp, etc)
-    ${VALLE_APP_COMMON_DIR}/inc                # App Common headers
-    ${VALLE_APP_DIR}                           # The specific App's local headers
-)
-
-# ==============================================================================
-# COMPILER FLAGS
-# ==============================================================================
-target_precompile_headers(
-    ${CMAKE_PROJECT_NAME} PRIVATE
-    "${VALLE_COMMON_DIR}/pch.hpp"
-    "${VALLE_PLATFORM_DIR}/pch.hpp"
-    "${VALLE_THIRDPARTY_DIR}/pch.hpp"
-)
-
-
-# Add the map file to the list of files to be removed with 'clean' target
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_PROJECT_NAME}.map)
+# Add the main source directories (base, platform, system, apps)
+add_subdirectory(src)
 
 # ==============================================================================
 # LINKING
 # ==============================================================================
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
+    ${TOOLCHAIN_LINK_LIBRARIES}
+    valle_base
+    valle_platform
+    valle_system
+    valle_app
+)
+
+
+# ==============================================================================
+# COMPILER FLAGS
+# ==============================================================================
+
+# Add the map file to the list of files to be removed with 'clean' target
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES ADDITIONAL_CLEAN_FILES ${CMAKE_PROJECT_NAME}.map)
+
+
 # Fix for linker error regarding 'libob.a' (Standard ST fix)
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 
