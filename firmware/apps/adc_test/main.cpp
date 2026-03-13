@@ -32,10 +32,6 @@ namespace valle
         {
             delay_ms(500);
 
-            VALLE_LOG_INFO("Hello World #{}!", counter++);
-
-            delay_ms(500);
-
             // Software trigger for Regular group
             if constexpr (!app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)
             {

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "valle/math/converters.hpp"
 #include "valle/core/device/device.hpp"
 
 
@@ -150,11 +151,14 @@ namespace valle
     // -----------------------------------------------------------------------------
     // Module Drivers
     // -----------------------------------------------------------------------------
+    using ACS724Calibrator = LinearConverter<float, float>;
+    using ACS724CalibrationConfig = typename ACS724Calibrator::Config;
 
     template <typename TADCChannelInterfaceConfig>
     struct ACS724ModuleConfigX
     {
         TADCChannelInterfaceConfig channel_config{};  /// ADC Channel Configuration
+        ACS724CalibrationConfig calibration_config{};     /// Calibration config for correcting sensor/circuit non-idealities (gain/offset)
     };
 
     /**
@@ -179,6 +183,7 @@ namespace valle
 
     private:
         ADCChannelInterfaceT m_adc;  /// ADC Channel Interface driver
+        ACS724Calibrator m_calibrator{};
 
     public:
         template <typename... TArgs>
@@ -196,6 +201,7 @@ namespace valle
          */
         [[nodiscard]] bool init(const ConfigT& config)
         {
+            m_calibrator.init(config.calibration_config);
             return m_adc.init(config.channel_config);
         }
 
@@ -210,7 +216,7 @@ namespace valle
          */
         [[nodiscard]] float read_amps() const
         {
-            return m_adc.read_amps();
+            return m_calibrator.convert(m_adc.read_amps());
         }
 
         [[nodiscard]] ADCChannelInterfaceT& get_adc()

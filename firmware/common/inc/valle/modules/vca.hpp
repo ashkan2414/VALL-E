@@ -74,8 +74,8 @@ namespace valle
         static constexpr VCAControlMode skMode = VCAControlMode::kClosedLoopCurrent;
 
     private:
-        constexpr static T skPidP = static_cast<T>(0.5);
-        constexpr static T skPidI = static_cast<T>(1.0);
+        constexpr static T skPidP = static_cast<T>(3.75);
+        constexpr static T skPidI = static_cast<T>(2.25);
         constexpr static T skPidD = static_cast<T>(0.0);
 
         PIDSystem<ValueT> system{};

@@ -37,7 +37,7 @@ namespace valle
         }
 
         // Toggle test GPIO on each sample event (for oscilloscope debugging)
-        app::g_drivers.test_gpio.toggle();
+        //app::g_drivers.test_gpio.toggle();
 
         // First read the sampled current sensor and convert
         app::g_drivers.current_sensor.get_adc().on_data_available();

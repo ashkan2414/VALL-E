@@ -70,7 +70,7 @@ namespace valle::app
     constexpr uint32_t kVCAPWMFreqHz          = 60000U;         // 60 kHz PWM Frequency
     constexpr uint32_t kCurrentSamplingFreqHz = kVCAPWMFreqHz;  // Sample at PWM frequency for synchronization
 
-    static constexpr auto   kTargetSettleTime = DurationMicros(150);
+    static constexpr auto   kTargetSettleTime = DurationMicros(2100);
     static constexpr size_t kCaptureSteps     = 10;
     static constexpr auto   kCaptureDuration  = kTargetSettleTime * kCaptureSteps;
     static constexpr size_t kCaptureSamples =
