@@ -1,27 +1,14 @@
 #pragma once
 
-#include "valle/app/vca_current_controller_config.hpp"
+#include "valle/app/platform/modules/acs724.hpp"
+#include "valle/app/platform/modules/vca.hpp"
+#include "valle/app/platform/uart_logger_config.hpp"
+#include "valle/app/platform/vca_current_controller_config.hpp"
 #include "valle/base/system_build/config_base.hpp"
 #include "valle/base/system_build/traits.hpp"
 #include "valle/platform/drivers/core_system.hpp"
 #include "valle/platform/drivers/gpio/digital_out.hpp"
 #include "valle/platform/drivers/uart/logger.hpp"
-#include "valle/platform/modules/acs724.hpp"
-#include "valle/platform/modules/vca.hpp"
-
-namespace valle::app
-{
-    // Logger
-    constexpr auto kLoggerUARTControllerID = platform::UARTControllerID::kLPUART1;
-    struct UARTControllerCTConfig : platform::UARTControllerCTDefaultConfig<kLoggerUARTControllerID>
-    {
-        using DMAChannelTxT = platform::DMA1Channel1Device;
-    };
-
-}  // namespace valle::app
-
-// Bind compile-time configurations
-VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTControllerID, app::UARTControllerCTConfig{});
 
 namespace valle
 {
@@ -30,7 +17,6 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using UARTLoggerT     = platform::UARTLogger<platform::UARTControllerDevice<kLoggerUARTControllerID>>;
         using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;
 
         // Declare Main Driver List

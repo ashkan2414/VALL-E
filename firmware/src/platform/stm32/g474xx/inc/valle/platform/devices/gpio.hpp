@@ -3,7 +3,6 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/gpio.hpp"
 
-
 namespace valle::platform
 {
     // =============================================================================
@@ -80,12 +79,6 @@ namespace valle::platform
         [[nodiscard]] bool init()
         {
             PortTraitsT::enable_clock();
-            return true;
-        }
-
-        [[nodiscard]] bool post_init()
-        {
-            // Nothing for now
             return true;
         }
     };

@@ -8,16 +8,16 @@ namespace valle
 {
     void app::main()
     {
-        TimingContext::delay_ms(1000);
+        system::TimingContext::delay_ms(1000);
 
         app::init();
 
         if constexpr (app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)
         {
-            app::g_drivers.root.adc1().enable_interrupts(ADCInterruptConfig{
+            app::g_drivers.root.adc1().enable_interrupts(platform::ADCInterruptConfig{
                 .priority = 5,
                 .interrupts =
-                    ADCInterruptMask{
+                    platform::ADCInterruptMask{
                         .inj_eos = true,
                     },
             });
@@ -30,7 +30,7 @@ namespace valle
 
         while (true)
         {
-            TimingContext::delay_ms(100);
+            system::TimingContext::delay_ms(100);
 
             // Software trigger for Regular group
             if constexpr (!app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)

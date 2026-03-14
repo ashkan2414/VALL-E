@@ -1,12 +1,11 @@
 #pragma once
 
-#include "valle/app/system_config.hpp"
+#include "valle/app/platform/core_system_config.hpp"
+#include "valle/app/platform/modules/acs724.hpp"
+#include "valle/app/platform/modules/vca.hpp"
 #include "valle/base/panic.hpp"
 #include "valle/platform/hardware/common.hpp"
-#include "valle/platform/modules/acs724.hpp"
-#include "valle/platform/modules/vca.hpp"
 #include "valle/system/timing.hpp"
-
 
 namespace valle::app
 {
@@ -61,7 +60,7 @@ namespace valle::app
     using VCAControllerSystemControllerT       = VCAClosedLoopCurrentFeedbackController<float>;
     using VCAControllerSystemControllerConfigT = typename VCAControllerSystemControllerT::ConfigT;
 
-    using VCAControllerConfigT = platform::VCAControllerHRTIMModuleConfig<VCAControllerSystemControllerConfigT>;
+    using VCAControllerConfigT = platform::app::VCAControllerHRTIMModuleConfig<VCAControllerSystemControllerConfigT>;
 
     constexpr auto kVCAControllerConfig = VCAControllerConfigT{
         .half_bridge_config =
@@ -100,11 +99,12 @@ namespace valle::app
     // -----------------------------------------------------------------------------
     // ADC CONFIG
     // ------------------------------------------------------------------------------
-    constexpr auto kCurrentSensorADCCommonConfig = platform::ADCCommonConfig<platform::ADCCommonID::kADC12>{
-        .clock_config =
-            platform::ADCCommonAsyncClockConfig{.prescaler = platform::ADCCommonAsyncClockPrescaler::kDiv4}};
-    static_assert(!kCurrentSensorADCCommonConfig.validate(kDefaultCoreSystemConfig.rcc_config).has_value(),
-                  "ADC Common config is invalid");
+    constexpr auto kCurrentSensorADCCommonConfig =
+        platform::ADC12CommonConfig{.clock_config = platform::ADCCommonAsyncClockConfig{
+                                        .prescaler = platform::ADCCommonAsyncClockPrescaler::kDiv4}};
+    static_assert(
+        !kCurrentSensorADCCommonConfig.validate(platform::app::kDefaultCoreSystemConfig.rcc_config).has_value(),
+        "ADC Common config is invalid");
 
     static constexpr platform::ADCInjectGroupTriggerSource kCurrentSensorADCInjectGroupHRTIMTrigger =
         platform::ADCInjectGroupTriggerSource::kExtHrtimTRG2;
@@ -158,7 +158,7 @@ namespace valle::app
     };
 
     constexpr auto kCurrentSensorConfig =
-        platform::ACS724ModuleConfig{.channel_config = kCurrentSensorADCChannelConfig};
+        platform::app::ACS724ModuleConfig{.channel_config = kCurrentSensorADCChannelConfig};
 
     constexpr platform::HRTIMTimerADCTriggerID kCurrentSensorHRTIMADCTriggerID =
         kCurrentSensorUseInject ? adc_trigger_to_hrtim_trigger(kCurrentSensorADCInjectGroupHRTIMTrigger)
@@ -175,7 +175,7 @@ namespace valle::app
     // VALIDATE
     // ------------------------------------------------------------------------------
     constexpr auto kCurrentSensorChannelSampleTime = platform::ADCRootInterface::calculate_channel_sample_time_s(
-        kCurrentSensorADCCommonConfig.get_source_clock_freq_hz(kDefaultCoreSystemConfig.rcc_config),
+        kCurrentSensorADCCommonConfig.get_source_clock_freq_hz(platform::app::kDefaultCoreSystemConfig.rcc_config),
         kCurrentSensorADCChannelConfig.sampling_time,
         kCurrentSensorADCConfig.oversampling.has_value()
             ? std::optional<platform::ADCOversamplingRatio>(kCurrentSensorADCConfig.oversampling->ratio)
@@ -185,22 +185,25 @@ namespace valle::app
                   "ADC sampling time must be less than PWM period for proper synchronization");
 }  // namespace valle::app
 
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(app::kVCAPWMHRTIMControllerID, app::HRTIMControllerCTConfig{});
-VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(app::kVCAPWMHRTIMControllerID, app::kVCAPWMHRTIMTimerID, app::HRTIMTimerCTConfig{});
-VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(app::kCurrentSensorADCID, app::ADCControllerCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAPWMHRTIMControllerID, valle::app::HRTIMControllerCTConfig{});
+VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(valle::app::kVCAPWMHRTIMControllerID,
+                                   valle::app::kVCAPWMHRTIMTimerID,
+                                   valle::app::HRTIMTimerCTConfig{});
+VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(valle::app::kCurrentSensorADCID, valle::app::ADCControllerCTConfig{});
 
 namespace valle::app
 {
     using VCAPWMHRTIMControllerDeviceT = platform::HRTIMControllerDevice<kVCAPWMHRTIMControllerID>;
     using VCAPWMHRTIMTimerDeviceT      = platform::HRTIMTimerDevice<kVCAPWMHRTIMControllerID, kVCAPWMHRTIMTimerID>;
-    using VCAControllerT = platform::VCAControllerHRTIMModule<VCAPWMHRTIMTimerDeviceT, VCAControllerSystemControllerT>;
+    using VCAControllerT =
+        platform::app::VCAControllerHRTIMModule<VCAPWMHRTIMTimerDeviceT, VCAControllerSystemControllerT>;
 
     using CurrentSensorADCChannelT =
         std::conditional_t<kCurrentSensorUseInject,
                            platform::ADCInjectChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>,
                            platform::ADCRegularChannelRank1Device<kCurrentSensorADCID, kCurrentSensorADCChannelId>>;
     using CurrentSensorADCControllerT = CurrentSensorADCChannelT::ChannelT::ControllerT;
-    using CurrentSensorT              = platform::ACS724Module<CurrentSensorADCChannelT, ACS724Model::k2P5ABi>;
+    using CurrentSensorT              = platform::app::ACS724Module<CurrentSensorADCChannelT, ACS724Model::k2P5ABi>;
 
     inline void init_vca_controller(VCAControllerT& vca_controller)
     {

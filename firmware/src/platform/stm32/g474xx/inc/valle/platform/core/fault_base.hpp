@@ -31,7 +31,7 @@ namespace valle::platform
     using FaultSources = TypeList<PanicSourceInfo, AssertSourceInfo, FaultInterruptSourceInfo>;
 
     template <typename TSource>
-    concept CFaultSource = TypeListContains<TSource, FaultSources>::value;
+    concept CFaultSource = TypeListContains<std::remove_cvref_t<TSource>, FaultSources>::value;
 
     template <CFaultSource TSource>
     void default_fault_handler(TSource&& source)
@@ -63,9 +63,11 @@ namespace valle::platform
     template <CFaultSource TSource>
     struct FaultHandler
     {
-        static void handle(TSource&& source)
+        template <typename U>
+            requires(std::same_as<std::remove_cvref_t<U>, std::remove_cvref_t<TSource>>)
+        static void handle(U&& source)
         {
-            default_fault_handler<TSource>(std::move(source));
+            default_fault_handler<U>(std::forward<U>(source));
         }
     };
 

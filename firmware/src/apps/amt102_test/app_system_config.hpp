@@ -1,32 +1,25 @@
 #pragma once
 
+#include "valle/app/platform/modules/amt10x.hpp"
+#include "valle/app/platform/uart_logger_config.hpp"
 #include "valle/base/system_build/config_base.hpp"
+#include "valle/base/system_build/traits.hpp"
 #include "valle/platform/drivers/core_system.hpp"
 #include "valle/platform/drivers/uart/logger.hpp"
-#include "valle/platform/modules/amt10x.hpp"
 
 namespace valle::app
 {
-    // UART for Logging
-    constexpr UARTControllerID kLoggerUARTID = UARTControllerID::kLPUART1;
-    struct UARTControllerCTConfig : UARTControllerCTDefaultConfig<kLoggerUARTID>
-    {
-        using DMAChannelTxT = DMA1Channel2Device;
-    };
-    static constexpr UARTControllerCTConfig kLoggerUARTCTConfig{};
-
     // TIM for Quadrature Encoder
-    constexpr TIMControllerID kEncoderTIMControllerID = TIMControllerID::kTim2;
-    struct TIMControllerCTConfig : TIMControllerCTDefaultConfig
+    constexpr auto kEncoderTIMControllerID = platform::TIMControllerID::kTim2;
+    struct TIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
     {
-        using Ch1PinT = GPIOPinA0Device;
-        using Ch2PinT = GPIOPinA1Device;
+        using Ch1PinT = platform::GPIOPinA0Device;
+        using Ch2PinT = platform::GPIOPinA1Device;
     };
 
 }  // namespace valle::app
 
-VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(app::kLoggerUARTID, app::kLoggerUARTCTConfig);
-VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(app::kEncoderTIMControllerID, app::TIMControllerCTConfig{});
+VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kEncoderTIMControllerID, valle::app::TIMControllerCTConfig{});
 
 namespace valle
 {
@@ -35,21 +28,18 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using LoggerUARTControllerT = UARTControllerDevice<kLoggerUARTID>;
-        using UARTLoggerT           = UARTLogger<LoggerUARTControllerT>;
-
-        using EncoderTIMControllerT            = TIMControllerDevice<kEncoderTIMControllerID>;
+        using EncoderTIMControllerT            = platform::TIMControllerDevice<kEncoderTIMControllerID>;
         static constexpr AMT10xPPR kEncoderPPR = AMT10xPPR::k4096;
-        using AMT102ModuleT                    = AMT10xTIMEncoderModule<EncoderTIMControllerT, kEncoderPPR>;
-        using AMT102ModuleConfigT              = typename AMT102ModuleT::ConfigT;
+        using AMT102ModuleT       = platform::app::AMT10xTIMEncoderModule<EncoderTIMControllerT, kEncoderPPR>;
+        using AMT102ModuleConfigT = typename AMT102ModuleT::ConfigT;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<CoreSystemDriver, UARTLoggerT, AMT102ModuleT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, AMT102ModuleT>;
 
         // ============================================================================
         // Root Driver
         // ============================================================================
-        using RootDevicesT = RootDevicesFromDriverList<MainDriversT>;
+        using RootDevicesT = system_build::RootDevicesFromDriverList<MainDriversT>;
         struct RootDriver : PackedDriverBase<RootDevicesT>
         {
             using BaseT = PackedDriverBase<RootDevicesT>;
@@ -64,10 +54,10 @@ namespace valle
         {
             using DriversT = typename TypeListAddFront<RootDriver, MainDriversT>::type;
 
-            RootDriver       root;
-            CoreSystemDriver core;
-            UARTLoggerT      uart_logger;
-            AMT102ModuleT    amt102;
+            RootDriver                 root;
+            platform::CoreSystemDriver core;
+            UARTLoggerT                uart_logger;
+            AMT102ModuleT              amt102;
         };
 
     }  // namespace app

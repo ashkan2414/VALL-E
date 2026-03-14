@@ -14,7 +14,7 @@ namespace valle::platform
     {
         static void handle()
         {
-            app::on_current_sensor_adc_reading();
+            valle::app::on_current_sensor_adc_reading();
         }
     };
 
@@ -25,7 +25,7 @@ namespace valle::platform
     {
         static void handle()
         {
-            app::on_current_sensor_adc_reading();
+            valle::app::on_current_sensor_adc_reading();
         }
     };
 
@@ -36,7 +36,7 @@ namespace valle::platform
     {
         static void handle()
         {
-            app::on_pwm_repetition();
+            valle::app::on_pwm_repetition();
         }
     };
 

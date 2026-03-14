@@ -16,6 +16,9 @@ set(VALLE_TARGET_PLATFORM_DIR "${VALLE_PLATFORM_DIR}/${TARGET_PLATFORM}")
 set(VALLE_SYSTEM_DIR "${VALLE_SOURCE_DIR}/system")
 set(VALLE_APP_DIR "${VALLE_SOURCE_DIR}/apps")
 set(VALLE_APP_COMMON_DIR "${VALLE_APP_DIR}/common")
+set(VALLE_APP_COMMON_SHARED_DIR "${VALLE_APP_COMMON_DIR}/shared")
+set(VALLE_APP_COMMON_PLATFORM_DIR "${VALLE_APP_COMMON_DIR}/platform")
+set(VALLE_APP_COMMON_TARGET_PLATFORM_DIR "${VALLE_APP_COMMON_DIR}/platform/${TARGET_PLATFORM}")
 set(VALLE_TARGET_APP_DIR "${VALLE_APP_DIR}/${TARGET_APP}")
 
 # Sanity Check: Ensure the requested Application exists
@@ -33,8 +36,9 @@ else()
 endif()
 
 set(VALLE_APP_INTEGRATION_INCLUDE_DIRS
-    ${VALLE_APP_COMMON_DIR}/inc
     ${VALLE_TARGET_APP_DIR}
+    ${VALLE_APP_COMMON_SHARED_DIR}/inc
+    ${VALLE_APP_COMMON_TARGET_PLATFORM_DIR}/inc
 )
 
 # ==============================================================================
@@ -71,7 +75,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 # THIRDPARTY LIBRARY INTEGRATION
 # ==============================================================================
 # Create the final executable artifact
-add_executable(${CMAKE_PROJECT_NAME} "${VALLE_SOURCE_DIR}/main.cpp")
+add_executable(${CMAKE_PROJECT_NAME})
 
 # Add the Thirdparty directory
 add_subdirectory(thirdparty)
@@ -82,6 +86,8 @@ add_subdirectory(src)
 # ==============================================================================
 # LINKING
 # ==============================================================================
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE "${VALLE_SOURCE_DIR}/main.cpp")
+
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     ${TOOLCHAIN_LINK_LIBRARIES}
     valle_base

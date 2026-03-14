@@ -1,9 +1,9 @@
 #include "app.hpp"
 
-#include "valle/app/system_config.hpp"
+#include "valle/app/platform/core_system_config.hpp"
 #include "valle/base/panic.hpp"
 
-VALLE_DEFINE_UART_LOGGER_HANDLER(app::g_drivers.uart_logger);
+VALLE_DEFINE_UART_LOGGER_HANDLER(valle::app::g_drivers.uart_logger);
 
 namespace valle::app
 {
@@ -11,7 +11,7 @@ namespace valle::app
     {
         return std::move(builder)
             .template install<RootDriver>()
-            .template install<CoreSystemDriver>()
+            .template install<platform::CoreSystemDriver>()
             .template install<UARTLoggerT>()
             .template install<HRTIMHalfBridgeDriverT>()
             .yield();
@@ -24,12 +24,15 @@ namespace valle::app
     static void init_root()
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
-            [](CoreSystemDriver& dev) { (void)dev; },
-            [](GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](HRTIM1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize HRTIM1 Controller Device"); },
-            [](DMAMux1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
+            [](platform::CoreSystemDriver& dev) { (void)dev; },
+            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::HRTIM1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize HRTIM1 Controller Device"); },
+            [](platform::DMAMux1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
 
-            [](DMA1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
+            [](platform::DMA1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
         }  // namespace valle
         );
     }
@@ -40,66 +43,47 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        expect(g_drivers.uart_logger.init(UARTControllerConfig{
-                   .baud_rate         = UARTBaudRate::kBaud230400,
-                   .word_length       = UARTWordLength::kBits8,
-                   .stop_bits         = UARTStopBits::kBits1,
-                   .parity            = UARTParity::kNone,
-                   .transfer_mode     = UARTTransferMode::kTxRx,
-                   .hw_flow_ctrl      = UARTHardwareFlowControl::kNone,
-                   .dma_priority      = DMAPriority::kHigh,
+        expect(g_drivers.uart_logger.init(platform::UARTControllerConfig{
+                   .baud_rate         = platform::UARTBaudRate::kBaud230400,
+                   .word_length       = platform::UARTWordLength::kBits8,
+                   .stop_bits         = platform::UARTStopBits::kBits1,
+                   .parity            = platform::UARTParity::kNone,
+                   .transfer_mode     = platform::UARTTransferMode::kTxRx,
+                   .hw_flow_ctrl      = platform::UARTHardwareFlowControl::kNone,
+                   .dma_priority      = platform::DMAPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),
                "Failed to initialize UART Logger Driver");
 
-        expect(g_drivers.hb_driver.init(HRTIMHalfBridgeDriverConfig{
+        expect(g_drivers.hb_driver.init(platform::HRTIMHalfBridgeDriverConfig{
                    .freq_hz          = 60000,  // 60 kHz PWM Frequency
                    .repetition       = 1,
-                   .rollover_mode    = HRTIMTimerRolloverMode::kPeriodReset,
-                   .interrupt_config = HRTIMTimerInterruptConfig{.priority = 5,
-                                                                 .interrupts =
-                                                                     HRTIMTimerInterruptMask{
-                                                                         .repetition = true,
-                                                                     }},
+                   .rollover_mode    = platform::HRTIMTimerRolloverMode::kPeriodReset,
+                   .interrupt_config = platform::HRTIMTimerInterruptConfig{.priority = 5,
+                                                                           .interrupts =
+                                                                               platform::HRTIMTimerInterruptMask{
+                                                                                   .repetition = true,
+                                                                               }},
                    .output_config =
                        {
-                           .polarity    = HRTIMTimerOutputPolarity::kPositive,
-                           .idle_mode   = HRTIMTimerOutputIdleMode::kNoIdle,
-                           .idle_level  = HRTIMTimerOutputIdleLevel::kInactive,
-                           .fault_state = HRTIMTimerOutputFaultState::kInactive,
+                           .polarity    = platform::HRTIMTimerOutputPolarity::kPositive,
+                           .idle_mode   = platform::HRTIMTimerOutputIdleMode::kNoIdle,
+                           .idle_level  = platform::HRTIMTimerOutputIdleLevel::kInactive,
+                           .fault_state = platform::HRTIMTimerOutputFaultState::kInactive,
                            .gpio_config =
-                               HRTIMTimerOutputGPIOConfig{
-                                   .speed = GPIOSpeedMode::kLow,
-                                   .pull  = GPIOPullMode::kNoPull,
+                               platform::HRTIMTimerOutputGPIOConfig{
+                                   .speed = platform::GPIOSpeedMode::kLow,
+                                   .pull  = platform::GPIOPullMode::kNoPull,
                                },
                        },
-                   .deadtime_config = HRTIMTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},
+                   .deadtime_config = platform::HRTIMTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},
                    .min_duty        = 0.0F,
                    .max_duty        = 0.95F,
                    .center_aligned  = true,
-                   .compare_unit    = HRTIMTimerCompareUnit::kCompare1,
+                   .compare_unit    = platform::HRTIMTimerCompareUnit::kCompare1,
                }),
                "Failed to initialize HRTIM Half Bridge Driver");
-    }
-
-    /**
-     * @brief Post-initialize shared devices.
-     *
-     */
-    static void post_init_root()
-    {
-        g_drivers.root.foreach_reverse(DeviceInitOverloaded{
-            [](CoreSystemDriver& dev) { (void)dev; },
-            [](GPIOPortADevice& dev) { expect(dev.post_init(), "Failed to post-initialize GPIO Port A Device"); },
-            [](HRTIM1ControllerDevice& dev)
-            { expect(dev.post_init(), "Failed to post-initialize HRTIM1 Controller Device"); },
-            [](DMAMux1ControllerDevice& dev)
-            { expect(dev.post_init(), "Failed to post-initialize DMAMux1 Controller Device"); },
-
-            [](DMA1ControllerDevice& dev)
-            { expect(dev.post_init(), "Failed to post-initialize DMA1 Controller Device"); },
-        });
     }
 
     /**
@@ -109,11 +93,10 @@ namespace valle::app
     void init()
     {
         // Core System Device must be initialized first since other devices may depend on it for clock configuration
-        expect(g_drivers.core.init(kDefaultCoreSystemConfig), "Failed to initialize Core System Device");
+        expect(g_drivers.core.init(platform::app::kDefaultCoreSystemConfig), "Failed to initialize Core System Device");
 
         init_root();
         init_drivers();
-        post_init_root();
     }
 
 }  // namespace valle::app

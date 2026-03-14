@@ -1,28 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
-add_library(valle_app_common STATIC)
+add_subdirectory(shared)
+add_subdirectory(platform)
 
-# Add source files to the app common library
-file(GLOB_RECURSE APP_COMMON_SOURCES
-    "${VALLE_APP_COMMON_DIR}/src/*.cpp"
-    "${VALLE_APP_COMMON_DIR}/src/*.c"
-    "${VALLE_APP_COMMON_DIR}/src/**/*.cpp"
-    "${VALLE_APP_COMMON_DIR}/src/**/*.c"
-)
-target_sources(valle_app_common PRIVATE ${APP_COMMON_SOURCES})
-
-# Add include directories for the app common library
-target_include_directories(valle_app_common
-    PUBLIC
-        ${VALLE_APP_COMMON_DIR}/inc
-    PRIVATE
-        ${VALLE_APP_COMMON_DIR}/src
-        ${VALLE_APP_INTEGRATION_INCLUDE_DIRS}
-)
-
-# Link againts other valle modules
-target_link_libraries(valle_app_common PUBLIC
-    valle_base
-    valle_platform
-    valle_system
-)
+add_library(valle_app_common INTERFACE)
+target_link_libraries(valle_app_common INTERFACE valle_app_common_shared valle_app_common_platform)

@@ -1,20 +1,20 @@
 #pragma once
 
-#include "valle/base/modules/ldc1612.hpp"
+#include "valle/app/modules/ldc1612.hpp"
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/i2c.hpp"
 
-namespace valle::platform
+namespace valle::platform::app
 {
     struct LDC161XSensorModuleI2CInterfaceConfig
     {
     };
 
     template <typename TI2CSlaveDevice, uint8_t tkNumChannels>
-        requires(CLDC161XValidNumChannels<tkNumChannels>)
-    class LDC161XSensorModuleI2CInterface
-        : public LDC161XSensorModuleI2CInterfaceX<LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels>,
-                                                  LDC161XSensorModuleI2CInterfaceConfig>
+        requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
+    class LDC161XSensorModuleI2CInterface : public valle::app::LDC161XSensorModuleI2CInterfaceX<
+                                                LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels>,
+                                                LDC161XSensorModuleI2CInterfaceConfig>
     {
     public:
         using ConfigT = LDC161XSensorModuleI2CInterfaceConfig;
@@ -52,7 +52,7 @@ namespace valle::platform
 
         template <uint8_t tkWriteBytes>
         [[nodiscard]] bool register_write_blocking_impl(const std::span<const std::byte, tkWriteBytes>& write_data,
-                                                        TimingContext::TimeoutMillisT                   timeout_ms)
+                                                        system::TimeoutMillis                           timeout_ms)
         {
             // Build the command sequence (Single Write)
             auto write_commands = I2CTransactionGenerator<>::begin().write(std::span(write_data)).build();
@@ -63,9 +63,9 @@ namespace valle::platform
         }
 
         template <uint8_t tkReadBytes>
-        [[nodiscard]] bool register_read_blocking_impl(LDC161XReg                               reg,
+        [[nodiscard]] bool register_read_blocking_impl(valle::app::LDC161XReg                   reg,
                                                        const std::span<std::byte, tkReadBytes>& data_out,
-                                                       TimingContext::TimeoutMillisT            timeout_ms)
+                                                       system::TimeoutMillis                    timeout_ms)
         {
             static_assert(sizeof(reg) == 1, "Register address must be 1 byte");
 
@@ -83,12 +83,14 @@ namespace valle::platform
     };
 
     template <uint8_t tkNumChannels>
-        requires(CLDC161XValidNumChannels<tkNumChannels>)
-    using LDC161XSensorModuleConfig = LDC161XSensorModuleConfigX<LDC161XSensorModuleI2CInterfaceConfig, tkNumChannels>;
+        requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
+    using LDC161XSensorModuleConfig =
+        valle::app::LDC161XSensorModuleConfigX<LDC161XSensorModuleI2CInterfaceConfig, tkNumChannels>;
 
     template <typename TI2CSlaveDevice, uint8_t tkNumChannels>
-        requires(CLDC161XValidNumChannels<tkNumChannels>)
+        requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
     using LDC161XSensorModule =
-        LDC161XSensorModuleX<LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels>, tkNumChannels>;
+        valle::app::LDC161XSensorModuleX<LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels>,
+                                         tkNumChannels>;
 
-}  // namespace valle::platform
+}  // namespace valle::platform::app

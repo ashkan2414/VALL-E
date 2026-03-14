@@ -182,12 +182,6 @@ namespace valle::platform
             return true;
         }
 
-        [[nodiscard]] bool post_init()
-        {
-            // Nothing to do for now
-            return true;
-        }
-
         void reset()
         {
             if constexpr (skHasDMA)
@@ -634,12 +628,6 @@ namespace valle::platform
             return true;
         }
 
-        [[nodiscard]] inline bool post_init()
-        {
-            // Nothing to do for now
-            return true;
-        }
-
         inline void reset(bool clear_queue = true)
         {
             m_controller->reset();
@@ -934,16 +922,6 @@ namespace valle::platform
         [[nodiscard]] inline bool init(const I2CCommandBufferDeviceConfig& config)
         {
             return m_shared_state.with_lock([&](auto& state) { return state.init(config); });
-        }
-
-        /**
-         * @brief Post-initialization steps for the I2C Command Buffer Device.
-         *
-         */
-        [[nodiscard]] inline bool post_init()
-        {
-            // Nothing to do for now
-            return true;
         }
 
         /**

@@ -9,7 +9,6 @@
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/hrtim.hpp"
 
-
 namespace valle::platform
 {
 
@@ -219,12 +218,6 @@ namespace valle::platform
 
             return true;
         }
-
-        [[nodiscard]] bool post_init()
-        {
-            // Do nothing for now
-            return true;
-        }
     };
 
     // -----------------------------------------------------------------------------
@@ -403,12 +396,6 @@ namespace valle::platform
 
             return true;
         }
-
-        [[nodiscard]] inline bool post_init()
-        {
-            // Do nothing for now
-            return true;
-        }
     };
 
     class HRTIMNullFaultDevice
@@ -579,12 +566,6 @@ namespace valle::platform
             LL_HRTIM_EE_SetPrescaler(
                 ControllerTraitsT::skInstance, EEVTraitsT::skLLID, static_cast<uint32_t>(config.prescaler));
 
-            return true;
-        }
-
-        [[nodiscard]] inline bool post_init()
-        {
-            // Do nothing for now
             return true;
         }
     };

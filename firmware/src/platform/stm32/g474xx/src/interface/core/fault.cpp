@@ -6,14 +6,6 @@
 #include "valle/platform/core/logging.hpp"
 #include "valle/utils/tmp.hpp"
 
-namespace valle
-{
-    void panic_handler(PanicSourceInfo&& info)
-    {
-        platform::FaultHandler<PanicSourceInfo>::handle(std::move(info));
-    }
-}  // namespace valle
-
 namespace valle::platform
 {
 

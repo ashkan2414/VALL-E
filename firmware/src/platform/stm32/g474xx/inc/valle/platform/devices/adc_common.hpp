@@ -225,12 +225,6 @@ namespace valle::platform
             return true;
         }
 
-        [[nodiscard]] bool post_init()
-        {
-            // Nothing to do for now
-            return true;
-        }
-
         [[nodiscard]] ADCCommonClockSource get_clock_source() const
         {
             if constexpr (tkCommonID == ADCCommonID::kADC12)
@@ -286,5 +280,8 @@ namespace valle::platform
 
     using ADC12CommonDevice  = ADCCommonDevice<ADCCommonID::kADC12>;
     using ADC345CommonDevice = ADCCommonDevice<ADCCommonID::kADC345>;
+
+    using ADC12CommonConfig  = ADCCommonConfig<ADCCommonID::kADC12>;
+    using ADC345CommonConfig = ADCCommonConfig<ADCCommonID::kADC345>;
 
 }  // namespace valle::platform

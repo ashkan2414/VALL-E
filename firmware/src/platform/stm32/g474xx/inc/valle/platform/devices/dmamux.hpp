@@ -4,7 +4,6 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/dmamux.hpp"
 
-
 namespace valle::platform
 {
     // ============================================================================
@@ -49,12 +48,6 @@ namespace valle::platform
         static inline bool init()
         {
             ControllerTraitsT::enable_clock();
-            return true;
-        }
-
-        static inline bool post_init()
-        {
-            // Additional post-initialization if needed
             return true;
         }
 

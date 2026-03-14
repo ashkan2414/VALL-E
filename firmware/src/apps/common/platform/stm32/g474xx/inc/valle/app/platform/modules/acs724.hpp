@@ -1,9 +1,9 @@
 #pragma once
 
-#include "valle/base/modules/acs724.hpp"
+#include "valle/app/modules/acs724.hpp"
 #include "valle/platform/drivers/adc/analog_sensor.hpp"
 
-namespace valle::platform
+namespace valle::platform::app
 {
     using ACS724ModuleADCChannelInterfaceConfig = ADCChannelConfig;
 
@@ -13,18 +13,18 @@ namespace valle::platform
      * @tparam TADCChannel ADC Channel Device type.
      * @tparam tkModel   ACS724 Model type.
      */
-    template <typename TADCChannel, ACS724Model tkModel>
+    template <typename TADCChannel, valle::app::ACS724Model tkModel>
     class ACS724ModuleADCChannelInterface
-        : public ACS724ModuleADCChannelInterfaceX<ACS724ModuleADCChannelInterface<TADCChannel, tkModel>,
-                                                  ACS724ModuleADCChannelInterfaceConfig>
+        : public valle::app::ACS724ModuleADCChannelInterfaceX<ACS724ModuleADCChannelInterface<TADCChannel, tkModel>,
+                                                              ACS724ModuleADCChannelInterfaceConfig>
     {
     public:
-        using ConfigT                        = ACS724ModuleADCChannelInterfaceConfig;
-        using ChannelT                       = TADCChannel;
-        static constexpr ACS724Model skModel = tkModel;
+        using ConfigT                                    = ACS724ModuleADCChannelInterfaceConfig;
+        using ChannelT                                   = TADCChannel;
+        static constexpr valle::app::ACS724Model skModel = tkModel;
 
         using InjectDevices = TypeList<ChannelT>;
-        using ModelTraits   = ACS724Traits<tkModel>;
+        using ModelTraits   = valle::app::ACS724Traits<tkModel>;
 
     private:
         using ConverterT = ADCNormalizedConverter<LinearConverter<float>>;
@@ -81,9 +81,9 @@ namespace valle::platform
         }
     };
 
-    using ACS724ModuleConfig = ACS724ModuleConfigX<ACS724ModuleADCChannelInterfaceConfig>;
+    using ACS724ModuleConfig = valle::app::ACS724ModuleConfigX<ACS724ModuleADCChannelInterfaceConfig>;
 
-    template <typename TADCChannel, ACS724Model tkModel>
-    using ACS724Module = ACS724ModuleX<ACS724ModuleADCChannelInterface<TADCChannel, tkModel>, tkModel>;
+    template <typename TADCChannel, valle::app::ACS724Model tkModel>
+    using ACS724Module = valle::app::ACS724ModuleX<ACS724ModuleADCChannelInterface<TADCChannel, tkModel>, tkModel>;
 
-}  // namespace valle::platform
+}  // namespace valle::platform::app

@@ -8,7 +8,7 @@ namespace valle
 {
     void app::main()
     {
-        TimingContext::delay_ms(1000);
+        system::TimingContext::delay_ms(1000);
 
         app::init();
         app::g_drivers.hb_driver.enable_output();
@@ -17,7 +17,7 @@ namespace valle
 
         while (true)
         {
-            TimingContext::delay_ms(1000);
+            system::TimingContext::delay_ms(1000);
 
             step                 = (step + 10U) % 180U;
             uint32_t    triangle = (step <= 90U) ? step : (180U - step);

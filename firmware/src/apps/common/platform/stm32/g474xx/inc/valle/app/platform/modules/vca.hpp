@@ -4,10 +4,10 @@
 #include <atomic>
 #include <cstdint>
 
-#include "valle/base/modules/vca.hpp"
+#include "valle/app/modules/vca.hpp"
 #include "valle/platform/drivers/hrtim/half_bridge.hpp"
 
-namespace valle::platform
+namespace valle::platform::app
 {
 
     using VCAControllerHRTIMHalfBridgeInterfaceConfig = HRTIMHalfBridgeDriverConfig;
@@ -20,8 +20,8 @@ namespace valle::platform
      */
     template <typename THRTIMDevice>
     class VCAControllerHRTIMHalfBridgeInterface
-        : public VCAControllerModuleHalfBridgeInterface<VCAControllerHRTIMHalfBridgeInterface<THRTIMDevice>,
-                                                        VCAControllerHRTIMHalfBridgeInterfaceConfig>
+        : public valle::app::VCAControllerModuleHalfBridgeInterface<VCAControllerHRTIMHalfBridgeInterface<THRTIMDevice>,
+                                                                    VCAControllerHRTIMHalfBridgeInterfaceConfig>
     {
     public:
         using ConfigT = VCAControllerHRTIMHalfBridgeInterfaceConfig;
@@ -105,10 +105,10 @@ namespace valle::platform
 
     template <typename TControllerConfig>
     using VCAControllerHRTIMModuleConfig =
-        VCAControllerModuleConfigX<VCAControllerHRTIMHalfBridgeInterfaceConfig, TControllerConfig>;
+        valle::app::VCAControllerModuleConfigX<VCAControllerHRTIMHalfBridgeInterfaceConfig, TControllerConfig>;
 
     template <typename THRTIMDevice, typename TController>
     using VCAControllerHRTIMModule =
-        VCAControllerModuleX<VCAControllerHRTIMHalfBridgeInterface<THRTIMDevice>, TController>;
+        valle::app::VCAControllerModuleX<VCAControllerHRTIMHalfBridgeInterface<THRTIMDevice>, TController>;
 
-}  // namespace valle::platform
+}  // namespace valle::platform::app

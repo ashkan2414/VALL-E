@@ -16,7 +16,7 @@ namespace valle::platform
             valle::app::g_drivers.current_sensor.get_adc().on_data_available();
 
             // Then run VCA control loop
-            valle::app::g_drivers.vca_controller.run_ctrl_loop();
+            valle::app::g_drivers.vca_controller.run_ctrl_loop(valle::app::g_drivers.current_sensor.read_amps());
         }
     };
 

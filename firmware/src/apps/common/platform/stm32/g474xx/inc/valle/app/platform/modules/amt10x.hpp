@@ -1,9 +1,9 @@
 #pragma once
 
-#include "valle/base/modules/amt10x.hpp"
+#include "valle/app/modules/amt10x.hpp"
 #include "valle/platform/drivers/tim/quad_encoder.hpp"
 
-namespace valle::platform
+namespace valle::platform::app
 {
     using AMT10xModuleTIMEncoderInterfaceConfig = TIMQuadEncoderConfig;
 
@@ -13,10 +13,10 @@ namespace valle::platform
      * @tparam TControllerDevice The Timer controller device (e.g. TIM1, TIM2, etc.).
      * @tparam tkPPR The PPR setting for the encoder.
      */
-    template <typename TControllerDevice, AMT10xPPR tkPPR>
+    template <typename TControllerDevice, valle::app::AMT10xPPR tkPPR>
     class AMT10xModuleTIMEncoderInterface
-        : public AMT10xModuleEncoderInterfaceX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>,
-                                               TIMQuadEncoderConfig>
+        : public valle::app::AMT10xModuleEncoderInterfaceX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>,
+                                                           TIMQuadEncoderConfig>
     {
     public:
         using ControllerT    = TControllerDevice;
@@ -96,9 +96,10 @@ namespace valle::platform
         }
     };
 
-    using AMT10xTIMEncoderModuleConfig = AMT10xModuleConfigX<AMT10xModuleTIMEncoderInterfaceConfig>;
+    using AMT10xTIMEncoderModuleConfig = valle::app::AMT10xModuleConfigX<AMT10xModuleTIMEncoderInterfaceConfig>;
 
-    template <typename TControllerDevice, AMT10xPPR tkPPR>
-    using AMT10xTIMEncoderModule = AMT10xModuleX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>, tkPPR>;
+    template <typename TControllerDevice, valle::app::AMT10xPPR tkPPR>
+    using AMT10xTIMEncoderModule =
+        valle::app::AMT10xModuleX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>, tkPPR>;
 
-}  // namespace valle::platform
+}  // namespace valle::platform::app

@@ -2,8 +2,9 @@
 
 #include "stm32g4xx_ll_tim.h"
 #include "valle/platform/core.hpp"
+#include "valle/platform/devices/gpio.hpp"
+#include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/tim.hpp"
-
 
 namespace valle::platform
 {
@@ -554,11 +555,6 @@ namespace valle::platform
         [[nodiscard]] inline bool init()
         {
             return m_controller->init();
-        }
-
-        [[nodiscard]] inline bool post_init()
-        {
-            return true;
         }
     };
 
