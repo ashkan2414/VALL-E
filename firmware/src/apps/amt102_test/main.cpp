@@ -14,7 +14,7 @@ namespace valle
 
         while (true)
         {
-            VALLE_LOG_INFO("Encoder Deg: {}", app::g_drivers.amt102.get_position_deg_abs());
+            VALLE_LOG_INFO("Encoder Deg: {}", app::g_drivers.amt102.get_pos_deg_abs());
             system::TimingContext::delay_ms(1000);
         }
     }

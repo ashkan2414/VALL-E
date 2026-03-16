@@ -4,7 +4,6 @@
 #include "valle/app/platform/core_system_config.hpp"
 #include "valle/base/panic.hpp"
 
-
 VALLE_DEFINE_UART_LOGGER_HANDLER(valle::app::g_drivers.uart_logger);
 
 namespace valle::app
@@ -81,8 +80,10 @@ namespace valle::app
                                                .polarity  = platform::TIMChannelInputCapturePolarity::kRising,
                                            },
                                        .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
-                                       .auto_reload  = (static_cast<uint32_t>(kCrankEncoderPPR) * 4) - 1,
-                                   }}}),
+                                       .auto_reload  = (static_cast<uint32_t>(kCrankEncoderPPR) * 4 * 2) - 1,
+                                   }},
+                       .home_rad          = 2.0F * std::numbers::pi_v<float> - 5.5507097F,
+                       .reverse_direction = false}),
                "Failed to initialize AMT102 module");
     }
 

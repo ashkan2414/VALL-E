@@ -370,6 +370,7 @@ namespace valle::platform
             }
 
             CInterfaceT::set_compare(config.compare_value);
+            return true;
         }
 
         template <TIMChannelID tkChannel>
@@ -381,6 +382,7 @@ namespace valle::platform
             CInterfaceT::set_input_capture_prescaler(config.prescaler);
             CInterfaceT::set_input_capture_filter(config.filter);
             CInterfaceT::set_input_capture_polarity(config.polarity);
+            return true;
         }
 
         [[nodiscard]] bool init_encoder_gpio(const GPIOAlternativeFunctionConfig& gpio_config)
