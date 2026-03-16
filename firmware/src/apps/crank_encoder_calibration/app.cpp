@@ -8,9 +8,6 @@ VALLE_DEFINE_UART_LOGGER_HANDLER(valle::app::g_drivers.uart_logger);
 
 namespace valle::app
 {
-    EngineKinematicsCalculatorT g_engine_kinematics_calculator =
-        EngineKinematicsCalculatorT(kPowerfistEngineKinematicsConfig);
-
     DriverBuilderReturnT install_drivers(DriverBuilderT&& builder)
     {
         return std::move(builder)
@@ -59,32 +56,10 @@ namespace valle::app
                "Failed to initialize UART Logger Driver");
 
         expect(g_drivers.crank_encoder.init(
-                   CrankEncoderModuleConfigT{
-                       .encoder_config =
-                           platform::TIMQuadEncoderConfig{
-                               .gpio_config =
-                                   platform::GPIOAlternativeFunctionConfig{
-                                       .mode  = platform::GPIOAlternateFunctionMode::kPushPull,
-                                       .speed = platform::GPIOSpeedMode::kMedium,
-                                       .pull  = platform::GPIOPullMode::kNoPull,
-                                   },
-                               .encoder_config =
-                                   platform::TIMControllerEncoderConfig{
-                                       .mode = platform::TIMControllerEncoderMode::kX4TimerInput12,
-                                       .ch_config =
-                                           platform::TIMChannelInputCaptureConfig{
-                                               .active_input =
-                                                   platform::TIMChannelInputCaptureActiveInput::kDirectTimerInput,
-                                               .prescaler = platform::TIMChannelInputCapturePrescaler::kDiv1,
-                                               .filter    = platform::TIMChannelInputCaptureFilter::kFreqDiv2N8Samples,
-                                               .polarity  = platform::TIMChannelInputCapturePolarity::kRising,
-                                           },
-                                       .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
-                                       .auto_reload  = (static_cast<uint32_t>(kCrankEncoderPPR) * 4 * 2) - 1,
-                                   }},
-                       .home_rad          = 2.0F * std::numbers::pi_v<float> - 5.5507097F,
-                       .reverse_direction = false}),
-               "Failed to initialize AMT102 module");
+                   CrankEncoderModuleConfigT{.engine_kinematics = kPowerfistEngineKinematicsConfig,
+                                             .home_rad          = 0.73247560718F,
+                                             .reverse_direction = false}),
+               "Failed to initialize AMT102 Crank Encoder module");
     }
 
     /**

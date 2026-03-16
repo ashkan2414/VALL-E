@@ -37,4 +37,4 @@ target_compile_definitions(valle_base PUBLIC
 )
 
 # Precompile common headers for faster builds
-target_precompile_headers(valle_base PRIVATE "${VALLE_BASE_DIR}/pch.h")
+target_precompile_headers(valle_base PUBLIC "${VALLE_BASE_DIR}/pch.h")

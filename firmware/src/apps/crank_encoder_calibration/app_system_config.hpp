@@ -1,6 +1,6 @@
 #pragma once
 
-#include "valle/app/platform/modules/amt10x.hpp"
+#include "valle/app/platform/modules/amt10x_crank_encoder.hpp"
 #include "valle/app/platform/uart_logger_config.hpp"
 #include "valle/base/system_build/config_base.hpp"
 #include "valle/base/system_build/traits.hpp"
@@ -11,7 +11,7 @@ namespace valle::app
 {
     // TIM for Quadrature CrankEncoder
     constexpr auto kCrankEncoderTIMControllerID = platform::TIMControllerID::kTim2;
-    struct TIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
+    struct CrankEncoderTIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
     {
         using Ch1PinT = platform::GPIOPinA15Device;
         using Ch2PinT = platform::GPIOPinB3Device;
@@ -19,7 +19,8 @@ namespace valle::app
 
 }  // namespace valle::app
 
-VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID, valle::app::TIMControllerCTConfig{});
+VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID,
+                                        valle::app::CrankEncoderTIMControllerCTConfig{});
 
 namespace valle
 {
@@ -28,10 +29,12 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using CrankEncoderTIMControllerT            = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
-        static constexpr AMT10xPPR kCrankEncoderPPR = AMT10xPPR::k2048;
-        using CrankEncoderModuleT                   = platform::app::
-            AMT10xTIMEncoderModule<CrankEncoderTIMControllerT, platform::GPIOPinB5Device, kCrankEncoderPPR>;
+        using AMT10xTIMControllerT                  = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
+        using AMT10xTIMEncoderModuleT =
+            platform::app::AMT10xTIMEncoderModule<AMT10xTIMControllerT, platform::GPIOPinB5Device, AMT10xPPR::k2048>;
+        using AMT10xTIMEncoderModuleConfigT = typename AMT10xTIMEncoderModuleT::ConfigT;
+
+        using CrankEncoderModuleT       = platform::app::AMT10xCrankEncoderModuleX<AMT10xTIMEncoderModuleT>;
         using CrankEncoderModuleConfigT = typename CrankEncoderModuleT::ConfigT;
 
         // Declare Main Driver List

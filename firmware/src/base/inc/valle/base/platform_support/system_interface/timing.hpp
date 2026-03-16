@@ -314,6 +314,59 @@ namespace valle::platform_support::system_interface
 
             return true;
         }
+
+        // --------------------------------------------------------------------------
+        // PERIODIC EXECUTION UTILITIES
+        // --------------------------------------------------------------------------
+        template <CDelayDuration TDuration, typename TFunc, typename TClock = ClockForDurationT<TDuration>>
+        static decltype(auto) run_within_period(TFunc&& func, TDuration period_duration) noexcept(
+            noexcept(std::forward<TFunc>(func)()))
+        {
+            using ClockDurationT = typename TClock::duration;
+
+            const auto start_time = TClock::now();
+
+            if constexpr (std::is_void_v<std::invoke_result_t<TFunc>>)
+            {
+                std::forward<TFunc>(func)();
+
+                const auto elapsed = TClock::now() - start_time;
+                const auto period  = std::chrono::duration_cast<ClockDurationT>(period_duration);
+
+                if (elapsed < period)
+                {
+                    delay(std::chrono::duration_cast<TDuration>(period - elapsed));
+                }
+            }
+            else
+            {
+                decltype(auto) result = std::forward<TFunc>(func)();
+
+                const auto elapsed = TClock::now() - start_time;
+                const auto period  = std::chrono::duration_cast<ClockDurationT>(period_duration);
+
+                if (elapsed < period)
+                {
+                    delay(std::chrono::duration_cast<TDuration>(period - elapsed));
+                }
+
+                return result;
+            }
+        }
+
+        template <typename TFunc>
+        static decltype(auto) run_within_period_ms(TFunc&& func, const DelayMillisRepT period_ms) noexcept(
+            noexcept(std::forward<TFunc>(func)()))
+        {
+            return run_within_period(std::forward<TFunc>(func), DelayMillisT(period_ms));
+        }
+
+        template <typename TFunc>
+        static decltype(auto) run_within_period_us(TFunc&& func, const DelayMicrosRepT period_us) noexcept(
+            noexcept(std::forward<TFunc>(func)()))
+        {
+            return run_within_period(std::forward<TFunc>(func), DelayMicrosT(period_us));
+        }
     };
 
 }  // namespace valle::platform_support::system_interface

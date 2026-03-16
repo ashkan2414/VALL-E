@@ -27,4 +27,4 @@ target_link_libraries(valle_system PUBLIC
 )
 
 # Precompile common headers for faster builds
-target_precompile_headers(valle_system PRIVATE "${VALLE_SYSTEM_DIR}/pch.h")
+target_precompile_headers(valle_system PUBLIC "${VALLE_SYSTEM_DIR}/pch.h")

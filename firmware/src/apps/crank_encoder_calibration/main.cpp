@@ -23,41 +23,48 @@ namespace valle::app
 
         while (true)
         {
-            const float angle_rad_rel = g_drivers.crank_encoder.get_pos_rad_rel();
-            const float angle_rad_abs = g_drivers.crank_encoder.get_pos_rad_abs();
+            const float encoder_pos_norm_cycle  = g_drivers.crank_encoder.get_encoder_pos_norm_cycle();
+            const float encoder_pos_norm_rev    = g_drivers.crank_encoder.get_encoder_pos_norm_rev();
+            const float encoder_pos_norm_stroke = g_drivers.crank_encoder.get_encoder_pos_norm_stroke();
 
-            const float norm_count_rel = g_drivers.crank_encoder.get_pos_norm_rel();
-            const float norm_count_abs = g_drivers.crank_encoder.get_pos_norm_abs();
+            const float encoder_pos_rad_cycle  = g_drivers.crank_encoder.get_encoder_pos_rad_cycle();
+            const float encoder_pos_rad_rev    = g_drivers.crank_encoder.get_encoder_pos_rad_rev();
+            const float encoder_pos_rad_stroke = g_drivers.crank_encoder.get_encoder_pos_rad_stroke();
 
-            const float rotor_angle_rad = g_engine_kinematics_calculator.norm_count_to_rotor_angle_rad(norm_count_rel);
-            const float cylinder_angle_rad =
-                g_engine_kinematics_calculator.rotor_angle_rad_to_cylinder_angle_rad(rotor_angle_rad);
-            const float cylinder_pos_norm_approx =
-                g_engine_kinematics_calculator.cylinder_angle_rad_to_cylinder_pos_norm_approx(cylinder_angle_rad);
-            const float cylinder_displacement =
-                g_engine_kinematics_calculator.cylinder_angle_rad_to_cylinder_displacement(cylinder_angle_rad);
-            const float cylinder_pos_norm_exact =
-                g_engine_kinematics_calculator.cylinder_displacement_to_cylinder_pos_norm(cylinder_displacement);
+            const float crank_angle_rad_cycle  = g_drivers.crank_encoder.get_crank_angle_rad_cycle();
+            const float crank_angle_rad_rev    = g_drivers.crank_encoder.get_crank_angle_rad_rev();
+            const float crank_angle_rad_stroke = g_drivers.crank_encoder.get_crank_angle_rad_stroke();
 
-            const float home_calibration_compensation_rad = 2 * std::numbers::pi_v<float> - angle_rad_rel;
+            const float cylinder_angle_rad       = g_drivers.crank_encoder.get_cylinder_angle_rad();
+            const float cylinder_pos_norm_approx = g_drivers.crank_encoder.get_cylinder_pos_norm_approx();
+            const float cylinder_pos_norm        = g_drivers.crank_encoder.get_cylinder_pos_norm();
+            const float cylinder_displacement    = g_drivers.crank_encoder.get_cylinder_displacement();
+
+            const float home_calibration_compensation_rad = 2 * std::numbers::pi_v<float> - encoder_pos_rad_rev;
 
             VALLE_LOG_INFO(
-                "\nAngle Rad [Rel (Abs)]: {:.2f} ({:.2f})\nNorm Count [Rel (Abs)]: {:.2f} ({:.2f})"
-                "\nRotor Angle [Rad]: {:.2f}\nCylinder Angle [Rad]: {:.2f}"
+                "\nEncoder Pos [Norm] [Cycle / Rev / Stroke]: {:.2f} / {:.2f} / {:.2f}"
+                "\nEncoder Pos [Rad] [Cycle / Rev / Stroke]: {:.2f} / {:.2f} / {:.2f}"
+                "\nCrank Angle [Rad] [Cycle / Rev / Stroke]: {:.2f} / {:.2f} / {:.2f}"
+                "\nCylinder Angle [Rad]: {:.2f}"
                 "\nCylinder Pos [Norm] [Approx (Exact)]: {:.2f} ({:.2f})"
-                "\nCylinder Displacement [in]: {:.2f}\nHome Compensation [Rad]: {}",
-                angle_rad_rel,
-                angle_rad_abs,
-                norm_count_rel,
-                norm_count_abs,
-                rotor_angle_rad,
+                "\nCylinder Displacement [in]: {:.2f}"
+                "\nEncoder Pos Home Compensation [Rad]: {}",
+                encoder_pos_norm_cycle,
+                encoder_pos_norm_rev,
+                encoder_pos_norm_stroke,
+                encoder_pos_rad_cycle,
+                encoder_pos_rad_rev,
+                encoder_pos_rad_stroke,
+                crank_angle_rad_cycle,
+                crank_angle_rad_rev,
+                crank_angle_rad_stroke,
                 cylinder_angle_rad,
                 cylinder_pos_norm_approx,
-                cylinder_pos_norm_exact,
+                cylinder_pos_norm,
                 cylinder_displacement,
                 home_calibration_compensation_rad);
             TimingContext::delay_ms(100);
         }
     }
-
 }  // namespace valle::app

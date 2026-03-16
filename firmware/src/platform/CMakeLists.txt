@@ -47,7 +47,7 @@ target_link_libraries(valle_platform_source PUBLIC
 )
 
 # Precompile common headers for faster builds
-target_precompile_headers(valle_platform_source PRIVATE "${VALLE_TARGET_PLATFORM_DIR}/pch.h")
+target_precompile_headers(valle_platform_source PUBLIC "${VALLE_TARGET_PLATFORM_DIR}/pch.h")
 
 
 ## Add stubs for platform-specific implementations
