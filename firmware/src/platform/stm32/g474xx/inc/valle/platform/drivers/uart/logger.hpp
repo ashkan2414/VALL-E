@@ -54,7 +54,7 @@ namespace valle::platform
 
 // Put this in app_log_config.hpp to bind the logger instance
 #define VALLE_DEFINE_UART_LOGGER_HANDLER(instance)              \
-    namespace valle::platform                                   \
+    namespace valle                                             \
     {                                                           \
         void log_output_handler(const std::string_view message) \
         {                                                       \
