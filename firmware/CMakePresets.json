@@ -145,6 +145,29 @@
             ]
         },
         {
+            "name": "app-crank-encoder-calibration",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "crank_encoder_calibration"
+            }
+        },
+        {
+            "name": "crank-encoder-calibration-debug",
+            "displayName": "Crank Encoder Calibration (Debug)",
+            "inherits": [
+                "debug",
+                "app-crank-encoder-calibration"
+            ]
+        },
+        {
+            "name": "crank-encoder-calibration-release",
+            "displayName": "Crank Encoder Calibration (Release)",
+            "inherits": [
+                "release",
+                "app-crank-encoder-calibration"
+            ]
+        },
+        {
             "name": "app-sandbox",
             "hidden": true,
             "cacheVariables": {
@@ -208,6 +231,14 @@
         {
             "name": "amt102-test-release",
             "configurePreset": "amt102-test-release"
+        },
+        {
+            "name": "crank-encoder-calibration-debug",
+            "configurePreset": "crank-encoder-calibration-debug"
+        },
+        {
+            "name": "crank-encoder-calibration-release",
+            "configurePreset": "crank-encoder-calibration-release"
         },
         {
             "name": "sandbox-debug",

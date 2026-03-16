@@ -3,23 +3,29 @@
 #include "app.hpp"
 #include "valle/app_bridge.hpp"
 
-namespace valle
+namespace valle::app
 {
-    void app::main()
+    // Sets the current controller based on a normalized angle input [0, 1] (maps to 0 to 2pi along the motor cycle).
+    void set_current(const float normalized_angle)
+    {
+    }
+
+    void main()
     {
         using namespace system;
 
         TimingContext::delay_ms(3000);
 
-        app::init();
-        app::g_drivers.vca_current_loop_driver.start();
+        init();
+        g_drivers.vca_current_loop_driver.start();
+        g_drivers.motor_encoder.enable();
 
         VALLE_LOG_INFO("Initialized!");
         TimingContext::delay_ms(1000);
 
         while (true)
         {
-            app::g_drivers.vca_current_loop_driver.set_target_current_amps(0.0F);  // Set target current to 0.0 Amps
+            VALLE_LOG_INFO("Encoder Deg: {}", g_drivers.motor_encoder.get_position_deg_abs());
         }
     }
-}  // namespace valle
+}  // namespace valle::app

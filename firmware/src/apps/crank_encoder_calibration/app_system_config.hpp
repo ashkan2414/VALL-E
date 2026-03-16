@@ -9,8 +9,8 @@
 
 namespace valle::app
 {
-    // TIM for Quadrature Encoder
-    constexpr auto kEncoderTIMControllerID = platform::TIMControllerID::kTim2;
+    // TIM for Quadrature CrankEncoder
+    constexpr auto kCrankEncoderTIMControllerID = platform::TIMControllerID::kTim2;
     struct TIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
     {
         using Ch1PinT = platform::GPIOPinA15Device;
@@ -19,7 +19,7 @@ namespace valle::app
 
 }  // namespace valle::app
 
-VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kEncoderTIMControllerID, valle::app::TIMControllerCTConfig{});
+VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID, valle::app::TIMControllerCTConfig{});
 
 namespace valle
 {
@@ -28,14 +28,14 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using EncoderTIMControllerT            = platform::TIMControllerDevice<kEncoderTIMControllerID>;
-        static constexpr AMT10xPPR kEncoderPPR = AMT10xPPR::k4096;
-        using AMT102ModuleT =
-            platform::app::AMT10xTIMEncoderModule<EncoderTIMControllerT, platform::GPIOPinB5Device, kEncoderPPR>;
-        using AMT102ModuleConfigT = typename AMT102ModuleT::ConfigT;
+        using CrankEncoderTIMControllerT            = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
+        static constexpr AMT10xPPR kCrankEncoderPPR = AMT10xPPR::k4096;
+        using CrankEncoderModuleT                   = platform::app::
+            AMT10xTIMEncoderModule<CrankEncoderTIMControllerT, platform::GPIOPinB5Device, kCrankEncoderPPR>;
+        using CrankEncoderModuleConfigT = typename CrankEncoderModuleT::ConfigT;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, AMT102ModuleT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, CrankEncoderModuleT>;
 
         // ============================================================================
         // Root Driver
@@ -58,7 +58,7 @@ namespace valle
             RootDriver                 root;
             platform::CoreSystemDriver core;
             UARTLoggerT                uart_logger;
-            AMT102ModuleT              amt102;
+            CrankEncoderModuleT        crank_encoder;
         };
 
     }  // namespace app

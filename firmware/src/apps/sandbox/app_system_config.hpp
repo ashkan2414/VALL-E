@@ -1,6 +1,7 @@
 #pragma once
 
 #include "valle/app/platform/modules/acs724.hpp"
+#include "valle/app/platform/modules/amt10x.hpp"
 #include "valle/app/platform/modules/ldc1612.hpp"
 #include "valle/app/platform/modules/vca.hpp"
 #include "valle/app/platform/uart_logger_config.hpp"
@@ -13,6 +14,7 @@
 
 namespace valle::app
 {
+    // VCA Current Loop Driver
     struct VCACurrentLoopDriverCTConfig
     {
         using PWMOutput1PinT              = platform::GPIOPinA8Device;
@@ -35,17 +37,28 @@ namespace valle::app
     constexpr uint16_t                  kPositionSensorI2CAddress        = 0x2A;
     constexpr bool                      kPositionSensorI2CAddressIs10Bit = false;
 
-    struct I2CControllerCTConfig : platform::I2CControllerCTDefaultConfig
+    struct PositionSensorI2CControllerCTConfig : platform::I2CControllerCTDefaultConfig
     {
         using DMAChannelRxT = platform::DMA1Channel3Device;
         using DMAChannelTxT = platform::DMA1Channel4Device;
+    };
+
+    // TIM for Quadrature Encoder
+    constexpr auto kMotorEncoderTIMControllerID = platform::TIMControllerID::kTim2;
+    struct MotorEncoderTIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
+    {
+        using Ch1PinT = platform::GPIOPinA5Device;
+        using Ch2PinT = platform::GPIOPinB3Device;
     };
 
 }  // namespace valle::app
 
 // Bind compile-time configurations
 VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(valle::app::VCACurrentLoopDriverCTConfig{});
-VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2CID, valle::app::I2CControllerCTConfig{});
+VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2CID,
+                                      valle::app::PositionSensorI2CControllerCTConfig{});
+VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kMotorEncoderTIMControllerID,
+                                        valle::app::MotorEncoderTIMControllerCTConfig{});
 
 namespace valle
 {
@@ -65,11 +78,20 @@ namespace valle
         using PositionSensorModuleConfigT   = typename PositionSensorT::ConfigT;
         using PositionSensorConfigT         = typename PositionSensorT::SensorConfigT;
 
+        using MotorEncoderTIMControllerT       = platform::TIMControllerDevice<kMotorEncoderTIMControllerID>;
+        static constexpr AMT10xPPR kEncoderPPR = AMT10xPPR::k4096;
+        using MotorEncoderModuleT = platform::app::AMT10xTIMEncoderModule<MotorEncoderTIMControllerT, kEncoderPPR>;
+        using MotorEncoderModuleConfigT = typename MotorEncoderModuleT::ConfigT;
+
         using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;
 
         // Declare Main Driver List
-        using MainDriversT =
-            TypeList<platform::CoreSystemDriver, UARTLoggerT, VCACurrentLoopDriverT, PositionSensorT, TestGPIODriverT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver,
+                                      UARTLoggerT,
+                                      VCACurrentLoopDriverT,
+                                      PositionSensorT,
+                                      MotorEncoderModuleT,
+                                      TestGPIODriverT>;
 
         // ============================================================================
         // Root Driver
@@ -96,6 +118,7 @@ namespace valle
             UARTLoggerT                uart_logger;
             VCACurrentLoopDriverT      vca_current_loop_driver;
             PositionSensorT            position_sensor;
+            MotorEncoderModuleT        motor_encoder;
             TestGPIODriverT            test_gpio;
         };
 

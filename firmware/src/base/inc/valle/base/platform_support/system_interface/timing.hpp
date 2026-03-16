@@ -256,8 +256,9 @@ namespace valle::platform_support::system_interface
                   typename TClock = ClockForDurationT<TDuration>>
         [[nodiscard]] static bool wait_for_with_timeout(TFunc&& condition, const TDuration timeout_duration)
         {
-            using TraitsT = PeriodTimingTraits<typename TDuration::period, TClock>;
-            using UtilsT  = PeriodTimingUtils<TraitsT, WaitPolicyT>;
+            using TraitsT  = PeriodTimingTraits<typename TDuration::period, TClock>;
+            using UtilsT   = PeriodTimingUtils<TraitsT, WaitPolicyT>;
+            using TimeoutT = typename TraitsT::TimeoutT;
             return UtilsT::template wait_for_with_timeout<TFunc>(std::forward<TFunc>(condition),
                                                                  TimeoutT(timeout_duration));
         }
