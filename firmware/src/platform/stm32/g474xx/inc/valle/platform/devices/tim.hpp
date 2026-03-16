@@ -393,17 +393,16 @@ namespace valle::platform
         [[nodiscard]] bool init_encoder(const TIMControllerEncoderConfig& config)
         {
             InterfaceT::set_encoder_mode(config.mode);
-            init_channel_input_capture<TIMChannelID::kCh1>(config.ch_config);
-
-            if (config.ch_config.polarity == config.ch2_polarity)
+            if (!init_channel_input_capture<TIMChannelID::kCh1>(config.ch_config))
             {
-                init_channel_input_capture<TIMChannelID::kCh2>(config.ch_config);
+                return false;
             }
-            else
+
+            TIMChannelInputCaptureConfig ch2_config = config.ch_config;
+            ch2_config.polarity                     = config.ch2_polarity;
+            if (!init_channel_input_capture<TIMChannelID::kCh2>(ch2_config))
             {
-                TIMChannelInputCaptureConfig ch2_config = config.ch_config;
-                ch2_config.polarity                     = config.ch2_polarity;
-                init_channel_input_capture<TIMChannelID::kCh2>(ch2_config);
+                return false;
             }
 
             InterfaceT::set_auto_reload(config.auto_reload);

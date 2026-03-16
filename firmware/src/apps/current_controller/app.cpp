@@ -66,7 +66,7 @@ namespace valle::app
         constexpr auto vca_current_loop_driver_config =
             VCACurrentLoopDriverConfigT{
                 .pwm_freq_hz          = kVCAPWMFreqHz,
-                .max_current_amp      = 1.0F,
+                .max_current_amp      = 0.3F,
                 .target_tolerance_amp = 0.001F,
                 .interrupt_priority   = 5,
                 .current_sensor_calibration =

@@ -8,15 +8,23 @@
 
 namespace valle
 {
+    enum class EngineStroke : uint8_t
+    {
+        kIntake      = 0,
+        kCompression = 1,
+        kPower       = 2,
+        kExhaust     = 3,
+    };
+
     struct EngineKinematicsCalculatorReferenceConfig
     {
         using ValueT = float;
 
         // Rotor angle when normalized encoder count = 0.
-        ValueT encoder_zero_at_rotor_angle_rad = static_cast<ValueT>(0.0);
+        ValueT encoder_zero_at_crank_angle_rad = static_cast<ValueT>(0.0);
 
         // Rotor angle at which the cylinder is at TDC.
-        ValueT rotor_angle_at_tdc_rad = static_cast<ValueT>(0.0);
+        ValueT crank_angle_at_tdc_rad = static_cast<ValueT>(0.0);
 
         // Normalized cylinder position convention
         ValueT cylinder_pos_norm_at_tdc = static_cast<ValueT>(0.0);
@@ -96,9 +104,9 @@ namespace valle
         static constexpr bool skIsCrankSlider = skModel == EngineKinematicsCalculatorModel::kCrankSlider;
 
     private:
-        static constexpr ValueT skNormalizedCountMin = static_cast<ValueT>(0.0);
-        static constexpr ValueT skNormalizedCountMax = static_cast<ValueT>(1.0);
-        static constexpr ValueT skFullRevolutionRad  = static_cast<ValueT>(2.0) * std::numbers::pi_v<ValueT>;
+        static constexpr ValueT skStokeRad          = std::numbers::pi_v<ValueT>;
+        static constexpr ValueT skFullRevolutionRad = static_cast<ValueT>(2.0) * skStokeRad;
+        static constexpr ValueT skFullCycleRad      = static_cast<ValueT>(2.0) * skFullRevolutionRad;
 
         struct PrecomputedValues
         {
@@ -120,12 +128,14 @@ namespace valle
         PrecomputedValues m_precomp{m_config};
 
     public:
+        constexpr EngineKinematicsCalculator() noexcept = default;
+
         explicit constexpr EngineKinematicsCalculator(const ConfigT& config) noexcept
             : m_config(config), m_precomp(config)
         {
         }
 
-        constexpr void set_config(const ConfigT& config) noexcept
+        constexpr void init(const ConfigT& config) noexcept
         {
             m_config  = config;
             m_precomp = PrecomputedValues(config);
@@ -133,12 +143,12 @@ namespace valle
 
         [[nodiscard]] static constexpr ValueT wrap_norm(ValueT value) noexcept
         {
-            while (value >= skNormalizedCountMax)
+            while (value >= static_cast<ValueT>(1.0))
             {
                 value -= static_cast<ValueT>(1.0);
             }
 
-            while (value < skNormalizedCountMin)
+            while (value < static_cast<ValueT>(0.0))
             {
                 value += static_cast<ValueT>(1.0);
             }
@@ -146,7 +156,22 @@ namespace valle
             return value;
         }
 
-        [[nodiscard]] static constexpr ValueT wrap_angle_rad(ValueT angle_rad) noexcept
+        [[nodiscard]] static constexpr ValueT wrap_angle_rad_cycle(ValueT angle_rad) noexcept
+        {
+            while (angle_rad >= skFullCycleRad)
+            {
+                angle_rad -= skFullCycleRad;
+            }
+
+            while (angle_rad < static_cast<ValueT>(0.0))
+            {
+                angle_rad += skFullCycleRad;
+            }
+
+            return angle_rad;
+        }
+
+        [[nodiscard]] static constexpr ValueT wrap_angle_rad_rev(ValueT angle_rad) noexcept
         {
             while (angle_rad >= skFullRevolutionRad)
             {
@@ -161,24 +186,105 @@ namespace valle
             return angle_rad;
         }
 
+        [[nodiscard]] constexpr ValueT wrap_angle_rad_stroke(ValueT angle_rad) const noexcept
+        {
+            while (angle_rad >= skStokeRad)
+            {
+                angle_rad -= skStokeRad;
+            }
+
+            while (angle_rad < static_cast<ValueT>(0.0))
+            {
+                angle_rad += skStokeRad;
+            }
+
+            return angle_rad;
+        }
+
+        // ---------------------------------------------------------------------
+        // ENCODER <-> STROKE
+        // ---------------------------------------------------------------------
+        [[nodiscard]] constexpr EngineStroke encoder_pos_norm_cycle_to_stroke(
+            const ValueT encoder_pos_norm) const noexcept
+        {
+            static_assert(static_cast<uint8_t>(EngineStroke::kIntake) == 0 &&
+                              static_cast<uint8_t>(EngineStroke::kCompression) == 1 &&
+                              static_cast<uint8_t>(EngineStroke::kPower) == 2 &&
+                              static_cast<uint8_t>(EngineStroke::kExhaust) == 3,
+                          "EngineStroke enum values must be 0, 1, 2, 3 for this calculation to work");
+
+            const ValueT  wrapped_count = wrap_norm(encoder_pos_norm);
+            const uint8_t idx           = static_cast<uint8_t>(wrapped_count * 4.0f);
+            return static_cast<EngineStroke>(idx);
+        }
+
+        [[nodiscard]] constexpr EngineStroke crank_angle_rad_cycle_to_stroke(
+            const ValueT crank_angle_rad) const noexcept
+        {
+            return encoder_pos_norm_cycle_to_stroke(crank_angle_rad / skFullCycleRad);
+        }
+
         // ---------------------------------------------------------------------
         // ENCODER <-> ROTOR ANGLE
         // ---------------------------------------------------------------------
 
-        [[nodiscard]] constexpr ValueT norm_count_to_rotor_angle_rad(const ValueT norm_count) const noexcept
+        [[nodiscard]] constexpr ValueT encoder_pos_norm_cycle_to_crank_angle_rad_cycle(
+            const ValueT encoder_pos_norm) const noexcept
         {
-            const ValueT wrapped_count = wrap_norm(norm_count);
-            const ValueT rotor_angle =
-                m_config.reference_config.encoder_zero_at_rotor_angle_rad + (wrapped_count * skFullRevolutionRad);
+            // Since 1 cycle = 2 revolutions for a 4-stroke engine, we need to multiply the normalized count by 2
+            const ValueT wrapped_count = wrap_norm(encoder_pos_norm);
+            const ValueT crank_angle =
+                m_config.reference_config.encoder_zero_at_crank_angle_rad + (wrapped_count * skFullCycleRad);
 
-            return wrap_angle_rad(rotor_angle);
+            return wrap_angle_rad_cycle(crank_angle);
         }
 
-        [[nodiscard]] constexpr ValueT rotor_angle_rad_to_norm_count(const ValueT rotor_angle_rad) const noexcept
+        [[nodiscard]] constexpr ValueT encoder_pos_norm_rev_to_crank_angle_rad_rev(
+            const ValueT encoder_pos_norm) const noexcept
         {
-            const ValueT wrapped_rotor_angle = wrap_angle_rad(rotor_angle_rad);
+            const ValueT wrapped_count = wrap_norm(encoder_pos_norm);
+            const ValueT crank_angle =
+                m_config.reference_config.encoder_zero_at_crank_angle_rad + (wrapped_count * skFullRevolutionRad);
+
+            return wrap_angle_rad_rev(crank_angle);
+        }
+
+        [[nodiscard]] constexpr ValueT encoder_pos_norm_stroke_to_crank_angle_rad_stroke(
+            const ValueT encoder_pos_norm) const noexcept
+        {
+            const ValueT wrapped_count = wrap_norm(encoder_pos_norm);
+            const ValueT crank_angle =
+                m_config.reference_config.encoder_zero_at_crank_angle_rad + (wrapped_count * skStokeRad);
+
+            return wrap_angle_rad_stroke(crank_angle);
+        }
+
+        [[nodiscard]] constexpr ValueT crank_angle_rad_cycle_to_encoder_pos_norm_cycle(
+            const ValueT crank_angle_rad) const noexcept
+        {
+            const ValueT wrapped_crank_angle = wrap_angle_rad_cycle(crank_angle_rad);
             const ValueT norm =
-                (wrapped_rotor_angle - m_config.reference_config.encoder_zero_at_rotor_angle_rad) / skFullRevolutionRad;
+                (wrapped_crank_angle - m_config.reference_config.encoder_zero_at_crank_angle_rad) / skFullCycleRad;
+
+            return wrap_norm(norm);
+        }
+
+        [[nodiscard]] constexpr ValueT crank_angle_rad_rev_to_encoder_pos_norm_rev(
+            const ValueT crank_angle_rad) const noexcept
+        {
+            const ValueT wrapped_crank_angle = wrap_angle_rad_rev(crank_angle_rad);
+            const ValueT norm =
+                (wrapped_crank_angle - m_config.reference_config.encoder_zero_at_crank_angle_rad) / skFullRevolutionRad;
+
+            return wrap_norm(norm);
+        }
+
+        [[nodiscard]] constexpr ValueT crank_angle_rad_stroke_to_encoder_pos_norm_stroke(
+            const ValueT crank_angle_rad) const noexcept
+        {
+            const ValueT wrapped_crank_angle = wrap_angle_rad_stroke(crank_angle_rad);
+            const ValueT norm =
+                (wrapped_crank_angle - m_config.reference_config.encoder_zero_at_crank_angle_rad) / skStokeRad;
 
             return wrap_norm(norm);
         }
@@ -187,16 +293,16 @@ namespace valle
         // ROTOR <-> CYLINDER ANGLE
         // ---------------------------------------------------------------------
 
-        [[nodiscard]] constexpr ValueT rotor_angle_rad_to_cylinder_angle_rad(
-            const ValueT rotor_angle_rad) const noexcept
+        [[nodiscard]] constexpr ValueT crank_angle_rad_to_cylinder_angle_rad(
+            const ValueT crank_angle_rad) const noexcept
         {
-            return wrap_angle_rad(rotor_angle_rad - m_config.reference_config.rotor_angle_at_tdc_rad);
+            return wrap_angle_rad_rev(crank_angle_rad - m_config.reference_config.crank_angle_at_tdc_rad);
         }
 
-        [[nodiscard]] constexpr ValueT cylinder_angle_rad_to_rotor_angle_rad(
+        [[nodiscard]] constexpr ValueT cylinder_angle_rad_to_crank_angle_rad(
             const ValueT cylinder_angle_rad) const noexcept
         {
-            return wrap_angle_rad(cylinder_angle_rad + m_config.reference_config.rotor_angle_at_tdc_rad);
+            return wrap_angle_rad_rev(cylinder_angle_rad + m_config.reference_config.crank_angle_at_tdc_rad);
         }
 
         // ---------------------------------------------------------------------
@@ -206,20 +312,21 @@ namespace valle
         [[nodiscard]] constexpr ValueT cylinder_angle_rad_to_cylinder_pos_norm_approx(
             ValueT cylinder_angle_rad) const noexcept
         {
-            const ValueT wrapped_angle = wrap_angle_rad(cylinder_angle_rad);
+            const ValueT wrapped_angle = wrap_angle_rad_rev(cylinder_angle_rad);
             return m_precomp.sin_mid - (m_precomp.sin_amp * std::cos(wrapped_angle));
         }
 
-        [[nodiscard]] constexpr ValueT rotor_angle_rad_to_cylinder_pos_norm_approx(
-            ValueT rotor_angle_rad) const noexcept
+        [[nodiscard]] constexpr ValueT crank_angle_rad_to_cylinder_pos_norm_approx(
+            ValueT crank_angle_rad) const noexcept
         {
             return cylinder_angle_rad_to_cylinder_pos_norm_approx(
-                rotor_angle_rad_to_cylinder_angle_rad(rotor_angle_rad));
+                crank_angle_rad_to_cylinder_angle_rad(crank_angle_rad));
         }
 
-        [[nodiscard]] constexpr ValueT norm_count_to_cylinder_pos_norm_approx(ValueT norm_count) const noexcept
+        [[nodiscard]] constexpr ValueT encoder_pos_norm_to_cylinder_pos_norm_approx(
+            ValueT encoder_pos_norm) const noexcept
         {
-            return rotor_angle_rad_to_cylinder_pos_norm_approx(norm_count_to_rotor_angle_rad(norm_count));
+            return crank_angle_rad_to_cylinder_pos_norm_approx(encoder_pos_norm_to_crank_angle_rad(encoder_pos_norm));
         }
 
         // ---------------------------------------------------------------------
@@ -230,7 +337,7 @@ namespace valle
             const ValueT cylinder_angle_rad) const noexcept
             requires(skIsCrankSlider)
         {
-            const ValueT theta = wrap_angle_rad(cylinder_angle_rad);
+            const ValueT theta = wrap_angle_rad_rev(cylinder_angle_rad);
             const ValueT r     = m_config.model_config.crank_radius;
             const ValueT l     = m_config.model_config.connecting_rod_length;
 
@@ -243,17 +350,18 @@ namespace valle
             return x_max - x;
         }
 
-        [[nodiscard]] constexpr ValueT rotor_angle_rad_to_cylinder_displacement(
-            const ValueT rotor_angle_rad) const noexcept
+        [[nodiscard]] constexpr ValueT crank_angle_rad_to_cylinder_displacement(
+            const ValueT crank_angle_rad) const noexcept
             requires(skIsCrankSlider)
         {
-            return cylinder_angle_rad_to_cylinder_displacement(rotor_angle_rad_to_cylinder_angle_rad(rotor_angle_rad));
+            return cylinder_angle_rad_to_cylinder_displacement(crank_angle_rad_to_cylinder_angle_rad(crank_angle_rad));
         }
 
-        [[nodiscard]] constexpr ValueT norm_count_to_cylinder_displacement(const ValueT norm_count) const noexcept
+        [[nodiscard]] constexpr ValueT encoder_pos_norm_to_cylinder_displacement(
+            const ValueT encoder_pos_norm) const noexcept
             requires(skIsCrankSlider)
         {
-            return rotor_angle_rad_to_cylinder_displacement(norm_count_to_rotor_angle_rad(norm_count));
+            return crank_angle_rad_to_cylinder_displacement(encoder_pos_norm_to_crank_angle_rad(encoder_pos_norm));
         }
 
         // ---------------------------------------------------------------------
@@ -276,16 +384,16 @@ namespace valle
                 cylinder_angle_rad_to_cylinder_displacement(cylinder_angle_rad));
         }
 
-        [[nodiscard]] constexpr ValueT rotor_angle_rad_to_cylinder_pos_norm(ValueT rotor_angle_rad) const noexcept
+        [[nodiscard]] constexpr ValueT crank_angle_rad_to_cylinder_pos_norm(ValueT crank_angle_rad) const noexcept
             requires(skIsCrankSlider)
         {
-            return cylinder_angle_rad_to_cylinder_pos_norm(rotor_angle_rad_to_cylinder_angle_rad(rotor_angle_rad));
+            return cylinder_angle_rad_to_cylinder_pos_norm(crank_angle_rad_to_cylinder_angle_rad(crank_angle_rad));
         }
 
-        [[nodiscard]] constexpr ValueT norm_count_to_cylinder_pos_norm(ValueT norm_count) const noexcept
+        [[nodiscard]] constexpr ValueT encoder_pos_norm_to_cylinder_pos_norm(ValueT encoder_pos_norm) const noexcept
             requires(skIsCrankSlider)
         {
-            return rotor_angle_rad_to_cylinder_pos_norm(norm_count_to_rotor_angle_rad(norm_count));
+            return crank_angle_rad_to_cylinder_pos_norm(encoder_pos_norm_to_crank_angle_rad(encoder_pos_norm));
         }
 
         // ---------------------------------------------------------------------
@@ -307,17 +415,17 @@ namespace valle
             return std::acos(cos_theta);
         }
 
-        [[nodiscard]] constexpr ValueT cylinder_pos_norm_to_rotor_angle_rad_approx(
+        [[nodiscard]] constexpr ValueT cylinder_pos_norm_to_crank_angle_rad_approx(
             const ValueT cylinder_pos_norm) const noexcept
         {
-            return cylinder_angle_rad_to_rotor_angle_rad(
+            return cylinder_angle_rad_to_crank_angle_rad(
                 cylinder_pos_norm_to_cylinder_angle_rad_approx(cylinder_pos_norm));
         }
 
-        [[nodiscard]] constexpr ValueT cylinder_pos_norm_to_norm_count_approx(
+        [[nodiscard]] constexpr ValueT cylinder_pos_norm_to_encoder_pos_norm_approx(
             const ValueT cylinder_pos_norm) const noexcept
         {
-            return rotor_angle_rad_to_norm_count(cylinder_pos_norm_to_rotor_angle_rad_approx(cylinder_pos_norm));
+            return crank_angle_rad_to_encoder_pos_norm(cylinder_pos_norm_to_crank_angle_rad_approx(cylinder_pos_norm));
         }
     };
 }  // namespace valle

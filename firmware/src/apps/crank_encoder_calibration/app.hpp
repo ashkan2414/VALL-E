@@ -3,9 +3,5 @@
 
 namespace valle::app
 {
-    using EngineKinematicsCalculatorT       = EngineKinematicsCalculator<EngineKinematicsCalculatorModel::kCrankSlider>;
-    using EngineKinematicsCalculatorConfigT = typename EngineKinematicsCalculatorT::ConfigT;
-    extern EngineKinematicsCalculatorT g_engine_kinematics_calculator;
-
     void init();
 }  // namespace valle::app

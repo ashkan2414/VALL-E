@@ -41,11 +41,11 @@ namespace valle
     };
 
     // Formula: y = (x * scale) + offset
-    template <typename T>
+    template <typename T, std::floating_point TConverted = float>
     struct LinearConverter
     {
         using InputT     = T;
-        using ConvertedT = float;
+        using ConvertedT = TConverted;
         using ConfigT    = LinearConverterConfig;
 
         ConfigT m_cfg;

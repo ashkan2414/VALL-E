@@ -1,5 +1,6 @@
 #include "app.hpp"
 
+#include "valle/app/engine_kinematics_config.hpp"
 #include "valle/app/platform/core_system_config.hpp"
 #include "valle/base/panic.hpp"
 
@@ -16,7 +17,7 @@ namespace valle::app
             .template install<UARTLoggerT>()
             .template install<VCACurrentLoopDriverT>()
             .template install<PositionSensorT>()
-            .template install<MotorEncoderModuleT>()
+            .template install<CrankEncoderModuleT>()
             .template install<TestGPIODriverT>()
             .yield();
     }
@@ -73,8 +74,8 @@ namespace valle::app
 
         constexpr auto vca_current_loop_driver_config =
             VCACurrentLoopDriverConfigT{
-                .pwm_freq_hz          = kVCAPWMFreqHz,
-                .max_current_amp      = 1.0F,
+                .pwm_freq_hz          = 60000U,
+                .max_current_amp      = 0.3F,
                 .target_tolerance_amp = 0.001F,
                 .interrupt_priority   = 5,
                 .current_sensor_calibration =
@@ -124,31 +125,11 @@ namespace valle::app
                        }}),
                "Failed to initialize Position Sensor");
 
-        expect(g_drivers.motor_encoder.init(
-                   MotorEncoderModuleConfigT{
-                       .encoder_config =
-                           platform::TIMQuadEncoderConfig{
-                               .gpio_config =
-                                   platform::GPIOAlternativeFunctionConfig{
-                                       .mode  = platform::GPIOAlternateFunctionMode::kPushPull,
-                                       .speed = platform::GPIOSpeedMode::kMedium,
-                                       .pull  = platform::GPIOPullMode::kNoPull,
-                                   },
-                               .encoder_config =
-                                   platform::TIMControllerEncoderConfig{
-                                       .mode = platform::TIMControllerEncoderMode::kX4TimerInput12,
-                                       .ch_config =
-                                           platform::TIMChannelInputCaptureConfig{
-                                               .active_input =
-                                                   platform::TIMChannelInputCaptureActiveInput::kDirectTimerInput,
-                                               .prescaler = platform::TIMChannelInputCapturePrescaler::kDiv1,
-                                               .filter    = platform::TIMChannelInputCaptureFilter::kFreqDiv2N8Samples,
-                                               .polarity  = platform::TIMChannelInputCapturePolarity::kRising,
-                                           },
-                                       .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
-                                       .auto_reload  = (static_cast<uint32_t>(kEncoderPPR) * 4) - 1,
-                                   }}}),
-               "Failed to initialize motor encoder module");
+        expect(g_drivers.crank_encoder.init(
+                   CrankEncoderModuleConfigT{.engine_kinematics = kPowerfistEngineKinematicsConfig,
+                                             .home_rad          = 0.73247560718F,
+                                             .reverse_direction = false}),
+               "Failed to initialize AMT102 Crank Encoder module");
     }
 
     /**
