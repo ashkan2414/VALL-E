@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <cstdint>
 #include <numbers>
 
@@ -104,12 +105,10 @@ namespace valle::app
         k400  = 400,
         k500  = 500,
         k512  = 512,
-        k768  = 768,
         k800  = 800,
         k1000 = 1000,
         k1024 = 1024,
         k2048 = 2048,
-        k4096 = 4096
     };
 
     // -------------------------------------------------------------------------
@@ -120,7 +119,7 @@ namespace valle::app
     struct AMT10xModuleConfigX
     {
         TEncoderInterfaceConfig encoder_config{};
-        uint32_t                home_count = 0;
+        float                   home_rad = 0.0F;
         bool                    reverse_direction{false};
     };
 
@@ -160,8 +159,7 @@ namespace valle::app
 
         [[nodiscard]] bool init(const ConfigT& config)
         {
-            m_home_count = config.home_count;
-            m_reverse    = config.reverse_direction;
+            m_reverse = config.reverse_direction;
 
             if (!m_encoder.init(config.encoder_config))
             {
@@ -177,6 +175,7 @@ namespace valle::app
 
             m_rad_per_count = (2.0F * std::numbers::pi_v<float>) / static_cast<float>(m_cpr);
             m_deg_per_count = rad2deg<float>(m_rad_per_count);
+            m_home_count    = static_cast<uint32_t>(std::lround(config.home_rad / m_rad_per_count)) % m_cpr;
 
             return true;
         }
@@ -276,11 +275,21 @@ namespace valle::app
             m_encoder.reset_count();
         }
 
+        void set_as_home()
+        {
+            m_encoder.set_count(m_home_count);
+        }
+
+        [[nodiscard]] bool is_index_active() const
+        {
+            return m_encoder.read_index_channel();
+        }
+
         [[nodiscard]] bool run_homing_sequence(valle::system::TimeoutMillis timeout)
         {
             enable();
-            const bool index_found = valle::system::TimingContext::wait_for_with_timeout(
-                [&]() { return m_encoder.read_index_channel(); }, timeout);
+            const bool index_found =
+                valle::system::TimingContext::wait_for_with_timeout([&]() { return is_index_active(); }, timeout);
 
             if (!index_found)
             {
@@ -288,7 +297,7 @@ namespace valle::app
             }
 
             // Once index is found, reset count to zero (or a known offset if needed)
-            m_encoder.set_count(m_home_count);
+            set_as_home();
             return true;
         }
 

@@ -29,7 +29,7 @@ namespace valle
         // Drivers
         // ============================================================================
         using CrankEncoderTIMControllerT            = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
-        static constexpr AMT10xPPR kCrankEncoderPPR = AMT10xPPR::k4096;
+        static constexpr AMT10xPPR kCrankEncoderPPR = AMT10xPPR::k2048;
         using CrankEncoderModuleT                   = platform::app::
             AMT10xTIMEncoderModule<CrankEncoderTIMControllerT, platform::GPIOPinB5Device, kCrankEncoderPPR>;
         using CrankEncoderModuleConfigT = typename CrankEncoderModuleT::ConfigT;

@@ -37,13 +37,13 @@ namespace valle::platform
             uint32_t mode = GPIO_MODE_INPUT;
             if (config.it_trigger != GPIOInputInterruptTrigger::kNone)
             {
-                mode = static_cast<uint32_t>(config.it_trigger) | static_cast<uint32_t>(config.it_action);
+                mode |= static_cast<uint32_t>(config.it_trigger) | static_cast<uint32_t>(config.it_action);
             }
 
-            m_pin.get().init(GPIOPinConfig{.mode      = mode,
-                                           .pull      = config.pull,
-                                           .speed     = GPIOSpeedMode::kLow,
-                                           .alternate = GPIOAlternativeFunction::kAF0});
+            return m_pin.get().init(GPIOPinConfig{.mode      = mode,
+                                                  .pull      = config.pull,
+                                                  .speed     = GPIOSpeedMode::kLow,
+                                                  .alternate = GPIOAlternativeFunction::kAF0});
         }
 
         // --- API ---

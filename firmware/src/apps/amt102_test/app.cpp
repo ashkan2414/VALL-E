@@ -30,8 +30,7 @@ namespace valle::app
             [](platform::DMA1ControllerDevice& dev)
             { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
             [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-        }  // namespace valle
-        );
+            [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); }});
     }
 
     /**
@@ -75,8 +74,10 @@ namespace valle::app
                                                .polarity  = platform::TIMChannelInputCapturePolarity::kRising,
                                            },
                                        .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
-                                       .auto_reload  = (static_cast<uint32_t>(kEncoderPPR) * 4) - 1,
-                                   }}}),
+                                       .auto_reload  = (static_cast<uint32_t>(kEncoderPPR) * 4 * 2) - 1,
+                                   }},
+                       .home_rad          = 0.0F,
+                       .reverse_direction = false}),
                "Failed to initialize AMT102 module");
     }
 
