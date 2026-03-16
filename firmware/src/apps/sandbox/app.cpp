@@ -16,6 +16,7 @@ namespace valle::app
             .template install<UARTLoggerT>()
             .template install<VCACurrentLoopDriverT>()
             .template install<PositionSensorT>()
+            .template install<MotorEncoderModuleT>()
             .template install<TestGPIODriverT>()
             .yield();
     }
@@ -122,6 +123,32 @@ namespace valle::app
                            }},
                        }}),
                "Failed to initialize Position Sensor");
+
+        expect(g_drivers.motor_encoder.init(
+                   MotorEncoderModuleConfigT{
+                       .encoder_config =
+                           platform::TIMQuadEncoderConfig{
+                               .gpio_config =
+                                   platform::GPIOAlternativeFunctionConfig{
+                                       .mode  = platform::GPIOAlternateFunctionMode::kPushPull,
+                                       .speed = platform::GPIOSpeedMode::kMedium,
+                                       .pull  = platform::GPIOPullMode::kNoPull,
+                                   },
+                               .encoder_config =
+                                   platform::TIMControllerEncoderConfig{
+                                       .mode = platform::TIMControllerEncoderMode::kX4TimerInput12,
+                                       .ch_config =
+                                           platform::TIMChannelInputCaptureConfig{
+                                               .active_input =
+                                                   platform::TIMChannelInputCaptureActiveInput::kDirectTimerInput,
+                                               .prescaler = platform::TIMChannelInputCapturePrescaler::kDiv1,
+                                               .filter    = platform::TIMChannelInputCaptureFilter::kFreqDiv2N8Samples,
+                                               .polarity  = platform::TIMChannelInputCapturePolarity::kRising,
+                                           },
+                                       .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
+                                       .auto_reload  = (static_cast<uint32_t>(kEncoderPPR) * 4) - 1,
+                                   }}}),
+               "Failed to initialize motor encoder module");
     }
 
     /**

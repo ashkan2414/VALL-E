@@ -1,6 +1,7 @@
 #pragma once
 
 #include "valle/app/modules/amt10x.hpp"
+#include "valle/platform/drivers/gpio/digital_in.hpp"
 #include "valle/platform/drivers/tim/quad_encoder.hpp"
 
 namespace valle::platform::app
@@ -13,30 +14,47 @@ namespace valle::platform::app
      * @tparam TControllerDevice The Timer controller device (e.g. TIM1, TIM2, etc.).
      * @tparam tkPPR The PPR setting for the encoder.
      */
-    template <typename TControllerDevice, valle::app::AMT10xPPR tkPPR>
+    template <typename TControllerDevice, typename TIndexGPIOPinDevice, valle::app::AMT10xPPR tkPPR>
     class AMT10xModuleTIMEncoderInterface
-        : public valle::app::AMT10xModuleEncoderInterfaceX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>,
-                                                           TIMQuadEncoderConfig>
+        : public valle::app::AMT10xModuleEncoderInterfaceX<
+              AMT10xModuleTIMEncoderInterface<TControllerDevice, TIndexGPIOPinDevice, tkPPR>,
+              TIMQuadEncoderConfig>
     {
     public:
-        using ControllerT    = TControllerDevice;
-        using EncoderDriverT = TIMQuadEncoderDriver<ControllerT>;
-        using ConfigT        = TIMQuadEncoderConfig;
+        using ControllerT         = TControllerDevice;
+        using IndexGPIOPinDeviceT = TIndexGPIOPinDevice;
 
-        using InjectDevices = TypeList<ControllerT>;
+        using EncoderDriverT            = TIMQuadEncoderDriver<ControllerT>;
+        using IndexGPIODigitalInDriverT = GPIODigitalInDriver<IndexGPIOPinDeviceT>;
+        using ConfigT                   = TIMQuadEncoderConfig;
+        using CounterValueT             = typename EncoderDriverT::CounterValueT;
+
+        using InjectDevices = TypeList<ControllerT, IndexGPIOPinDeviceT>;
 
     private:
-        EncoderDriverT m_driver{};
-        uint32_t       m_counts_per_pulse{4};
+        EncoderDriverT            m_driver{};
+        IndexGPIODigitalInDriverT m_index_pin{};
+        uint32_t                  m_counts_per_pulse{4};
 
     public:
-        template <typename... TArgs>
-        explicit AMT10xModuleTIMEncoderInterface(TArgs&&... args) : m_driver(std::forward<TArgs>(args)...)
+        explicit AMT10xModuleTIMEncoderInterface(DeviceRef<ControllerT>&&         controller,
+                                                 DeviceRef<IndexGPIOPinDeviceT>&& index_pin)
+            : m_driver(std::move(controller)), m_index_pin(std::move(index_pin))
         {
         }
 
         [[nodiscard]] bool init_impl(const ConfigT& config)
         {
+            if (!m_index_pin.init(GPIODigitalInConfig{
+                    .pull       = GPIOPullMode::kNoPull,
+                    .it_trigger = GPIOInputInterruptTrigger::kNone,
+                    .it_action  = GPIOInputInterruptAction::kInterrupt,
+                    .inverted   = false,
+                }))
+            {
+                return false;
+            }
+
             switch (config.encoder_config.mode)
             {
                 case TIMControllerEncoderMode::kX4TimerInput12:
@@ -90,6 +108,16 @@ namespace valle::platform::app
             m_driver.set_count(0);
         }
 
+        void set_count_impl(const CounterValueT count)
+        {
+            m_driver.set_count(count);
+        }
+
+        [[nodiscard]] bool read_index_channel_impl() const
+        {
+            return m_index_pin.read();
+        }
+
         [[nodiscard]] EncoderDriverT& get_driver()
         {
             return m_driver;
@@ -98,8 +126,9 @@ namespace valle::platform::app
 
     using AMT10xTIMEncoderModuleConfig = valle::app::AMT10xModuleConfigX<AMT10xModuleTIMEncoderInterfaceConfig>;
 
-    template <typename TControllerDevice, valle::app::AMT10xPPR tkPPR>
+    template <typename TControllerDevice, typename TIndexGPIOPinDevice, valle::app::AMT10xPPR tkPPR>
     using AMT10xTIMEncoderModule =
-        valle::app::AMT10xModuleX<AMT10xModuleTIMEncoderInterface<TControllerDevice, tkPPR>, tkPPR>;
+        valle::app::AMT10xModuleX<AMT10xModuleTIMEncoderInterface<TControllerDevice, TIndexGPIOPinDevice, tkPPR>,
+                                  tkPPR>;
 
 }  // namespace valle::platform::app

@@ -5,6 +5,7 @@
 
 #include "valle/base/system_build/device.hpp"
 #include "valle/math/angle.hpp"
+#include "valle/system/timing.hpp"
 
 namespace valle::app
 {
@@ -59,6 +60,26 @@ namespace valle::app
         {
             static_cast<TDerived*>(this)->reset_count_impl();
         }
+
+        /**
+         * @brief Set the encoder count to a specific value (useful for zeroing or homing procedures).
+         *
+         */
+        void set_count(int64_t count)
+        {
+            static_cast<TDerived*>(this)->set_count_impl(count);
+        }
+
+        /**
+         * @brief Optional method to read the index channel if available. This can be used for absolute positioning or
+         * homing.
+         *
+         * @return true if the index channel is active, false otherwise.
+         */
+        [[nodiscard]] bool read_index_channel() const
+        {
+            return static_cast<const TDerived*>(this)->read_index_channel_impl();
+        }
     };
 
     // =========================================================================
@@ -99,11 +120,8 @@ namespace valle::app
     struct AMT10xModuleConfigX
     {
         TEncoderInterfaceConfig encoder_config{};
-
-        /**
-         * @brief Flag to reverse the measured direction.
-         */
-        bool reverse_direction{false};
+        uint32_t                home_count = 0;
+        bool                    reverse_direction{false};
     };
 
     /**
@@ -131,6 +149,7 @@ namespace valle::app
         uint32_t m_cpr           = static_cast<uint32_t>(skPPR) * 4;
         float    m_rad_per_count = (2.0F * std::numbers::pi_v<float>) / static_cast<float>(m_cpr);
         float    m_deg_per_count = rad2deg(m_rad_per_count);
+        uint32_t m_home_count    = 0;
         bool     m_reverse       = false;
 
     public:
@@ -141,7 +160,8 @@ namespace valle::app
 
         [[nodiscard]] bool init(const ConfigT& config)
         {
-            m_reverse = config.reverse_direction;
+            m_home_count = config.home_count;
+            m_reverse    = config.reverse_direction;
 
             if (!m_encoder.init(config.encoder_config))
             {
@@ -179,21 +199,21 @@ namespace valle::app
             return m_encoder.get_count();
         }
 
-        [[nodiscard]] int64_t get_position_count_abs() const
+        [[nodiscard]] int64_t get_pos_count_abs() const
         {
             auto pulses = get_count();
 
             if (m_reverse)
             {
                 // Note: On overflow of uint32 pulses, this remains consistent
-                // but absolute position is limited by the counter wrap-around.
+                // but absolute pos is limited by the counter wrap-around.
                 return -static_cast<int64_t>(pulses);
             }
 
             return static_cast<int64_t>(pulses);
         }
 
-        [[nodiscard]] auto get_position_count_rel() const
+        [[nodiscard]] auto get_pos_count_rel() const
         {
             auto pulses = get_count() % m_cpr;
 
@@ -209,41 +229,67 @@ namespace valle::app
             return pulses;
         }
 
-        /**
-         * @brief Returns absolute shaft position in radians (multi-turn).
-         */
-        [[nodiscard]] float get_position_rad_abs() const
+        [[nodiscard]] float get_pos_norm_abs() const
         {
-            return static_cast<float>(get_position_count_abs()) * m_rad_per_count;
+            return static_cast<float>(get_pos_count_abs()) / static_cast<float>(m_cpr);
+        }
+
+        [[nodiscard]] float get_pos_norm_rel() const
+        {
+            return static_cast<float>(get_pos_count_rel()) / static_cast<float>(m_cpr);
         }
 
         /**
-         * @brief Returns revolution position in radians [0, 2pi).
+         * @brief Returns absolute shaft pos in radians (multi-turn).
          */
-        [[nodiscard]] float get_position_rad_rel() const
+        [[nodiscard]] float get_pos_rad_abs() const
         {
-            return static_cast<float>(get_position_count_rel()) * m_rad_per_count;
+            return static_cast<float>(get_pos_count_abs()) * m_rad_per_count;
         }
 
         /**
-         * @brief Returns absolute shaft position in degrees (multi-turn).
+         * @brief Returns revolution pos in radians [0, 2pi).
          */
-        [[nodiscard]] float get_position_deg_abs() const
+        [[nodiscard]] float get_pos_rad_rel() const
         {
-            return static_cast<float>(get_position_count_abs()) * m_deg_per_count;
+            return static_cast<float>(get_pos_count_rel()) * m_rad_per_count;
         }
 
         /**
-         * @brief Returns revolution position in degrees [0, 360).
+         * @brief Returns absolute shaft pos in degrees (multi-turn).
          */
-        [[nodiscard]] float get_position_deg_rel() const
+        [[nodiscard]] float get_pos_deg_abs() const
         {
-            return static_cast<float>(get_position_count_rel()) * m_deg_per_count;
+            return static_cast<float>(get_pos_count_abs()) * m_deg_per_count;
+        }
+
+        /**
+         * @brief Returns revolution pos in degrees [0, 360).
+         */
+        [[nodiscard]] float get_pos_deg_rel() const
+        {
+            return static_cast<float>(get_pos_count_rel()) * m_deg_per_count;
         }
 
         void reset()
         {
             m_encoder.reset_count();
+        }
+
+        [[nodiscard]] bool run_homing_sequence(valle::system::TimeoutMillis timeout)
+        {
+            enable();
+            const bool index_found = valle::system::TimingContext::wait_for_with_timeout(
+                [&]() { return m_encoder.read_index_channel(); }, timeout);
+
+            if (!index_found)
+            {
+                return false;
+            }
+
+            // Once index is found, reset count to zero (or a known offset if needed)
+            m_encoder.set_count(m_home_count);
+            return true;
         }
 
         [[nodiscard]] EncoderInterfaceT& get_encoder()
