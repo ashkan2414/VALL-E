@@ -17,7 +17,7 @@ namespace valle::app
         g_drivers.crank_encoder.enable();
 
         VALLE_LOG_INFO("Initialized! Waiting for homing index...");
-        expect(g_drivers.crank_encoder.run_homing_sequence(TimeoutMillis(std::numeric_limits<TimeoutMillisRep>::max())),
+        expect(g_drivers.crank_encoder.run_homing_sequence(TimeoutMillis(1000000)),
                "Homing failed: Index pulse not detected within timeout");
         VALLE_LOG_INFO("Homing successful! Starting main loop...");
 
