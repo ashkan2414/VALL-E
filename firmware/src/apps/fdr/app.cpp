@@ -3,6 +3,7 @@
 #include "valle/app/platform/core_system_config.hpp"
 #include "valle/base/panic.hpp"
 #include "valle/system/timing.hpp"
+#include "valle/app/engine_kinematics_config.hpp"
 
 VALLE_DEFINE_UART_LOGGER_HANDLER(valle::app::g_drivers.uart_logger);
 
@@ -17,6 +18,7 @@ namespace valle::app
             .template install<platform::CoreSystemDriver>()
             .template install<UARTLoggerT>()
             .template install<VCACurrentLoopDriverT>()
+            .template install<CrankEncoderModuleT>()
             .template install<TestGPIODriverT>()
             .yield();
     }
@@ -70,6 +72,12 @@ namespace valle::app
 
         expect(g_drivers.vca_current_loop_driver.init(vca_current_loop_driver_config),
                "Failed to initialize VCA Current Loop Driver");
+
+        expect(g_drivers.crank_encoder.init(
+                   CrankEncoderModuleConfigT{.engine_kinematics = kPowerfistEngineKinematicsConfig,
+                                             .home_rad          = 0.73247560718F,
+                                             .reverse_direction = false}),
+               "Failed to initialize AMT102 Crank Encoder module");
 
         expect(g_drivers.test_gpio.init(platform::GPIODigitalOutConfig{
                    .mode  = platform::GPIOOutputMode::kPushPull,
