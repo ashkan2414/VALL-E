@@ -168,6 +168,29 @@
             ]
         },
         {
+            "name": "app-fdr",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "fdr"
+            }
+        },
+        {
+            "name": "fdr-debug",
+            "displayName": "FDR (Debug)",
+            "inherits": [
+                "debug",
+                "app-fdr"
+            ]
+        },
+        {
+            "name": "fdr-release",
+            "displayName": "FDR (Release)",
+            "inherits": [
+                "release",
+                "app-fdr"
+            ]
+        },
+        {
             "name": "app-sandbox",
             "hidden": true,
             "cacheVariables": {
@@ -239,6 +262,14 @@
         {
             "name": "crank-encoder-calibration-release",
             "configurePreset": "crank-encoder-calibration-release"
+        },
+        {
+            "name": "fdr-debug",
+            "configurePreset": "fdr-debug"
+        },
+        {
+            "name": "fdr-release",
+            "configurePreset": "fdr-release"
         },
         {
             "name": "sandbox-debug",

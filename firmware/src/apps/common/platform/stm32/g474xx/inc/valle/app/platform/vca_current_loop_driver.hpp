@@ -439,4 +439,18 @@ namespace valle::platform::app
             m_reset_triggered.store(true, std::memory_order_release);
         }
     };
+
+    template<typename T = void> 
+    constexpr auto kDefaultVCACurrentLoopDriverConfig = VCACurrentLoopDriverConfig<T>{
+                .pwm_freq_hz          = 60000U,
+                .max_current_amp      = 0.3F,
+                .target_tolerance_amp = 0.001F,
+                .interrupt_priority   = 5,
+                .current_sensor_calibration =
+                    LinearConverterConfig{
+                        .scale  = 1.13026F,
+                        .offset = -0.266701F,
+                    },
+            };
+
 }  // namespace valle::platform::app

@@ -72,19 +72,7 @@ namespace valle::app
                }),
                "Failed to initialize UART Logger Driver");
 
-        constexpr auto vca_current_loop_driver_config =
-            VCACurrentLoopDriverConfigT{
-                .pwm_freq_hz          = 60000U,
-                .max_current_amp      = 0.3F,
-                .target_tolerance_amp = 0.001F,
-                .interrupt_priority   = 5,
-                .current_sensor_calibration =
-                    LinearConverterConfig{
-                        .scale  = 1.0F,
-                        .offset = 0.0F,
-                    },
-            }
-                .to_raw();
+        constexpr auto vca_current_loop_driver_config = platform::app::kDefaultVCACurrentLoopDriverConfig<>.to_raw();
         static_assert(
             !vca_current_loop_driver_config.validate(platform::app::kDefaultCoreSystemConfig.rcc_config).has_value(),
             "VCA Current Loop Driver configuration is invalid");
