@@ -13,6 +13,7 @@ namespace valle::app
         typename system::MicrosClock::time_point timestamp{};
         float                                    target_current{};
         float                                    measured_current{};
+        float                                    duty_cycle{};
     };
 
     static constexpr uint32_t kVCAPWMFreqHz     = 60000U;  // 60 kHz PWM Frequency

@@ -6,5 +6,6 @@ VALLE_DEFINE_LOGGING_CONFIG((valle::LoggingConfig{
     .enabled               = true,
     .max_message_length    = 512,
     .log_level             = LogLevel::kInfo,
+    .print_log_level       = false,
     .print_source_location = false,
 }));

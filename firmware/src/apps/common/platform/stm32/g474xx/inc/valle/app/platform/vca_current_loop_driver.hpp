@@ -311,9 +311,9 @@ namespace valle::platform::app
         static constexpr float skSampleSwitchLower = 0.4F;  // switch to PERIOD only if duty < 0.4
         static constexpr float skSampleSwitchUpper = 0.6F;  // switch to RESET only if duty > 0.6
 
-        float        m_last_duty_cycle = 0.5F;
-        bool         m_sample_on_reset = false;  // true = sample on RESET, false = PERIOD
-        Atomic<bool> m_reset_triggered = false;
+        Atomic<float> m_last_duty_cycle = 0.5F;
+        Atomic<bool>  m_reset_triggered = false;
+        bool          m_sample_on_reset = false;  // true = sample on RESET, false = PERIOD
 
     public:
         VCACurrentLoopDriver() = delete;
@@ -410,12 +410,13 @@ namespace valle::platform::app
                 m_reset_triggered.store(false, std::memory_order_release);
             }
 
+            const float last_duty = m_last_duty_cycle.load(std::memory_order_relaxed);
             // --- update edge choice with hysteresis ---
-            if (m_last_duty_cycle > skSampleSwitchUpper)
+            if (last_duty > skSampleSwitchUpper)
             {
                 m_sample_on_reset = true;
             }
-            else if (m_last_duty_cycle < skSampleSwitchLower)
+            else if (last_duty < skSampleSwitchLower)
             {
                 m_sample_on_reset = false;
             }
@@ -430,7 +431,8 @@ namespace valle::platform::app
             m_current_sensor.get_adc().on_data_available();
 
             // Then run VCA control loop
-            m_last_duty_cycle = m_vca_controller.run_ctrl_loop(get_feedback_current_amps());
+            m_last_duty_cycle.store(m_vca_controller.run_ctrl_loop(get_feedback_current_amps()),
+                                    std::memory_order_relaxed);
             return true;
         }
 
@@ -438,19 +440,24 @@ namespace valle::platform::app
         {
             m_reset_triggered.store(true, std::memory_order_release);
         }
+
+        float get_last_duty_cycle() const
+        {
+            return m_last_duty_cycle.load(std::memory_order_relaxed);
+        }
     };
 
-    template<typename T = void> 
+    template <typename T = void>
     constexpr auto kDefaultVCACurrentLoopDriverConfig = VCACurrentLoopDriverConfig<T>{
-                .pwm_freq_hz          = 60000U,
-                .max_current_amp      = 0.3F,
-                .target_tolerance_amp = 0.001F,
-                .interrupt_priority   = 5,
-                .current_sensor_calibration =
-                    LinearConverterConfig{
-                        .scale  = 1.13026F,
-                        .offset = -0.266701F,
-                    },
-            };
+        .pwm_freq_hz          = 60000U,
+        .max_current_amp      = 0.3F,
+        .target_tolerance_amp = 0.001F,
+        .interrupt_priority   = 5,
+        .current_sensor_calibration =
+            LinearConverterConfig{
+                .scale  = 1.13026F,
+                .offset = -0.266701F,
+            },
+    };
 
 }  // namespace valle::platform::app

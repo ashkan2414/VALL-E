@@ -200,7 +200,7 @@ namespace valle::platform
                 //   Down-count CMP1 match: SET wins (Reset becomes Set)   → output HIGH
                 // This produces a symmetric center-aligned pulse with duty = CMP1/PER,
                 // giving a linear 0–100% duty range with compare = duty * period.
-                output1_set_source   = compare_unit_set_source;
+                output1_set_source   = HRTIMTimerOutputSetSource::kNone;
                 output1_reset_source = compare_unit_reset_source;
 
                 // Complementary output automatically handled by hardware with deadtime insertion
@@ -210,7 +210,7 @@ namespace valle::platform
                     // to generate complementary waveforms.
                     // TODO: verify with oscilloscope that this works as expected without deadtime.
                     output2_set_source   = compare_unit_set_source;
-                    output2_reset_source = compare_unit_reset_source;
+                    output2_reset_source = HRTIMTimerOutputResetSource::kNone;
                 }
             }
             else
@@ -351,7 +351,7 @@ namespace valle::platform
             // Calculate Compare Value
             // duty is 0.0 to 1.0.
             // Result is [min_duty*period, max_duty*period]
-            const uint32_t compare = (uint32_t)(clamped_duty * (float)period);
+            const uint32_t compare = static_cast<uint32_t>(clamped_duty * static_cast<float>(period));
 
             // Apply Compare Value
             InterfaceT::set_compare(m_compare_unit, compare);
