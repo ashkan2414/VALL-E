@@ -73,16 +73,19 @@ namespace valle::app
         static constexpr VCAControlMode skMode = VCAControlMode::kClosedLoopCurrent;
 
     private:
-        constexpr static T skPidP = static_cast<T>(3.75);
-        constexpr static T skPidI = static_cast<T>(2.25);
-        constexpr static T skPidD = static_cast<T>(0.0);
+        constexpr static T skPidP      = static_cast<T>(5.75);  // 5.75
+        constexpr static T skPidI      = static_cast<T>(2.25);
+        constexpr static T skPidD      = static_cast<T>(0.0);
+        constexpr static T skMinOutput = static_cast<T>(-1.0);
+        constexpr static T skMaxOutput = static_cast<T>(1.0);
 
         PIDSystem<ValueT> system{};
 
     public:
         VCACurrentController() = default;
 
-        explicit VCACurrentController(const ConfigT& config) : system(skPidP, skPidI, skPidD, config.sample_time)
+        explicit VCACurrentController(const ConfigT& config)
+            : system(skPidP, skPidI, skPidD, config.sample_time, skMinOutput, skMaxOutput)
         {
         }
 

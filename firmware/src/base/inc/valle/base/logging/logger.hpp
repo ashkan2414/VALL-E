@@ -126,7 +126,7 @@ namespace valle
             {
                 // Fixed-size buffer to avoid dynamic allocation
                 std::array<char, kLoggingConfig.max_message_length> buffer{};
-                auto                                               current_buffer =
+                auto                                                current_buffer =
                     std::span<char>(buffer.data(), buffer.size() - 1);  // Reserve space for null terminator
 
                 // Format location
@@ -147,11 +147,14 @@ namespace valle
                 }
 
                 // Format level
-                if (current_buffer.size() > 1)
+                if constexpr (kLoggingConfig.print_log_level)
                 {
-                    auto level_format_result = fmt::format_to_n(
-                        current_buffer.data(), current_buffer.size() - 1, "[{}]: ", enum_name(tkLevel));
-                    current_buffer = current_buffer.subspan(level_format_result.size);
+                    if (current_buffer.size() > 1)
+                    {
+                        auto level_format_result = fmt::format_to_n(
+                            current_buffer.data(), current_buffer.size() - 1, "[{}]: ", enum_name(tkLevel));
+                        current_buffer = current_buffer.subspan(level_format_result.size);
+                    }
                 }
 
                 // Format main message

@@ -9,6 +9,7 @@ namespace valle
         bool     enabled               = true;
         size_t   max_message_length    = 512;
         LogLevel log_level             = LogLevel::kInfo;
+        bool     print_log_level       = true;
         bool     print_source_location = false;
     };
 
