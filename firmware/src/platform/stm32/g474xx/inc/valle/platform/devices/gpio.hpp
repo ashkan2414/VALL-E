@@ -135,9 +135,11 @@ namespace valle::platform
         constexpr static GPIOPortID skPortID = tkPortID;
         constexpr static GPIOPinID  skPinID  = tkPinID;
 
+        using PortTraitsT          = GPIOPortTraits<tkPortID>;
+        using PinTraitsT           = GPIOPinTraits<tkPortID, tkPinID>;
+        using InterruptControllerT = GPIOPinInterruptController<tkPortID, tkPinID>;
+
         using DependDevices = TypeList<GPIOPortDevice<tkPortID>>;
-        using PortTraitsT   = GPIOPortTraits<tkPortID>;
-        using PinTraitsT    = GPIOPinTraits<tkPortID, tkPinID>;
 
     public:
         [[nodiscard]] inline bool init(const GPIOPinConfig& config)
@@ -150,6 +152,16 @@ namespace valle::platform
             init.Alternate = static_cast<uint32_t>(config.alternate);
             HAL_GPIO_Init(PortTraitsT::skInstance, &init);
             return true;
+        }
+
+        void enable_interrupts(const GPIOPinInterruptConfig& config)
+        {
+            InterruptControllerT::enable_interrupts(config);
+        }
+
+        void disable_interrupts()
+        {
+            InterruptControllerT::disable_interrupts();
         }
 
         inline void write(bool state)

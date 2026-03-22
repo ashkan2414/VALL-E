@@ -67,7 +67,7 @@ namespace valle
 
         [[nodiscard]] ConvertedT convert(const T raw) const
         {
-            return (raw * m_cfg.scale) + m_cfg.offset;
+            return (static_cast<ConvertedT>(raw) * m_cfg.scale) + m_cfg.offset;
         }
     };
 

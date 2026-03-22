@@ -8,6 +8,11 @@
 
 namespace valle::platform
 {
+    struct ExitSourceInfo
+    {
+        int status;
+    };
+
     struct AssertSourceInfo
     {
         std::string_view file{};
@@ -28,7 +33,7 @@ namespace valle::platform
         FaultInterruptType fault_type;
     };
 
-    using FaultSources = TypeList<PanicSourceInfo, AssertSourceInfo, FaultInterruptSourceInfo>;
+    using FaultSources = TypeList<PanicSourceInfo, ExitSourceInfo, AssertSourceInfo, FaultInterruptSourceInfo>;
 
     template <typename TSource>
     concept CFaultSource = TypeListContains<std::remove_cvref_t<TSource>, FaultSources>::value;
@@ -45,6 +50,10 @@ namespace valle::platform
                             source.location.file_name,
                             source.location.line,
                             source.location.function_name);
+        }
+        else if constexpr (std::same_as<TSource, ExitSourceInfo>)
+        {
+            VALLE_LOG_ERROR("Exit called with status code: {}", source.status);
         }
         else if constexpr (std::same_as<TSource, AssertSourceInfo>)
         {

@@ -57,4 +57,24 @@ namespace valle::platform
             return (TGpioPin::skPort->ODR & TGpioPin::skPinMask) != 0;
         }
     };
+
+    namespace detail
+    {
+        template <typename TPin>
+        struct ConditionalGPIODigitalOutDriver
+        {
+            using type = GPIODigitalOutDriver<TPin>;
+        };
+
+        template <>
+        struct ConditionalGPIODigitalOutDriver<GPIONullPinDevice>
+        {
+            using type = std::monostate;
+        };
+
+    }  // namespace detail
+
+    template <typename TPin>
+    using ConditionalGPIODigitalOutDriverT = typename detail::ConditionalGPIODigitalOutDriver<TPin>::type;
+
 }  // namespace valle::platform

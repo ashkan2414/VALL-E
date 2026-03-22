@@ -33,7 +33,6 @@ namespace valle::platform
 
     enum class GPIOInputInterruptTrigger
     {
-        kNone           = 0,
         kIntRisingEdge  = TRIGGER_RISING,
         kIntFallingEdge = TRIGGER_FALLING,
         kIntBothEdges   = TRIGGER_RISING | TRIGGER_FALLING,
@@ -84,8 +83,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kA>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOA;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOA;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTA;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOA_CLK_ENABLE();
         }
@@ -94,8 +95,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kB>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOB;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOB;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTB;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOB_CLK_ENABLE();
         }
@@ -103,8 +106,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kC>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOC;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOC;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTC;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOC_CLK_ENABLE();
         }
@@ -112,8 +117,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kD>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOD;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOD;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTD;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOD_CLK_ENABLE();
         }
@@ -121,8 +128,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kE>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOE;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOE;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTE;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOE_CLK_ENABLE();
         }
@@ -130,8 +139,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kF>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOF;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOF;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTF;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOF_CLK_ENABLE();
         }
@@ -139,8 +150,10 @@ namespace valle::platform
     template <>
     struct GPIOPortTraits<GPIOPortID::kG>
     {
-        static inline GPIO_TypeDef* const skInstance = GPIOG;
-        static void                       enable_clock()
+        static inline GPIO_TypeDef* const skInstance         = GPIOG;
+        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTG;
+
+        static void enable_clock()
         {
             __HAL_RCC_GPIOG_CLK_ENABLE();
         }
@@ -154,7 +167,192 @@ namespace valle::platform
         requires(kValidGPIOPinID<tkPortID, tkPinID>)
     struct GPIOPinTraits
     {
-        static constexpr uint16_t skPinMask = (1UL << tkPinID);  // NOLINT(hicpp-signed-bitwise)
+    private:
+        static consteval IRQn_Type get_irq_n()
+        {
+            if constexpr (tkPinID == 0)
+            {
+                return EXTI0_IRQn;
+            }
+            else if constexpr (tkPinID == 1)
+            {
+                return EXTI1_IRQn;
+            }
+            else if constexpr (tkPinID == 2)
+            {
+                return EXTI2_IRQn;
+            }
+            else if constexpr (tkPinID == 3)
+            {
+                return EXTI3_IRQn;
+            }
+            else if constexpr (tkPinID == 4)
+            {
+                return EXTI4_IRQn;
+            }
+            else if constexpr (tkPinID >= 5 && tkPinID <= 9)
+            {
+                return EXTI9_5_IRQn;
+            }
+            else if constexpr (tkPinID >= 10 && tkPinID <= 15)
+            {
+                return EXTI15_10_IRQn;
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<tkPinID>, "Invalid GPIO Pin ID");
+            }
+        }
+
+        static consteval uint32_t get_ll_exti_line()
+        {
+            if constexpr (tkPinID == 0)
+            {
+                return LL_EXTI_LINE_0;
+            }
+            else if constexpr (tkPinID == 1)
+            {
+                return LL_EXTI_LINE_1;
+            }
+            else if constexpr (tkPinID == 2)
+            {
+                return LL_EXTI_LINE_2;
+            }
+            else if constexpr (tkPinID == 3)
+            {
+                return LL_EXTI_LINE_3;
+            }
+            else if constexpr (tkPinID == 4)
+            {
+                return LL_EXTI_LINE_4;
+            }
+            else if constexpr (tkPinID == 5)
+            {
+                return LL_EXTI_LINE_5;
+            }
+            else if constexpr (tkPinID == 6)
+            {
+                return LL_EXTI_LINE_6;
+            }
+            else if constexpr (tkPinID == 7)
+            {
+                return LL_EXTI_LINE_7;
+            }
+            else if constexpr (tkPinID == 8)
+            {
+                return LL_EXTI_LINE_8;
+            }
+            else if constexpr (tkPinID == 9)
+            {
+                return LL_EXTI_LINE_9;
+            }
+            else if constexpr (tkPinID == 10)
+            {
+                return LL_EXTI_LINE_10;
+            }
+            else if constexpr (tkPinID == 11)
+            {
+                return LL_EXTI_LINE_11;
+            }
+            else if constexpr (tkPinID == 12)
+            {
+                return LL_EXTI_LINE_12;
+            }
+            else if constexpr (tkPinID == 13)
+            {
+                return LL_EXTI_LINE_13;
+            }
+            else if constexpr (tkPinID == 14)
+            {
+                return LL_EXTI_LINE_14;
+            }
+            else if constexpr (tkPinID == 15)
+            {
+                return LL_EXTI_LINE_15;
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<tkPinID>, "Invalid GPIO Pin ID");
+            }
+        }
+
+        static consteval uint32_t get_ll_syscfg_exti_line()
+        {
+            if constexpr (tkPinID == 0)
+            {
+                return LL_SYSCFG_EXTI_LINE0;
+            }
+            else if constexpr (tkPinID == 1)
+            {
+                return LL_SYSCFG_EXTI_LINE1;
+            }
+            else if constexpr (tkPinID == 2)
+            {
+                return LL_SYSCFG_EXTI_LINE2;
+            }
+            else if constexpr (tkPinID == 3)
+            {
+                return LL_SYSCFG_EXTI_LINE3;
+            }
+            else if constexpr (tkPinID == 4)
+            {
+                return LL_SYSCFG_EXTI_LINE4;
+            }
+            else if constexpr (tkPinID == 5)
+            {
+                return LL_SYSCFG_EXTI_LINE5;
+            }
+            else if constexpr (tkPinID == 6)
+            {
+                return LL_SYSCFG_EXTI_LINE6;
+            }
+            else if constexpr (tkPinID == 7)
+            {
+                return LL_SYSCFG_EXTI_LINE7;
+            }
+            else if constexpr (tkPinID == 8)
+            {
+                return LL_SYSCFG_EXTI_LINE8;
+            }
+            else if constexpr (tkPinID == 9)
+            {
+                return LL_SYSCFG_EXTI_LINE9;
+            }
+            else if constexpr (tkPinID == 10)
+            {
+                return LL_SYSCFG_EXTI_LINE10;
+            }
+            else if constexpr (tkPinID == 11)
+            {
+                return LL_SYSCFG_EXTI_LINE11;
+            }
+            else if constexpr (tkPinID == 12)
+            {
+                return LL_SYSCFG_EXTI_LINE12;
+            }
+            else if constexpr (tkPinID == 13)
+            {
+                return LL_SYSCFG_EXTI_LINE13;
+            }
+            else if constexpr (tkPinID == 14)
+            {
+                return LL_SYSCFG_EXTI_LINE14;
+            }
+            else if constexpr (tkPinID == 15)
+            {
+                return LL_SYSCFG_EXTI_LINE15;
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<tkPinID>, "Invalid GPIO Pin ID");
+            }
+        }
+
+    public:
+        static constexpr uint16_t  skPinMask          = (1UL << tkPinID);  // NOLINT(hicpp-signed-bitwise)
+        static constexpr IRQn_Type skIRQn             = get_irq_n();
+        static constexpr uint32_t  skLLEXTILine       = get_ll_exti_line();
+        static constexpr uint32_t  skLLSyscfgEXTILine = get_ll_syscfg_exti_line();
     };
 
 }  // namespace valle::platform

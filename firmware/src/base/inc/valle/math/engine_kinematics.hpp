@@ -214,7 +214,7 @@ namespace valle
                           "EngineStroke enum values must be 0, 1, 2, 3 for this calculation to work");
 
             const ValueT  wrapped_count = wrap_norm(encoder_pos_norm);
-            const uint8_t idx           = static_cast<uint8_t>(wrapped_count * 4.0f);
+            const uint8_t idx           = static_cast<uint8_t>(wrapped_count * 4.0F);
             return static_cast<EngineStroke>(idx);
         }
 

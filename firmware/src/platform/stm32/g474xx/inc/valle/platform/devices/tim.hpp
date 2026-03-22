@@ -170,7 +170,7 @@ namespace valle::platform
         template <TIMControllerID tkControllerID, TIMGPIOPinType tkPinType, typename TPinDevice>
         struct TIMGPIOPinDriverHelper
         {
-            using type = GPIOAlternativeFunctionDriver<
+            using type = GPIOAlternateFunctionDriver<
                 TPinDevice,
                 kTIMPinAF<tkControllerID, tkPinType, TPinDevice::skPortID, TPinDevice::skPinID>>;
         };
@@ -340,7 +340,7 @@ namespace valle::platform
 
         template <TIMGPIOPinType tkPinType>
             requires(skHasPin<tkPinType>)
-        [[nodiscard]] bool init_pin(const GPIOAlternativeFunctionConfig& pin_cfg)
+        [[nodiscard]] bool init_pin(const GPIOAlternateFunctionConfig& pin_cfg)
         {
             return get_pin_driver<tkPinType>().init(pin_cfg);
         }
@@ -385,7 +385,7 @@ namespace valle::platform
             return true;
         }
 
-        [[nodiscard]] bool init_encoder_gpio(const GPIOAlternativeFunctionConfig& gpio_config)
+        [[nodiscard]] bool init_encoder_gpio(const GPIOAlternateFunctionConfig& gpio_config)
         {
             return init_pin<TIMGPIOPinType::kCh1>(gpio_config) && init_pin<TIMGPIOPinType::kCh2>(gpio_config);
         }

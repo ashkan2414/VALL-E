@@ -10,6 +10,7 @@ namespace valle::system
     // Global namespace aliases
     // =========================================================================
     using SecondsClock       = typename TimingContext::SecondClockT;
+    using TimePointSeconds   = typename TimingContext::TimePointSecondsT;
     using DurationSecondsRep = typename TimingContext::DurationSecondsRepT;
     using DurationSeconds    = typename TimingContext::DurationSecondsT;
     using DelaySecondsRep    = typename TimingContext::DelaySecondsRepT;
@@ -18,7 +19,8 @@ namespace valle::system
     using TimeoutSeconds     = typename TimingContext::TimeoutSecondsT;
     using TimerSeconds       = typename TimingContext::TimerSecondsT;
 
-    using MIllisClock       = typename TimingContext::MilliClockT;
+    using MillisClock       = typename TimingContext::MilliClockT;
+    using TimePointMillis   = typename TimingContext::TimePointMillisT;
     using DurationMillisRep = typename TimingContext::DurationMillisRepT;
     using DurationMillis    = typename TimingContext::DurationMillisT;
     using DelayMillisRep    = typename TimingContext::DelayMillisRepT;
@@ -28,6 +30,7 @@ namespace valle::system
     using TimerMillis       = typename TimingContext::TimerMillisT;
 
     using MicrosClock       = typename TimingContext::MicroClockT;
+    using TimePointMicros   = typename TimingContext::TimePointMicrosT;
     using DurationMicrosRep = typename TimingContext::DurationMicrosRepT;
     using DurationMicros    = typename TimingContext::DurationMicrosT;
     using DelayMicrosRep    = typename TimingContext::DelayMicrosRepT;

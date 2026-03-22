@@ -46,10 +46,9 @@ namespace valle::platform::app
         [[nodiscard]] bool init_impl(const ConfigT& config)
         {
             if (!m_index_pin.init(GPIODigitalInConfig{
-                    .pull       = GPIOPullMode::kNoPull,
-                    .it_trigger = GPIOInputInterruptTrigger::kNone,
-                    .it_action  = GPIOInputInterruptAction::kInterrupt,
-                    .inverted   = false,
+                    .pull      = GPIOPullMode::kNoPull,
+                    .interrupt = std::nullopt,
+                    .inverted  = false,
                 }))
             {
                 return false;

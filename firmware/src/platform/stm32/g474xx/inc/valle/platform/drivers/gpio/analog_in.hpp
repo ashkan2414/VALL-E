@@ -38,4 +38,23 @@ namespace valle::platform
         }
     };
 
+    namespace detail
+    {
+        template <typename TPin>
+        struct ConditionalGPIOAnalogInDriver
+        {
+            using type = GPIOAnalogInDriver<TPin>;
+        };
+
+        template <>
+        struct ConditionalGPIOAnalogInDriver<GPIONullPinDevice>
+        {
+            using type = std::monostate;
+        };
+
+    }  // namespace detail
+
+    template <typename TPin>
+    using ConditionalGPIOAnalogInDriverT = typename detail::ConditionalGPIOAnalogInDriver<TPin>::type;
+
 }  // namespace valle::platform

@@ -4,13 +4,12 @@
 #include "valle/utils/circular_queue.hpp"
 #include "valle/utils/sync.hpp"
 
-
 namespace valle::system
 {
     using CriticalSection = platform::system_interface::CriticalSection;
 
     template <typename T>
-    using Synchronized = Synchronized<T, CriticalSection>;
+    using SynchronizedCriticalSection = Synchronized<T, CriticalSection>;
 
     template <typename TData, std::size_t tkCapacity, bool tkOverwrite>
     class ISRDataCollector

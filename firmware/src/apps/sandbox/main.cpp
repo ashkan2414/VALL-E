@@ -12,8 +12,8 @@ namespace valle::app
     {
         if (stroke == EngineStroke::kIntake)
         {
-            constexpr float open_start = 0.1f;
-            constexpr float open_end   = 0.8f;
+            constexpr float open_start = 0.1F;
+            constexpr float open_end   = 0.8F;
 
             if (pos_norm >= open_start && pos_norm <= open_end)
             {
@@ -28,8 +28,8 @@ namespace valle::app
     {
         if (stroke == EngineStroke::kExhaust)
         {
-            constexpr float open_start = 0.1f;
-            constexpr float open_end   = 0.9f;
+            constexpr float open_start = 0.1F;
+            constexpr float open_end   = 0.9F;
 
             if ((pos_norm >= open_start) && (pos_norm <= open_end))
             {

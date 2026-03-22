@@ -182,18 +182,7 @@ namespace valle::platform
 
             const uint32_t direction =
                 LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
-
-            // LL_DMA_ConfigAddresses always takes (PeriphAddr, MemAddr, Direction)
-            if (direction == LL_DMA_DIRECTION_MEMORY_TO_PERIPH)
-            {
-                // src_addr is Memory, dst_addr is Peripheral
-                start_impl(dst_addr, src_addr, direction, length);
-            }
-            else
-            {
-                // src_addr is Peripheral, dst_addr is Memory (or MemToMem)
-                start_impl(src_addr, dst_addr, direction, length);
-            }
+            start_impl(src_addr, dst_addr, direction, length);
         }
 
         /**
@@ -229,7 +218,7 @@ namespace valle::platform
                 LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
             expect(direction == LL_DMA_DIRECTION_MEMORY_TO_PERIPH, "DMA not configured for MemToPeriph");
 
-            start_impl(periph_addr, mem_addr, direction, length);
+            start_impl(mem_addr, periph_addr, direction, length);
         }
 
         static void stop()
@@ -347,18 +336,19 @@ namespace valle::platform
         /**
          * @brief Internal start implementation.
          *
-         * @param periph_addr peripheral address
-         * @param mem_addr memory address
+         * @param src_addr Source Address (Peripheral or Memory)
+         * @param dst_addr Destination Address (Peripheral or Memory)
          * @param direction DMA direction
          * @param length number of data items
          */
-        static void start_impl(const uint32_t periph_addr,
-                               const uint32_t mem_addr,
+        static void start_impl(const uint32_t src_addr,
+                               const uint32_t dst_addr,
                                const uint32_t direction,
                                const uint32_t length)
         {
+            stop();
             LL_DMA_ConfigAddresses(
-                ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, periph_addr, mem_addr, direction);
+                ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, src_addr, dst_addr, direction);
             LL_DMA_SetDataLength(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, length);
             LL_DMA_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
         }
