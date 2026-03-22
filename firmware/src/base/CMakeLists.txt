@@ -34,6 +34,8 @@ target_compile_definitions(valle_base PUBLIC
     FMT_USE_CHRONO=0
     FMT_USE_WCHAR=0
     FMT_USE_LOCALE=0
+    FMT_HEADER_ONLY=1
+    FMT_OS=0
 )
 
 # Precompile common headers for faster builds

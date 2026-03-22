@@ -29,7 +29,7 @@ add_library(valle_platform_source STATIC)
 
 # Add source files to the platform library
 
-target_sources(valle_platform_source PRIVATE ${PLATFORM_PRIVATE_SOURCES} INTERFACE  ${PLATFORM_INTERFACE_SOURCES})
+target_sources(valle_platform_source PRIVATE ${PLATFORM_PRIVATE_SOURCES})
 
 # Add include directories for the platform library
 target_include_directories(valle_platform_source
@@ -68,4 +68,15 @@ add_library(valle_platform INTERFACE)
 target_link_libraries(valle_platform INTERFACE valle_platform_source)
 target_sources(valle_platform INTERFACE
     $<TARGET_OBJECTS:valle_platform_stubs>
+)
+
+
+# Add interface sources (e.g. HAL wrappers, common platform utilities)
+add_library(valle_platform_interface OBJECT)
+target_sources(valle_platform_interface PRIVATE ${PLATFORM_INTERFACE_SOURCES})
+target_link_libraries(valle_platform_interface PUBLIC
+    valle_base
+    valle_platform
+    valle_app_common
+    valle_app
 )

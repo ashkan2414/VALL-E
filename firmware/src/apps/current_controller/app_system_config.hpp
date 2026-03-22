@@ -12,13 +12,19 @@
 
 namespace valle::app
 {
+    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = 1;
+    struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
+    {
+    };
+
+    static constexpr uint8_t kVCACurrentLoopDriverID = 0;
     struct VCACurrentLoopDriverCTConfig
     {
         using PWMOutput1PinT              = platform::GPIOPinA8Device;
         using PWMOutput2PinT              = platform::GPIOPinA9Device;
         using CurrentSensorADCDMAChannelT = platform::DMA1Channel2Device;
 
-        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = 1;
+        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
         static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kA;
 
         static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = 1;
@@ -30,7 +36,9 @@ namespace valle::app
     };
 }  // namespace valle::app
 
-VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(valle::app::VCACurrentLoopDriverCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAHRTIMPWMControllerID, valle::app::HRTIMControllerCTConfig{});
+VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(valle::app::kVCACurrentLoopDriverID,
+                                               valle::app::VCACurrentLoopDriverCTConfig{});
 
 namespace valle
 {
@@ -39,7 +47,7 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using VCACurrentLoopDriverT       = platform::app::VCACurrentLoopDriver<>;
+        using VCACurrentLoopDriverT       = platform::app::VCACurrentLoopDriver<kVCACurrentLoopDriverID>;
         using VCACurrentLoopDriverConfigT = typename VCACurrentLoopDriverT::ConfigT;
 
         using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;

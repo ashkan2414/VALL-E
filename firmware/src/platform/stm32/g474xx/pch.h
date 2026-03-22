@@ -39,3 +39,29 @@
 #include "stm32g4xx_ll_usb.h"
 #include "stm32g4xx_ll_utils.h"
 #include "stm32g4xx_ll_wwdg.h"
+
+// ============================================================================
+// PROJECT CORE
+// ============================================================================
+// Only include headers here if they are STABLE (not changing often).
+
+#ifdef __cplusplus
+
+#include "valle/platform/core.hpp"
+#include "valle/platform/devices/adc.hpp"
+#include "valle/platform/devices/adc_common.hpp"
+#include "valle/platform/devices/dma.hpp"
+#include "valle/platform/devices/dmamux.hpp"
+#include "valle/platform/devices/gpio.hpp"
+#include "valle/platform/devices/hrtim.hpp"
+#include "valle/platform/devices/i2c.hpp"
+#include "valle/platform/devices/power.hpp"
+#include "valle/platform/devices/rcc.hpp"
+#include "valle/platform/devices/tim.hpp"
+#include "valle/platform/devices/uart.hpp"
+#include "valle/platform/system_interface/init.hpp"
+#include "valle/platform/system_interface/sync.hpp"
+#include "valle/platform/system_interface/timing.hpp"
+
+
+#endif

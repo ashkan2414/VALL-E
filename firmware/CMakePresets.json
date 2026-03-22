@@ -237,6 +237,29 @@
             ]
         },
         {
+            "name": "app-symposium-demo",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "symposium_demo"
+            }
+        },
+        {
+            "name": "symposium-demo-debug",
+            "displayName": "Symposium Demo (Debug)",
+            "inherits": [
+                "debug",
+                "app-symposium-demo"
+            ]
+        },
+        {
+            "name": "symposium-demo-release",
+            "displayName": "Symposium Demo (Release)",
+            "inherits": [
+                "release",
+                "app-symposium-demo"
+            ]
+        },
+        {
             "name": "app-sandbox",
             "hidden": true,
             "cacheVariables": {
@@ -332,6 +355,14 @@
         {
             "name": "fdr-release",
             "configurePreset": "fdr-release"
+        },
+        {
+            "name": "symposium-demo-debug",
+            "configurePreset": "symposium-demo-debug"
+        },
+        {
+            "name": "symposium-demo-release",
+            "configurePreset": "symposium-demo-release"
         },
         {
             "name": "sandbox-debug",

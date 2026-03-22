@@ -231,7 +231,6 @@ __strong_reference(_close, close);
 __strong_reference(_lseek, lseek);
 __strong_reference(_isatty, isatty);
 __strong_reference(_fstat, fstat);
-__strong_reference(_exit, exit);
 __strong_reference(_kill, kill);
 __strong_reference(_getpid, getpid);
 

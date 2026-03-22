@@ -7,25 +7,27 @@
 #include <span>
 #include <variant>
 
+#include "valle/math/fitting.hpp"
+
 namespace valle
 {
 
     // ========================================================================
     // IDENTITY (Pass-through)
     // ========================================================================
-    template <typename T>
+    template <typename TInput>
     struct IdentityConverter
     {
         using ConfigT    = std::monostate;  // No config needed
-        using InputT     = T;
-        using ConvertedT = T;
+        using InputT     = TInput;
+        using ConvertedT = TInput;
 
         void init(const ConfigT& config)
         {
             (void)config;
         }
 
-        [[nodiscard]] ConvertedT convert(const T raw) const
+        [[nodiscard]] ConvertedT convert(const TInput raw) const
         {
             return raw;
         }
@@ -41,11 +43,11 @@ namespace valle
     };
 
     // Formula: y = (x * scale) + offset
-    template <typename T, std::floating_point TConverted = float>
+    template <typename TInput>
     struct LinearConverter
     {
-        using InputT     = T;
-        using ConvertedT = TConverted;
+        using InputT     = TInput;
+        using ConvertedT = float;
         using ConfigT    = LinearConverterConfig;
 
         ConfigT m_cfg;
@@ -65,7 +67,7 @@ namespace valle
             m_cfg = cfg;
         }
 
-        [[nodiscard]] ConvertedT convert(const T raw) const
+        [[nodiscard]] ConvertedT convert(const TInput raw) const
         {
             return (static_cast<ConvertedT>(raw) * m_cfg.scale) + m_cfg.offset;
         }
@@ -81,10 +83,10 @@ namespace valle
     };
 
     // Formula: y = c0 + c1*x + c2*x^2 ...
-    template <typename T, size_t tkOrder>
+    template <typename TInput, size_t tkOrder>
     struct PolynomialConverter
     {
-        using InputT     = T;
+        using InputT     = TInput;
         using ConvertedT = float;
         using ConfigT    = PolynomialConverterConfig<tkOrder>;
 
@@ -95,7 +97,7 @@ namespace valle
             m_cfg = cfg;
         }
 
-        [[nodiscard]] ConvertedT convert(const T input) const
+        [[nodiscard]] ConvertedT convert(const TInput input) const
         {
             // coeffs = [c0, c1, c2 ... cOrder]
             // Start with the highest power coefficient
@@ -128,14 +130,25 @@ namespace valle
     };
 
     // Best for NTC Thermistors where you have a CSV of Volt -> Temp
-    template <typename T, size_t tkSize>
+    template <typename TInput, size_t tkSize>
     struct LookupTableConverter
     {
-        using InputT     = T;
+        using InputT     = TInput;
         using ConvertedT = float;
         using ConfigT    = LookupTableConverterConfig<tkSize>;
 
         ConfigT m_cfg;
+
+        LookupTableConverter() = default;
+
+        explicit LookupTableConverter(const ConfigT& cfg) : m_cfg(cfg)
+        {
+            // Ensure sorted by X for binary search
+            std::sort(m_cfg.table.begin(),
+                      m_cfg.table.end(),
+                      [](const LookupTablePoint& point_a, const LookupTablePoint& point_b)
+                      { return point_a.x < point_b.x; });
+        }
 
         void init(const ConfigT& cfg)
         {
@@ -147,7 +160,7 @@ namespace valle
                       { return point_a.x < point_b.x; });
         }
 
-        [[nodiscard]] ConvertedT convert(const T raw_x) const
+        [[nodiscard]] ConvertedT convert(const TInput raw_x) const
         {
             // Clamp to range
             if (raw_x <= m_cfg.table.front().x)

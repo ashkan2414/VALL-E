@@ -38,7 +38,14 @@ namespace valle::app
             { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
             [](platform::DMA1ControllerDevice& dev)
             { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](platform::ADC12CommonDevice& dev) { (void)dev; },     // Initialized by VCA Current Loop Driver
+            [](platform::ADC12CommonDevice& dev)
+            {
+                expect(dev.init(platform::ADCCommonConfig{
+                           .clock_config =
+                               platform::ADCCommonAsyncClockConfig{.prescaler =
+                                                                       platform::ADCCommonAsyncClockPrescaler::kDiv4}}),
+                       "Failed to initialize ADC12 Common Device");
+            },
             [](platform::ADC1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
         }  // namespace valle
         );
@@ -63,7 +70,8 @@ namespace valle::app
                }),
                "Failed to initialize UART Logger Driver");
 
-        constexpr auto vca_current_loop_driver_config = platform::app::kDefaultVCACurrentLoopDriverConfig<>.to_raw();
+        constexpr auto vca_current_loop_driver_config =
+            platform::app::kDefaultVCACurrentLoopDriverConfig<kVCACurrentLoopDriverID>.to_raw();
         static_assert(
             !vca_current_loop_driver_config.validate(platform::app::kDefaultCoreSystemConfig.rcc_config).has_value(),
             "VCA Current Loop Driver configuration is invalid");

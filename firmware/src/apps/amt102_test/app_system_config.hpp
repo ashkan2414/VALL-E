@@ -11,7 +11,7 @@ namespace valle::app
 {
     // TIM for Quadrature Encoder
     constexpr auto kEncoderTIMControllerID = platform::TIMControllerID::kTim2;
-    struct TIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
+    struct TIMControllerCTConfig : public platform::TIMControllerCTDefaultConfig
     {
         using Ch1PinT = platform::GPIOPinA15Device;
         using Ch2PinT = platform::GPIOPinB3Device;

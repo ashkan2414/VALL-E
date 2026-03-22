@@ -25,6 +25,7 @@ namespace valle::platform
                 .status = status,
             });
         }
+        __strong_reference(_exit, exit);
 
 #ifdef USE_FULL_ASSERT
         /**

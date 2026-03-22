@@ -23,6 +23,12 @@ namespace valle::system_build
 
         extern SystemBuild g_system_build;
 
+        template <CDevice TDevice>
+        TDevice& GlobalDeviceStorageAccessor::get()
+        {
+            return static_cast<SystemBuild*>(gp_system_build)->storage.template get<TDevice>();
+        }
+
         [[nodiscard]] inline auto boot_driver_builder()
         {
             return boot_driver_builder(g_system_build.storage);

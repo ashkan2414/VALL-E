@@ -11,13 +11,13 @@ namespace valle::app
 {
     // HRTIM Controller
     constexpr platform::HRTIMControllerID kHRTIMControllerID = 1;
-    struct HRTIMControllerCTConfig : platform::HRTIMControllerCTDefaultConfig
+    struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
     {
     };
 
     // HRTIM Timer
     constexpr auto kHRTIMTimerID = platform::HRTIMTimerID::kA;
-    struct HRTIMTimerCTConfig : platform::HRTIMTimerCTDefaultConfig
+    struct HRTIMTimerCTConfig : public platform::HRTIMTimerCTDefaultConfig
     {
         using Output1PinT = platform::GPIOPinA8Device;
         using Output2PinT = platform::GPIOPinA9Device;

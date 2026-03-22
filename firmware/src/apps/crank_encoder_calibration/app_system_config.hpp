@@ -11,7 +11,7 @@ namespace valle::app
 {
     // TIM for Quadrature CrankEncoder
     constexpr auto kCrankEncoderTIMControllerID = platform::TIMControllerID::kTim2;
-    struct CrankEncoderTIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
+    struct CrankEncoderTIMControllerCTConfig : public platform::TIMControllerCTDefaultConfig
     {
         using Ch1PinT = platform::GPIOPinA15Device;
         using Ch2PinT = platform::GPIOPinB3Device;
@@ -29,7 +29,7 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using AMT10xTIMControllerT                  = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
+        using AMT10xTIMControllerT = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
         using AMT10xTIMEncoderModuleT =
             platform::app::AMT10xTIMEncoderModule<AMT10xTIMControllerT, platform::GPIOPinB5Device, AMT10xPPR::k2048>;
         using AMT10xTIMEncoderModuleConfigT = typename AMT10xTIMEncoderModuleT::ConfigT;

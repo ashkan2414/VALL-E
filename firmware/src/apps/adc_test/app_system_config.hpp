@@ -15,7 +15,7 @@ namespace valle::app
     constexpr bool                      kTestADCUseInject    = false;
 
     using TestADCDMAChannelT = platform::DMA1Channel2Device;
-    struct ADCControllerCTConfig : platform::ADCControllerCTDefaultConfig
+    struct ADCControllerCTConfig : public platform::ADCControllerCTDefaultConfig
     {
         using DMAChannelT = TestADCDMAChannelT;
     };
