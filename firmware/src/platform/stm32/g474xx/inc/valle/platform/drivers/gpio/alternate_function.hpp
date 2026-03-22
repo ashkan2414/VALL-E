@@ -4,7 +4,7 @@
 
 namespace valle::platform
 {
-    struct GPIOAlternativeFunctionConfig
+    struct GPIOAlternateFunctionConfig
     {
         GPIOAlternateFunctionMode mode  = GPIOAlternateFunctionMode::kPushPull;
         GPIOSpeedMode             speed = GPIOSpeedMode::kLow;
@@ -16,7 +16,7 @@ namespace valle::platform
      * @tparam tkAfIdx The Alternate Function Index (0-15). See Datasheet.
      */
     template <typename TGpioPin, GPIOAlternativeFunction tkAfIdx>
-    class GPIOAlternativeFunctionDriver
+    class GPIOAlternateFunctionDriver
     {
     public:
         using InjectDevices = TypeList<TGpioPin>;
@@ -25,13 +25,13 @@ namespace valle::platform
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
 
     public:
-        GPIOAlternativeFunctionDriver() = delete;
+        GPIOAlternateFunctionDriver() = delete;
 
-        GPIOAlternativeFunctionDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
+        GPIOAlternateFunctionDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
         {
         }
 
-        [[nodiscard]] bool init(const GPIOAlternativeFunctionConfig& config)
+        [[nodiscard]] bool init(const GPIOAlternateFunctionConfig& config)
         {
             return m_pin.get().init(GPIOPinConfig{.mode      = static_cast<uint32_t>(config.mode),
                                                   .pull      = config.pull,
@@ -39,4 +39,25 @@ namespace valle::platform
                                                   .alternate = tkAfIdx});
         }
     };
+
+    namespace detail
+    {
+        template <typename TPin, GPIOAlternativeFunction tkAfIdx>
+        struct ConditionalGPIOAlternateFunctionDriver
+        {
+            using type = GPIOAlternateFunctionDriver<TPin, tkAfIdx>;
+        };
+
+        template <GPIOAlternativeFunction tkAfIdx>
+        struct ConditionalGPIOAlternateFunctionDriver<GPIONullPinDevice, tkAfIdx>
+        {
+            using type = std::monostate;
+        };
+
+    }  // namespace detail
+
+    template <typename TPin, GPIOAlternativeFunction tkAfIdx>
+    using ConditionalGPIOAlternateFunctionDriverT =
+        typename detail::ConditionalGPIOAlternateFunctionDriver<TPin, tkAfIdx>::type;
+
 }  // namespace valle::platform

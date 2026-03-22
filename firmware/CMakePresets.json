@@ -145,6 +145,52 @@
             ]
         },
         {
+            "name": "app-ldc161x-test",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "ldc161x_test"
+            }
+        },
+        {
+            "name": "ldc161x-test-debug",
+            "displayName": "LDC161X Test (Debug)",
+            "inherits": [
+                "debug",
+                "app-ldc161x-test"
+            ]
+        },
+        {
+            "name": "ldc161x-test-release",
+            "displayName": "LDC161X Test (Release)",
+            "inherits": [
+                "release",
+                "app-ldc161x-test"
+            ]
+        },
+        {
+            "name": "app-ldc161x-calibration",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "ldc161x_calibration"
+            }
+        },
+        {
+            "name": "ldc161x-calibration-debug",
+            "displayName": "LDC161X Calibration (Debug)",
+            "inherits": [
+                "debug",
+                "app-ldc161x-calibration"
+            ]
+        },
+        {
+            "name": "ldc161x-calibration-release",
+            "displayName": "LDC161X Calibration (Release)",
+            "inherits": [
+                "release",
+                "app-ldc161x-calibration"
+            ]
+        },
+        {
             "name": "app-crank-encoder-calibration",
             "hidden": true,
             "cacheVariables": {
@@ -254,6 +300,22 @@
         {
             "name": "amt102-test-release",
             "configurePreset": "amt102-test-release"
+        },
+        {
+            "name": "ldc161x-test-debug",
+            "configurePreset": "ldc161x-test-debug"
+        },
+        {
+            "name": "ldc161x-test-release",
+            "configurePreset": "ldc161x-test-release"
+        },
+        {
+            "name": "ldc161x-calibration-debug",
+            "configurePreset": "ldc161x-calibration-debug"
+        },
+        {
+            "name": "ldc161x-calibration-release",
+            "configurePreset": "ldc161x-calibration-release"
         },
         {
             "name": "crank-encoder-calibration-debug",

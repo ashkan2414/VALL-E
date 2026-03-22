@@ -136,7 +136,7 @@ namespace valle::platform
         template <UARTControllerID tkControllerID, typename TPinDevice, UARTPinType tkType>
         struct UARTGPIOPinDriverHelper
         {
-            using type = GPIOAlternativeFunctionDriver<
+            using type = GPIOAlternateFunctionDriver<
                 TPinDevice,
                 UARTGPIOPinAF<tkControllerID, TPinDevice::skPortID, TPinDevice::skPinID, tkType>::skAF>;
         };
@@ -269,7 +269,7 @@ namespace valle::platform
             ControllerTraitsT::enable_clock();
 
             // Init Pins (AF mode)
-            if (!m_tx_pin.init(GPIOAlternativeFunctionConfig{
+            if (!m_tx_pin.init(GPIOAlternateFunctionConfig{
                     .mode = GPIOAlternateFunctionMode::kPushPull,
                     // Use Medium speed for bauds > 1M to keep edges sharp
                     .speed = (static_cast<uint32_t>(config.baud_rate) > 1000000) ? GPIOSpeedMode::kMedium
@@ -281,7 +281,7 @@ namespace valle::platform
                 return false;
             }
 
-            if (!m_rx_pin.init(GPIOAlternativeFunctionConfig{
+            if (!m_rx_pin.init(GPIOAlternateFunctionConfig{
                     .mode  = GPIOAlternateFunctionMode::kPushPull,
                     .speed = GPIOSpeedMode::kLow,
                     .pull  = GPIOPullMode::kPullUp,
@@ -293,7 +293,7 @@ namespace valle::platform
 
             if constexpr (skHasCKPin)
             {
-                if (!m_ck_pin.init(GPIOAlternativeFunctionConfig{
+                if (!m_ck_pin.init(GPIOAlternateFunctionConfig{
                         .mode  = GPIOAlternateFunctionMode::kPushPull,
                         .speed = GPIOSpeedMode::kHigh,
                         .pull  = GPIOPullMode::kNoPull,
@@ -306,7 +306,7 @@ namespace valle::platform
 
             if constexpr (skHasCTSPin)
             {
-                if (!m_cts_pin.init(GPIOAlternativeFunctionConfig{
+                if (!m_cts_pin.init(GPIOAlternateFunctionConfig{
                         .mode  = GPIOAlternateFunctionMode::kPushPull,
                         .speed = GPIOSpeedMode::kLow,
                         .pull  = GPIOPullMode::kPullUp,
@@ -319,7 +319,7 @@ namespace valle::platform
 
             if constexpr (skHasRTSPin)
             {
-                if (!m_rts_pin.init(GPIOAlternativeFunctionConfig{
+                if (!m_rts_pin.init(GPIOAlternateFunctionConfig{
                         .mode  = GPIOAlternateFunctionMode::kPushPull,
                         .speed = GPIOSpeedMode::kMedium,
                         .pull  = GPIOPullMode::kPullUp,

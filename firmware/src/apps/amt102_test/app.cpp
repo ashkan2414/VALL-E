@@ -57,7 +57,7 @@ namespace valle::app
                        .encoder_config =
                            platform::TIMQuadEncoderConfig{
                                .gpio_config =
-                                   platform::GPIOAlternativeFunctionConfig{
+                                   platform::GPIOAlternateFunctionConfig{
                                        .mode  = platform::GPIOAlternateFunctionMode::kPushPull,
                                        .speed = platform::GPIOSpeedMode::kMedium,
                                        .pull  = platform::GPIOPullMode::kNoPull,

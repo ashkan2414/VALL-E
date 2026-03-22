@@ -141,6 +141,10 @@ namespace valle::platform_support::system_interface
         static_assert(!std::is_same_v<MicroClockT, detail::NoClock>,
                       "No suitable clock found for microseconds duration");
 
+        using TimePointSecondsT = typename SecondClockT::time_point;
+        using TimePointMillisT  = typename MilliClockT::time_point;
+        using TimePointMicrosT  = typename MicroClockT::time_point;
+
         using SecondTraitsT = PeriodTimingTraits<std::ratio<1, 1>, SecondClockT>;
         using MilliTraitsT  = PeriodTimingTraits<std::milli, MilliClockT>;
         using MicroTraitsT  = PeriodTimingTraits<std::micro, MicroClockT>;

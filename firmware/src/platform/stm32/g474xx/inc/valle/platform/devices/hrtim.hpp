@@ -108,7 +108,7 @@ namespace valle::platform
         template <HRTIMControllerID tkControllerID, HRTIMControllerGPIOPinType tkPinType, typename TPinDevice>
         struct HRTIMControllerGPIOPinDriverHelper
         {
-            using type = GPIOAlternativeFunctionDriver<
+            using type = GPIOAlternateFunctionDriver<
                 TPinDevice,
                 kHRTIMControllerPinAF<tkControllerID, tkPinType, TPinDevice::skPortID, TPinDevice::skPinID>>;
         };
@@ -297,7 +297,7 @@ namespace valle::platform
         template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID, typename TPinDevice>
         struct HRTIMFaultGPIOPinDriverHelper
         {
-            using type = GPIOAlternativeFunctionDriver<
+            using type = GPIOAlternateFunctionDriver<
                 TPinDevice,
                 kHRTIMFaultPinAF<tkControllerID, tkFaultID, TPinDevice::skPortID, TPinDevice::skPinID>>;
         };
@@ -486,7 +486,7 @@ namespace valle::platform
         template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID, typename TPinDevice>
         struct HRTIMEEVGPIOPinDriverHelper
         {
-            using type = GPIOAlternativeFunctionDriver<
+            using type = GPIOAlternateFunctionDriver<
                 TPinDevice,
                 kHRTIMEEVPinAF<tkControllerID, tkEEVID, TPinDevice::skPortID, TPinDevice::skPinID>>;
         };
@@ -771,7 +771,7 @@ namespace valle::platform
         {
             constexpr static auto skAF =
                 kHRTIMTimerPinAF<tkControllerID, tkTimerID, tkPinType, TPinDevice::skPortID, TPinDevice::skPinID>;
-            using type = GPIOAlternativeFunctionDriver<TPinDevice, skAF>;
+            using type = GPIOAlternateFunctionDriver<TPinDevice, skAF>;
         };
 
         template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID, HRTIMTimerGPIOPinType tkPinType>
@@ -1248,7 +1248,7 @@ namespace valle::platform
         {
             if constexpr (tkOutputNum == 1)
             {
-                return m_output1_pin.init(GPIOAlternativeFunctionConfig{
+                return m_output1_pin.init(GPIOAlternateFunctionConfig{
                     .mode  = GPIOAlternateFunctionMode::kPushPull,
                     .speed = config.speed,
                     .pull  = config.pull,
@@ -1256,7 +1256,7 @@ namespace valle::platform
             }
             else if constexpr (tkOutputNum == 2)
             {
-                return m_output2_pin.init(GPIOAlternativeFunctionConfig{
+                return m_output2_pin.init(GPIOAlternateFunctionConfig{
                     .mode  = GPIOAlternateFunctionMode::kPushPull,
                     .speed = config.speed,
                     .pull  = config.pull,

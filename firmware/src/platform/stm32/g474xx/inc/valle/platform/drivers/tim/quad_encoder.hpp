@@ -6,8 +6,8 @@ namespace valle::platform
 {
     struct TIMQuadEncoderConfig
     {
-        GPIOAlternativeFunctionConfig gpio_config{};     // GPIO config for encoder pins
-        TIMControllerEncoderConfig    encoder_config{};  // TIM Encoder mode config (input capture settings)
+        GPIOAlternateFunctionConfig gpio_config{};     // GPIO config for encoder pins
+        TIMControllerEncoderConfig  encoder_config{};  // TIM Encoder mode config (input capture settings)
     };
 
     /**

@@ -11,6 +11,21 @@ namespace valle::platform
 
     extern "C"
     {
+        int _kill(int pid, int sig);
+
+        /**
+         * @brief Exit function called by the C library on fatal errors. This implementation halts the system.
+         *
+         * @param status Exit status code (ignored).
+         */
+        void _exit(int status)
+        {
+            _kill(status, -1);
+            FaultHandler<ExitSourceInfo>::handle(ExitSourceInfo{
+                .status = status,
+            });
+        }
+
 #ifdef USE_FULL_ASSERT
         /**
          * @brief  Reports the name of the source file and the source line number

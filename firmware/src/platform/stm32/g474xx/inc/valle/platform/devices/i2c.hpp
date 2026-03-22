@@ -10,6 +10,7 @@
 
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
+#include "valle/platform/drivers/gpio/alternate_function.hpp"
 #include "valle/platform/hardware/i2c.hpp"
 #include "valle/utils/circular_queue.hpp"
 #include "valle/utils/sync.hpp"
@@ -45,7 +46,6 @@ namespace valle::platform
     // ============================================================================
     // I2C CONTROLLER (THE UNIQUE DEVICE)
     // ============================================================================
-
     // ---------------------------------------------------------------------------
     // COMPILE TIME CONFIGURATIONS
     // ---------------------------------------------------------------------------
@@ -53,15 +53,34 @@ namespace valle::platform
     {
         using DMAChannelRxT = DMANullChannelDevice;
         using DMAChannelTxT = DMANullChannelDevice;
+        using SCLPinT       = GPIONullPinDevice;
+        using SDAPinT       = GPIONullPinDevice;
+        using SMBAPinT      = GPIONullPinDevice;
     };
 
-    template <typename T>
+    template <typename T, I2CControllerID tkControllerID>
     concept CValidI2CControllerCTConfig =
         requires {
             typename T::DMAChannelRxT;
             typename T::DMAChannelTxT;
-        } && ((CNullDMAChannel<typename T::DMAChannelRxT> && CNullDMAChannel<typename T::DMAChannelTxT>) ||
-              (CDMAChannelDevice<typename T::DMAChannelRxT> && CDMAChannelDevice<typename T::DMAChannelTxT>));
+            typename T::SCLPinT;
+            typename T::SDAPinT;
+            typename T::SMBAPinT;
+        } &&
+        ((CNullDMAChannel<typename T::DMAChannelRxT> && CNullDMAChannel<typename T::DMAChannelTxT>) ||
+         (CDMAChannelDevice<typename T::DMAChannelRxT> && CDMAChannelDevice<typename T::DMAChannelTxT>)) &&
+        (CNullGPIOPinDevice<typename T::SCLPinT> || CValidI2CControllerPin<tkControllerID,
+                                                                           I2CControllerGPIOPinType::kSCL,
+                                                                           T::SCLPinT::skPortID,
+                                                                           T::SCLPinT::skPinID>) &&
+        (CNullGPIOPinDevice<typename T::SDAPinT> || CValidI2CControllerPin<tkControllerID,
+                                                                           I2CControllerGPIOPinType::kSDA,
+                                                                           T::SDAPinT::skPortID,
+                                                                           T::SDAPinT::skPinID>) &&
+        (CNullGPIOPinDevice<typename T::SMBAPinT> || CValidI2CControllerPin<tkControllerID,
+                                                                            I2CControllerGPIOPinType::kSMBA,
+                                                                            T::SMBAPinT::skPortID,
+                                                                            T::SMBAPinT::skPinID>);
 
     template <I2CControllerID tkControllerID>
         requires(kValidI2CControllerID<tkControllerID>)
@@ -70,15 +89,16 @@ namespace valle::platform
         static constexpr auto skConfig = I2CControllerCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkControllerID, config)                                           \
-    namespace valle::platform                                                                                   \
-    {                                                                                                           \
-        template <>                                                                                             \
-        struct I2CControllerCTConfigRegistry<(tkControllerID)>                                                  \
-        {                                                                                                       \
-            static constexpr auto skConfig = (config);                                                          \
-            static_assert(CValidI2CControllerCTConfig<decltype(skConfig)>, "Invalid I2C Controller CT Config"); \
-        };                                                                                                      \
+#define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkControllerID, config)                        \
+    namespace valle::platform                                                                \
+    {                                                                                        \
+        template <>                                                                          \
+        struct I2CControllerCTConfigRegistry<(tkControllerID)>                               \
+        {                                                                                    \
+            static constexpr auto skConfig = (config);                                       \
+            static_assert(CValidI2CControllerCTConfig<decltype(skConfig), (tkControllerID)>, \
+                          "Invalid I2C Controller CT Config");                               \
+        };                                                                                   \
     }
 
     // ----------------------------------------------------------------------------
@@ -90,7 +110,8 @@ namespace valle::platform
      */
     struct I2CControllerConfig
     {
-        uint32_t    timing_reg           = 0;  // Pre-calculated timing value
+        // Pre-calculated timing value (TODO: create a helper to calculate this from desired I2C speed and source clock)
+        uint32_t    timing_reg           = 0x40621236;  // 400kHz @ 170MHz APB1 clock (values from STM32CubeMX)
         bool        enable_analog_filter = true;
         DMAPriority dma_priority         = DMAPriority::kHigh;
     };
@@ -104,6 +125,30 @@ namespace valle::platform
         I2CTransferEndMode     end_mode = I2CTransferEndMode::kAutoEnd;
         I2CTransferRequest     request  = I2CTransferRequest::kStart;
     };
+
+    // -----------------------------------------------------------------------------
+    // HELPERS
+    // -----------------------------------------------------------------------------
+    namespace detail
+    {
+        template <I2CControllerID tkControllerID, I2CControllerGPIOPinType tkPinType, typename TPinDevice>
+        struct I2CControllerGPIOPinDriverHelper
+        {
+            using type = GPIOAlternateFunctionDriver<
+                TPinDevice,
+                kI2CControllerPinAF<tkControllerID, tkPinType, TPinDevice::skPortID, TPinDevice::skPinID>>;
+        };
+
+        template <I2CControllerID tkControllerID, I2CControllerGPIOPinType tkPinType>
+        struct I2CControllerGPIOPinDriverHelper<tkControllerID, tkPinType, GPIONullPinDevice>
+        {
+            using type = std::monostate;
+        };
+    }  // namespace detail
+
+    template <I2CControllerID tkControllerID, I2CControllerGPIOPinType tkPinType, typename TPinDevice>
+    using I2CControllerGPIOPinDriver =
+        typename detail::I2CControllerGPIOPinDriverHelper<tkControllerID, tkPinType, TPinDevice>::type;
 
     // ---------------------------------------------------------------------------
     // DEVICE CLASS
@@ -130,11 +175,39 @@ namespace valle::platform
         using CTConfigRegistryT          = I2CControllerCTConfigRegistry<skControllerID>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
-        using DMAChannelRxT              = typename CTConfigT::DMAChannelRxT;
-        using DMAChannelTxT              = typename CTConfigT::DMAChannelTxT;
-        static constexpr bool skHasDMA   = !CNullDMAChannel<DMAChannelRxT> && !CNullDMAChannel<DMAChannelTxT>;
 
-        using InjectDevices = std::conditional_t<skHasDMA, TypeList<DMAChannelRxT, DMAChannelTxT>, TypeList<>>;
+        using DMAChannelRxT            = typename CTConfigT::DMAChannelRxT;
+        using DMAChannelTxT            = typename CTConfigT::DMAChannelTxT;
+        static constexpr bool skHasDMA = !CNullDMAChannel<DMAChannelRxT> && !CNullDMAChannel<DMAChannelTxT>;
+
+        template <I2CControllerGPIOPinType tkPinType>
+        using PinDeviceT = std::conditional_t<tkPinType == I2CControllerGPIOPinType::kSCL,
+                                              typename CTConfigT::SCLPinT,
+                                              std::conditional_t<tkPinType == I2CControllerGPIOPinType::kSDA,
+                                                                 typename CTConfigT::SDAPinT,
+                                                                 typename CTConfigT::SMBAPinT>>;
+
+        using SCLPinT  = PinDeviceT<I2CControllerGPIOPinType::kSCL>;
+        using SDAPinT  = PinDeviceT<I2CControllerGPIOPinType::kSDA>;
+        using SMBAPinT = PinDeviceT<I2CControllerGPIOPinType::kSMBA>;
+
+        // Check availability
+        template <I2CControllerGPIOPinType tkPinType>
+        static constexpr bool skHasPin = !CNullGPIOPinDevice<PinDeviceT<tkPinType>>;
+
+        static constexpr bool skHasSCLPin  = skHasPin<I2CControllerGPIOPinType::kSCL>;
+        static constexpr bool skHasSDAPin  = skHasPin<I2CControllerGPIOPinType::kSDA>;
+        static constexpr bool skHasSMBAPin = skHasPin<I2CControllerGPIOPinType::kSMBA>;
+
+        template <I2CControllerGPIOPinType tkPinType>
+        using PinDriverT = I2CControllerGPIOPinDriver<tkControllerID, tkPinType, PinDeviceT<tkPinType>>;
+
+        using SCLPinDriverT  = PinDriverT<I2CControllerGPIOPinType::kSCL>;
+        using SDAPinDriverT  = PinDriverT<I2CControllerGPIOPinType::kSDA>;
+        using SMBAPinDriverT = PinDriverT<I2CControllerGPIOPinType::kSMBA>;
+
+        using DependDevices = TypeList<I2CRootDevice>;
+        using InjectDevices = FilterNullDevices<TypeList<DMAChannelRxT, DMAChannelTxT, SCLPinT, SDAPinT, SMBAPinT>>;
 
     private:
         static inline uint32_t kReadRegisterAddr  = reinterpret_cast<uint32_t>(&ControllerTraitsT::skInstance->RXDR);
@@ -142,16 +215,18 @@ namespace valle::platform
 
         [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelRxT> m_dma_rx;
         [[no_unique_address]] ConditionalDeviceRef<skHasDMA, DMAChannelTxT> m_dma_tx;
+        SCLPinDriverT                                                       m_scl_pin{};
+        SDAPinDriverT                                                       m_sda_pin{};
+        SMBAPinDriverT                                                      m_smba_pin{};
 
     public:
-        I2CControllerDevice(DeviceRef<DMAChannelRxT>&& dma_rx, DeviceRef<DMAChannelTxT>&& dma_tx)
-            requires(skHasDMA)
-            : m_dma_rx(std::move(dma_rx)), m_dma_tx(std::move(dma_tx))
-        {
-        }
-
-        I2CControllerDevice()
-            requires(!skHasDMA)
+        template <typename... TArgs>
+        explicit I2CControllerDevice(TArgs&&... args)
+            : m_dma_rx(extract_device_ref<skHasDMA, DMAChannelRxT>(std::forward<TArgs>(args)...))
+            , m_dma_tx(extract_device_ref<skHasDMA, DMAChannelTxT>(std::forward<TArgs>(args)...))
+            , m_scl_pin(extract_device_ref<skHasSCLPin, SCLPinT>(std::forward<TArgs>(args)...))
+            , m_sda_pin(extract_device_ref<skHasSDAPin, SDAPinT>(std::forward<TArgs>(args)...))
+            , m_smba_pin(extract_device_ref<skHasSMBAPin, SMBAPinT>(std::forward<TArgs>(args)...))
         {
         }
 
@@ -160,26 +235,70 @@ namespace valle::platform
         // ------------------------------------------------------------------------
         [[nodiscard]] bool init(const I2CControllerConfig& config)
         {
+            if constexpr (skHasDMA)
+            {
+                // Configure DMA Requests
+                dma_init<true>(config.dma_priority);   // RX
+                dma_init<false>(config.dma_priority);  // TX
+            }
+
+            // Initialize Pins
+            if (!m_scl_pin.init(GPIOAlternateFunctionConfig{
+                    .mode  = GPIOAlternateFunctionMode::kOpenDrain,
+                    .speed = GPIOSpeedMode::kHigh,
+                    .pull  = GPIOPullMode::kPullUp,
+                }))
+            {
+                return false;
+            }
+
+            if (!m_sda_pin.init(GPIOAlternateFunctionConfig{
+                    .mode  = GPIOAlternateFunctionMode::kOpenDrain,
+                    .speed = GPIOSpeedMode::kHigh,
+                    .pull  = GPIOPullMode::kPullUp,
+                }))
+            {
+                return false;
+            }
+
+            // Enable Clock and Configure I2C Peripheral
             LL_APB1_GRP1_EnableClock(ControllerTraitsT::skClock);
+
             LL_I2C_Disable(ControllerTraitsT::skInstance);
+
             LL_I2C_SetTiming(ControllerTraitsT::skInstance, config.timing_reg);
+            LL_I2C_SetMode(ControllerTraitsT::skInstance, LL_I2C_MODE_I2C);
             if (config.enable_analog_filter)
             {
                 LL_I2C_EnableAnalogFilter(ControllerTraitsT::skInstance);
             }
+            // TODO: digital filter?
+
+            LL_I2C_EnableAutoEndMode(ControllerTraitsT::skInstance);
+            LL_I2C_EnableClockStretching(ControllerTraitsT::skInstance);
+
+            LL_I2C_SetOwnAddress1(ControllerTraitsT::skInstance, 0, LL_I2C_OWNADDRESS1_7BIT);
+            LL_I2C_DisableOwnAddress1(ControllerTraitsT::skInstance);
+            LL_I2C_SetOwnAddress2(ControllerTraitsT::skInstance, 0, LL_I2C_OWNADDRESS2_NOMASK);
+            LL_I2C_DisableOwnAddress2(ControllerTraitsT::skInstance);
+            LL_I2C_DisableGeneralCall(ControllerTraitsT::skInstance);
 
             if constexpr (skHasDMA)
             {
                 // Configure DMA Requests
                 LL_I2C_EnableDMAReq_RX(ControllerTraitsT::skInstance);
                 LL_I2C_EnableDMAReq_TX(ControllerTraitsT::skInstance);
-
-                dma_init<true>(config.dma_priority);   // RX
-                dma_init<false>(config.dma_priority);  // TX
             }
 
             LL_I2C_Enable(ControllerTraitsT::skInstance);
+
             return true;
+        }
+
+        [[nodiscard]] bool init_smba_pin(const GPIOAlternateFunctionConfig& pin_cfg)
+            requires(skHasSMBAPin)
+        {
+            return m_smba_pin.init(pin_cfg);
         }
 
         void reset()
@@ -222,15 +341,35 @@ namespace valle::platform
          * @brief Enable interrupts for this channel.
          * @param config Configuration for I2C Interrupts.
          */
-        static void enable_interrupts(const I2CInterruptConfig& config)
+        void enable_interrupts(const I2CInterruptConfig& config)
         {
             InterruptControllerT::enable_interrupts(config);
         }
 
         /**
+         * @brief Enable DMA interrupts for this channel.
+         * @param config Configuration for DMA Interrupts.
+         */
+        void enable_tx_dma_interrupts(const DMAChannelInterruptConfig& config)
+            requires(skHasDMA)
+        {
+            m_dma_tx->enable_interrupts(config);
+        }
+
+        /**
+         * @brief Enable DMA interrupts for this channel.
+         * @param config Configuration for DMA Interrupts.
+         */
+        void enable_rx_dma_interrupts(const DMAChannelInterruptConfig& config)
+            requires(skHasDMA)
+        {
+            m_dma_rx->enable_interrupts(config);
+        }
+
+        /**
          * @brief Disable interrupts for this channel.
          */
-        static void disable_interrupts()
+        void disable_interrupts()
         {
             InterruptControllerT::disable_interrupts();
         }
@@ -239,10 +378,12 @@ namespace valle::platform
         // Main API
         // ------------------------------------------------------------------------
         template <bool tkRead>
-        static inline void initiate_transfer(const I2CTransferConfig& transfer_config, const uint32_t buffer_size)
+        void initiate_transfer(const I2CTransferConfig& transfer_config, const uint32_t buffer_size)
         {
             const uint16_t raw_address = std::visit(
-                [](const auto& addr) { return static_cast<uint16_t>(addr.address); }, transfer_config.slave_address);
+                Overloaded{[](const I2C7BitSlaveAddress& addr) { return static_cast<uint16_t>(addr.address << 1); },
+                           [](const I2C10BitSlaveAddress& addr) { return static_cast<uint16_t>(addr.address); }},
+                transfer_config.slave_address);
 
             const bool is_10bit_address = std::holds_alternative<I2C10BitSlaveAddress>(transfer_config.slave_address);
             const uint32_t address_size = is_10bit_address ? LL_I2C_ADDRESSING_MODE_10BIT : LL_I2C_ADDRESSING_MODE_7BIT;
@@ -273,7 +414,7 @@ namespace valle::platform
                                   request);
         }
 
-        static inline void stop_transfer()
+        void stop_transfer()
         {
             LL_I2C_HandleTransfer(ControllerTraitsT::skInstance,
                                   0,
@@ -350,13 +491,17 @@ namespace valle::platform
         {
             if constexpr (tkRead)
             {
-                m_dma_rx->start(
-                    kReadRegisterAddr, reinterpret_cast<uint32_t>(data.data()), static_cast<uint32_t>(data.size()));
+                m_dma_rx->start_periph_to_mem(
+                    (uint32_t)LL_I2C_DMA_GetRegAddr(ControllerTraitsT::skInstance, LL_I2C_DMA_REG_DATA_RECEIVE),
+                    reinterpret_cast<uint32_t>(data.data()),
+                    static_cast<uint32_t>(data.size()));
             }
             else
             {
-                m_dma_tx->start(
-                    reinterpret_cast<uint32_t>(data.data()), kWriteRegisterAddr, static_cast<uint32_t>(data.size()));
+                m_dma_tx->start_mem_to_periph(
+                    reinterpret_cast<uint32_t>(data.data()),
+                    (uint32_t)LL_I2C_DMA_GetRegAddr(ControllerTraitsT::skInstance, LL_I2C_DMA_REG_DATA_TRANSMIT),
+                    static_cast<uint32_t>(data.size()));
             }
         }
     };
@@ -584,12 +729,12 @@ namespace valle::platform
 
     struct I2CTransactionHandle
     {
-        I2CSlaveAddressVariant             address{};     // Associated Slave Address
-        std::span<const I2CCommand>        commands{};    // Commands to execute
-        I2CTransactionCompleteCallback     callback{};    // Optional callback on completion
-        uint8_t                            current{};     // Progress tracker for ISR
-        I2CTransactionStatus               status{};      // Pending, Busy, Done, Error
-        std::optional<I2CTransactionError> last_error{};  // Last error encountered
+        I2CSlaveAddressVariant             address{};                             // Associated Slave Address
+        std::span<const I2CCommand>        commands{};                            // Commands to execute
+        I2CTransactionCompleteCallback     callback{};                            // Optional callback on completion
+        uint8_t                            current{};                             // Progress tracker for ISR
+        I2CTransactionStatus               status = I2CTransactionStatus::kDone;  // Pending, Busy, Done, Error
+        std::optional<I2CTransactionError> last_error{};                          // Last error encountered
     };
 
     // --------------------------------------------------------------------------------
@@ -690,14 +835,16 @@ namespace valle::platform
                 // Invoke the callback to notify of abortion
                 transaction.callback(I2CCallbackType::kAborted);
 
+                // Clear it so we don't accidentally touch it in the ISR
+                mp_active_transaction = nullptr;
+
                 // Start the next transaction
                 start_next_transaction();
             }
 
-            // We can't easily remove from the middle of a CircularQueue,
-            // so we mark it as "Invalid/Error" so the ISR ignores it when popped.
-            mp_active_transaction->status     = I2CTransactionStatus::kError;
-            mp_active_transaction->last_error = I2CTransactionError::kAborted;
+            // Correctly mark the targeted transaction as invalid so the ISR ignores it when popped
+            transaction.status     = I2CTransactionStatus::kError;
+            transaction.last_error = I2CTransactionError::kAborted;
         }
 
         /**
@@ -947,10 +1094,9 @@ namespace valle::platform
         template <typename TTimeoutDuration>
         I2CBlockingTransactionError submit_transaction_blocking(const I2CSlaveAddressVariant&      address,
                                                                 const std::span<const I2CCommand>& commands,
+                                                                I2CTransactionHandle&              transaction,
                                                                 const TTimeoutDuration             timeout)
         {
-            I2CTransactionHandle transaction;
-
             struct BlockingCallbackHandler
             {
                 std::atomic<bool> done = false;
@@ -1175,8 +1321,8 @@ namespace valle::platform
          * @param callback Optional callback to be invoked upon transaction completion.
          * @return true if the transaction was accepted, false if the queue is full.
          */
-        inline bool submit_transaction(const std::span<const I2CCommand>& commands,
-                                       I2CTransactionCompleteCallback&&   callback)
+        [[nodiscard]] bool submit_transaction(const std::span<const I2CCommand>& commands,
+                                              I2CTransactionCompleteCallback&&   callback)
         {
             return m_controller->submit_transaction(skAddress, commands, std::move(callback), m_transaction);
         }
@@ -1190,17 +1336,17 @@ namespace valle::platform
          * @return I2CBlockingTransactionError The result of the blocking transaction.
          */
         template <typename TTimeoutDuration>
-        I2CBlockingTransactionError submit_transaction_blocking(const std::span<const I2CCommand>& commands,
-                                                                const TTimeoutDuration             timeout)
+        [[nodiscard]] I2CBlockingTransactionError submit_transaction_blocking(
+            const std::span<const I2CCommand>& commands, const TTimeoutDuration timeout)
         {
-            return m_controller->template submit_transaction_blocking(skAddress, commands, timeout);
+            return m_controller->template submit_transaction_blocking(skAddress, commands, m_transaction, timeout);
         }
 
         /**
          * @brief Cancels an ongoing or queued transaction.
          *
          */
-        inline void cancel_transaction()
+        void cancel_transaction()
         {
             m_controller->cancel_transaction(m_transaction);
         }
@@ -1210,7 +1356,7 @@ namespace valle::platform
          *
          * @return I2CTransactionStatus The current status of the transaction.
          */
-        inline I2CTransactionStatus query_status() const
+        [[nodiscard]] I2CTransactionStatus query_status() const
         {
             return m_controller->query_status(m_transaction);
         }
@@ -1220,9 +1366,19 @@ namespace valle::platform
          *
          * @return std::optional<I2CTransactionError> The last error encountered, or std::nullopt if none.
          */
-        inline std::optional<I2CTransactionError> query_last_error() const
+        [[nodiscard]] std::optional<I2CTransactionError> query_last_error() const
         {
             return m_controller->query_last_error(m_transaction);
+        }
+
+        /**
+         * @brief Checks if a transaction is currently in progress (either pending or busy).
+         * @return true if a transaction is pending or busy, false if done or error.
+         */
+        [[nodiscard]] bool transaction_in_progress() const
+        {
+            const auto status = query_status();
+            return status == I2CTransactionStatus::kPending || status == I2CTransactionStatus::kBusy;
         }
     };
 

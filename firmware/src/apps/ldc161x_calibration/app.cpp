@@ -1,6 +1,5 @@
 #include "app.hpp"
 
-#include "valle/app/engine_kinematics_config.hpp"
 #include "valle/app/platform/core_system_config.hpp"
 #include "valle/base/panic.hpp"
 
@@ -8,17 +7,13 @@ VALLE_DEFINE_UART_LOGGER_HANDLER(valle::app::g_drivers.uart_logger);
 
 namespace valle::app
 {
-
     DriverBuilderReturnT install_drivers(DriverBuilderT&& builder)
     {
         return std::move(builder)
             .template install<RootDriver>()
             .template install<platform::CoreSystemDriver>()
             .template install<UARTLoggerT>()
-            .template install<VCACurrentLoopDriverT>()
             .template install<PositionSensorT>()
-            .template install<CrankEncoderModuleT>()
-            .template install<TestGPIODriverT>()
             .yield();
     }
 
@@ -28,22 +23,23 @@ namespace valle::app
      */
     static void init_root()
     {
-        // Some devices not intialized here are handled by the current loop driver.
-        // TODO: Implement a "owned shared device" concept to allow drivers to allow a clear owner.
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
-            [](platform::HRTIM1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
             [](platform::DMAMux1ControllerDevice& dev)
             { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
             [](platform::DMA1ControllerDevice& dev)
             { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](platform::ADC12CommonDevice& dev) { (void)dev; },     // Initialized by vca current loop driver
-            [](platform::ADC1ControllerDevice& dev) { (void)dev; },  // Initialized by vca current loop driver
+            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
             [](platform::I2C1CommandBufferDevice<>& dev)
             {
                 expect(dev.init(platform::I2CCommandBufferDeviceConfig{
+                           .controller_config =
+                               platform::I2CControllerConfig{
+                                   .timing_reg = 0x40621236,  // 400kHz @ 170MHz APB1 clock (values from STM32CubeMX)
+                                   .enable_analog_filter = true,
+                                   .dma_priority         = platform::DMAPriority::kHigh,
+                               },
                            .event_int_priority = 5,
                            .error_int_priority = 5,
                        }),
@@ -72,52 +68,33 @@ namespace valle::app
                }),
                "Failed to initialize UART Logger Driver");
 
-        constexpr auto vca_current_loop_driver_config = platform::app::kDefaultVCACurrentLoopDriverConfig<>.to_raw();
-        static_assert(
-            !vca_current_loop_driver_config.validate(platform::app::kDefaultCoreSystemConfig.rcc_config).has_value(),
-            "VCA Current Loop Driver configuration is invalid");
-
-        expect(g_drivers.vca_current_loop_driver.init(vca_current_loop_driver_config),
-               "Failed to initialize VCA Current Loop Driver");
-
-        expect(g_drivers.test_gpio.init(platform::GPIODigitalOutConfig{
-                   .mode  = platform::GPIOOutputMode::kPushPull,
-                   .speed = platform::GPIOSpeedMode::kLow,
-                   .pull  = platform::GPIOPullMode::kNoPull,
-               }),
-               "Failed to initialize Test GPIO Driver");
+        constexpr auto grove_coil_config = LDC161XCoilConfig{
+            .inductance_uh  = 18.147F,
+            .capacitance_pf = 100.0F,
+            .rp_kohm        = 15.727F,
+            .q_factor       = 35.97F,
+        };
+        constexpr auto channel_config = LDC161XChannelConfig{
+            .coil_config   = grove_coil_config,
+            .drive_current = LDC161XIDriveCurrent::from_coil_rp(grove_coil_config.rp_kohm),
+            .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 2.5F},
+        };
 
         expect(g_drivers.position_sensor.init(PositionSensorModuleConfigT{
-                   .i2c_config{},
+                   .i2c_config = {},
                    .sensor_config =
                        PositionSensorConfigT{
                            .clock_source           = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0F},
-                           .sample_rate_hz         = 1000,
+                           .sample_rate_hz         = 300,
                            .deglitch_bandwidth     = LDC161XDeglitchBandwidth::kBand10MHz,
-                           .interrupt_config       = std::nullopt,
+                           .interrupt_config       = LDC161XInterruptConfig{},
                            .sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode,
                            .enable_rp_override     = true,
                            .auto_amplitude_en      = false,
-                           .high_current_drive_en  = true,
-                           .channels               = {LDC161XChannelConfig{
-                                             .coil_config =
-                                   LDC161XCoilConfig{
-                                                     .inductance_uh  = 18.147F,
-                                                     .capacitance_pf = 100.0F,
-                                                     .rp_kohm        = 15.727F,
-                                                     .q_factor       = 35.97F,
-                                   },
-                                             .drive_current = LDC161XIDriveCurrent::from_coil_rp(15.727F, 1.5F),
-                                             .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 0.0F},
-                           }},
+                           // .high_current_drive_en = false,
+                           .channels = {channel_config},
                        }}),
                "Failed to initialize Position Sensor");
-
-        expect(g_drivers.crank_encoder.init(
-                   CrankEncoderModuleConfigT{.engine_kinematics = kPowerfistEngineKinematicsConfig,
-                                             .home_rad          = 0.73247560718F,
-                                             .reverse_direction = false}),
-               "Failed to initialize AMT102 Crank Encoder module");
     }
 
     /**

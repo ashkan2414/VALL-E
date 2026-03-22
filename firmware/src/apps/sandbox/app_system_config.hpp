@@ -2,7 +2,7 @@
 
 #include "valle/app/platform/modules/acs724.hpp"
 #include "valle/app/platform/modules/amt10x_crank_encoder.hpp"
-#include "valle/app/platform/modules/ldc1612.hpp"
+#include "valle/app/platform/modules/ldc161x.hpp"
 #include "valle/app/platform/modules/vca.hpp"
 #include "valle/app/platform/uart_logger_config.hpp"
 #include "valle/app/platform/vca_current_loop_driver.hpp"
