@@ -375,6 +375,10 @@ namespace valle::app
 
     using LDC161XDeviceIDReg = jungles::Bitfields<uint16_t, jungles::Field<LDC161XDeviceIDRegFields::kDeviceID, 16>>;
 
+    // ------------------------------------------------------------------------------
+    // GENERAL TRAITS AND DATA STRUCTURES
+    // ------------------------------------------------------------------------------
+
     enum class LDC161XChannel : uint8_t
     {
         kChannel0 = 0,
@@ -389,21 +393,31 @@ namespace valle::app
     template <LDC161XChannel tkChannel, uint8_t tkNumChannels>
     concept CLDC161XValidChannel = (static_cast<uint8_t>(tkChannel) < static_cast<uint8_t>(tkNumChannels));
 
-    inline constexpr uint8_t ldc161x_get_channel_index_from_channel(const LDC161XChannel channel)
+    struct LDC161XStatus
     {
-        return static_cast<uint8_t>(channel);  // Convert to 0-based index for arrays
-    }
+        bool err_channel : 1        = false;
+        bool err_underrun : 1       = false;
+        bool err_overrun : 1        = false;
+        bool err_watchdog : 1       = false;
+        bool err_amplitude_high : 1 = false;
+        bool err_amplitude_low : 1  = false;
+        bool err_zero_count : 1     = false;
+        bool drdy : 1               = false;
+        bool undread_conv0 : 1      = false;
+        bool undread_conv1 : 1      = false;
+        bool undread_conv2 : 1      = false;
+        bool undread_conv3 : 1      = false;
+    };
 
-    inline constexpr LDC161XChannel ldc161x_get_channel_from_index(const uint8_t index)
+    struct LDC161XDataRaw
     {
-        return static_cast<LDC161XChannel>(index);  // Convert back to 0-based channel enum
-    }
+        bool err_underrun : 1  = false;
+        bool err_overrun : 1   = false;
+        bool err_watchdog : 1  = false;
+        bool err_amplitude : 1 = false;
 
-    template <LDC161XChannel tkChannel>
-    constexpr uint8_t kLDC161XChannelIndex = ldc161x_get_channel_index_from_channel(tkChannel);
-
-    template <uint8_t tkChannelIndex>
-    constexpr LDC161XChannel kLDC161XChannelFromIndex = ldc161x_get_channel_from_index(tkChannelIndex);
+        uint32_t value = 0;
+    };
 
     struct LDC161XTraits
     {
@@ -443,74 +457,120 @@ namespace valle::app
             16,  18,  20,  23,  28,  32,  40,  46,  52,  59,  72,  82,  95,   110,  127,  146,
             169, 195, 212, 244, 297, 342, 424, 489, 551, 635, 763, 880, 1017, 1173, 1355, 1563};
 
+        [[nodiscard]] static constexpr uint8_t channel_index_from_channel(const LDC161XChannel channel)
+        {
+            return static_cast<uint8_t>(channel);  // Convert to 0-based index for arrays
+        }
+
+        [[nodiscard]] static constexpr LDC161XChannel channel_from_channel_index(const uint8_t index)
+        {
+            return static_cast<LDC161XChannel>(index);  // Convert back to 0-based channel enum
+        }
+
+        template <LDC161XChannel tkChannel>
+        static constexpr uint8_t skChannelIndexFromChannel = channel_index_from_channel(tkChannel);
+
+        template <uint8_t tkChannelIndex>
+        static constexpr LDC161XChannel skChannelFromChannelIndex = channel_from_channel_index(tkChannelIndex);
+
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelDataMSBReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kDataChannel0MSB) + (kLDC161XChannelIndex<tkChannel> * 2));
+            static_cast<uint8_t>(LDC161XReg::kDataChannel0MSB) + (skChannelIndexFromChannel<tkChannel> * 2));
 
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelDataLSBReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kDataChannel0LSB) + (kLDC161XChannelIndex<tkChannel> * 2));
+            static_cast<uint8_t>(LDC161XReg::kDataChannel0LSB) + (skChannelIndexFromChannel<tkChannel> * 2));
 
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelRCountReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kRCountChannel0) + kLDC161XChannelIndex<tkChannel>);
+            static_cast<uint8_t>(LDC161XReg::kRCountChannel0) + skChannelIndexFromChannel<tkChannel>);
 
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelOffsetReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kOffsetChannel0) + kLDC161XChannelIndex<tkChannel>);
+            static_cast<uint8_t>(LDC161XReg::kOffsetChannel0) + skChannelIndexFromChannel<tkChannel>);
 
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelSettleCountReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kSettleCountChannel0) + kLDC161XChannelIndex<tkChannel>);
+            static_cast<uint8_t>(LDC161XReg::kSettleCountChannel0) + skChannelIndexFromChannel<tkChannel>);
 
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelClockDividerReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kClockDividerChannel0) + kLDC161XChannelIndex<tkChannel>);
+            static_cast<uint8_t>(LDC161XReg::kClockDividerChannel0) + skChannelIndexFromChannel<tkChannel>);
 
         template <LDC161XChannel tkChannel>
         static constexpr LDC161XReg skChannelDriveCurrentReg = static_cast<LDC161XReg>(
-            static_cast<uint8_t>(LDC161XReg::kDriveCurrentChannel0) + kLDC161XChannelIndex<tkChannel>);
+            static_cast<uint8_t>(LDC161XReg::kDriveCurrentChannel0) + skChannelIndexFromChannel<tkChannel>);
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_data_msb_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kDataChannel0MSB) +
-                                           ((ldc161x_get_channel_index_from_channel(channel) % 4) * 2));
+                                           ((channel_index_from_channel(channel) % 4) * 2));
         }
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_data_lsb_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kDataChannel0LSB) +
-                                           ((ldc161x_get_channel_index_from_channel(channel) % 4) * 2));
+                                           ((channel_index_from_channel(channel) % 4) * 2));
         }
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_r_count_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kRCountChannel0) +
-                                           (ldc161x_get_channel_index_from_channel(channel) % 4));
+                                           (channel_index_from_channel(channel) % 4));
         }
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_offset_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kOffsetChannel0) +
-                                           (ldc161x_get_channel_index_from_channel(channel) % 4));
+                                           (channel_index_from_channel(channel) % 4));
         }
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_settle_count_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kSettleCountChannel0) +
-                                           (ldc161x_get_channel_index_from_channel(channel) % 4));
+                                           (channel_index_from_channel(channel) % 4));
         }
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_clock_divider_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kClockDividerChannel0) +
-                                           (ldc161x_get_channel_index_from_channel(channel) % 4));
+                                           (channel_index_from_channel(channel) % 4));
         }
 
         [[nodiscard]] static constexpr LDC161XReg get_channel_drive_current_reg(const LDC161XChannel channel)
         {
             return static_cast<LDC161XReg>(static_cast<uint8_t>(LDC161XReg::kDriveCurrentChannel0) +
-                                           (ldc161x_get_channel_index_from_channel(channel) % 4));
+                                           (channel_index_from_channel(channel) % 4));
+        }
+
+        [[nodiscard]] static LDC161XStatus status_from_reg(const uint32_t status_raw)
+        {
+            const auto status_reg = LDC161XStatusReg(status_raw);
+            return LDC161XStatus{
+                .err_channel        = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrChannel>() == 1U),
+                .err_underrun       = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrUR>() == 1U),
+                .err_overrun        = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrOR>() == 1U),
+                .err_watchdog       = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrWD>() == 1U),
+                .err_amplitude_high = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrAH>() == 1U),
+                .err_amplitude_low  = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrAL>() == 1U),
+                .err_zero_count     = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrZC>() == 1U),
+                .drdy               = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kDRDY>() == 1U),
+                .undread_conv0      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv0>() == 1U),
+                .undread_conv1      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv1>() == 1U),
+                .undread_conv2      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv2>() == 1U),
+                .undread_conv3      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv3>() == 1U)};
+        }
+
+        [[nodiscard]] static LDC161XDataRaw data_from_reg(const uint16_t msb, const uint16_t lsb)
+        {
+            LDC161XDataReg data_reg((static_cast<uint32_t>(msb) << 16) | lsb);
+            return LDC161XDataRaw{
+                .err_underrun  = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrUR>() == 1U),
+                .err_overrun   = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrOR>() == 1U),
+                .err_watchdog  = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrWD>() == 1U),
+                .err_amplitude = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrAE>() == 1U),
+                .value         = data_reg.at<LDC161XDataRegFields::kData>(),
+            };
         }
     };
 
@@ -860,31 +920,6 @@ namespace valle::app
     // ---------------------------------------------------------------------------
     // DATA STRUCTURES
     // ---------------------------------------------------------------------------
-    struct LDC161XStatus
-    {
-        uint8_t err_channel : 1        = false;
-        uint8_t err_underrun : 1       = false;
-        uint8_t err_overrun : 1        = false;
-        uint8_t err_watchdog : 1       = false;
-        uint8_t err_amplitude_high : 1 = false;
-        uint8_t err_amplitude_low : 1  = false;
-        uint8_t err_zero_count : 1     = false;
-        uint8_t drdy : 1               = false;
-        uint8_t undread_conv0 : 1      = false;
-        uint8_t undread_conv1 : 1      = false;
-        uint8_t undread_conv2 : 1      = false;
-        uint8_t undread_conv3 : 1      = false;
-    };
-
-    struct LDC161XDataRaw
-    {
-        bool err_underrun : 1  = false;
-        bool err_overrun : 1   = false;
-        bool err_watchdog : 1  = false;
-        bool err_amplitude : 1 = false;
-
-        uint32_t value = 0;
-    };
 
     struct LDC161XDataFrequency
     {
@@ -1002,6 +1037,9 @@ namespace valle::app
         using DependDevices = typename GetAdditionalDependDevices<I2CInterfaceT>::type;
 
     private:
+        // ---------------------------------------------------------------------
+        // ASYNC CHAIN READ CONFIG
+        // ---------------------------------------------------------------------
         static constexpr size_t skNumAsyncChainReadRegsMax = 1 + (tkNumChannels * 2);  // upper limit
 
         enum AsyncChainReadTag : uint8_t
@@ -1039,7 +1077,7 @@ namespace valle::app
             std::array<LDC161XReg, skNumChannels * 2> regs{};  // Each channel has MSB and LSB
             for (uint8_t i = 0; i < tkNumChannels; ++i)
             {
-                const LDC161XChannel channel = ldc161x_get_channel_from_index(i);
+                const LDC161XChannel channel = LDC161XTraits::channel_from_channel_index(i);
                 regs[i * 2]                  = LDC161XTraits::get_channel_data_msb_reg(channel);
                 regs[i * 2 + 1]              = LDC161XTraits::get_channel_data_lsb_reg(channel);
             }
@@ -1070,7 +1108,7 @@ namespace valle::app
             regs[0] = LDC161XReg::kStatus;
             for (uint8_t i = 0; i < tkNumChannels; ++i)
             {
-                const LDC161XChannel channel = ldc161x_get_channel_from_index(i);
+                const LDC161XChannel channel = LDC161XTraits::channel_from_channel_index(i);
                 regs[1 + (i * 2)]            = LDC161XTraits::get_channel_data_msb_reg(channel);
                 regs[1 + (i * 2) + 1]        = LDC161XTraits::get_channel_data_lsb_reg(channel);
             }
@@ -1099,8 +1137,10 @@ namespace valle::app
         static constexpr auto skAsyncChainReadStatusFrequencyMultiChannelConfig =
             get_chain_read_config_for_multi_channel_status_data<AsyncChainReadTag::kStatusFrequencyMultiChannel>();
 
+        // ---------------------------------------------------------------------
+        // MEMBERS
+        // ---------------------------------------------------------------------
         I2CInterfaceT                                                m_i2c{};
-        LDC161XSensorConfigRaw<tkNumChannels>                        m_config{};
         std::array<LinearConverter<uint32_t, double>, tkNumChannels> m_ch_freq_converters{};
         ReadCallbackT                                                m_read_callback{};
         std::optional<AsyncChainReadContext>                         m_async_context{};
@@ -1123,8 +1163,8 @@ namespace valle::app
             m_i2c.set_async_callback([this](const LDC161XSensorModuleI2CInterfaceCallbackStatus status)
                                      { this->async_transaction_callback(status); });
 
-            m_config             = get_raw_config(config.sensor_config);
-            m_ch_freq_converters = get_all_channel_freq_converters(m_config);
+            const auto raw_config = get_raw_config(config.sensor_config);
+            m_ch_freq_converters  = get_all_channel_freq_converters(raw_config);
 
             // Reset device to default state
             if (!reset())
@@ -1138,7 +1178,7 @@ namespace valle::app
                 return false;
             }
 
-            if (!configure())
+            if (!configure(raw_config))
             {
                 return false;
             }
@@ -1232,13 +1272,8 @@ namespace valle::app
             return verify_manufacturer_id(timeout_ms) && verify_device_id(timeout_ms);
         }
 
-        [[nodiscard]] bool configure()
+        [[nodiscard]] bool configure(const LDC161XSensorConfigRaw<tkNumChannels>& config)
         {
-            if (m_i2c.transaction_in_progress())
-            {
-                return false;  // Avoid starting a new read if a transaction is already in progress
-            }
-
             // NOTE: THE ORDER OF REGISTER WRITES IS IMPORTANT
 
             // Put to sleep
@@ -1254,23 +1289,15 @@ namespace valle::app
             config_reg.at<LDC161XConfigRegFields::kHighCurrentDrv>()    = 0U;
             config_reg.at<LDC161XConfigRegFields::kReserved2>()         = LDC161XTraits::skConfigRegReserved2Value;
 
-            if (!m_i2c.register_write_blocking(LDC161XReg::kConfig, config_reg.serialize(), skDefaultTimeout))
+            if (!write_register_and_verify_blocking(LDC161XReg::kConfig, config_reg.serialize(), skDefaultTimeout))
             {
                 return false;
-            }
-
-            {
-                const auto device_config_read = m_i2c.register_read_blocking(LDC161XReg::kConfig, skDefaultTimeout);
-                if (!device_config_read.has_value() || device_config_read.value() != config_reg.serialize())
-                {
-                    return false;
-                }
             }
 
             // Configure channels
             if constexpr (tkNumChannels >= 1)
             {
-                if (!configure_channel<LDC161XChannel::kChannel0>())
+                if (!configure_channel<LDC161XChannel::kChannel0>(config.channels[0]))
                 {
                     return false;
                 }
@@ -1278,7 +1305,7 @@ namespace valle::app
 
             if constexpr (tkNumChannels >= 2)
             {
-                if (!configure_channel<LDC161XChannel::kChannel1>())
+                if (!configure_channel<LDC161XChannel::kChannel1>(config.channels[1]))
                 {
                     return false;
                 }
@@ -1286,7 +1313,7 @@ namespace valle::app
 
             if constexpr (tkNumChannels >= 3)
             {
-                if (!configure_channel<LDC161XChannel::kChannel2>())
+                if (!configure_channel<LDC161XChannel::kChannel2>(config.channels[2]))
                 {
                     return false;
                 }
@@ -1294,46 +1321,29 @@ namespace valle::app
 
             if constexpr (tkNumChannels >= 4)
             {
-                if (!configure_channel<LDC161XChannel::kChannel3>())
+                if (!configure_channel<LDC161XChannel::kChannel3>(config.channels[3]))
                 {
                     return false;
                 }
             }
 
             // MUX CONFIG
-            if (!m_i2c.register_write_blocking(
-                    LDC161XReg::kMuxConfig, m_config.mux_config.serialize(), skDefaultTimeout))
-            {
-                return false;
-            }
-
-            const auto mux_config_read = m_i2c.register_read_blocking(LDC161XReg::kMuxConfig, skDefaultTimeout);
-            if (!mux_config_read.has_value() || mux_config_read.value() != m_config.mux_config.serialize())
+            if (!write_register_and_verify_blocking(
+                    LDC161XReg::kMuxConfig, config.mux_config.serialize(), skDefaultTimeout))
             {
                 return false;
             }
 
             // ERROR CONFIG
-            if (!m_i2c.register_write_blocking(
-                    LDC161XReg::kErrorConfig, m_config.error_config.serialize(), skDefaultTimeout))
-            {
-                return false;
-            }
-            const auto error_config_read = m_i2c.register_read_blocking(LDC161XReg::kErrorConfig, skDefaultTimeout);
-            if (!error_config_read.has_value() || error_config_read.value() != m_config.error_config.serialize())
+            if (!write_register_and_verify_blocking(
+                    LDC161XReg::kErrorConfig, config.error_config.serialize(), skDefaultTimeout))
             {
                 return false;
             }
 
             // DEVICE CONFIG (exit sleep mode last)
-            if (!m_i2c.register_write_blocking(
-                    LDC161XReg::kConfig, m_config.device_config.serialize(), skDefaultTimeout))
-            {
-                return false;
-            }
-
-            const auto device_config_read = m_i2c.register_read_blocking(LDC161XReg::kConfig, skDefaultTimeout);
-            if (!device_config_read.has_value() || device_config_read.value() != m_config.device_config.serialize())
+            if (!write_register_and_verify_blocking(
+                    LDC161XReg::kConfig, config.device_config.serialize(), skDefaultTimeout))
             {
                 return false;
             }
@@ -1343,84 +1353,42 @@ namespace valle::app
 
         template <LDC161XChannel tkChannel>
             requires(CLDC161XValidChannel<tkChannel, tkNumChannels>)
-        [[nodiscard]] bool configure_channel()
+        [[nodiscard]] bool configure_channel(const LDC161XChannelConfigRaw& chan_config)
         {
-            if (m_i2c.transaction_in_progress())
-            {
-                return false;  // Avoid starting a new read if a transaction is already in progress
-            }
-
-            const auto& chan_config = m_config.channels[kLDC161XChannelIndex<tkChannel>];
-
             // Write CLOCK DIVIDER
-            if (!m_i2c.register_write_blocking(LDC161XTraits::skChannelClockDividerReg<tkChannel>,
-                                               chan_config.clock_divider.serialize(),
-                                               skDefaultTimeout))
-            {
-                return false;
-            }
-
-            const auto clock_divider_read =
-                m_i2c.register_read_blocking(LDC161XTraits::skChannelClockDividerReg<tkChannel>, skDefaultTimeout);
-            if (!clock_divider_read.has_value() || clock_divider_read.value() != chan_config.clock_divider.serialize())
+            if (!write_register_and_verify_blocking(LDC161XTraits::skChannelClockDividerReg<tkChannel>,
+                                                    chan_config.clock_divider.serialize(),
+                                                    skDefaultTimeout))
             {
                 return false;
             }
 
             // Write RCOUNT
-            if (!m_i2c.register_write_blocking(
+            if (!write_register_and_verify_blocking(
                     LDC161XTraits::skChannelRCountReg<tkChannel>, chan_config.rcount.serialize(), skDefaultTimeout))
             {
                 return false;
             }
 
-            const auto rcount_read =
-                m_i2c.register_read_blocking(LDC161XTraits::skChannelRCountReg<tkChannel>, skDefaultTimeout);
-            if (!rcount_read.has_value() || rcount_read.value() != chan_config.rcount.serialize())
-            {
-                return false;
-            }
-
             // Write OFFSET
-            if (!m_i2c.register_write_blocking(
+            if (!write_register_and_verify_blocking(
                     LDC161XTraits::skChannelOffsetReg<tkChannel>, chan_config.offset.serialize(), skDefaultTimeout))
             {
                 return false;
             }
 
-            const auto offset_read =
-                m_i2c.register_read_blocking(LDC161XTraits::skChannelOffsetReg<tkChannel>, skDefaultTimeout);
-            if (!offset_read.has_value() || offset_read.value() != chan_config.offset.serialize())
-            {
-                return false;
-            }
-
             // Write SETTLE COUNT
-            if (!m_i2c.register_write_blocking(LDC161XTraits::skChannelSettleCountReg<tkChannel>,
-                                               chan_config.settle_count.serialize(),
-                                               skDefaultTimeout))
-            {
-                return false;
-            }
-
-            const auto settle_count_read =
-                m_i2c.register_read_blocking(LDC161XTraits::skChannelSettleCountReg<tkChannel>, skDefaultTimeout);
-            if (!settle_count_read.has_value() || settle_count_read.value() != chan_config.settle_count.serialize())
+            if (!write_register_and_verify_blocking(LDC161XTraits::skChannelSettleCountReg<tkChannel>,
+                                                    chan_config.settle_count.serialize(),
+                                                    skDefaultTimeout))
             {
                 return false;
             }
 
             // Write DRIVE CURRENT
-            if (!m_i2c.register_write_blocking(LDC161XTraits::skChannelDriveCurrentReg<tkChannel>,
-                                               chan_config.idrive.serialize(),
-                                               skDefaultTimeout))
-            {
-                return false;
-            }
-
-            const auto idrive_read =
-                m_i2c.register_read_blocking(LDC161XTraits::skChannelDriveCurrentReg<tkChannel>, skDefaultTimeout);
-            if (!idrive_read.has_value() || idrive_read.value() != chan_config.idrive.serialize())
+            if (!write_register_and_verify_blocking(LDC161XTraits::skChannelDriveCurrentReg<tkChannel>,
+                                                    chan_config.idrive.serialize(),
+                                                    skDefaultTimeout))
             {
                 return false;
             }
@@ -1441,7 +1409,7 @@ namespace valle::app
             {
                 return std::nullopt;
             }
-            return status_from_reg(std::move(status_raw.value()));
+            return LDC161XTraits::status_from_reg(std::move(status_raw.value()));
         }
 
         [[nodiscard]] bool read_status_async()
@@ -1496,8 +1464,9 @@ namespace valle::app
                 return ((
                             [&]()
                             {
-                                constexpr auto channel  = kLDC161XChannelFromIndex<static_cast<uint8_t>(Is)>;
-                                const auto     data_opt = read_data_raw_blocking<channel>(timeout_ms);
+                                constexpr auto channel =
+                                    LDC161XTraits::skChannelFromChannelIndex<static_cast<uint8_t>(Is)>;
+                                const auto data_opt = read_data_raw_blocking<channel>(timeout_ms);
                                 if (!data_opt.has_value())
                                 {
                                     return false;  // Early exit on failure
@@ -1527,14 +1496,15 @@ namespace valle::app
         [[nodiscard]] float frequency_from_raw_data(const LDC161XChannel channel, const uint32_t data_raw) const
         {
             return static_cast<float>(
-                m_ch_freq_converters.at(ldc161x_get_channel_index_from_channel(channel)).convert(data_raw));
+                m_ch_freq_converters.at(LDC161XTraits::channel_index_from_channel(channel)).convert(data_raw));
         }
 
         template <LDC161XChannel tkChannel>
             requires(CLDC161XValidChannel<tkChannel, tkNumChannels>)
         [[nodiscard]] float frequency_from_raw_data(const uint32_t data_raw) const
         {
-            return static_cast<float>(m_ch_freq_converters.at(kLDC161XChannelIndex<tkChannel>).convert(data_raw));
+            return static_cast<float>(
+                m_ch_freq_converters.at(LDC161XTraits::skChannelIndexFromChannel<tkChannel>).convert(data_raw));
         }
 
         [[nodiscard]] LDC161XDataFrequency frequency_from_raw_data(const LDC161XChannel  channel,
@@ -1600,8 +1570,9 @@ namespace valle::app
                 return ((
                             [&]()
                             {
-                                constexpr auto channel  = kLDC161XChannelFromIndex<static_cast<uint8_t>(Is)>;
-                                const auto     data_opt = read_frequency_mhz_blocking<channel>(timeout_ms);
+                                constexpr auto channel =
+                                    LDC161XTraits::skChannelFromChannelIndex<static_cast<uint8_t>(Is)>;
+                                const auto data_opt = read_frequency_mhz_blocking<channel>(timeout_ms);
                                 if (!data_opt.has_value())
                                 {
                                     return false;  // Early exit on failure
@@ -1661,6 +1632,19 @@ namespace valle::app
         }
 
     private:
+        [[nodiscard]] bool write_register_and_verify_blocking(const LDC161XReg            reg,
+                                                              const uint16_t              value,
+                                                              const system::TimeoutMillis timeout_ms = skDefaultTimeout)
+        {
+            if (!m_i2c.register_write_blocking(reg, value, timeout_ms))
+            {
+                return false;
+            }
+
+            const auto read_back = m_i2c.register_read_blocking(reg, timeout_ms);
+            return read_back.has_value() && read_back.value() == value;
+        }
+
         template <LDC161XChannel tkChannel>
             requires(CLDC161XValidChannel<tkChannel, tkNumChannels>)
         [[nodiscard]] std::optional<LDC161XDataRaw> read_data_raw_blocking_impl(
@@ -1685,7 +1669,7 @@ namespace valle::app
                 return std::nullopt;
             }
 
-            return data_from_reg(data_msb.value(), data_lsb.value());
+            return LDC161XTraits::data_from_reg(data_msb.value(), data_lsb.value());
         }
 
         template <LDC161XChannel tkChannel>
@@ -1733,39 +1717,6 @@ namespace valle::app
 
             return LDC161XDriveCurrentReg(std::move(drive_reg_opt.value()))
                 .at<LDC161XDriveCurrentRegFields::kInitIDrive>();
-        }
-
-        // ------------------------------------------------------------------------------
-        // DATA CONVERSION HELPERS
-        // ------------------------------------------------------------------------------
-        [[nodiscard]] static LDC161XStatus status_from_reg(const uint32_t status_raw)
-        {
-            const auto status_reg = LDC161XStatusReg(status_raw);
-            return LDC161XStatus{
-                .err_channel        = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrChannel>() == 1U),
-                .err_underrun       = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrUR>() == 1U),
-                .err_overrun        = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrOR>() == 1U),
-                .err_watchdog       = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrWD>() == 1U),
-                .err_amplitude_high = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrAH>() == 1U),
-                .err_amplitude_low  = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrAL>() == 1U),
-                .err_zero_count     = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kErrZC>() == 1U),
-                .drdy               = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kDRDY>() == 1U),
-                .undread_conv0      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv0>() == 1U),
-                .undread_conv1      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv1>() == 1U),
-                .undread_conv2      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv2>() == 1U),
-                .undread_conv3      = static_cast<bool>(status_reg.at<LDC161XStatusRegFields::kUndreadConv3>() == 1U)};
-        }
-
-        [[nodiscard]] static LDC161XDataRaw data_from_reg(const uint16_t msb, const uint16_t lsb)
-        {
-            LDC161XDataReg data_reg((static_cast<uint32_t>(msb) << 16) | lsb);
-            return LDC161XDataRaw{
-                .err_underrun  = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrUR>() == 1U),
-                .err_overrun   = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrOR>() == 1U),
-                .err_watchdog  = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrWD>() == 1U),
-                .err_amplitude = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrAE>() == 1U),
-                .value         = data_reg.at<LDC161XDataRegFields::kData>(),
-            };
         }
 
         // ------------------------------------------------------------------------------
@@ -1841,12 +1792,12 @@ namespace valle::app
             {
                 case AsyncChainReadTag::kStatus:
                 {
-                    return ReadStatusCallbackResultT{.status = status_from_reg(context.reg_values[0])};
+                    return ReadStatusCallbackResultT{.status = LDC161XTraits::status_from_reg(context.reg_values[0])};
                 }
                 case AsyncChainReadTag::kDataRawSingleChannel:
                 {
-                    return ReadDataRawCallbackResultT{.data =
-                                                          data_from_reg(context.reg_values[0], context.reg_values[1])};
+                    return ReadDataRawCallbackResultT{
+                        .data = LDC161XTraits::data_from_reg(context.reg_values[0], context.reg_values[1])};
                 }
                 case AsyncChainReadTag::kDataRawMultiChannel:
                 {
@@ -1855,13 +1806,13 @@ namespace valle::app
                     {
                         const uint16_t msb = context.reg_values[i * 2];
                         const uint16_t lsb = context.reg_values[i * 2 + 1];
-                        data_array[i]      = data_from_reg(msb, lsb);
+                        data_array[i]      = LDC161XTraits::data_from_reg(msb, lsb);
                     }
                     return ReadDataRawMultiCallbackResultT{.data = data_array};
                 }
                 case AsyncChainReadTag::kFrequencySingleChannel:
                 {
-                    const auto data_raw = data_from_reg(context.reg_values[0], context.reg_values[1]);
+                    const auto data_raw = LDC161XTraits::data_from_reg(context.reg_values[0], context.reg_values[1]);
                     return ReadFrequencyCallbackResultT{
                         .data = frequency_from_raw_data(data_reg_to_channel(context.config.regs[0]), data_raw)};
                 }
@@ -1870,24 +1821,24 @@ namespace valle::app
                     std::array<LDC161XDataFrequency, skNumChannels> freq_array{};
                     for (size_t i = 0; i < tkNumChannels; ++i)
                     {
-                        const uint16_t msb = context.reg_values[i * 2];
-                        const uint16_t lsb = context.reg_values[i * 2 + 1];
-                        const auto     data_raw =
-                            data_from_reg(msb, lsb);  // Reuse data_from_reg to parse the raw data and error bits
-                        freq_array[i] = frequency_from_raw_data(ldc161x_get_channel_from_index(i), data_raw);
+                        const uint16_t msb      = context.reg_values[i * 2];
+                        const uint16_t lsb      = context.reg_values[i * 2 + 1];
+                        const auto     data_raw = LDC161XTraits::data_from_reg(
+                            msb, lsb);  // Reuse data_from_reg to parse the raw data and error bits
+                        freq_array[i] = frequency_from_raw_data(LDC161XTraits::channel_from_channel_index(i), data_raw);
                     }
                     return ReadFrequencyMultiCallbackResultT{.data = freq_array};
                 }
                 case AsyncChainReadTag::kStatusDataRawSingleChannel:
                 {
                     return ReadStatusDataRawCallbackResultT{
-                        .status = status_from_reg(context.reg_values[0]),
-                        .data   = data_from_reg(context.reg_values[1], context.reg_values[2]),
+                        .status = LDC161XTraits::status_from_reg(context.reg_values[0]),
+                        .data   = LDC161XTraits::data_from_reg(context.reg_values[1], context.reg_values[2]),
                     };
                 }
                 case AsyncChainReadTag::kStatusDataRawMultiChannel:
                 {
-                    const auto status = status_from_reg(context.reg_values[0]);
+                    const auto status = LDC161XTraits::status_from_reg(context.reg_values[0]);
 
                     std::array<LDC161XDataRaw, skNumChannels> data_array{};
 
@@ -1896,7 +1847,7 @@ namespace valle::app
                         const uint16_t data_msb = context.reg_values[i * 2 + 1];
                         const uint16_t data_lsb = context.reg_values[i * 2 + 2];
 
-                        data_array[i] = data_from_reg(data_msb, data_lsb);
+                        data_array[i] = LDC161XTraits::data_from_reg(data_msb, data_lsb);
                     }
 
                     return ReadStatusDataRawMultiCallbackResultT{
@@ -1906,8 +1857,8 @@ namespace valle::app
                 }
                 case AsyncChainReadTag::kStatusFrequencySingleChannel:
                 {
-                    const auto status   = status_from_reg(context.reg_values[0]);
-                    const auto data_raw = data_from_reg(context.reg_values[1], context.reg_values[2]);
+                    const auto status   = LDC161XTraits::status_from_reg(context.reg_values[0]);
+                    const auto data_raw = LDC161XTraits::data_from_reg(context.reg_values[1], context.reg_values[2]);
                     const auto freq_mhz =
                         frequency_from_raw_data(data_reg_to_channel(context.config.regs[0]), data_raw);
 
@@ -1918,7 +1869,7 @@ namespace valle::app
                 }
                 case AsyncChainReadTag::kStatusFrequencyMultiChannel:
                 {
-                    const auto status = status_from_reg(context.reg_values[0]);
+                    const auto status = LDC161XTraits::status_from_reg(context.reg_values[0]);
 
                     std::array<LDC161XDataFrequency, skNumChannels> freq_array{};
 
@@ -1926,8 +1877,8 @@ namespace valle::app
                     {
                         const uint16_t data_msb = context.reg_values[i * 2 + 1];
                         const uint16_t data_lsb = context.reg_values[i * 2 + 2];
-                        const auto     data     = data_from_reg(data_msb, data_lsb);
-                        freq_array[i]           = frequency_from_raw_data(ldc161x_get_channel_from_index(i), data);
+                        const auto     data     = LDC161XTraits::data_from_reg(data_msb, data_lsb);
+                        freq_array[i] = frequency_from_raw_data(LDC161XTraits::channel_from_channel_index(i), data);
                     }
 
                     return ReadStatusFrequencyMultiCallbackResultT{
