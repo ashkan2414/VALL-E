@@ -6,6 +6,9 @@ cmake_minimum_required(VERSION 3.22)
 set(TARGET_APP "hello_world" CACHE STRING "Select App to build: Blinky, Controller, etc.")
 set(TARGET_PLATFORM "stm32/g474xx" CACHE STRING "Select Target Platform: stm32/g474xx, etc.")
 
+set_property(GLOBAL PROPERTY JOB_POOLS "comp_jobs=4" "link_jobs=2")
+set(CMAKE_JOB_POOL_COMPILE "comp_jobs" CACHE STRING "Set the number of parallel compile jobs")
+set(CMAKE_JOB_POOL_LINK "link_jobs" CACHE STRING "Set the number of parallel build jobs")
 
 set(VALLE_FIRMWARE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(VALLE_THIRDPARTY_DIR "${VALLE_FIRMWARE_DIR}/thirdparty")
@@ -94,6 +97,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC
     valle_platform
     valle_system
     valle_app
+    valle_platform_interface
 )
 
 

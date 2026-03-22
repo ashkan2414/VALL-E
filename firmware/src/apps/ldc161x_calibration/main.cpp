@@ -27,39 +27,44 @@ namespace valle::app
             status.undread_conv3);
     }
 
-    void print_raw(const LDC161XChannel channel, const LDC161XDataRaw& data, bool check_errors = false)
+    void print_data(const LDC161XDataRaw& channel0_data, const LDC161XDataRaw& channel1_data, bool check_errors = false)
     {
-        if (check_errors && (data.err_underrun || data.err_overrun || data.err_watchdog || data.err_amplitude))
+        if (check_errors)
         {
-            VALLE_LOG_WARN(
-                "Raw data reading for channel {} has errors. ERR_UNDERRUN={}, ERR_OVERRUN={}, "
-                "ERR_WATCHDOG={}, ERR_AMPLITUDE={}",
-                static_cast<uint8_t>(channel),
-                data.err_underrun,
-                data.err_overrun,
-                data.err_watchdog,
-                data.err_amplitude);
+            if (channel0_data.err_underrun || channel0_data.err_overrun || channel0_data.err_watchdog ||
+                channel0_data.err_amplitude)
+            {
+                VALLE_LOG_WARN(
+                    "Raw data reading for channel 0 has errors. ERR_UNDERRUN={}, ERR_OVERRUN={}, "
+                    "ERR_WATCHDOG={}, ERR_AMPLITUDE={}",
+                    channel0_data.err_underrun,
+                    channel0_data.err_overrun,
+                    channel0_data.err_watchdog,
+                    channel0_data.err_amplitude);
+            }
+
+            if (channel1_data.err_underrun || channel1_data.err_overrun || channel1_data.err_watchdog ||
+                channel1_data.err_amplitude)
+            {
+                VALLE_LOG_WARN(
+                    "Raw data reading for channel 1 has errors. ERR_UNDERRUN={}, ERR_OVERRUN={}, "
+                    "ERR_WATCHDOG={}, ERR_AMPLITUDE={}",
+                    channel1_data.err_underrun,
+                    channel1_data.err_overrun,
+                    channel1_data.err_watchdog,
+                    channel1_data.err_amplitude);
+            }
         }
 
-        const auto freq_mhz = g_drivers.position_sensor.frequency_from_raw_data(channel, data.value);
-        VALLE_LOG_INFO("Channel {} Raw Data: {:#x} ({} MHz)", static_cast<uint8_t>(channel), data.value, freq_mhz);
-    }
-
-    void print_frequency(const LDC161XChannel channel, const LDC161XDataFrequency& data, bool check_errors = false)
-    {
-        if (check_errors && (data.err_underrun || data.err_overrun || data.err_watchdog || data.err_amplitude))
-        {
-            VALLE_LOG_WARN(
-                "Frequency reading for channel {} has errors. ERR_UNDERRUN={}, ERR_OVERRUN={}, "
-                "ERR_WATCHDOG={}, ERR_AMPLITUDE={}",
-                static_cast<uint8_t>(channel),
-                data.err_underrun,
-                data.err_overrun,
-                data.err_watchdog,
-                data.err_amplitude);
-        }
-
-        VALLE_LOG_INFO("Channel {} Frequency: {} MHz", static_cast<uint8_t>(channel), data.frequency_mhz);
+        const auto channel0_freq_mhz =
+            g_drivers.position_sensor.frequency_from_raw_data<LDC161XChannel::kChannel0>(channel0_data.value);
+        const auto channel1_freq_mhz =
+            g_drivers.position_sensor.frequency_from_raw_data<LDC161XChannel::kChannel1>(channel1_data.value);
+        VALLE_LOG_INFO("Channel 0: {:#x} ({} MHz), Channel 1: {:#x} ({} MHz)",
+                       channel0_data.value,
+                       channel0_freq_mhz,
+                       channel1_data.value,
+                       channel1_freq_mhz);
     }
 
     void main()
@@ -68,13 +73,22 @@ namespace valle::app
 
         while (true)
         {
-            const auto data = g_drivers.position_sensor.read_data_raw_blocking();
-            if (!data.has_value())
+            const auto channel0_data = g_drivers.position_sensor.read_data_raw_blocking<LDC161XChannel::kChannel0>();
+            if (!channel0_data.has_value())
             {
                 VALLE_LOG_ERROR("Failed to read raw data from position sensor");
                 continue;
             }
-            print_raw(LDC161XChannel::kChannel0, data.value(), false);
+
+            const auto channel1_data = g_drivers.position_sensor.read_data_raw_blocking<LDC161XChannel::kChannel1>();
+            if (!channel1_data.has_value())
+            {
+                VALLE_LOG_ERROR("Failed to read raw data from position sensor");
+                continue;
+            }
+
+            print_data(channel0_data.value(), channel1_data.value(), false);
+
             system::TimingContext::delay_ms(10);
         }
     }

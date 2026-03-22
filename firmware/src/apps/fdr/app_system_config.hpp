@@ -1,6 +1,7 @@
 #pragma once
 
 #include "valle/app/platform/modules/acs724.hpp"
+#include "valle/app/platform/modules/amt10x_crank_encoder.hpp"
 #include "valle/app/platform/modules/vca.hpp"
 #include "valle/app/platform/uart_logger_config.hpp"
 #include "valle/app/platform/vca_current_loop_driver.hpp"
@@ -9,17 +10,22 @@
 #include "valle/platform/drivers/core_system.hpp"
 #include "valle/platform/drivers/gpio/digital_out.hpp"
 #include "valle/platform/drivers/uart/logger.hpp"
-#include "valle/app/platform/modules/amt10x_crank_encoder.hpp"
 
 namespace valle::app
 {
+    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = 1;
+    struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
+    {
+    };
+
+    static constexpr uint8_t kVCACurrentLoopDriverID = 0;
     struct VCACurrentLoopDriverCTConfig
     {
         using PWMOutput1PinT              = platform::GPIOPinA8Device;
         using PWMOutput2PinT              = platform::GPIOPinA9Device;
         using CurrentSensorADCDMAChannelT = platform::DMA1Channel2Device;
 
-        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = 1;
+        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
         static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kA;
 
         static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = 1;
@@ -32,14 +38,16 @@ namespace valle::app
 
     // TIM for Quadrature Encoder
     constexpr auto kCrankEncoderTIMControllerID = platform::TIMControllerID::kTim2;
-    struct CrankEncoderTIMControllerCTConfig : platform::TIMControllerCTDefaultConfig
+    struct CrankEncoderTIMControllerCTConfig : public platform::TIMControllerCTDefaultConfig
     {
         using Ch1PinT = platform::GPIOPinA15Device;
         using Ch2PinT = platform::GPIOPinB3Device;
     };
 }  // namespace valle::app
 
-VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(valle::app::VCACurrentLoopDriverCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAHRTIMPWMControllerID, valle::app::HRTIMControllerCTConfig{});
+VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(valle::app::kVCACurrentLoopDriverID,
+                                               valle::app::VCACurrentLoopDriverCTConfig{});
 VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID,
                                         valle::app::CrankEncoderTIMControllerCTConfig{});
 namespace valle
@@ -49,7 +57,7 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using VCACurrentLoopDriverT       = platform::app::VCACurrentLoopDriver<>;
+        using VCACurrentLoopDriverT       = platform::app::VCACurrentLoopDriver<kVCACurrentLoopDriverID>;
         using VCACurrentLoopDriverConfigT = typename VCACurrentLoopDriverT::ConfigT;
 
         using AMT10xTIMControllerT = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
@@ -63,7 +71,11 @@ namespace valle
         using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, VCACurrentLoopDriverT, CrankEncoderModuleT, TestGPIODriverT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver,
+                                      UARTLoggerT,
+                                      VCACurrentLoopDriverT,
+                                      CrankEncoderModuleT,
+                                      TestGPIODriverT>;
 
         // ============================================================================
         // Root Driver

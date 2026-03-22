@@ -3,7 +3,7 @@
 
 namespace valle::app
 {
-    using PositionSensorAsyncReadResultT = PositionSensorT::ReadCallbackResultT;
+    using PositionSensorAsyncReadResultT = PositionSensorModuleT::ReadCallbackResultT;
     extern system::SynchronizedCriticalSection<std::optional<PositionSensorAsyncReadResultT>>
         g_position_sensor_read_result;
 

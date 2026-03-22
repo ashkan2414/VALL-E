@@ -66,7 +66,7 @@ namespace valle::app
          * @brief Set the encoder count to a specific value (useful for zeroing or homing procedures).
          *
          */
-        void set_count(int64_t count)
+        void set_count(const uint32_t count)
         {
             static_cast<TDerived*>(this)->set_count_impl(count);
         }

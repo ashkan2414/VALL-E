@@ -14,7 +14,7 @@ namespace valle::app
     constexpr uint16_t                  kPositionSensorI2CAddress        = 0x2B;
     constexpr bool                      kPositionSensorI2CAddressIs10Bit = false;
 
-    struct PositionSensorI2CControllerCTConfig : platform::I2CControllerCTDefaultConfig
+    struct PositionSensorI2CControllerCTConfig : public platform::I2CControllerCTDefaultConfig
     {
         using DMAChannelRxT = platform::DMA1Channel3Device;
         using DMAChannelTxT = platform::DMA1Channel4Device;
@@ -38,13 +38,14 @@ namespace valle
                                                                                     kPositionSensorI2CAddress,
                                                                                     kPositionSensorI2CAddressIs10Bit>;
         using PositionSensorINTBPinT        = platform::GPIOPinA10Device;
-        using PositionSensorT =
+
+        using PositionSensorModuleT =
             platform::app::LDC161XSensorModule<PositionSensorI2CSlaveDeviceT, 2, PositionSensorINTBPinT>;
-        using PositionSensorModuleConfigT = typename PositionSensorT::ConfigT;
-        using PositionSensorConfigT       = typename PositionSensorT::SensorConfigT;
+        using PositionSensorModuleConfigT = typename PositionSensorModuleT::ConfigT;
+        using PositionSensorConfigT       = typename PositionSensorModuleT::SensorConfigT;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, PositionSensorT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, PositionSensorModuleT>;
 
         // ============================================================================
         // Root Driver
@@ -69,7 +70,7 @@ namespace valle
             RootDriver                 root;
             platform::CoreSystemDriver core;
             UARTLoggerT                uart_logger;
-            PositionSensorT            position_sensor;
+            PositionSensorModuleT      position_sensor;
         };
 
     }  // namespace app

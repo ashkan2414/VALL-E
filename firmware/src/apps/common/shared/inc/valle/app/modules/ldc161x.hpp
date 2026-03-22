@@ -543,7 +543,7 @@ namespace valle::app
                                            (channel_index_from_channel(channel) % 4));
         }
 
-        [[nodiscard]] static LDC161XStatus status_from_reg(const uint32_t status_raw)
+        [[nodiscard]] static LDC161XStatus status_from_reg(const uint16_t status_raw)
         {
             const auto status_reg = LDC161XStatusReg(status_raw);
             return LDC161XStatus{
@@ -563,7 +563,7 @@ namespace valle::app
 
         [[nodiscard]] static LDC161XDataRaw data_from_reg(const uint16_t msb, const uint16_t lsb)
         {
-            LDC161XDataReg data_reg((static_cast<uint32_t>(msb) << 16) | lsb);
+            LDC161XDataReg data_reg((static_cast<uint32_t>(msb) << 16) | lsb);  // NOLINT(readability-magic-numbers)
             return LDC161XDataRaw{
                 .err_underrun  = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrUR>() == 1U),
                 .err_overrun   = static_cast<bool>(data_reg.at<LDC161XDataRegFields::kErrOR>() == 1U),
@@ -892,6 +892,8 @@ namespace valle::app
         requires(CLDC161XValidNumChannels<tkNumChannels>)
     struct LDC161XSensorModuleConfigX
     {
+        static constexpr uint8_t skNumChannels = tkNumChannels;
+
         TI2CConfig                         i2c_config{};
         LDC161XSensorConfig<tkNumChannels> sensor_config{};
     };
@@ -1140,10 +1142,10 @@ namespace valle::app
         // ---------------------------------------------------------------------
         // MEMBERS
         // ---------------------------------------------------------------------
-        I2CInterfaceT                                                m_i2c{};
-        std::array<LinearConverter<uint32_t, double>, tkNumChannels> m_ch_freq_converters{};
-        ReadCallbackT                                                m_read_callback{};
-        std::optional<AsyncChainReadContext>                         m_async_context{};
+        I2CInterfaceT                                        m_i2c{};
+        std::array<LinearConverter<uint32_t>, tkNumChannels> m_ch_freq_converters{};
+        ReadCallbackT                                        m_read_callback{};
+        std::optional<AsyncChainReadContext>                 m_async_context{};
 
     public:
         template <typename... TArgs>
@@ -1599,10 +1601,36 @@ namespace valle::app
             return start_async_chain_read(skAsyncChainReadFrequencyMultiChannelConfig);
         }
 
+        [[nodiscard]] bool read_status_data_raw_async()
+            requires(tkNumChannels == 1)
+        {
+            return read_status_data_raw_async_impl<LDC161XChannel::kChannel0>();
+        }
+
+        template <LDC161XChannel tkChannel>
+            requires(CLDC161XValidChannel<tkChannel, tkNumChannels> && tkNumChannels > 1)
+        [[nodiscard]] bool read_status_data_raw_async()
+        {
+            return read_status_data_raw_async_impl<tkChannel>();
+        }
+
         [[nodiscard]] bool read_status_data_raw_multi_async()
             requires(tkNumChannels > 1)
         {
             return start_async_chain_read(skAsyncChainReadStatusDataRawMultiChannelConfig);
+        }
+
+        [[nodiscard]] bool read_status_frequency_mhz_async()
+            requires(tkNumChannels == 1)
+        {
+            return read_status_frequency_mhz_async_impl<LDC161XChannel::kChannel0>();
+        }
+
+        template <LDC161XChannel tkChannel>
+            requires(CLDC161XValidChannel<tkChannel, tkNumChannels> && tkNumChannels > 1)
+        [[nodiscard]] bool read_status_frequency_mhz_async()
+        {
+            return read_status_frequency_mhz_async_impl<tkChannel>();
         }
 
         [[nodiscard]] bool read_status_frequency_mhz_multi_async()
@@ -1680,6 +1708,13 @@ namespace valle::app
         }
 
         template <LDC161XChannel tkChannel>
+            requires(CLDC161XValidChannel<tkChannel, tkNumChannels>)
+        [[nodiscard]] bool read_status_data_raw_async_impl()
+        {
+            return start_async_chain_read(skAsyncChainReadStatusDataRawSingleChannelConfig<tkChannel>);
+        }
+
+        template <LDC161XChannel tkChannel>
             requires(CLDC161XValidChannel<tkChannel, tkNumChannels> && tkNumChannels > 1)
         [[nodiscard]] std::optional<LDC161XDataFrequency> read_frequency_mhz_blocking_impl(
             const system::TimeoutMillis timeout_ms = skDefaultTimeout)
@@ -1702,6 +1737,13 @@ namespace valle::app
         [[nodiscard]] bool read_frequency_mhz_async_impl()
         {
             return start_async_chain_read(skAsyncChainReadFrequencySingleChannelConfig<tkChannel>);
+        }
+
+        template <LDC161XChannel tkChannel>
+            requires(CLDC161XValidChannel<tkChannel, tkNumChannels>)
+        [[nodiscard]] bool read_status_frequency_mhz_async_impl()
+        {
+            return start_async_chain_read(skAsyncChainReadStatusFrequencySingleChannelConfig<tkChannel>);
         }
 
         template <LDC161XChannel tkChannel>
@@ -1819,7 +1861,7 @@ namespace valle::app
                 case AsyncChainReadTag::kFrequencyMultiChannel:
                 {
                     std::array<LDC161XDataFrequency, skNumChannels> freq_array{};
-                    for (size_t i = 0; i < tkNumChannels; ++i)
+                    for (uint8_t i = 0; i < tkNumChannels; ++i)
                     {
                         const uint16_t msb      = context.reg_values[i * 2];
                         const uint16_t lsb      = context.reg_values[i * 2 + 1];
@@ -1842,7 +1884,7 @@ namespace valle::app
 
                     std::array<LDC161XDataRaw, skNumChannels> data_array{};
 
-                    for (size_t i = 0; i < tkNumChannels; ++i)
+                    for (uint8_t i = 0; i < tkNumChannels; ++i)
                     {
                         const uint16_t data_msb = context.reg_values[i * 2 + 1];
                         const uint16_t data_lsb = context.reg_values[i * 2 + 2];
@@ -1873,7 +1915,7 @@ namespace valle::app
 
                     std::array<LDC161XDataFrequency, skNumChannels> freq_array{};
 
-                    for (size_t i = 0; i < tkNumChannels; ++i)
+                    for (uint8_t i = 0; i < tkNumChannels; ++i)
                     {
                         const uint16_t data_msb = context.reg_values[i * 2 + 1];
                         const uint16_t data_lsb = context.reg_values[i * 2 + 2];
@@ -1971,7 +2013,7 @@ namespace valle::app
             return (5.0F / fref_mhz) + 0.692F;
         }
 
-        [[nodiscard]] static constexpr LinearConverter<uint32_t, double> get_channel_freq_converter(
+        [[nodiscard]] static constexpr LinearConverter<uint32_t> get_channel_freq_converter(
             const LDC161XChannelConfigRaw& config)
         {
             constexpr uint32_t two_to_28 = 1U << 28;
@@ -1984,13 +2026,13 @@ namespace valle::app
 
             const double slope  = clock_product / two_to_28;
             const double offset = (clock_product * static_cast<double>(offset_reg_val)) / two_to_16;
-            return LinearConverter<uint32_t, double>(slope, offset);
+            return LinearConverter<uint32_t>(static_cast<float>(slope), static_cast<float>(offset));
         }
 
-        [[nodiscard]] static constexpr std::array<LinearConverter<uint32_t, double>, tkNumChannels>
+        [[nodiscard]] static constexpr std::array<LinearConverter<uint32_t>, tkNumChannels>
         get_all_channel_freq_converters(const LDC161XSensorConfigRaw<tkNumChannels>& raw_config)
         {
-            std::array<LinearConverter<uint32_t, double>, tkNumChannels> converters;
+            std::array<LinearConverter<uint32_t>, tkNumChannels> converters;
             for (uint8_t i = 0; i < tkNumChannels; ++i)
             {
                 converters[i] = get_channel_freq_converter(raw_config.channels[i]);
@@ -2205,4 +2247,14 @@ namespace valle::app
             return raw_config;
         }
     };
+
+    // ==============================================================================
+    // FREQUENCY TO DISTANCE CONVERTER
+    // ==============================================================================
+    template <size_t tkSize>
+    using LDC161XFrequencyToDistanceConverter = LookupTableConverter<float, tkSize>;
+
+    template <size_t tkSize>
+    using LDC161XDefaultFrequencyToDistanceConverterConfig = LookupTableConverterConfig<tkSize>;
+
 }  // namespace valle::app

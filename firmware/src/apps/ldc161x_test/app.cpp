@@ -1,6 +1,7 @@
 #include "app.hpp"
 
 #include "valle/app/platform/core_system_config.hpp"
+#include "valle/app/platform/grove_ldc161x_config.hpp"
 #include "valle/base/panic.hpp"
 
 VALLE_DEFINE_UART_LOGGER_HANDLER(valle::app::g_drivers.uart_logger);
@@ -15,7 +16,7 @@ namespace valle::app
             .template install<RootDriver>()
             .template install<platform::CoreSystemDriver>()
             .template install<UARTLoggerT>()
-            .template install<PositionSensorT>()
+            .template install<PositionSensorModuleT>()
             .yield();
     }
 
@@ -70,38 +71,8 @@ namespace valle::app
                }),
                "Failed to initialize UART Logger Driver");
 
-        constexpr auto grove_coil_config = LDC161XCoilConfig{
-            .inductance_uh  = 18.147F,
-            .capacitance_pf = 100.0F,
-            .rp_kohm        = 15.727F,
-            .q_factor       = 35.97F,
-        };
-        constexpr auto channel_config = LDC161XChannelConfig{
-            .coil_config   = grove_coil_config,
-            .drive_current = LDC161XIDriveCurrent::from_coil_rp(grove_coil_config.rp_kohm),
-            .offset_config = LDC161XOffsetConfigFrequency{.offset_mhz = 2.5F},
-        };
-
-        expect(g_drivers.position_sensor.init(PositionSensorModuleConfigT{
-                   .i2c_config =
-                       valle::platform::app::LDC161XSensorModuleI2CInterfaceConfig{
-                           .intb_interrupt_priority = 5,
-                       },
-                   .sensor_config =
-                       PositionSensorConfigT{
-                           .clock_source       = LDC161XClockSourceExternalClock{.fclk_mhz = 40.0F},
-                           .sample_rate_hz     = 300,
-                           .deglitch_bandwidth = LDC161XDeglitchBandwidth::kBand10MHz,
-                           .interrupt_config =
-                               LDC161XInterruptConfig{
-                                   .int_on_data_ready = true,
-                               },
-                           .sensor_activation_mode = LDC161XSensorActivationMode::kFullCurrentMode,
-                           .enable_rp_override     = true,
-                           .auto_amplitude_en      = false,
-                           // .high_current_drive_en = false,
-                           .channels = {channel_config, channel_config},
-                       }}),
+        expect(g_drivers.position_sensor.init(
+                   platform::app::get_grove_ldc161x_config<PositionSensorModuleT::skNumChannels>(300, 5)),
                "Failed to initialize Position Sensor");
 
         g_drivers.position_sensor.set_async_read_callback([](const auto& result)
@@ -121,9 +92,9 @@ namespace valle::app
         init_drivers();
     }
 
-    void position_sensor_async_read_callback(const PositionSensorT::ReadCallbackResultT& result)
+    void position_sensor_async_read_callback(const PositionSensorModuleT::ReadCallbackResultT& result)
     {
-        if (std::holds_alternative<PositionSensorT::ErrorCallbackResultT>(result))
+        if (std::holds_alternative<PositionSensorModuleT::ErrorCallbackResultT>(result))
         {
             VALLE_LOG_ERROR("Position sensor error callback invoked");
             return;

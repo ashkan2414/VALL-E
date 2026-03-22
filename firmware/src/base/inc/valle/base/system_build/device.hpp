@@ -99,10 +99,7 @@ namespace valle
         struct GlobalDeviceStorageAccessor
         {
             template <CDevice TDevice>
-            TDevice& get()
-            {
-                return static_cast<SystemBuild*>(gp_system_build)->storage.template get<TDevice>();
-            }
+            TDevice& get();
         };
 
     }  // namespace system_build::internal

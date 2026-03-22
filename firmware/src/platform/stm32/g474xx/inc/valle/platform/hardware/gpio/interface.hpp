@@ -2,7 +2,10 @@
 
 #include "stm32g4xx_hal.h"
 #include "stm32g4xx_hal_gpio.h"
+#include "stm32g4xx_ll_exti.h"
+#include "stm32g4xx_ll_system.h"
 #include "valle/platform/hardware/gpio/id.hpp"
+
 
 namespace valle::platform
 {

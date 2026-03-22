@@ -101,50 +101,50 @@ namespace valle::app
 
         std::visit(
             Overloaded{
-                [](const PositionSensorT::ErrorCallbackResultT&) { VALLE_LOG_ERROR("Error!"); },
-                [](const PositionSensorT::ReadStatusCallbackResultT& result) { print_status(result.status); },
-                [](const PositionSensorT::ReadDataRawCallbackResultT& result)
+                [](const PositionSensorModuleT::ErrorCallbackResultT&) { VALLE_LOG_ERROR("Error!"); },
+                [](const PositionSensorModuleT::ReadStatusCallbackResultT& result) { print_status(result.status); },
+                [](const PositionSensorModuleT::ReadDataRawCallbackResultT& result)
                 { print_raw(LDC161XChannel::kChannel0, result.data); },
-                [](const PositionSensorT::ReadFrequencyCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadFrequencyCallbackResultT& result)
                 { print_frequency(LDC161XChannel::kChannel0, result.data); },
-                [](const PositionSensorT::ReadDataRawMultiCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadDataRawMultiCallbackResultT& result)
                 {
                     for (uint8_t i = 0; i < result.data.size(); ++i)
                     {
-                        print_raw(ldc161x_get_channel_from_index(i), result.data[i]);
+                        print_raw(LDC161XTraits::channel_from_channel_index(i), result.data[i]);
                     }
                 },
-                [](const PositionSensorT::ReadFrequencyMultiCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadFrequencyMultiCallbackResultT& result)
                 {
                     for (uint8_t i = 0; i < result.data.size(); ++i)
                     {
-                        print_frequency(ldc161x_get_channel_from_index(i), result.data[i]);
+                        print_frequency(LDC161XTraits::channel_from_channel_index(i), result.data[i]);
                     }
                 },
-                [](const PositionSensorT::ReadStatusDataRawCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadStatusDataRawCallbackResultT& result)
                 {
                     // print_status(result.status);
                     print_raw(LDC161XChannel::kChannel0, result.data);
                 },
-                [](const PositionSensorT::ReadStatusFrequencyCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadStatusFrequencyCallbackResultT& result)
                 {
                     // print_status(result.status);
                     print_frequency(LDC161XChannel::kChannel0, result.data);
                 },
-                [](const PositionSensorT::ReadStatusDataRawMultiCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadStatusDataRawMultiCallbackResultT& result)
                 {
                     // print_status(result.status);
                     for (uint8_t i = 0; i < result.data.size(); ++i)
                     {
-                        print_raw(ldc161x_get_channel_from_index(i), result.data[i]);
+                        print_raw(LDC161XTraits::channel_from_channel_index(i), result.data[i]);
                     }
                 },
-                [](const PositionSensorT::ReadStatusFrequencyMultiCallbackResultT& result)
+                [](const PositionSensorModuleT::ReadStatusFrequencyMultiCallbackResultT& result)
                 {
                     // print_status(result.status);
                     for (uint8_t i = 0; i < result.data.size(); ++i)
                     {
-                        print_frequency(ldc161x_get_channel_from_index(i), result.data[i]);
+                        print_frequency(LDC161XTraits::channel_from_channel_index(i), result.data[i]);
                     }
                 },
             },

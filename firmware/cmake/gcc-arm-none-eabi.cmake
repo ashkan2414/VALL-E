@@ -4,17 +4,6 @@ set(CMAKE_SYSTEM_PROCESSOR          arm)
 set(CMAKE_C_COMPILER_ID GNU)
 set(CMAKE_CXX_COMPILER_ID GNU)
 
-set(TARGET_APP "hello_world" CACHE STRING "Select App to build: Blinky, Controller, etc.")
-set(TARGET_PLATFORM "stm32/g474xx" CACHE STRING "Select Target Platform: stm32/g474xx, etc.")
-
-
-set(VALLE_FIRMWARE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-set(VALLE_COMMON_DIR "${VALLE_FIRMWARE_DIR}/common")
-set(VALLE_PLATFORM_DIR "${VALLE_FIRMWARE_DIR}/platform/${TARGET_PLATFORM}")
-set(VALLE_APP_DIR "${VALLE_FIRMWARE_DIR}/apps/${TARGET_APP}")
-set(VALLE_THIRDPARTY_DIR "${VALLE_FIRMWARE_DIR}/thirdparty")
-
-
 # Some default GCC settings
 # arm-none-eabi- must be part of path environment
 set(TOOLCHAIN_PREFIX                arm-none-eabi-)
@@ -44,19 +33,18 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -fdata-sections -ffunction-sec
 
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions -fno-threadsafe-statics -fno-use-cxa-atexit")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdouble-promotion -Wconversion")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts-diagnostics-depth=5 -fmax-errors=10 -ftemplate-backtrace-limit=5")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts-diagnostics-depth=3 -fmax-errors=5 -ftemplate-backtrace-limit=3")
 
 set(CMAKE_C_FLAGS_DEBUG "-ggdb3 -O0 -g3 -fno-omit-frame-pointer -fvar-tracking -fvar-tracking-assignments")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -O0 -g3 -fno-omit-frame-pointer -fvar-tracking -fvar-tracking-assignments")
 
-set(CMAKE_C_FLAGS_RELEASE "-Os -g3")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os -g3")
+set(CMAKE_C_FLAGS_RELEASE "-O3 -g3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g3")
 
 set(CMAKE_EXE_LINKER_FLAGS "${TARGET_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T \"${VALLE_TARGET_PLATFORM_DIR}/flash.ld\"")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --specs=nano.specs")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Map=${CMAKE_PROJECT_NAME}.map -Wl,--gc-sections")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--print-memory-usage")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "-flto")
 
 set(TOOLCHAIN_LINK_LIBRARIES "m")

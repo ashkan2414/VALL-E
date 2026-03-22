@@ -31,7 +31,14 @@
 // Only include headers here if they are STABLE (not changing often).
 
 #ifdef __cplusplus
+#include "valle/base/logging/config_base.hpp"
+#include "valle/base/logging/core.hpp"
+#include "valle/base/logging/logger.hpp"
+#include "valle/base/panic.hpp"
+#include "valle/base/system_build/config_base.hpp"
 #include "valle/base/system_build/device.hpp"
+#include "valle/base/system_build/registry.hpp"
+#include "valle/base/system_build/traits.hpp"
 #include "valle/utils/atomic.hpp"
 #include "valle/utils/circular_queue.hpp"
 #include "valle/utils/enum.hpp"

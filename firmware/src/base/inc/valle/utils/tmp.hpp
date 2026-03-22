@@ -505,6 +505,28 @@ namespace valle
                                                                std::make_index_sequence<tuple_size>{});
     }
 
+    //
+    namespace detail
+    {
+        template <typename Tuple1, typename Tuple2, typename Func, std::size_t... I>
+        void tuple_for_each_zip_impl(Tuple1&& tuple1, Tuple2&& tuple2, Func&& func, std::index_sequence<I...>)
+        {
+            (func(std::get<I>(std::forward<Tuple1>(tuple1)), std::get<I>(std::forward<Tuple2>(tuple2))), ...);
+        }
+    }  // namespace detail
+
+    template <typename Tuple1, typename Tuple2, typename Func>
+    void tuple_for_each_zip(Tuple1&& tuple1, Tuple2&& tuple2, Func&& func)
+    {
+        constexpr std::size_t N = std::tuple_size_v<std::remove_reference_t<Tuple1>>;
+        static_assert(N == std::tuple_size_v<std::remove_reference_t<Tuple2>>, "Tuples must be same size");
+
+        detail::tuple_for_each_zip_impl(std::forward<Tuple1>(tuple1),
+                                        std::forward<Tuple2>(tuple2),
+                                        std::forward<Func>(func),
+                                        std::make_index_sequence<N>{});
+    }
+
     // ============================================================================
     // Type inspection helpers
     // ============================================================================

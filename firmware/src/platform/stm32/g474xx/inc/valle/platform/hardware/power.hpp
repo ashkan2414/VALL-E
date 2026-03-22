@@ -143,7 +143,7 @@ namespace valle::platform
     {
         static constexpr uint32_t skDefaultVoltageScalingTimeoutCount = 1'000'000U;
 
-        static constexpr uint32_t skLLGPIOPortIDMap[] = {
+        static inline const uint32_t skLLGPIOPortIDMap[7] = {
             LL_PWR_GPIO_A, LL_PWR_GPIO_B, LL_PWR_GPIO_C, LL_PWR_GPIO_D, LL_PWR_GPIO_E, LL_PWR_GPIO_F, LL_PWR_GPIO_G};
 
         // =========================================================================
