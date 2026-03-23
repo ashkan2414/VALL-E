@@ -34,6 +34,7 @@ namespace valle::app
             { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
             [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
             [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
+            [](platform::GPIOPortCDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port C Device"); },
             [](platform::I2C1CommandBufferDevice<>& dev)
             {
                 expect(dev.init(platform::I2CCommandBufferDeviceConfig{

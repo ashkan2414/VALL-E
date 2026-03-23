@@ -21,7 +21,6 @@ namespace valle::app
             .template install<IntakeValveVCACurrentLoopDriverT>()
             .template install<ExhaustValveVCACurrentLoopDriverT>()
             .template install<PositionLoopDriverT>()
-            .template install<CrankEncoderModuleT>()
             .template install<TestGPIODriverT>()
             .yield();
     }
@@ -63,8 +62,8 @@ namespace valle::app
                                    .enable_analog_filter = true,
                                    .dma_priority         = platform::DMAPriority::kHigh,
                                },
-                           .event_int_priority = 6,
-                           .error_int_priority = 4,
+                           .event_int_priority = 5,
+                           .error_int_priority = 5,
                        }),
                        "Failed to initialize I2C1 Command Buffer Device");
             },
@@ -120,7 +119,7 @@ namespace valle::app
         expect(
             g_drivers.position_loop_driver.init(PositionLoopDriverConfigT{
                 .ldc161x_config = platform::app::get_grove_ldc161x_config<PositionSensorModuleT::skNumChannels>(
-                    kPositionSampleRateHz, 6),
+                    kPositionSampleRateHz, 5),
                 .converter_configs = {PositionSensorConverterConfigT{// Exhaust
                                                                      .table = {LookupTablePoint{3.542181F, 0.0F},
                                                                                LookupTablePoint{3.50422190083F, 0.5F},
@@ -172,29 +171,17 @@ namespace valle::app
                     }}),
             "Failed to initialize Position Controller Driver");
 
-        if constexpr (kLogPositionResponse)
-        {
-            g_drivers.position_loop_driver.set_position_feedback_callback(
-                PositionLoopDriverT::PositionFeedbackCallbackT(
-                    [](const std::span<const float, 2>& position_feedback_mm)
-                    {
-                        g_position_response_collector.push_data(PositionResponseData{
-                            .timestamp          = system::MillisClock::now(),
-                            .intake_position_mm = position_feedback_mm
-                                [LDC161XTraits::skChannelIndexFromChannel<kIntakeValvePositionChannel>],
-                            .exhaust_position_mm = position_feedback_mm
-                                [LDC161XTraits::skChannelIndexFromChannel<kExhaustValvePositionChannel>],
-                            .cycle_position_rad = valle::app::g_drivers.crank_encoder.get_crank_angle_rad_cycle(),
-                        });
-                    }));
-        }
-
-        // AMT10x Crank Encoder Module Configuration
-        expect(g_drivers.crank_encoder.init(
-                   CrankEncoderModuleConfigT{.engine_kinematics = kPowerfistEngineKinematicsConfig,
-                                             .home_rad          = 0.73247560718F,
-                                             .reverse_direction = false}),
-               "Failed to initialize AMT102 Crank Encoder module");
+        g_drivers.position_loop_driver.set_position_feedback_callback(PositionLoopDriverT::PositionFeedbackCallbackT(
+            [](const std::span<const float, 2>& position_feedback_mm)
+            {
+                g_position_response_collector.push_data(PositionResponseData{
+                    .timestamp = system::MillisClock::now(),
+                    .target_position =
+                        g_drivers.position_loop_driver.get_target_position_mm<kResponseTargetValveChannel>(),
+                    .measured_position =
+                        position_feedback_mm[LDC161XTraits::skChannelIndexFromChannel<kResponseTargetValveChannel>],
+                });
+            }));
 
         // Test GPIO Driver Configuration
         expect(g_drivers.test_gpio.init(platform::GPIODigitalOutConfig{
@@ -223,24 +210,10 @@ namespace valle::app
         g_drivers.intake_vca_current_loop_driver.start();
         g_drivers.exhaust_vca_current_loop_driver.start();
         expect(g_drivers.position_loop_driver.start(), "Failed to start Position Loop Driver");
-
-        if constexpr (!kSimulatedEncoder)
-        {
-            g_drivers.crank_encoder.enable();
-        }
-
-        g_position_response_collector.start_capture();
     }
 
     void stop()
     {
-        g_position_response_collector.stop_capture();
-
-        if constexpr (!kSimulatedEncoder)
-        {
-            g_drivers.crank_encoder.disable();
-        }
-
         g_drivers.position_loop_driver.stop();
         g_drivers.intake_vca_current_loop_driver.stop();
         g_drivers.exhaust_vca_current_loop_driver.stop();

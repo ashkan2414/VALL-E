@@ -35,8 +35,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fno-rtti -fno-exceptions -fno-threadsafe-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wdouble-promotion -Wconversion")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fconcepts-diagnostics-depth=3 -fmax-errors=5 -ftemplate-backtrace-limit=3")
 
-set(CMAKE_C_FLAGS_DEBUG "-ggdb3 -O0 -g3 -fno-omit-frame-pointer -fvar-tracking -fvar-tracking-assignments")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -O0 -g3 -fno-omit-frame-pointer -fvar-tracking -fvar-tracking-assignments")
+set(CMAKE_C_FLAGS_DEBUG "-ggdb3 -Og -g3 -fno-omit-frame-pointer -fvar-tracking -fvar-tracking-assignments")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb3 -Og -g3 -fno-omit-frame-pointer -fvar-tracking -fvar-tracking-assignments")
 
 set(CMAKE_C_FLAGS_RELEASE "-O3 -g3")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -g3")

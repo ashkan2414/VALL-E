@@ -122,6 +122,29 @@
             ]
         },
         {
+            "name": "app-double-valve-current-controller-test",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "double_valve_current_controller_test"
+            }
+        },
+        {
+            "name": "double-valve-current-controller-test-debug",
+            "displayName": "Double Valve Current Controller Test (Debug)",
+            "inherits": [
+                "debug",
+                "app-double-valve-current-controller-test"
+            ]
+        },
+        {
+            "name": "double-valve-current-controller-test-release",
+            "displayName": "Double Valve Current Controller Test (Release)",
+            "inherits": [
+                "release",
+                "app-double-valve-current-controller-test"
+            ]
+        },
+        {
             "name": "app-amt102-test",
             "hidden": true,
             "cacheVariables": {
@@ -188,6 +211,29 @@
             "inherits": [
                 "release",
                 "app-ldc161x-calibration"
+            ]
+        },
+        {
+            "name": "app-position-controller",
+            "hidden": true,
+            "cacheVariables": {
+                "TARGET_APP": "position_controller"
+            }
+        },
+        {
+            "name": "position-controller-debug",
+            "displayName": "Position Controller (Debug)",
+            "inherits": [
+                "debug",
+                "app-position-controller"
+            ]
+        },
+        {
+            "name": "position-controller-release",
+            "displayName": "Position Controller (Release)",
+            "inherits": [
+                "release",
+                "app-position-controller"
             ]
         },
         {
@@ -317,6 +363,14 @@
             "configurePreset": "current-controller-release"
         },
         {
+            "name": "double-valve-current-controller-test-debug",
+            "configurePreset": "double-valve-current-controller-test-debug"
+        },
+        {
+            "name": "double-valve-current-controller-test-release",
+            "configurePreset": "double-valve-current-controller-test-release"
+        },
+        {
             "name": "amt102-test-debug",
             "configurePreset": "amt102-test-debug"
         },
@@ -339,6 +393,14 @@
         {
             "name": "ldc161x-calibration-release",
             "configurePreset": "ldc161x-calibration-release"
+        },
+        {
+            "name": "position-controller-debug",
+            "configurePreset": "position-controller-debug"
+        },
+        {
+            "name": "position-controller-release",
+            "configurePreset": "position-controller-release"
         },
         {
             "name": "crank-encoder-calibration-debug",

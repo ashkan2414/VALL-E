@@ -2251,10 +2251,13 @@ namespace valle::app
     // ==============================================================================
     // FREQUENCY TO DISTANCE CONVERTER
     // ==============================================================================
-    template <size_t tkSize>
-    using LDC161XFrequencyToDistanceConverter = LookupTableConverter<float, tkSize>;
+    using LDC161XFrequencyToDistancePolynomialConverter       = PolynomialConverter<float, 3>;
+    using LDC161XFrequencyToDistancePolynomialConverterConfig = PolynomialConverterConfig<3>;
 
     template <size_t tkSize>
-    using LDC161XDefaultFrequencyToDistanceConverterConfig = LookupTableConverterConfig<tkSize>;
+    using LDC161XFrequencyToDistanceTableConverter = LookupTableConverter<float, tkSize>;
+
+    template <size_t tkSize>
+    using LDC161XFrequencyToDistanceTableConverterConfig = LookupTableConverterConfig<tkSize>;
 
 }  // namespace valle::app

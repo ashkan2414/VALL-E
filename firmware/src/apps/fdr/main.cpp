@@ -5,8 +5,8 @@
 
 namespace valle::app
 {
-    static constexpr float kCloseCurrent = 0.3F;    // Set current during open
-    static constexpr float kOpenCurrent  = -0.15F;  // Set current during close
+    static constexpr float kCloseCurrent = -0.15F;  // Set current during open
+    static constexpr float kOpenCurrent  = 0.3F;    // Set current during close
     static constexpr bool  kSimulated    = false;
 
     std::pair<EngineStroke, float> get_stroke_and_pos_norm_simulated()

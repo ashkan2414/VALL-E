@@ -23,7 +23,6 @@ namespace valle::app
         g_drivers.vca_current_loop_driver.set_target_current_amps(kCmdBaselineA);
         TimingContext::delay_ms(1000);
 
-        uint32_t counter = 0;
         while (true)
         {
             g_current_response_collector.start_capture();
