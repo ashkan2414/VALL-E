@@ -37,7 +37,7 @@ namespace valle
         using PositionSensorI2CSlaveDeviceT = platform::I2CCommandBufferSlaveDevice<kPositionSensorI2CID,
                                                                                     kPositionSensorI2CAddress,
                                                                                     kPositionSensorI2CAddressIs10Bit>;
-        using PositionSensorINTBPinT        = platform::GPIOPinA10Device;
+        using PositionSensorINTBPinT        = platform::GPIOPinC11Device;
 
         using PositionSensorModuleT =
             platform::app::LDC161XSensorModule<PositionSensorI2CSlaveDeviceT, 2, PositionSensorINTBPinT>;

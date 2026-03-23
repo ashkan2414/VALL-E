@@ -31,9 +31,9 @@ namespace valle::platform::app
         using ConfigT = LDC161XVCAValvePositionControllerConfig<ValueT>;
 
     private:
-        constexpr static T skPidP = static_cast<T>(5.75);  // 5.75
-        constexpr static T skPidI = static_cast<T>(0.0);
-        constexpr static T skPidD = static_cast<T>(0.0);
+        constexpr static T skPidP = static_cast<T>(1.3);
+        constexpr static T skPidI = static_cast<T>(0.1);
+        constexpr static T skPidD = static_cast<T>(0.0001);
 
         PIDSystem<ValueT> system{};
 
@@ -209,6 +209,8 @@ namespace valle::platform::app
         using InjectDevices = typename GetInjectDevices<SensorModuleT>::type;
         using DependDevices = typename GetAdditionalDependDevices<SensorModuleT>::type;
 
+        using PositionFeedbackCallbackT = delegate::Delegate<void, const std::span<float, skNumChannels>&>;
+
     private:
         SensorModuleT                              m_sensor{};
         std::array<ConverterT, skNumChannels>      m_converters{};
@@ -216,6 +218,7 @@ namespace valle::platform::app
         Atomic<bool>                               m_active                = false;
         std::array<Atomic<float>, skNumChannels>   m_setpoints_mm          = {};
         DurationMillisF                            m_manual_read_period_ms = DurationMillisF(100.0F);
+        PositionFeedbackCallbackT                  m_data_callback{};
 
         valle::system::SynchronizedCriticalSection<valle::system::TimePointMillis> m_last_read_time{};
 
@@ -253,6 +256,11 @@ namespace valle::platform::app
             return true;
         }
 
+        void set_position_feedback_callback(PositionFeedbackCallbackT&& callback)
+        {
+            m_data_callback = std::move(callback);
+        }
+
         [[nodiscard]] bool start()
         {
             m_active.store(true, std::memory_order_relaxed);
@@ -264,16 +272,21 @@ namespace valle::platform::app
             m_active.store(false, std::memory_order_relaxed);
         }
 
-        template <uint8_t tkChannelIndex>
+        template <valle::app::LDC161XChannel tkChannel>
         void set_target_position_mm(const float position_mm)
         {
-            m_setpoints_mm[tkChannelIndex].store(position_mm, std::memory_order_relaxed);
+            const uint8_t channel_index = valle::app::LDC161XTraits::skChannelIndexFromChannel<tkChannel>;
+            m_setpoints_mm[channel_index].store(position_mm, std::memory_order_relaxed);
+
+            // Ensure we trigger a read if we're waiting too long to get new data after changing the setpoint
+            monitor_read_timeout_1khz();
         }
 
-        template <uint8_t tkChannelIndex>
+        template <valle::app::LDC161XChannel tkChannel>
         [[nodiscard]] float get_target_position_mm() const
         {
-            return m_setpoints_mm[tkChannelIndex].load(std::memory_order_relaxed);
+            const uint8_t channel_index = valle::app::LDC161XTraits::skChannelIndexFromChannel<tkChannel>;
+            return m_setpoints_mm[channel_index].load(std::memory_order_relaxed);
         }
 
         [[nodiscard]] SensorModuleT& sensor()
@@ -330,20 +343,43 @@ namespace valle::platform::app
                 return;
             }
 
+            using PositionDataT = std::optional<std::array<float, skNumChannels>>;
+            PositionDataT position_feedback_mm_data{};
+
             if constexpr (skSingleChannel)  // NOLINT(bugprone-branch-clone)
             {
-                std::visit(Overloaded{[this](const SensorModuleT::ReadStatusFrequencyCallbackResultT& result)
-                                      { on_channel_data<valle::app::LDC161XChannel::kChannel0>(result.data); },
-                                      [](const auto&) { /* Handle other callback result types if necessary */ }},
-                           result);
+                position_feedback_mm_data = std::visit(
+                    Overloaded{[this](const SensorModuleT::ReadStatusFrequencyCallbackResultT& result) -> PositionDataT
+                               {
+                                   return convert_frequencies_multi(std::span(&result.data, 1),
+                                                                    std::make_index_sequence<skNumChannels>{});
+                               },
+                               [](const auto&) -> PositionDataT { return std::nullopt; }},
+                    result);
             }
             else
             {
-                std::visit(
-                    Overloaded{[this](const SensorModuleT::ReadStatusFrequencyMultiCallbackResultT& result)
-                               { handle_multichannel_read_impl(result, std::make_index_sequence<skNumChannels>{}); },
-                               [](const auto&) { /* Handle other callback result types if necessary */ }},
+                position_feedback_mm_data = std::visit(
+                    Overloaded{
+                        [this](const SensorModuleT::ReadStatusFrequencyMultiCallbackResultT& result) -> PositionDataT
+                        {
+                            return convert_frequencies_multi(std::span(result.data),
+                                                             std::make_index_sequence<skNumChannels>{});
+                        },
+                        [](const auto&) -> PositionDataT { return std::nullopt; }},
                     result);
+            }
+
+            if (!position_feedback_mm_data.has_value())
+            {
+                return;
+            }
+
+            const auto data_span = std::span(position_feedback_mm_data.value());
+            handle_multichannel_read_impl(data_span, std::make_index_sequence<skNumChannels>{});
+            if (m_data_callback)
+            {
+                m_data_callback(data_span);
             }
         }
 
@@ -358,15 +394,28 @@ namespace valle::platform::app
         }
 
     private:
-        template <std::size_t... I>
-        void handle_multichannel_read_impl(const SensorModuleT::ReadStatusFrequencyMultiCallbackResultT& result,
-                                           std::index_sequence<I...>)
+        template <valle::app::LDC161XChannel tkChannel>
+        float convert_frequency(const valle::app::LDC161XDataFrequency& data)
         {
-            (on_channel_data<valle::app::LDC161XTraits::skChannelFromChannelIndex<I>>(result.data[I]), ...);
+            const uint8_t channel_index = valle::app::LDC161XTraits::skChannelIndexFromChannel<tkChannel>;
+            return m_converters[channel_index].convert(data.frequency_mhz);
+        }
+
+        template <std::size_t... I>
+        std::array<float, skNumChannels> convert_frequencies_multi(
+            const std::span<const valle::app::LDC161XDataFrequency, skNumChannels>& data, std::index_sequence<I...>)
+        {
+            return {convert_frequency<valle::app::LDC161XTraits::skChannelFromChannelIndex<I>>(data[I])...};
+        }
+
+        template <std::size_t... I>
+        void handle_multichannel_read_impl(const std::span<const float, skNumChannels>& data, std::index_sequence<I...>)
+        {
+            (on_channel_data<valle::app::LDC161XTraits::skChannelFromChannelIndex<I>>(data[I]), ...);
         }
 
         template <valle::app::LDC161XChannel tkChannel>
-        void on_channel_data(const valle::app::LDC161XDataFrequency& data)
+        void on_channel_data(const float feedback_position_mm)
         {
             const uint8_t channel_index  = valle::app::LDC161XTraits::skChannelIndexFromChannel<tkChannel>;
             auto&         controller_opt = std::get<channel_index>(m_controllers);
@@ -374,8 +423,7 @@ namespace valle::platform::app
             expect(controller_opt.has_value(), "Controller for channel does not have a value");
 
             // Convert frequency to position
-            const float reference_mm         = m_setpoints_mm[channel_index].load(std::memory_order_relaxed);
-            const float feedback_position_mm = m_converters[channel_index].convert(data.frequency_mhz);
+            const float reference_mm = m_setpoints_mm[channel_index].load(std::memory_order_relaxed);
 
             // Update controller
             controller_opt->run(reference_mm, feedback_position_mm);

@@ -46,7 +46,8 @@ namespace valle::app
 }  // namespace valle::app
 
 VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAHRTIMPWMControllerID, valle::app::HRTIMControllerCTConfig{});
-VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(valle::app::kVCACurrentLoopDriverID,
+VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(Test,
+                                               valle::app::kVCACurrentLoopDriverID,
                                                valle::app::VCACurrentLoopDriverCTConfig{});
 VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID,
                                         valle::app::CrankEncoderTIMControllerCTConfig{});

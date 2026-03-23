@@ -1,9 +1,6 @@
 #pragma once
 
 #include "valle/app/platform/ldc161x_position_loop_driver.hpp"
-#include "valle/app/platform/modules/acs724.hpp"
-#include "valle/app/platform/modules/amt10x_crank_encoder.hpp"
-#include "valle/app/platform/modules/vca.hpp"
 #include "valle/app/platform/uart_logger_config.hpp"
 #include "valle/app/platform/vca_current_loop_driver.hpp"
 #include "valle/base/system_build/config_base.hpp"
@@ -67,14 +64,6 @@ namespace valle::app
         using SCLPinT       = platform::GPIOPinB8Device;
         using SDAPinT       = platform::GPIOPinB9Device;
     };
-
-    // TIM for Quadrature Encoder
-    constexpr auto kCrankEncoderTIMControllerID = platform::TIMControllerID::kTim2;
-    struct CrankEncoderTIMControllerCTConfig : public platform::TIMControllerCTDefaultConfig
-    {
-        using Ch1PinT = platform::GPIOPinA15Device;
-        using Ch2PinT = platform::GPIOPinB3Device;
-    };
 }  // namespace valle::app
 
 VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAHRTIMPWMControllerID, valle::app::HRTIMControllerCTConfig{});
@@ -86,8 +75,7 @@ VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(Exhaust,
                                                valle::app::ExhaustValveVCACurrentLoopDriverCTConfig{});
 VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2CID,
                                       valle::app::PositionSensorI2CControllerCTConfig{});
-VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID,
-                                        valle::app::CrankEncoderTIMControllerCTConfig{});
+
 namespace valle
 {
     namespace app
@@ -140,15 +128,6 @@ namespace valle
         static constexpr LDC161XChannel kExhaustValvePositionChannel = LDC161XChannel::kChannel0;
         static constexpr LDC161XChannel kIntakeValvePositionChannel  = LDC161XChannel::kChannel1;
 
-        // AMT10x Crank Encoder Configurations
-        using AMT10xTIMControllerT = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
-        using AMT10xTIMEncoderModuleT =
-            platform::app::AMT10xTIMEncoderModule<AMT10xTIMControllerT, platform::GPIOPinB5Device, AMT10xPPR::k2048>;
-        using AMT10xTIMEncoderModuleConfigT = typename AMT10xTIMEncoderModuleT::ConfigT;
-
-        using CrankEncoderModuleT       = platform::app::AMT10xCrankEncoderModuleX<AMT10xTIMEncoderModuleT>;
-        using CrankEncoderModuleConfigT = typename CrankEncoderModuleT::ConfigT;
-
         // Test GPIO Driver
         using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;
 
@@ -158,7 +137,6 @@ namespace valle
                                       IntakeValveVCACurrentLoopDriverT,
                                       ExhaustValveVCACurrentLoopDriverT,
                                       PositionLoopDriverT,
-                                      CrankEncoderModuleT,
                                       TestGPIODriverT>;
 
         // ============================================================================
@@ -187,7 +165,6 @@ namespace valle
             IntakeValveVCACurrentLoopDriverT  intake_vca_current_loop_driver;
             ExhaustValveVCACurrentLoopDriverT exhaust_vca_current_loop_driver;
             PositionLoopDriverT               position_loop_driver;
-            CrankEncoderModuleT               crank_encoder;
             TestGPIODriverT                   test_gpio;
         };
 

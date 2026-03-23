@@ -5,6 +5,7 @@
 #include "valle/app/platform/modules/vca.hpp"
 #include "valle/base/panic.hpp"
 #include "valle/platform/hardware/common.hpp"
+#include "valle/system/sync.hpp"
 #include "valle/system/timing.hpp"
 #include "valle/utils/atomic.hpp"
 

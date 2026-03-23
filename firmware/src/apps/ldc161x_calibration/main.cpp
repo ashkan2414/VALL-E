@@ -6,6 +6,27 @@
 
 namespace valle::app
 {
+
+    auto channel0_converter = LDC161XFrequencyToDistanceTableConverter<7>(
+        LDC161XFrequencyToDistanceTableConverterConfig<7>{.table = {LookupTablePoint{3.461042F, 1.19F},
+                                                                    LookupTablePoint{3.372453F, 3.75F},
+                                                                    LookupTablePoint{3.366891F, 4.16F},
+                                                                    LookupTablePoint{3.360423F, 4.57F},
+                                                                    LookupTablePoint{3.357199F, 4.97F},
+                                                                    LookupTablePoint{3.352718F, 5.36F},
+                                                                    LookupTablePoint{3.350428F, 5.77F}}});
+
+    auto channel1_converter = LDC161XFrequencyToDistanceTableConverter<9>(
+        LDC161XFrequencyToDistanceTableConverterConfig<9>{.table = {LookupTablePoint{3.484316F, 0.0F},
+                                                                    LookupTablePoint{3.45249F, 0.5F},
+                                                                    LookupTablePoint{3.407546F, 1.19F},
+                                                                    LookupTablePoint{3.335775F, 3.75F},
+                                                                    LookupTablePoint{3.329356F, 4.16F},
+                                                                    LookupTablePoint{3.326385F, 4.57F},
+                                                                    LookupTablePoint{3.323087F, 4.97F},
+                                                                    LookupTablePoint{3.319487F, 5.36F},
+                                                                    LookupTablePoint{3.315132F, 5.77F}}});
+
     void print_status(const LDC161XStatus& status)
     {
         VALLE_LOG_INFO(
@@ -60,11 +81,13 @@ namespace valle::app
             g_drivers.position_sensor.frequency_from_raw_data<LDC161XChannel::kChannel0>(channel0_data.value);
         const auto channel1_freq_mhz =
             g_drivers.position_sensor.frequency_from_raw_data<LDC161XChannel::kChannel1>(channel1_data.value);
-        VALLE_LOG_INFO("Channel 0: {:#x} ({} MHz), Channel 1: {:#x} ({} MHz)",
+        VALLE_LOG_INFO("Channel 0: {:#x} ({:.6f} MHz, {:.6f} mm), Channel 1: {:#x} ({:.6f} MHz, {:.6f} mm)",
                        channel0_data.value,
                        channel0_freq_mhz,
+                       channel0_converter.convert(channel0_freq_mhz),
                        channel1_data.value,
-                       channel1_freq_mhz);
+                       channel1_freq_mhz,
+                       channel1_converter.convert(channel1_freq_mhz));
     }
 
     void main()

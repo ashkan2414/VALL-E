@@ -5,7 +5,10 @@
 
 namespace valle::app
 {
-    system::TimerMillis position_control_timer;
+    system::TimerMillis g_position_control_timer;
+    system::TimerMillis g_position_response_log_timer;
+    typename PositionResponseCollectorT::QueueT
+        g_position_response_captured_data;  // Local copy of captured data for logging (can't put on stack due to size)
 
     std::pair<EngineStroke, float> get_stroke_and_pos_norm_simulated()
     {
@@ -112,17 +115,46 @@ namespace valle::app
     // Sets the current controller based on a normalized angle input [0, 1] (maps to 0 to 2pi along the motor cycle).
     void run_control_loop_1khz()
     {
-        const auto elapsed = position_control_timer.elapsed();
-        if (elapsed >= kMainControlLoopPeriodS)
+        if (g_position_control_timer.elapsed() >= kMainControlLoopPeriodS)
         {
-            position_control_timer.reset();
-
             const auto [stroke, cylinder_pos_norm] = get_stroke_and_pos_norm();
             const float intake_valve_position_mm   = compute_intake_valve_position(stroke, cylinder_pos_norm);
             const float exhaust_valve_position_mm  = compute_exhaust_valve_position(stroke, cylinder_pos_norm);
 
-            g_drivers.position_loop_driver.set_target_position_mm<0>(intake_valve_position_mm);
-            g_drivers.position_loop_driver.set_target_position_mm<1>(exhaust_valve_position_mm);
+            g_drivers.position_loop_driver.set_target_position_mm<kIntakeValvePositionChannel>(
+                intake_valve_position_mm);
+            g_drivers.position_loop_driver.set_target_position_mm<kExhaustValvePositionChannel>(
+                exhaust_valve_position_mm);
+
+            g_position_control_timer.reset();
+        }
+
+        if constexpr (kLogPositionResponse)
+        {
+            if (g_position_response_log_timer.elapsed() >= kPositionResponseLogPeriod)
+            {
+                g_position_response_captured_data = g_position_response_collector.get_captured_data();
+
+                if (!g_position_response_captured_data.empty())
+                {
+                    const auto first_timestamp = g_position_response_captured_data.front().timestamp;
+
+                    VALLE_LOG_INFO("t_ms,intake_pos_mm,exhaust_pos_mm,cycle_pos_rad");
+                    while (auto data = g_position_response_captured_data.pop())
+                    {
+                        const auto relative_timestamp =
+                            std::chrono::duration_cast<system::DurationMillis>(data->timestamp - first_timestamp);
+
+                        VALLE_LOG_INFO("{},{:.6f},{:.6f},{:.6f}",
+                                       relative_timestamp.count(),
+                                       data->intake_position_mm,
+                                       data->exhaust_position_mm,
+                                       data->cycle_position_rad);
+                    }
+                }
+
+                g_position_response_log_timer.reset();
+            }
         }
 
         g_drivers.position_loop_driver.monitor_read_timeout_1khz();
@@ -146,7 +178,13 @@ namespace valle::app
         VALLE_LOG_INFO("Initialized!");
         start();
 
-        position_control_timer.reset();
+        g_position_control_timer.reset();
+
+        if constexpr (kLogPositionResponse)
+        {
+            g_position_response_log_timer.reset();
+        }
+
         while (true)
         {
             TimingContext::run_within_period_ms([]() { run_control_loop_1khz(); }, 1);  // ~1kHz control loop
