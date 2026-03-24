@@ -48,7 +48,7 @@ namespace valle::app
                        "Failed to initialize ADC12 Common Device");
             },
             [](platform::ADC1ControllerDevice& dev) { (void)dev; },  // Initialized by vca current loop driver
-            [](platform::I2C1CommandBufferDevice<>& dev)
+            [](platform::I2CCommandBufferDevice<I2CControllerID::kI2C1>& dev)
             {
                 expect(dev.init(platform::I2CCommandBufferDeviceConfig{
                            .event_int_priority = 5,

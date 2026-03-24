@@ -11,7 +11,7 @@ namespace valle::platform
     // INTERRUPT TRAITS
     // ============================================================================
     template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(kValidGPIOPinID<tkPortID, tkPinID>)
+
     struct GPIOPinInterruptTraits
     {
         static constexpr IRQn_Type skIRQn = GPIOPinTraits<tkPortID, tkPinID>::skIRQn;
@@ -71,7 +71,7 @@ namespace valle::platform
     };
 
     template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(kValidGPIOPinID<tkPortID, tkPinID>)
+
     struct GPIOPinInterruptController
     {
     public:
@@ -154,11 +154,11 @@ namespace valle::platform
      * Specialize this template to handle specific GPIO EXTI interrupts
      * for a given port and pin.
      *
-     * @tparam tkPortID GPIO Port ID (e.g., GPIOPortID::kA)
+     * @tparam tkPortID GPIO Port ID (e.g., GPIOPortID::kPortA)
      * @tparam tkPinID  GPIO Pin ID (0-15)
      */
     template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(kValidGPIOPinID<tkPortID, tkPinID>)
+
     struct GPIOPinISRRouter
     {
         using UnboundIsrHandlerTag = void;

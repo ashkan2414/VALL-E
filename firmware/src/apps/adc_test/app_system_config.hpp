@@ -10,7 +10,7 @@
 namespace valle::app
 {
     // ADC Channel
-    constexpr platform::ADCControllerID kTestADCControllerID = 1;
+    constexpr platform::ADCControllerID kTestADCControllerID = platform::ADCControllerID::kADC1;
     constexpr platform::ADCChannelID    kTestADCChannelID    = platform::ADCChannelID::kChannel1;
     constexpr bool                      kTestADCUseInject    = false;
 

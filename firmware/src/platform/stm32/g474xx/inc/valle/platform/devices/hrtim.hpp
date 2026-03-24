@@ -19,19 +19,15 @@ namespace valle::platform
     class HRTIMRootDevice;
 
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMControllerDevice;
 
     template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMFaultDevice;
 
     template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMEEVDevice;
 
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMTimerDevice;
 
     // =============================================================================
@@ -43,7 +39,7 @@ namespace valle::platform
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceTreeList<HRTIMControllerDevice<1>>;
+            using Children = DeviceTreeList<HRTIMControllerDevice<HRTIMControllerID::kHRTIM1>>;
         };
     };
 
@@ -130,34 +126,11 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMControllerDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
-            using Children = DeviceTreeList<HRTIMFaultDevice<tkControllerID, HRTIMFaultID::kFault1>,
-                                            HRTIMFaultDevice<tkControllerID, HRTIMFaultID::kFault2>,
-                                            HRTIMFaultDevice<tkControllerID, HRTIMFaultID::kFault3>,
-                                            HRTIMFaultDevice<tkControllerID, HRTIMFaultID::kFault4>,
-                                            HRTIMFaultDevice<tkControllerID, HRTIMFaultID::kFault5>,
-                                            HRTIMFaultDevice<tkControllerID, HRTIMFaultID::kFault6>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV1>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV2>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV3>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV4>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV5>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV6>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV7>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV8>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV9>,
-                                            HRTIMEEVDevice<tkControllerID, HRTIMEEVID::kEEV10>,
-                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kA>,
-                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kB>,
-                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kC>,
-                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kD>,
-                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kE>,
-                                            HRTIMTimerDevice<tkControllerID, HRTIMTimerID::kF>>;
         };
         static constexpr HRTIMControllerID skControllerID = tkControllerID;
 
@@ -212,7 +185,7 @@ namespace valle::platform
 
             if (!calibration_success)
             {
-                VALLE_LOG_ERROR("HRTIM{} DLL Calibration timed out!", tkControllerID);
+                VALLE_LOG_ERROR("HRTIM{} DLL Calibration timed out!", kHRTIMControllerNumFromID<tkControllerID>);
                 return false;
             }
 
@@ -224,7 +197,7 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using HRTIM1ControllerDevice = HRTIMControllerDevice<1>;
+    using HRTIM1ControllerDevice = HRTIMControllerDevice<HRTIMControllerID::kHRTIM1>;
 
     // =============================================================================
     // HRTIM FAULT DEVICE (SHARED DEVICE)
@@ -319,7 +292,6 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMFaultDevice
     {
     public:
@@ -410,12 +382,12 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using HRTIM1Fault1Device = HRTIMFaultDevice<1, HRTIMFaultID::kFault1>;
-    using HRTIM1Fault2Device = HRTIMFaultDevice<1, HRTIMFaultID::kFault2>;
-    using HRTIM1Fault3Device = HRTIMFaultDevice<1, HRTIMFaultID::kFault3>;
-    using HRTIM1Fault4Device = HRTIMFaultDevice<1, HRTIMFaultID::kFault4>;
-    using HRTIM1Fault5Device = HRTIMFaultDevice<1, HRTIMFaultID::kFault5>;
-    using HRTIM1Fault6Device = HRTIMFaultDevice<1, HRTIMFaultID::kFault6>;
+    using HRTIM1Fault1Device = HRTIMFaultDevice<HRTIMControllerID::kHRTIM1, HRTIMFaultID::kFault1>;
+    using HRTIM1Fault2Device = HRTIMFaultDevice<HRTIMControllerID::kHRTIM1, HRTIMFaultID::kFault2>;
+    using HRTIM1Fault3Device = HRTIMFaultDevice<HRTIMControllerID::kHRTIM1, HRTIMFaultID::kFault3>;
+    using HRTIM1Fault4Device = HRTIMFaultDevice<HRTIMControllerID::kHRTIM1, HRTIMFaultID::kFault4>;
+    using HRTIM1Fault5Device = HRTIMFaultDevice<HRTIMControllerID::kHRTIM1, HRTIMFaultID::kFault5>;
+    using HRTIM1Fault6Device = HRTIMFaultDevice<HRTIMControllerID::kHRTIM1, HRTIMFaultID::kFault6>;
 
     // =============================================================================
     // HRTIM EXTERNAL EVENT DEVICE (SHARED DEVICE)
@@ -508,7 +480,6 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMEEVDevice
     {
     public:
@@ -582,16 +553,16 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using HRTIM1EEV1Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV1>;
-    using HRTIM1EEV2Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV2>;
-    using HRTIM1EEV3Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV3>;
-    using HRTIM1EEV4Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV4>;
-    using HRTIM1EEV5Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV5>;
-    using HRTIM1EEV6Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV6>;
-    using HRTIM1EEV7Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV7>;
-    using HRTIM1EEV8Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV8>;
-    using HRTIM1EEV9Device  = HRTIMEEVDevice<1, HRTIMEEVID::kEEV9>;
-    using HRTIM1EEV10Device = HRTIMEEVDevice<1, HRTIMEEVID::kEEV10>;
+    using HRTIM1EEV1Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV1>;
+    using HRTIM1EEV2Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV2>;
+    using HRTIM1EEV3Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV3>;
+    using HRTIM1EEV4Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV4>;
+    using HRTIM1EEV5Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV5>;
+    using HRTIM1EEV6Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV6>;
+    using HRTIM1EEV7Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV7>;
+    using HRTIM1EEV8Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV8>;
+    using HRTIM1EEV9Device  = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV9>;
+    using HRTIM1EEV10Device = HRTIMEEVDevice<HRTIMControllerID::kHRTIM1, HRTIMEEVID::kEEV10>;
 
     // =============================================================================
     // HRTIM TIMER DEVICE (UNIQUE DEVICE)
@@ -794,7 +765,6 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     class HRTIMTimerDevice
     {
     public:
@@ -1269,11 +1239,11 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using HRTIM1TimerADevice = HRTIMTimerDevice<1, HRTIMTimerID::kA>;
-    using HRTIM1TimerBDevice = HRTIMTimerDevice<1, HRTIMTimerID::kB>;
-    using HRTIM1TimerCDevice = HRTIMTimerDevice<1, HRTIMTimerID::kC>;
-    using HRTIM1TimerDDevice = HRTIMTimerDevice<1, HRTIMTimerID::kD>;
-    using HRTIM1TimerEDevice = HRTIMTimerDevice<1, HRTIMTimerID::kE>;
-    using HRTIM1TimerFDevice = HRTIMTimerDevice<1, HRTIMTimerID::kF>;
+    using HRTIM1TimerADevice = HRTIMTimerDevice<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kA>;
+    using HRTIM1TimerBDevice = HRTIMTimerDevice<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kB>;
+    using HRTIM1TimerCDevice = HRTIMTimerDevice<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kC>;
+    using HRTIM1TimerDDevice = HRTIMTimerDevice<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kD>;
+    using HRTIM1TimerEDevice = HRTIMTimerDevice<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kE>;
+    using HRTIM1TimerFDevice = HRTIMTimerDevice<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kF>;
 
 }  // namespace valle::platform

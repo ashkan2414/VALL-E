@@ -20,7 +20,7 @@ namespace valle::platform
     };
 
     template <I2CControllerID tkControllerID, I2CInterruptType tkIntType>
-        requires(kValidI2CControllerID<tkControllerID>)
+
     struct I2CInterruptTraits;
 
     // ----------------------------------------------------------------------------
@@ -38,12 +38,11 @@ namespace valle::platform
     };
 
     template <I2CControllerID tkControllerID, I2CErrorInterruptType tkIntType>
-        requires(kValidI2CControllerID<tkControllerID>)
+
     struct I2CErrorInterruptTraits;
 
 #define DEFINE_I2C_ERROR_INT_TRAIT(tkIntType, flag_id, ll_name)                                                 \
     template <I2CControllerID tkControllerID>                                                                   \
-        requires(kValidI2CControllerID<tkControllerID>)                                                         \
     struct I2CErrorInterruptTraits<tkControllerID, (tkIntType)>                                                 \
     {                                                                                                           \
         static inline bool flag_active()                                                                        \
@@ -72,7 +71,6 @@ namespace valle::platform
 
 #define DEFINE_I2C_INT_TRAIT(tkIntType, ll_name)                                                   \
     template <I2CControllerID tkControllerID>                                                      \
-        requires(kValidI2CControllerID<tkControllerID>)                                            \
     struct I2CInterruptTraits<tkControllerID, (tkIntType)>                                         \
     {                                                                                              \
         static inline void enable()                                                                \
@@ -116,7 +114,6 @@ namespace valle::platform
 
     // Specialization for Error Interrupts
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     struct I2CInterruptTraits<tkControllerID, I2CInterruptType::kError>
     {
         static inline void enable()
@@ -197,7 +194,7 @@ namespace valle::platform
     };
 
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
+
     class I2CInterruptController
     {
     public:
@@ -282,7 +279,7 @@ namespace valle::platform
      * @tparam tkControllerID I2C Controller ID.
      */
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
+
     struct I2CGlobalEventISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -300,7 +297,7 @@ namespace valle::platform
      * @tparam tkControllerID I2C Controller ID.
      */
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
+
     struct I2CGlobalErrorISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -324,7 +321,7 @@ namespace valle::platform
      * @tparam tkIntType      I2C Interrupt Type.
      */
     template <I2CControllerID tkControllerID, I2CInterruptType tkIntType>
-        requires(kValidI2CControllerID<tkControllerID>)
+
     struct I2CISRRouter
     {
         using UnboundIsrHandlerTag = void;

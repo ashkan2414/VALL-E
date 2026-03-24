@@ -4,20 +4,28 @@
 
 namespace valle::platform
 {
-    using DMAControllerID = uint8_t;
+    enum class DMAControllerID : uint8_t
+    {
+        kDMA1 = 1,
+        kDMA2 = 2,
+    };
 
-    template <DMAControllerID tkControllerID>
-    constexpr bool kValidDMAControllerID = (tkControllerID == 1 || tkControllerID == 2);
-
-    using DMAChannelID = uint8_t;
-
-    template <DMAChannelID tkChannelID>
-    constexpr bool kValidDMAChannel = (tkChannelID >= 1 && tkChannelID <= 8);
+    enum class DMAChannelID : uint8_t
+    {
+        kChannel1 = 1,
+        kChannel2,
+        kChannel3,
+        kChannel4,
+        kChannel5,
+        kChannel6,
+        kChannel7,
+        kChannel8,
+    };
 
     struct DMAChannelFullID
     {
-        DMAControllerID controller_id = 0;
-        DMAChannelID    channel_id    = 0;
+        DMAControllerID controller_id = DMAControllerID::kDMA1;
+        DMAChannelID    channel_id    = DMAChannelID::kChannel1;
     };
 
 }  // namespace valle::platform

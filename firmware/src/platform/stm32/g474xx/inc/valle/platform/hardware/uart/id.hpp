@@ -4,7 +4,7 @@
 
 namespace valle::platform
 {
-    enum UARTControllerID : uint8_t
+    enum class UARTControllerID : uint8_t
     {
         kUSART1  = 1,
         kUSART2  = 2,

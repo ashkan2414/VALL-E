@@ -288,7 +288,7 @@ namespace valle::platform
     };
 
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     class HRTIMTimerInterruptController
     {
     public:
@@ -417,7 +417,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMGlobalMasterISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -438,7 +438,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMGlobalControllerISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -459,7 +459,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMControllerInterruptType tkIntType>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMControllerISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -480,7 +480,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMGlobalFaultISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -501,7 +501,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMFaultInterruptType tkIntType>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMFaultISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -522,7 +522,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMGlobalMasterTimerISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -543,7 +543,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMMasterTimerInterruptType tkIntType>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMMasterTimerISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -565,7 +565,7 @@ namespace valle::platform
      * @tparam tkTimerID HRTIM Timer ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMGlobalTimerISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -590,7 +590,7 @@ namespace valle::platform
      * @tparam tkIntType The interrupt type triggered.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID, HRTIMTimerInterruptType tkIntType>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     struct HRTIMTimerISRRouter
     {
         using UnboundIsrHandlerTag = void;

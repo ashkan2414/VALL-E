@@ -84,10 +84,10 @@ namespace valle::platform
         static constexpr IRQn_Type         skIRQn              = USART1_IRQn;
         static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART1Tx;
         static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART1Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kA;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = 9;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kA;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = 10;
+        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortA;
+        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin9;
+        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortA;
+        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin10;
 
         static inline void enable_clock()
         {
@@ -102,10 +102,10 @@ namespace valle::platform
         static constexpr IRQn_Type         skIRQn              = USART2_IRQn;
         static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART2Tx;
         static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART2Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kA;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = 2;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kA;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = 3;
+        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortA;
+        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin2;
+        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortA;
+        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin3;
 
         static inline void enable_clock()
         {
@@ -120,10 +120,10 @@ namespace valle::platform
         static constexpr IRQn_Type         skIRQn              = USART3_IRQn;
         static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART3Tx;
         static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART3Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kB;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = 10;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kB;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = 11;
+        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortB;
+        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin10;
+        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortB;
+        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin11;
 
         static inline void enable_clock()
         {
@@ -138,10 +138,10 @@ namespace valle::platform
         static constexpr IRQn_Type         skIRQn              = UART4_IRQn;
         static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUART4Tx;
         static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUART4Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kC;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = 10;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kC;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = 11;
+        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortC;
+        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin10;
+        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortC;
+        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin11;
 
         static inline void enable_clock()
         {
@@ -156,10 +156,10 @@ namespace valle::platform
         static constexpr IRQn_Type         skIRQn              = UART5_IRQn;
         static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUART5Tx;
         static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUART5Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kC;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = 12;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kD;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = 2;
+        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortC;
+        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin12;
+        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortD;
+        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin2;
 
         static inline void enable_clock()
         {
@@ -174,10 +174,10 @@ namespace valle::platform
         static constexpr IRQn_Type         skIRQn              = LPUART1_IRQn;
         static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kLPUART1Tx;
         static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kLPUART1Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kA;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = 2;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kA;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = 3;
+        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortA;
+        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin2;
+        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortA;
+        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin3;
 
         static inline void enable_clock()
         {

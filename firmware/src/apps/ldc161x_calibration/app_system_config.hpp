@@ -10,7 +10,7 @@
 namespace valle::app
 {
     // Position Sensor I2C Controller Config
-    constexpr platform::I2CControllerID kPositionSensorI2CID             = 1;
+    constexpr platform::I2CControllerID kPositionSensorI2CID             = platform::I2CControllerID::kI2C1;
     constexpr uint16_t                  kPositionSensorI2CAddress        = 0x2B;
     constexpr bool                      kPositionSensorI2CAddressIs10Bit = false;
 

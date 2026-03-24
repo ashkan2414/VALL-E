@@ -40,35 +40,35 @@ namespace valle::platform
         }                                                                                                      \
         static inline bool flag_active()                                                                       \
         {                                                                                                      \
-            if constexpr (tkChannelID == 1)                                                                    \
+            if constexpr (tkChannelID == DMAChannelID::kChannel1)                                              \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##1(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 2)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel2)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##2(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 3)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel3)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##3(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 4)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel4)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##4(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 5)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel5)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##5(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 6)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel6)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##6(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 7)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel7)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##7(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 8)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel8)                                         \
             {                                                                                                  \
                 return LL_DMA_IsActiveFlag_##ll_name##8(DMAControllerTraits<tkControllerID>::skInstance);      \
             }                                                                                                  \
@@ -84,35 +84,35 @@ namespace valle::platform
         }                                                                                                      \
         static inline void ack()                                                                               \
         {                                                                                                      \
-            if constexpr (tkChannelID == 1)                                                                    \
+            if constexpr (tkChannelID == DMAChannelID::kChannel1)                                              \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##1(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 2)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel2)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##2(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 3)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel3)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##3(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 4)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel4)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##4(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 5)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel5)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##5(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 6)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel6)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##6(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 7)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel7)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##7(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
-            else if constexpr (tkChannelID == 8)                                                               \
+            else if constexpr (tkChannelID == DMAChannelID::kChannel8)                                         \
             {                                                                                                  \
                 LL_DMA_ClearFlag_##ll_name##8(DMAControllerTraits<tkControllerID>::skInstance);                \
             }                                                                                                  \
@@ -156,7 +156,7 @@ namespace valle::platform
     };
 
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
+
     struct DMAChannelInterruptController
     {
     public:

@@ -14,7 +14,6 @@ namespace valle::platform
      * @tparam tkControllerID ADC Controller ID.
      */
     template <ADCControllerID tkID>
-        requires(kValidADCControllerID<tkID>)
     [[nodiscard]] consteval static inline bool adc_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<ADCInterruptType>();
@@ -29,7 +28,6 @@ namespace valle::platform
      * @tparam tkControllerID ADC Index (1-5)
      */
     template <ADCControllerID tkControllerID>
-        requires(kValidADCControllerID<tkControllerID>)
     static inline void adc_irq_handler()
     {
         using GlobalRouterT               = ADCGlobalISRRouter<tkControllerID>;
@@ -95,23 +93,23 @@ namespace valle::platform
             // We must check BOTH devices because they share the line.
             // The adc_irq_handler() function does a quick register check,
             // so it's cheap to call even if the ADC isn't active.
-            adc_irq_handler<1>();
-            adc_irq_handler<2>();
+            adc_irq_handler<ADCControllerID::kADC1>();
+            adc_irq_handler<ADCControllerID::kADC2>();
         }
 
         void ADC3_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            adc_irq_handler<3>();
+            adc_irq_handler<ADCControllerID::kADC3>();
         }
 
         void ADC4_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            adc_irq_handler<4>();
+            adc_irq_handler<ADCControllerID::kADC4>();
         }
 
         void ADC5_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            adc_irq_handler<5>();
+            adc_irq_handler<ADCControllerID::kADC5>();
         }
     }
 }  // namespace valle::platform

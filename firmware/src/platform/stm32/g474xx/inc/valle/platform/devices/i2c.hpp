@@ -24,7 +24,6 @@ namespace valle::platform
     class I2CRootDevice;
 
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     class I2CControllerDevice;
 
     // ============================================================================
@@ -36,10 +35,10 @@ namespace valle::platform
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceTreeList<I2CControllerDevice<1>,
-                                            I2CControllerDevice<2>,
-                                            I2CControllerDevice<3>,
-                                            I2CControllerDevice<4>>;
+            using Children = DeviceTreeList<I2CControllerDevice<I2CControllerID::kI2C1>,
+                                            I2CControllerDevice<I2CControllerID::kI2C2>,
+                                            I2CControllerDevice<I2CControllerID::kI2C3>,
+                                            I2CControllerDevice<I2CControllerID::kI2C4>>;
         };
     };
 
@@ -83,7 +82,6 @@ namespace valle::platform
                                                                             T::SMBAPinT::skPinID>);
 
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     struct I2CControllerCTConfigRegistry
     {
         static constexpr auto skConfig = I2CControllerCTDefaultConfig{};
@@ -160,7 +158,6 @@ namespace valle::platform
      * by one slave at a time. Users should write an arbitration layer if multiple slaves are to be used.
      */
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     class I2CControllerDevice
     {
     public:
@@ -509,10 +506,10 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
-    using I2C1ControllerDevice = I2CControllerDevice<1>;
-    using I2C2ControllerDevice = I2CControllerDevice<2>;
-    using I2C3ControllerDevice = I2CControllerDevice<3>;
-    using I2C4ControllerDevice = I2CControllerDevice<4>;
+    using I2C1ControllerDevice = I2CControllerDevice<I2CControllerID::kI2C1>;
+    using I2C2ControllerDevice = I2CControllerDevice<I2CControllerID::kI2C2>;
+    using I2C3ControllerDevice = I2CControllerDevice<I2CControllerID::kI2C3>;
+    using I2C4ControllerDevice = I2CControllerDevice<I2CControllerID::kI2C4>;
 
     // ==========================================================================
     // I2C COMMAND BUFFER DEVICE (SHARED DEVICE)
@@ -1033,8 +1030,7 @@ namespace valle::platform
     // DRIVER CLASS
     // --------------------------------------------------------------------------------
 
-    template <uint8_t tkControllerID, uint8_t tkTransactionQueueSize = 10>
-        requires(kValidI2CControllerID<tkControllerID>)
+    template <I2CControllerID tkControllerID, uint8_t tkTransactionQueueSize = 10>
     class I2CCommandBufferDevice
     {
     public:
@@ -1275,7 +1271,6 @@ namespace valle::platform
     };
 
     template <I2CControllerID tkControllerID, uint16_t tkAddress, bool tkIs10BitAddress = false>
-        requires(kValidI2CControllerID<tkControllerID>)
     class I2CCommandBufferSlaveDevice
     {
     public:
@@ -1387,16 +1382,16 @@ namespace valle::platform
     // --------------------------------------------------------------------------------
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2C1CommandBufferDevice = I2CCommandBufferDevice<1, tkTransactionQueueSize>;
+    using I2C1CommandBufferDevice = I2CCommandBufferDevice<I2CControllerID::kI2C1, tkTransactionQueueSize>;
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2C2CommandBufferDevice = I2CCommandBufferDevice<2, tkTransactionQueueSize>;
+    using I2C2CommandBufferDevice = I2CCommandBufferDevice<I2CControllerID::kI2C2, tkTransactionQueueSize>;
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2C3CommandBufferDevice = I2CCommandBufferDevice<3, tkTransactionQueueSize>;
+    using I2C3CommandBufferDevice = I2CCommandBufferDevice<I2CControllerID::kI2C3, tkTransactionQueueSize>;
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2C4CommandBufferDevice = I2CCommandBufferDevice<4, tkTransactionQueueSize>;
+    using I2C4CommandBufferDevice = I2CCommandBufferDevice<I2CControllerID::kI2C4, tkTransactionQueueSize>;
 
 }  // namespace valle::platform
 

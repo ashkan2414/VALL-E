@@ -256,63 +256,66 @@ namespace valle::platform
     // HARDWARE TRAITS
     // ============================================================================
     template <ADCControllerID tkControllerID>
-        requires(kValidADCControllerID<tkControllerID>)
     struct ADCControllerTraits;
 
     template <>
-    struct ADCControllerTraits<1>
+    struct ADCControllerTraits<ADCControllerID::kADC1>
     {
         using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC12>;
 
         static inline ADC_TypeDef* const        skInstance      = ADC1;
         static constexpr IRQn_Type              skIRQn          = ADC1_2_IRQn;
         static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC1;
+        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC12;
     };
     template <>
-    struct ADCControllerTraits<2>
+    struct ADCControllerTraits<ADCControllerID::kADC2>
     {
         using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC12>;
 
         static inline ADC_TypeDef* const        skInstance      = ADC2;
         static constexpr IRQn_Type              skIRQn          = ADC1_2_IRQn;
         static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC2;
+        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC12;
     };
 
     template <>
-    struct ADCControllerTraits<3>
+    struct ADCControllerTraits<ADCControllerID::kADC3>
     {
         using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC345>;
 
         static inline ADC_TypeDef* const        skInstance      = ADC3;
         static constexpr IRQn_Type              skIRQn          = ADC3_IRQn;
         static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC3;
+        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC345;
     };
 
     template <>
-    struct ADCControllerTraits<4>
+    struct ADCControllerTraits<ADCControllerID::kADC4>
     {
         using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC345>;
 
         static inline ADC_TypeDef* const        skInstance      = ADC4;
         static constexpr IRQn_Type              skIRQn          = ADC4_IRQn;
         static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC4;
+        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC345;
     };
 
     template <>
-    struct ADCControllerTraits<5>
+    struct ADCControllerTraits<ADCControllerID::kADC5>
     {
         using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC345>;
 
         static inline ADC_TypeDef* const        skInstance      = ADC5;
         static constexpr IRQn_Type              skIRQn          = ADC5_IRQn;
         static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC5;
+        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC345;
     };
 
     // -------------------------------------------------------------------------
     // Channel Traits
     // -------------------------------------------------------------------------
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
     struct ADCChannelTraits
     {
     private:
@@ -435,25 +438,25 @@ namespace valle::platform
             }
         }
 
-        static constexpr uint32_t rank_to_rank_reg(uint8_t rank)
+        static constexpr uint32_t rank_to_rank_reg(ADCInjectChannelRank rank)
         {
-            return skRankIdxToRankReg[rank - 1];
+            return skRankIdxToRankReg[static_cast<uint8_t>(rank) - 1];
         }
 
-        static constexpr uint8_t rank_reg_to_rank(const uint32_t rank_reg)
+        static constexpr ADCInjectChannelRank rank_reg_to_rank(const uint32_t rank_reg)
         {
             switch (rank_reg)
             {
                 case LL_ADC_INJ_RANK_1:
-                    return 1;
+                    return ADCInjectChannelRank::kRank1;
                 case LL_ADC_INJ_RANK_2:
-                    return 2;
+                    return ADCInjectChannelRank::kRank2;
                 case LL_ADC_INJ_RANK_3:
-                    return 3;
+                    return ADCInjectChannelRank::kRank3;
                 case LL_ADC_INJ_RANK_4:
-                    return 4;
+                    return ADCInjectChannelRank::kRank4;
                 default:
-                    return 0;
+                    return ADCInjectChannelRank::kRank1;
             }
         }
     };
@@ -563,73 +566,74 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        static constexpr uint32_t rank_to_rank_reg(uint8_t rank)
+        static constexpr uint32_t rank_to_rank_reg(ADCRegularChannelRank rank)
         {
-            return skRankIdxToRankReg[rank - 1];
+            return skRankIdxToRankReg[static_cast<uint8_t>(rank) - 1];
         }
 
-        static constexpr uint8_t rank_reg_to_rank(uint32_t rank)
+        static constexpr ADCRegularChannelRank rank_reg_to_rank(uint32_t rank)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (rank)
             {
                 case LL_ADC_REG_RANK_1:
-                    return 1;
+                    return ADCRegularChannelRank::kRank1;
                 case LL_ADC_REG_RANK_2:
-                    return 2;
+                    return ADCRegularChannelRank::kRank2;
                 case LL_ADC_REG_RANK_3:
-                    return 3;
+                    return ADCRegularChannelRank::kRank3;
                 case LL_ADC_REG_RANK_4:
-                    return 4;
+                    return ADCRegularChannelRank::kRank4;
                 case LL_ADC_REG_RANK_5:
-                    return 5;
+                    return ADCRegularChannelRank::kRank5;
                 case LL_ADC_REG_RANK_6:
-                    return 6;
+                    return ADCRegularChannelRank::kRank6;
                 case LL_ADC_REG_RANK_7:
-                    return 7;
+                    return ADCRegularChannelRank::kRank7;
                 case LL_ADC_REG_RANK_8:
-                    return 8;
+                    return ADCRegularChannelRank::kRank8;
                 case LL_ADC_REG_RANK_9:
-                    return 9;
+                    return ADCRegularChannelRank::kRank9;
                 case LL_ADC_REG_RANK_10:
-                    return 10;
+                    return ADCRegularChannelRank::kRank10;
                 case LL_ADC_REG_RANK_11:
-                    return 11;
+                    return ADCRegularChannelRank::kRank11;
                 case LL_ADC_REG_RANK_12:
-                    return 12;
+                    return ADCRegularChannelRank::kRank12;
                 case LL_ADC_REG_RANK_13:
-                    return 13;
+                    return ADCRegularChannelRank::kRank13;
                 case LL_ADC_REG_RANK_14:
-                    return 14;
+                    return ADCRegularChannelRank::kRank14;
                 case LL_ADC_REG_RANK_15:
-                    return 15;
+                    return ADCRegularChannelRank::kRank15;
                 case LL_ADC_REG_RANK_16:
-                    return 16;
+                    return ADCRegularChannelRank::kRank16;
                 default:
-                    return 0;
+                    return ADCRegularChannelRank::kRank1;
             }
 
             // NOLINTEND(readability-magic-numbers)
         }
     };
 
-    template <uint8_t tkRank>
+    template <ADCInjectChannelRank tkRank>
     struct ADCInjectRankTraits
     {
-        static constexpr uint32_t skRank = tkRank;
-        static constexpr uint32_t skReg  = ADCInjectGroupTraits::rank_to_rank_reg(tkRank);
+        static constexpr ADCInjectChannelRank skRank = tkRank;
+        static constexpr uint32_t             skReg  = ADCInjectGroupTraits::rank_to_rank_reg(tkRank);
     };
 
-    template <uint8_t tkRank>
+    template <ADCRegularChannelRank tkRank>
     struct ADCRegularRankTraits
     {
-        static constexpr uint32_t skRank = tkRank;
-        static constexpr uint32_t skReg  = ADCRegularGroupTraits::rank_to_rank_reg(tkRank);
+        static constexpr ADCRegularChannelRank skRank = tkRank;
+        static constexpr uint32_t              skReg  = ADCRegularGroupTraits::rank_to_rank_reg(tkRank);
     };
 
     // ============================================================================
     // INTERFACE
     // ============================================================================
+    using ADCValue = uint16_t;
 
     struct ADCRootInterface
     {

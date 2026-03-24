@@ -18,7 +18,6 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool hrtim_controller_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMControllerInterruptType>();
@@ -35,7 +34,6 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     static inline void hrtim_controller_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalControllerISRRouter<tkControllerID>;
@@ -82,7 +80,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     [[nodiscard]] consteval static inline bool hrtim_fault_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMFaultInterruptType>();
@@ -99,7 +97,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     static inline void hrtim_fault_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalFaultISRRouter<tkControllerID>;
@@ -150,7 +148,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     [[nodiscard]] consteval static inline bool hrtim_master_timer_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMMasterTimerInterruptType>();
@@ -167,7 +165,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     static inline void hrtim_master_timer_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalMasterTimerISRRouter<tkControllerID>;
@@ -212,7 +210,7 @@ namespace valle::platform
     // MASTER IRQ HANDLER
     // -----------------------------------------------------------------------------
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     [[nodiscard]] consteval static inline bool hrtim_master_has_any_granular_isr_handler()
     {
         return CBoundISRRouter<HRTIMGlobalMasterTimerISRRouter<tkControllerID>> ||
@@ -227,7 +225,7 @@ namespace valle::platform
      * @tparam tkControllerID HRTIM Controller ID.
      */
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     static inline void hrtim_master_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalMasterISRRouter<tkControllerID>;
@@ -257,7 +255,7 @@ namespace valle::platform
      * @tparam tkTimerID      HRTIM Timer ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     [[nodiscard]] consteval static inline bool hrtim_timer_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<HRTIMTimerInterruptType>();
@@ -275,7 +273,7 @@ namespace valle::platform
      * @tparam tkTimerID      HRTIM Timer ID.
      */
     template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
+
     static inline void hrtim_timer_irq_handler()
     {
         using GlobalRouterT               = HRTIMGlobalTimerISRRouter<tkControllerID, tkTimerID>;
@@ -329,49 +327,49 @@ namespace valle::platform
         // --- MASTER TIMER ---
         void HRTIM1_MASTER_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_master_irq_handler<1>();
+            hrtim_master_irq_handler<HRTIMControllerID::kHRTIM1>();
         }
 
         // --- FAULT ---
         void HRTIM1_FLT_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_fault_irq_handler<1>();
+            hrtim_fault_irq_handler<HRTIMControllerID::kHRTIM1>();
         }
 
         // --- TIMER A ---
         void HRTIM1_TIMA_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_timer_irq_handler<1, HRTIMTimerID::kA>();
+            hrtim_timer_irq_handler<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kA>();
         }
 
         // --- TIMER B ---
         void HRTIM1_TIMB_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_timer_irq_handler<1, HRTIMTimerID::kB>();
+            hrtim_timer_irq_handler<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kB>();
         }
 
         // --- TIMER C ---
         void HRTIM1_TIMC_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_timer_irq_handler<1, HRTIMTimerID::kC>();
+            hrtim_timer_irq_handler<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kC>();
         }
 
         // --- TIMER D ---
         void HRTIM1_TIMD_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_timer_irq_handler<1, HRTIMTimerID::kD>();
+            hrtim_timer_irq_handler<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kD>();
         }
 
         // --- TIMER E ---
         void HRTIM1_TIME_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_timer_irq_handler<1, HRTIMTimerID::kE>();
+            hrtim_timer_irq_handler<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kE>();
         }
 
         // --- TIMER F ---
         void HRTIM1_TIMF_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            hrtim_timer_irq_handler<1, HRTIMTimerID::kF>();
+            hrtim_timer_irq_handler<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kF>();
         }
     }
 

@@ -13,7 +13,6 @@ namespace valle::platform
     class DMAMuxRootDevice;
 
     template <DMAMuxControllerID tkControllerID>
-        requires(kValidDMAMuxControllerID<tkControllerID>)
     class DMAMuxControllerDevice;
 
     // ============================================================================
@@ -24,7 +23,7 @@ namespace valle::platform
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceTreeList<DMAMuxControllerDevice<1>>;
+            using Children = DeviceTreeList<DMAMuxControllerDevice<DMAMuxControllerID::kDMAMux1>>;
         };
     };
 
@@ -32,7 +31,6 @@ namespace valle::platform
     // DMAMux CONTROLLER (SHARED)
     // ============================================================================
     template <DMAMuxControllerID tkControllerID>
-        requires(kValidDMAMuxControllerID<tkControllerID>)
     class DMAMuxControllerDevice
     {
     public:
@@ -62,6 +60,6 @@ namespace valle::platform
     // DEVICE ALIASES
     // ----------------------------------------------------------------------------
 
-    using DMAMux1ControllerDevice = DMAMuxControllerDevice<1>;
+    using DMAMux1ControllerDevice = DMAMuxControllerDevice<DMAMuxControllerID::kDMAMux1>;
 
 }  // namespace valle::platform

@@ -30,14 +30,30 @@ namespace valle::platform
         constexpr static GPIOAlternativeFunction skAF     = (af);                    \
     };
 
-    DECLARE_HRTIM_PIN_MAP(
-        1, HRTIMControllerGPIOPinType::kSCIn, 0, GPIOPortID::kB, 2, GPIOAlternativeFunction::kAF13);  // PB2
-    DECLARE_HRTIM_PIN_MAP(
-        1, HRTIMControllerGPIOPinType::kSCIn, 1, GPIOPortID::kB, 6, GPIOAlternativeFunction::kAF12);  // PB6
-    DECLARE_HRTIM_PIN_MAP(
-        1, HRTIMControllerGPIOPinType::kSCOut, 0, GPIOPortID::kB, 1, GPIOAlternativeFunction::kAF13);  // PB1
-    DECLARE_HRTIM_PIN_MAP(
-        1, HRTIMControllerGPIOPinType::kSCOut, 1, GPIOPortID::kB, 3, GPIOAlternativeFunction::kAF12);  // PB3
+    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                          HRTIMControllerGPIOPinType::kSCIn,
+                          0,
+                          GPIOPortID::kPortB,
+                          GPIOPinID::kPin2,
+                          GPIOAlternativeFunction::kAF13);  // PB2
+    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                          HRTIMControllerGPIOPinType::kSCIn,
+                          1,
+                          GPIOPortID::kPortB,
+                          GPIOPinID::kPin6,
+                          GPIOAlternativeFunction::kAF12);  // PB6
+    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                          HRTIMControllerGPIOPinType::kSCOut,
+                          0,
+                          GPIOPortID::kPortB,
+                          GPIOPinID::kPin1,
+                          GPIOAlternativeFunction::kAF13);  // PB1
+    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                          HRTIMControllerGPIOPinType::kSCOut,
+                          1,
+                          GPIOPortID::kPortB,
+                          GPIOPinID::kPin3,
+                          GPIOAlternativeFunction::kAF12);  // PB3
 
 #undef DECLARE_HRTIM_PIN_MAP
     namespace detail
@@ -131,18 +147,49 @@ namespace valle::platform
         constexpr static GPIOAlternativeFunction skAF     = (af);                          \
     };
 
-    DECLARE_HRTIM_FAULT_PIN_MAP(
-        1, HRTIMFaultID::kFault1, 0, GPIOPortID::kA, 12, GPIOAlternativeFunction::kAF13);  // PA12
-    DECLARE_HRTIM_FAULT_PIN_MAP(
-        1, HRTIMFaultID::kFault2, 0, GPIOPortID::kA, 15, GPIOAlternativeFunction::kAF13);  // PA15
-    DECLARE_HRTIM_FAULT_PIN_MAP(
-        1, HRTIMFaultID::kFault3, 0, GPIOPortID::kB, 10, GPIOAlternativeFunction::kAF13);  // PB10
-    DECLARE_HRTIM_FAULT_PIN_MAP(
-        1, HRTIMFaultID::kFault4, 0, GPIOPortID::kB, 11, GPIOAlternativeFunction::kAF13);  // PB11
-    DECLARE_HRTIM_FAULT_PIN_MAP(1, HRTIMFaultID::kFault5, 0, GPIOPortID::kB, 0, GPIOAlternativeFunction::kAF13);  // PB0
-    DECLARE_HRTIM_FAULT_PIN_MAP(1, HRTIMFaultID::kFault5, 1, GPIOPortID::kC, 7, GPIOAlternativeFunction::kAF3);   // PC7
-    DECLARE_HRTIM_FAULT_PIN_MAP(
-        1, HRTIMFaultID::kFault6, 0, GPIOPortID::kC, 10, GPIOAlternativeFunction::kAF13);  // PC10
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault1,
+                                0,
+                                GPIOPortID::kPortA,
+                                GPIOPinID::kPin12,
+                                GPIOAlternativeFunction::kAF13);  // PA12
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault2,
+                                0,
+                                GPIOPortID::kPortA,
+                                GPIOPinID::kPin15,
+                                GPIOAlternativeFunction::kAF13);  // PA15
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault3,
+                                0,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin10,
+                                GPIOAlternativeFunction::kAF13);  // PB10
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault4,
+                                0,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin11,
+                                GPIOAlternativeFunction::kAF13);  // PB11
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault5,
+                                0,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin0,
+                                GPIOAlternativeFunction::kAF13);  // PB0
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault5,
+                                1,
+                                GPIOPortID::kPortC,
+                                GPIOPinID::kPin7,
+                                GPIOAlternativeFunction::kAF3);  // PC7
+
+    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                                HRTIMFaultID::kFault6,
+                                0,
+                                GPIOPortID::kPortC,
+                                GPIOPinID::kPin10,
+                                GPIOAlternativeFunction::kAF13);  // PC10
 
 #undef DECLARE_HRTIM_FAULT_PIN_MAP
     namespace detail
@@ -227,17 +274,72 @@ namespace valle::platform
         constexpr static GPIOAlternativeFunction skAF     = (af);                      \
     };
 
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV1, 0, GPIOPortID::kC, 12, GPIOAlternativeFunction::kAF3);   // PC12
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV2, 0, GPIOPortID::kC, 11, GPIOAlternativeFunction::kAF3);   // PC11
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV3, 0, GPIOPortID::kB, 7, GPIOAlternativeFunction::kAF13);   // PB7
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV4, 0, GPIOPortID::kB, 6, GPIOAlternativeFunction::kAF13);   // PB6
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV5, 0, GPIOPortID::kB, 9, GPIOAlternativeFunction::kAF13);   // PB9
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV6, 0, GPIOPortID::kB, 5, GPIOAlternativeFunction::kAF13);   // PB5
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV7, 0, GPIOPortID::kB, 4, GPIOAlternativeFunction::kAF13);   // PB4
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV8, 0, GPIOPortID::kB, 8, GPIOAlternativeFunction::kAF13);   // PB8
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV9, 0, GPIOPortID::kB, 3, GPIOAlternativeFunction::kAF13);   // PB3
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV10, 0, GPIOPortID::kC, 5, GPIOAlternativeFunction::kAF13);  // PC5
-    DECLARE_HRTIM_EEV_PIN_MAP(1, HRTIMEEVID::kEEV10, 1, GPIOPortID::kC, 6, GPIOAlternativeFunction::kAF3);   // PC6
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV1,
+                              0,
+                              GPIOPortID::kPortC,
+                              GPIOPinID::kPin12,
+                              GPIOAlternativeFunction::kAF3);  // PC12
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV2,
+                              0,
+                              GPIOPortID::kPortC,
+                              GPIOPinID::kPin11,
+                              GPIOAlternativeFunction::kAF3);  // PC11
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV3,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin7,
+                              GPIOAlternativeFunction::kAF13);  // PB7
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV4,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin6,
+                              GPIOAlternativeFunction::kAF13);  // PB6
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV5,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin9,
+                              GPIOAlternativeFunction::kAF13);  // PB9
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV6,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin5,
+                              GPIOAlternativeFunction::kAF13);  // PB5
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV7,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin4,
+                              GPIOAlternativeFunction::kAF13);  // PB4
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV8,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin8,
+                              GPIOAlternativeFunction::kAF13);  // PB8
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV9,
+                              0,
+                              GPIOPortID::kPortB,
+                              GPIOPinID::kPin3,
+                              GPIOAlternativeFunction::kAF13);  // PB3
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV10,
+                              0,
+                              GPIOPortID::kPortC,
+                              GPIOPinID::kPin5,
+                              GPIOAlternativeFunction::kAF13);  // PC5
+    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
+                              HRTIMEEVID::kEEV10,
+                              1,
+                              GPIOPortID::kPortC,
+                              GPIOPinID::kPin6,
+                              GPIOAlternativeFunction::kAF3);  // PC6
 #undef DECLARE_HRTIM_EEV_PIN_MAP
     namespace detail
     {
@@ -327,100 +429,100 @@ namespace valle::platform
         constexpr static GPIOAlternativeFunction skAF     = (af);                                     \
     };
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kA,
                                 HRTIMTimerGPIOPinType::kOutput1,
                                 0,
-                                GPIOPortID::kA,
-                                8,
+                                GPIOPortID::kPortA,
+                                GPIOPinID::kPin8,
                                 GPIOAlternativeFunction::kAF13);  // PA8
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kA,
                                 HRTIMTimerGPIOPinType::kOutput2,
                                 0,
-                                GPIOPortID::kA,
-                                9,
+                                GPIOPortID::kPortA,
+                                GPIOPinID::kPin9,
                                 GPIOAlternativeFunction::kAF13);  // PA9
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kB,
                                 HRTIMTimerGPIOPinType::kOutput1,
                                 0,
-                                GPIOPortID::kA,
-                                10,
+                                GPIOPortID::kPortA,
+                                GPIOPinID::kPin10,
                                 GPIOAlternativeFunction::kAF13);  // PA10
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kB,
                                 HRTIMTimerGPIOPinType::kOutput2,
                                 0,
-                                GPIOPortID::kA,
-                                11,
+                                GPIOPortID::kPortA,
+                                GPIOPinID::kPin11,
                                 GPIOAlternativeFunction::kAF13);  // PA11
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kC,
                                 HRTIMTimerGPIOPinType::kOutput1,
                                 0,
-                                GPIOPortID::kB,
-                                12,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin12,
                                 GPIOAlternativeFunction::kAF13);  // PB12
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kC,
                                 HRTIMTimerGPIOPinType::kOutput2,
                                 0,
-                                GPIOPortID::kB,
-                                13,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin13,
                                 GPIOAlternativeFunction::kAF13);  // PB13
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kD,
                                 HRTIMTimerGPIOPinType::kOutput1,
                                 0,
-                                GPIOPortID::kB,
-                                14,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin14,
                                 GPIOAlternativeFunction::kAF13);  // PB14
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kD,
                                 HRTIMTimerGPIOPinType::kOutput2,
                                 0,
-                                GPIOPortID::kB,
-                                15,
+                                GPIOPortID::kPortB,
+                                GPIOPinID::kPin15,
                                 GPIOAlternativeFunction::kAF13);  // PB15
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kE,
                                 HRTIMTimerGPIOPinType::kOutput1,
                                 0,
-                                GPIOPortID::kC,
-                                8,
+                                GPIOPortID::kPortC,
+                                GPIOPinID::kPin8,
                                 GPIOAlternativeFunction::kAF3);  // PC8
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kE,
                                 HRTIMTimerGPIOPinType::kOutput2,
                                 0,
-                                GPIOPortID::kC,
-                                9,
+                                GPIOPortID::kPortC,
+                                GPIOPinID::kPin9,
                                 GPIOAlternativeFunction::kAF3);  // PC9
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kF,
                                 HRTIMTimerGPIOPinType::kOutput1,
                                 0,
-                                GPIOPortID::kC,
-                                6,
+                                GPIOPortID::kPortC,
+                                GPIOPinID::kPin6,
                                 GPIOAlternativeFunction::kAF13);  // PC6
 
-    DECLARE_HRTIM_TIMER_PIN_MAP(1,
+    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
                                 HRTIMTimerID::kF,
                                 HRTIMTimerGPIOPinType::kOutput2,
                                 0,
-                                GPIOPortID::kC,
-                                7,
+                                GPIOPortID::kPortC,
+                                GPIOPinID::kPin7,
                                 GPIOAlternativeFunction::kAF13);  // PC7
 
 #undef DECLARE_HRTIM_PIN_MAP

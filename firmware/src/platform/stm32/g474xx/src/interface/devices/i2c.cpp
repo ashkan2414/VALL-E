@@ -14,7 +14,6 @@ namespace valle::platform
      * @tparam tkControllerID I2C Controller ID.
      */
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     [[nodiscard]] consteval static inline bool i2c_has_any_granular_isr_handler()
     {
         constexpr auto values = magic_enum::enum_values<I2CInterruptType>();
@@ -31,7 +30,6 @@ namespace valle::platform
      * @tparam tkControllerID I2C Index (1-4)
      */
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     static inline void i2c_event_irq_handler()
     {
         using GlobalRouterT               = I2CGlobalEventISRRouter<tkControllerID>;
@@ -80,7 +78,6 @@ namespace valle::platform
      * @tparam tkControllerID I2C Index (1-4)
      */
     template <I2CControllerID tkControllerID>
-        requires(kValidI2CControllerID<tkControllerID>)
     static inline void i2c_error_irq_handler()
     {
         using GlobalRouterT               = I2CGlobalErrorISRRouter<tkControllerID>;
@@ -124,41 +121,41 @@ namespace valle::platform
         // --- I2C 1 ---
         void I2C1_EV_IRQHandler(void)
         {
-            i2c_event_irq_handler<1>();
+            i2c_event_irq_handler<I2CControllerID::kI2C1>();
         }
         void I2C1_ER_IRQHandler(void)
         {
-            i2c_error_irq_handler<1>();
+            i2c_error_irq_handler<I2CControllerID::kI2C1>();
         }
 
         // --- I2C 2 ---
         void I2C2_EV_IRQHandler(void)
         {
-            i2c_event_irq_handler<2>();
+            i2c_event_irq_handler<I2CControllerID::kI2C2>();
         }
         void I2C2_ER_IRQHandler(void)
         {
-            i2c_error_irq_handler<2>();
+            i2c_error_irq_handler<I2CControllerID::kI2C2>();
         }
 
         // --- I2C 3 ---
         void I2C3_EV_IRQHandler(void)
         {
-            i2c_event_irq_handler<3>();
+            i2c_event_irq_handler<I2CControllerID::kI2C3>();
         }
         void I2C3_ER_IRQHandler(void)
         {
-            i2c_error_irq_handler<3>();
+            i2c_error_irq_handler<I2CControllerID::kI2C3>();
         }
 
         // --- I2C 4 ---
         void I2C4_EV_IRQHandler(void)
         {
-            i2c_event_irq_handler<4>();
+            i2c_event_irq_handler<I2CControllerID::kI2C4>();
         }
         void I2C4_ER_IRQHandler(void)
         {
-            i2c_error_irq_handler<4>();
+            i2c_error_irq_handler<I2CControllerID::kI2C4>();
         }
     }
 }  // namespace valle::platform

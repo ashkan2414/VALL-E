@@ -13,7 +13,7 @@
 
 namespace valle::app
 {
-    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = 1;
+    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = platform::HRTIMControllerID::kHRTIM1;
     struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
     {
     };
@@ -28,7 +28,7 @@ namespace valle::app
         static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
         static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kA;
 
-        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = 1;
+        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC1;
         static constexpr platform::ADCChannelID    skCurrentSensorADCChannelId    = platform::ADCChannelID::kChannel1;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;

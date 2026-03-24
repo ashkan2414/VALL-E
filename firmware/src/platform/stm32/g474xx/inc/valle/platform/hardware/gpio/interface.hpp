@@ -6,7 +6,6 @@
 #include "stm32g4xx_ll_system.h"
 #include "valle/platform/hardware/gpio/id.hpp"
 
-
 namespace valle::platform
 {
     // =============================================================================
@@ -84,7 +83,7 @@ namespace valle::platform
     struct GPIOPortTraits;
 
     template <>
-    struct GPIOPortTraits<GPIOPortID::kA>
+    struct GPIOPortTraits<GPIOPortID::kPortA>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOA;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTA;
@@ -96,7 +95,7 @@ namespace valle::platform
     };
 
     template <>
-    struct GPIOPortTraits<GPIOPortID::kB>
+    struct GPIOPortTraits<GPIOPortID::kPortB>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOB;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTB;
@@ -107,7 +106,7 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kC>
+    struct GPIOPortTraits<GPIOPortID::kPortC>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOC;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTC;
@@ -118,7 +117,7 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kD>
+    struct GPIOPortTraits<GPIOPortID::kPortD>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOD;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTD;
@@ -129,7 +128,7 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kE>
+    struct GPIOPortTraits<GPIOPortID::kPortE>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOE;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTE;
@@ -140,7 +139,7 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kF>
+    struct GPIOPortTraits<GPIOPortID::kPortF>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOF;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTF;
@@ -151,7 +150,7 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kG>
+    struct GPIOPortTraits<GPIOPortID::kPortG>
     {
         static inline GPIO_TypeDef* const skInstance         = GPIOG;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTG;
@@ -167,192 +166,181 @@ namespace valle::platform
     // ---------------------------------------------------------------------------
 
     template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(kValidGPIOPinID<tkPortID, tkPinID>)
     struct GPIOPinTraits
     {
     private:
+        static constexpr uint8_t skPinIdx = static_cast<uint8_t>(tkPinID);
+
         static consteval IRQn_Type get_irq_n()
         {
-            if constexpr (tkPinID == 0)
+            if constexpr (skPinIdx == 0)
             {
                 return EXTI0_IRQn;
             }
-            else if constexpr (tkPinID == 1)
+            else if constexpr (skPinIdx == 1)
             {
                 return EXTI1_IRQn;
             }
-            else if constexpr (tkPinID == 2)
+            else if constexpr (skPinIdx == 2)
             {
                 return EXTI2_IRQn;
             }
-            else if constexpr (tkPinID == 3)
+            else if constexpr (skPinIdx == 3)
             {
                 return EXTI3_IRQn;
             }
-            else if constexpr (tkPinID == 4)
+            else if constexpr (skPinIdx == 4)
             {
                 return EXTI4_IRQn;
             }
-            else if constexpr (tkPinID >= 5 && tkPinID <= 9)
+            else if constexpr (skPinIdx >= 5 && skPinIdx <= 9)
             {
                 return EXTI9_5_IRQn;
             }
-            else if constexpr (tkPinID >= 10 && tkPinID <= 15)
+            else if constexpr (skPinIdx >= 10 && skPinIdx <= 15)
             {
                 return EXTI15_10_IRQn;
-            }
-            else
-            {
-                static_assert(kAlwaysFalseV<tkPinID>, "Invalid GPIO Pin ID");
             }
         }
 
         static consteval uint32_t get_ll_exti_line()
         {
-            if constexpr (tkPinID == 0)
+            if constexpr (skPinIdx == 0)
             {
                 return LL_EXTI_LINE_0;
             }
-            else if constexpr (tkPinID == 1)
+            else if constexpr (skPinIdx == 1)
             {
                 return LL_EXTI_LINE_1;
             }
-            else if constexpr (tkPinID == 2)
+            else if constexpr (skPinIdx == 2)
             {
                 return LL_EXTI_LINE_2;
             }
-            else if constexpr (tkPinID == 3)
+            else if constexpr (skPinIdx == 3)
             {
                 return LL_EXTI_LINE_3;
             }
-            else if constexpr (tkPinID == 4)
+            else if constexpr (skPinIdx == 4)
             {
                 return LL_EXTI_LINE_4;
             }
-            else if constexpr (tkPinID == 5)
+            else if constexpr (skPinIdx == 5)
             {
                 return LL_EXTI_LINE_5;
             }
-            else if constexpr (tkPinID == 6)
+            else if constexpr (skPinIdx == 6)
             {
                 return LL_EXTI_LINE_6;
             }
-            else if constexpr (tkPinID == 7)
+            else if constexpr (skPinIdx == 7)
             {
                 return LL_EXTI_LINE_7;
             }
-            else if constexpr (tkPinID == 8)
+            else if constexpr (skPinIdx == 8)
             {
                 return LL_EXTI_LINE_8;
             }
-            else if constexpr (tkPinID == 9)
+            else if constexpr (skPinIdx == 9)
             {
                 return LL_EXTI_LINE_9;
             }
-            else if constexpr (tkPinID == 10)
+            else if constexpr (skPinIdx == 10)
             {
                 return LL_EXTI_LINE_10;
             }
-            else if constexpr (tkPinID == 11)
+            else if constexpr (skPinIdx == 11)
             {
                 return LL_EXTI_LINE_11;
             }
-            else if constexpr (tkPinID == 12)
+            else if constexpr (skPinIdx == 12)
             {
                 return LL_EXTI_LINE_12;
             }
-            else if constexpr (tkPinID == 13)
+            else if constexpr (skPinIdx == 13)
             {
                 return LL_EXTI_LINE_13;
             }
-            else if constexpr (tkPinID == 14)
+            else if constexpr (skPinIdx == 14)
             {
                 return LL_EXTI_LINE_14;
             }
-            else if constexpr (tkPinID == 15)
+            else if constexpr (skPinIdx == 15)
             {
                 return LL_EXTI_LINE_15;
-            }
-            else
-            {
-                static_assert(kAlwaysFalseV<tkPinID>, "Invalid GPIO Pin ID");
             }
         }
 
         static consteval uint32_t get_ll_syscfg_exti_line()
         {
-            if constexpr (tkPinID == 0)
+            if constexpr (skPinIdx == 0)
             {
                 return LL_SYSCFG_EXTI_LINE0;
             }
-            else if constexpr (tkPinID == 1)
+            else if constexpr (skPinIdx == 1)
             {
                 return LL_SYSCFG_EXTI_LINE1;
             }
-            else if constexpr (tkPinID == 2)
+            else if constexpr (skPinIdx == 2)
             {
                 return LL_SYSCFG_EXTI_LINE2;
             }
-            else if constexpr (tkPinID == 3)
+            else if constexpr (skPinIdx == 3)
             {
                 return LL_SYSCFG_EXTI_LINE3;
             }
-            else if constexpr (tkPinID == 4)
+            else if constexpr (skPinIdx == 4)
             {
                 return LL_SYSCFG_EXTI_LINE4;
             }
-            else if constexpr (tkPinID == 5)
+            else if constexpr (skPinIdx == 5)
             {
                 return LL_SYSCFG_EXTI_LINE5;
             }
-            else if constexpr (tkPinID == 6)
+            else if constexpr (skPinIdx == 6)
             {
                 return LL_SYSCFG_EXTI_LINE6;
             }
-            else if constexpr (tkPinID == 7)
+            else if constexpr (skPinIdx == 7)
             {
                 return LL_SYSCFG_EXTI_LINE7;
             }
-            else if constexpr (tkPinID == 8)
+            else if constexpr (skPinIdx == 8)
             {
                 return LL_SYSCFG_EXTI_LINE8;
             }
-            else if constexpr (tkPinID == 9)
+            else if constexpr (skPinIdx == 9)
             {
                 return LL_SYSCFG_EXTI_LINE9;
             }
-            else if constexpr (tkPinID == 10)
+            else if constexpr (skPinIdx == 10)
             {
                 return LL_SYSCFG_EXTI_LINE10;
             }
-            else if constexpr (tkPinID == 11)
+            else if constexpr (skPinIdx == 11)
             {
                 return LL_SYSCFG_EXTI_LINE11;
             }
-            else if constexpr (tkPinID == 12)
+            else if constexpr (skPinIdx == 12)
             {
                 return LL_SYSCFG_EXTI_LINE12;
             }
-            else if constexpr (tkPinID == 13)
+            else if constexpr (skPinIdx == 13)
             {
                 return LL_SYSCFG_EXTI_LINE13;
             }
-            else if constexpr (tkPinID == 14)
+            else if constexpr (skPinIdx == 14)
             {
                 return LL_SYSCFG_EXTI_LINE14;
             }
-            else if constexpr (tkPinID == 15)
+            else if constexpr (skPinIdx == 15)
             {
                 return LL_SYSCFG_EXTI_LINE15;
-            }
-            else
-            {
-                static_assert(kAlwaysFalseV<tkPinID>, "Invalid GPIO Pin ID");
             }
         }
 
     public:
-        static constexpr uint16_t  skPinMask          = (1UL << tkPinID);  // NOLINT(hicpp-signed-bitwise)
+        static constexpr uint16_t  skPinMask          = (1UL << skPinIdx);  // NOLINT(hicpp-signed-bitwise)
         static constexpr IRQn_Type skIRQn             = get_irq_n();
         static constexpr uint32_t  skLLEXTILine       = get_ll_exti_line();
         static constexpr uint32_t  skLLSyscfgEXTILine = get_ll_syscfg_exti_line();

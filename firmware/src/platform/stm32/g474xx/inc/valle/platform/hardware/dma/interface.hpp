@@ -62,9 +62,9 @@ namespace valle::platform
     struct DMAControllerTraits;
 
     template <>
-    struct DMAControllerTraits<1>
+    struct DMAControllerTraits<DMAControllerID::kDMA1>
     {
-        static constexpr DMAMuxControllerID skMuxControllerID = 1;
+        static constexpr DMAMuxControllerID skMuxControllerID = DMAMuxControllerID::kDMAMux1;
         using MuxTraitsT                                      = DMAMuxControllerTraits<skMuxControllerID>;
         static inline DMA_TypeDef* const skInstance           = DMA1;
         static constexpr uint32_t        skClock              = LL_AHB1_GRP1_PERIPH_DMA1;
@@ -76,9 +76,9 @@ namespace valle::platform
     };
 
     template <>
-    struct DMAControllerTraits<2>
+    struct DMAControllerTraits<DMAControllerID::kDMA2>
     {
-        static constexpr DMAMuxControllerID skMuxControllerID = 1;
+        static constexpr DMAMuxControllerID skMuxControllerID = DMAMuxControllerID::kDMAMux1;
         using MuxTraitsT                                      = DMAMuxControllerTraits<skMuxControllerID>;
         static inline DMA_TypeDef* const skInstance           = DMA2;
         static constexpr uint32_t        skClock              = LL_AHB1_GRP1_PERIPH_DMA2;
@@ -93,140 +93,133 @@ namespace valle::platform
     struct DMAChannelTraits
     {
     private:
+        static constexpr uint8_t skChannelIdx = static_cast<uint8_t>(tkChannelID);
+
         // Helper to get IRQn
         static constexpr IRQn_Type get_irq_n()
         {
-            if constexpr (tkControllerID == 1)  // NOLINT(bugprone-branch-clone)
+            if constexpr (tkControllerID == DMAControllerID::kDMA1)  // NOLINT(bugprone-branch-clone)
             {
-                if constexpr (tkChannelID == 1) return DMA1_Channel1_IRQn;
-                if constexpr (tkChannelID == 2) return DMA1_Channel2_IRQn;
-                if constexpr (tkChannelID == 3) return DMA1_Channel3_IRQn;
-                if constexpr (tkChannelID == 4) return DMA1_Channel4_IRQn;
-                if constexpr (tkChannelID == 5) return DMA1_Channel5_IRQn;
-                if constexpr (tkChannelID == 6) return DMA1_Channel6_IRQn;
-                if constexpr (tkChannelID == 7) return DMA1_Channel7_IRQn;
-                if constexpr (tkChannelID == 8) return DMA1_Channel8_IRQn;
+                if constexpr (skChannelIdx == 1) return DMA1_Channel1_IRQn;
+                if constexpr (skChannelIdx == 2) return DMA1_Channel2_IRQn;
+                if constexpr (skChannelIdx == 3) return DMA1_Channel3_IRQn;
+                if constexpr (skChannelIdx == 4) return DMA1_Channel4_IRQn;
+                if constexpr (skChannelIdx == 5) return DMA1_Channel5_IRQn;
+                if constexpr (skChannelIdx == 6) return DMA1_Channel6_IRQn;
+                if constexpr (skChannelIdx == 7) return DMA1_Channel7_IRQn;
+                if constexpr (skChannelIdx == 8) return DMA1_Channel8_IRQn;
             }
             else
             {
-                if constexpr (tkChannelID == 1) return DMA2_Channel1_IRQn;
-                if constexpr (tkChannelID == 2) return DMA2_Channel2_IRQn;
-                if constexpr (tkChannelID == 3) return DMA2_Channel3_IRQn;
-                if constexpr (tkChannelID == 4) return DMA2_Channel4_IRQn;
-                if constexpr (tkChannelID == 5) return DMA2_Channel5_IRQn;
-                if constexpr (tkChannelID == 6) return DMA2_Channel6_IRQn;
-                if constexpr (tkChannelID == 7) return DMA2_Channel7_IRQn;
-                if constexpr (tkChannelID == 8) return DMA2_Channel8_IRQn;
+                if constexpr (skChannelIdx == 1) return DMA2_Channel1_IRQn;
+                if constexpr (skChannelIdx == 2) return DMA2_Channel2_IRQn;
+                if constexpr (skChannelIdx == 3) return DMA2_Channel3_IRQn;
+                if constexpr (skChannelIdx == 4) return DMA2_Channel4_IRQn;
+                if constexpr (skChannelIdx == 5) return DMA2_Channel5_IRQn;
+                if constexpr (skChannelIdx == 6) return DMA2_Channel6_IRQn;
+                if constexpr (skChannelIdx == 7) return DMA2_Channel7_IRQn;
+                if constexpr (skChannelIdx == 8) return DMA2_Channel8_IRQn;
             }
         }
 
         // Helper to get Channel Instance
         static DMA_Channel_TypeDef* get_channel_instance()
         {
-            if constexpr (tkControllerID == 1)  // NOLINT(bugprone-branch-clone)
+            if constexpr (tkControllerID == DMAControllerID::kDMA1)  // NOLINT(bugprone-branch-clone)
             {
-                if constexpr (tkChannelID == 1) return DMA1_Channel1;
-                if constexpr (tkChannelID == 2) return DMA1_Channel2;
-                if constexpr (tkChannelID == 3) return DMA1_Channel3;
-                if constexpr (tkChannelID == 4) return DMA1_Channel4;
-                if constexpr (tkChannelID == 5) return DMA1_Channel5;
-                if constexpr (tkChannelID == 6) return DMA1_Channel6;
-                if constexpr (tkChannelID == 7) return DMA1_Channel7;
-                if constexpr (tkChannelID == 8) return DMA1_Channel8;
+                if constexpr (skChannelIdx == 1) return DMA1_Channel1;
+                if constexpr (skChannelIdx == 2) return DMA1_Channel2;
+                if constexpr (skChannelIdx == 3) return DMA1_Channel3;
+                if constexpr (skChannelIdx == 4) return DMA1_Channel4;
+                if constexpr (skChannelIdx == 5) return DMA1_Channel5;
+                if constexpr (skChannelIdx == 6) return DMA1_Channel6;
+                if constexpr (skChannelIdx == 7) return DMA1_Channel7;
+                if constexpr (skChannelIdx == 8) return DMA1_Channel8;
             }
-            else if constexpr (tkControllerID == 2)
+            else if constexpr (tkControllerID == DMAControllerID::kDMA2)
             {
-                if constexpr (tkChannelID == 1) return DMA2_Channel1;
-                if constexpr (tkChannelID == 2) return DMA2_Channel2;
-                if constexpr (tkChannelID == 3) return DMA2_Channel3;
-                if constexpr (tkChannelID == 4) return DMA2_Channel4;
-                if constexpr (tkChannelID == 5) return DMA2_Channel5;
-                if constexpr (tkChannelID == 6) return DMA2_Channel6;
-                if constexpr (tkChannelID == 7) return DMA2_Channel7;
-                if constexpr (tkChannelID == 8) return DMA2_Channel8;
-            }
-            else
-            {
-                static_assert(false, "Invalid DMA Controller ID");
+                if constexpr (skChannelIdx == 1) return DMA2_Channel1;
+                if constexpr (skChannelIdx == 2) return DMA2_Channel2;
+                if constexpr (skChannelIdx == 3) return DMA2_Channel3;
+                if constexpr (skChannelIdx == 4) return DMA2_Channel4;
+                if constexpr (skChannelIdx == 5) return DMA2_Channel5;
+                if constexpr (skChannelIdx == 6) return DMA2_Channel6;
+                if constexpr (skChannelIdx == 7) return DMA2_Channel7;
+                if constexpr (skChannelIdx == 8) return DMA2_Channel8;
             }
         }
 
         static consteval uint32_t get_ll_channel_id()
         {
             // NOLINTBEGIN(readability-magic-numbers)
-            if constexpr (tkChannelID == 1)
+            if constexpr (skChannelIdx == 1)
             {
                 return LL_DMA_CHANNEL_1;
             }
-            else if constexpr (tkChannelID == 2)
+            else if constexpr (skChannelIdx == 2)
             {
                 return LL_DMA_CHANNEL_2;
             }
-            else if constexpr (tkChannelID == 3)
+            else if constexpr (skChannelIdx == 3)
             {
                 return LL_DMA_CHANNEL_3;
             }
-            else if constexpr (tkChannelID == 4)
+            else if constexpr (skChannelIdx == 4)
             {
                 return LL_DMA_CHANNEL_4;
             }
-            else if constexpr (tkChannelID == 5)
+            else if constexpr (skChannelIdx == 5)
             {
                 return LL_DMA_CHANNEL_5;
             }
-            else if constexpr (tkChannelID == 6)
+            else if constexpr (skChannelIdx == 6)
             {
                 return LL_DMA_CHANNEL_6;
             }
-            else if constexpr (tkChannelID == 7)
+            else if constexpr (skChannelIdx == 7)
             {
                 return LL_DMA_CHANNEL_7;
             }
-            else if constexpr (tkChannelID == 8)
+            else if constexpr (skChannelIdx == 8)
             {
                 return LL_DMA_CHANNEL_8;
             }
-            else
-            {
-                static_assert(false, "Invalid DMA Channel ID");
-            }
-            // NOLINTEND(readability-magic-numbers)
         }
 
         static consteval DMAMuxChannel get_mux_channel_id()
         {
             // NOLINTBEGIN(readability-magic-numbers)
-            if constexpr (tkControllerID == 1)
+            if constexpr (tkControllerID == DMAControllerID::kDMA1)
             {
-                if constexpr (tkChannelID == 1)
+                if constexpr (tkChannelID == DMAChannelID::kChannel1)
                 {
                     return DMAMuxChannel::kDMA1Channel1;
                 }
-                else if constexpr (tkChannelID == 2)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel2)
                 {
                     return DMAMuxChannel::kDMA1Channel2;
                 }
-                else if constexpr (tkChannelID == 3)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel3)
                 {
                     return DMAMuxChannel::kDMA1Channel3;
                 }
-                else if constexpr (tkChannelID == 4)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel4)
                 {
                     return DMAMuxChannel::kDMA1Channel4;
                 }
-                else if constexpr (tkChannelID == 5)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel5)
                 {
                     return DMAMuxChannel::kDMA1Channel5;
                 }
-                else if constexpr (tkChannelID == 6)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel6)
                 {
                     return DMAMuxChannel::kDMA1Channel6;
                 }
-                else if constexpr (tkChannelID == 7)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel7)
                 {
                     return DMAMuxChannel::kDMA1Channel7;
                 }
-                else if constexpr (tkChannelID == 8)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel8)
                 {
                     return DMAMuxChannel::kDMA1Channel8;
                 }
@@ -235,48 +228,48 @@ namespace valle::platform
                     static_assert(false, "Invalid DMA Channel ID");
                 }
             }
-            else if constexpr (tkControllerID == 2)
+            else if constexpr (tkControllerID == DMAControllerID::kDMA2)
             {
-                if constexpr (tkChannelID == 1)
+                if constexpr (tkChannelID == DMAChannelID::kChannel1)
                 {
                     return DMAMuxChannel::kDMA2Channel1;
                 }
-                else if constexpr (tkChannelID == 2)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel2)
                 {
                     return DMAMuxChannel::kDMA2Channel2;
                 }
-                else if constexpr (tkChannelID == 3)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel3)
                 {
                     return DMAMuxChannel::kDMA2Channel3;
                 }
-                else if constexpr (tkChannelID == 4)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel4)
                 {
                     return DMAMuxChannel::kDMA2Channel4;
                 }
-                else if constexpr (tkChannelID == 5)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel5)
                 {
                     return DMAMuxChannel::kDMA2Channel5;
                 }
-                else if constexpr (tkChannelID == 6)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel6)
                 {
                     return DMAMuxChannel::kDMA2Channel6;
                 }
-                else if constexpr (tkChannelID == 7)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel7)
                 {
                     return DMAMuxChannel::kDMA2Channel7;
                 }
-                else if constexpr (tkChannelID == 8)
+                else if constexpr (tkChannelID == DMAChannelID::kChannel8)
                 {
                     return DMAMuxChannel::kDMA2Channel8;
                 }
                 else
                 {
-                    static_assert(false, "Invalid DMA Channel ID");
+                    static_assert(kAlwaysFalseV<tkChannelID>, "Invalid DMA Channel ID");
                 }
             }
             else
             {
-                static_assert(false, "Invalid DMA Controller ID");
+                static_assert(kAlwaysFalseV<tkControllerID>, "Invalid DMA Controller ID");
             }
             // NOLINTEND(readability-magic-numbers)
         }

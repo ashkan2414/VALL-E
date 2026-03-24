@@ -20,19 +20,15 @@ namespace valle::platform
     class ADCRootDevice;
 
     template <ADCControllerID tkControllerID>
-        requires(kValidADCControllerID<tkControllerID>)
     class ADCControllerDevice;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
     class ADCChannelDevice;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCInjectRank<tkRank>)
     class ADCInjectChannelDevice;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCRegularRank<tkRank>)
     class ADCRegularChannelDevice;
 
     // ============================================================================
@@ -47,11 +43,11 @@ namespace valle::platform
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceTreeList<ADCControllerDevice<1>,
-                                            ADCControllerDevice<2>,
-                                            ADCControllerDevice<3>,
-                                            ADCControllerDevice<4>,
-                                            ADCControllerDevice<5>>;
+            using Children = DeviceTreeList<ADCControllerDevice<ADCControllerID::kADC1>,
+                                            ADCControllerDevice<ADCControllerID::kADC2>,
+                                            ADCControllerDevice<ADCControllerID::kADC3>,
+                                            ADCControllerDevice<ADCControllerID::kADC4>,
+                                            ADCControllerDevice<ADCControllerID::kADC5>>;
         };
     };
 
@@ -66,31 +62,31 @@ namespace valle::platform
     struct ADCControllerDeviceTraits;
 
     template <>
-    struct ADCControllerDeviceTraits<1>
+    struct ADCControllerDeviceTraits<ADCControllerID::kADC1>
     {
         using ADCClockDeviceT = ADC12CommonDevice;
     };
 
     template <>
-    struct ADCControllerDeviceTraits<2>
+    struct ADCControllerDeviceTraits<ADCControllerID::kADC2>
     {
         using ADCClockDeviceT = ADC12CommonDevice;
     };
 
     template <>
-    struct ADCControllerDeviceTraits<3>
+    struct ADCControllerDeviceTraits<ADCControllerID::kADC3>
     {
         using ADCClockDeviceT = ADC345CommonDevice;
     };
 
     template <>
-    struct ADCControllerDeviceTraits<4>
+    struct ADCControllerDeviceTraits<ADCControllerID::kADC4>
     {
         using ADCClockDeviceT = ADC345CommonDevice;
     };
 
     template <>
-    struct ADCControllerDeviceTraits<5>  // NOLINT(readability-magic-numbers)
+    struct ADCControllerDeviceTraits<ADCControllerID::kADC5>  // NOLINT(readability-magic-numbers)
     {
         using ADCClockDeviceT = ADC345CommonDevice;
     };
@@ -109,7 +105,6 @@ namespace valle::platform
     } && (CNullDMAChannel<typename T::DMAChannelT> || CDMAChannelDevice<typename T::DMAChannelT>);
 
     template <ADCControllerID tkControllerID>
-        requires(kValidADCControllerID<tkControllerID>)
     struct ADCControllerCTConfigRegistry
     {
         static constexpr auto skConfig = ADCControllerCTDefaultConfig{};
@@ -263,42 +258,11 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <ADCControllerID tkControllerID>
-        requires(kValidADCControllerID<tkControllerID>)
     class ADCControllerDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
-            using Children = DeviceTreeList<ADCChannelDevice<tkControllerID, ADCChannelID::kChannel0>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel1>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel2>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel3>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel4>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel5>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel6>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel7>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel8>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel9>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel10>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel11>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel12>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel13>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel14>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel15>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel16>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel17>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannel18>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVRefInt>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelTempSensorADC1>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelTempSensorADC5>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVBat>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp1>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp2>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp3ADC2>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp3ADC3>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp4>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp5>,
-                                            ADCChannelDevice<tkControllerID, ADCChannelID::kChannelVOPAmp6>>;
         };
         static constexpr ADCControllerID skControllerID = tkControllerID;
         using ControllerTraitsT                         = ADCControllerTraits<skControllerID>;
@@ -308,7 +272,6 @@ namespace valle::platform
         using RegularGroupInterfaceT                    = ADCRegularGroupInterface<skControllerID>;
 
         template <ADCChannelID tkChannelID>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID>)
         using ChannelTraitsT = ADCChannelTraits<tkControllerID, tkChannelID>;
 
         using ClockDeviceT         = typename ControllerDeviceTraitsT::ADCClockDeviceT;
@@ -410,38 +373,12 @@ namespace valle::platform
 
         // --- Registration API (Called by Channel) ---
         /**
-         * @brief Initialize ADC Channel with given configuration and group/rank.
-         *
-         * @tparam tkChannelID Channel ID to initialize.
-         * @tparam tkGroup Channel Group (Regular/Inject).
-         * @tparam tkRank Rank in Sequence.
-         */
-        template <ADCChannelID tkChannelID, ADCChannelGroup tkGroup, uint8_t tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-        auto init_channel(const ADCChannelConfig& config)
-        {
-            if constexpr (tkGroup == ADCChannelGroup::kRegular)
-            {
-                init_channel_as_regular<tkChannelID, tkRank>(config);
-            }
-            else if constexpr (tkGroup == ADCChannelGroup::kInject)
-            {
-                init_channel_as_inject<tkChannelID, tkRank>(config);
-            }
-            else
-            {
-                static_assert(false, "Unsupported ADC Channel Group");
-            }
-        }
-
-        /**
          * @brief Initialize ADC channel as an Inject Channel.
          *
          * @tparam tkChannelID Channel ID to initialize.
          * @tparam tkRank Rank in Inject Sequence (1-4).
          */
         template <ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCInjectRank<tkRank>)
         void init_channel_as_inject(const ADCChannelConfig& cfg)
         {
             init_channel_core<tkChannelID>(cfg);
@@ -455,7 +392,6 @@ namespace valle::platform
          * @tparam tkRank Rank in Regular Sequence (1-16).
          */
         template <ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCRegularRank<tkRank>)
         void init_channel_as_regular(const ADCChannelConfig& cfg)
         {
             init_channel_core<tkChannelID>(cfg);
@@ -647,7 +583,6 @@ namespace valle::platform
          * @return ADCValue Raw ADC value.
          */
         template <ADCInjectChannelRank tkRank>
-            requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] constexpr inline ADCValue read_inject_data() const
         {
             return read_inject_data(tkRank);
@@ -674,7 +609,6 @@ namespace valle::platform
          * @return ADCValue Raw ADC value.
          */
         template <ADCRegularChannelRank tkRank>
-            requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] constexpr inline ADCValue read_regular_data() const
         {
             return read_regular_data(tkRank);
@@ -1011,7 +945,6 @@ namespace valle::platform
          * @param cfg        Physics configuration (Sampling time, Single/Diff, etc.)
          */
         template <ADCChannelID tkChannelID>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID>)
         void init_channel_core(const ADCChannelConfig& cfg)
         {
             using ChannelInterfaceT = ADCChannelInterface<tkControllerID, tkChannelID>;
@@ -1033,7 +966,6 @@ namespace valle::platform
          * @tparam tkRank Rank in Inject Sequence (1-4).
          */
         template <ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCInjectRank<tkRank>)
         void register_inject_sequence()
         {
             constexpr uint32_t idx = ChannelTraitsT<tkChannelID>::skChannelIdx;
@@ -1050,7 +982,6 @@ namespace valle::platform
          * @tparam tkRank The rank in the regular sequence (1-16).
          */
         template <ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
-            requires(kValidADCChannelID<tkControllerID, tkChannelID> && kValidADCRegularRank<tkRank>)
         void register_regular_sequence()
         {
             constexpr uint32_t idx = ChannelTraitsT<tkChannelID>::skChannelIdx;
@@ -1083,7 +1014,7 @@ namespace valle::platform
             // STM32G4 (Cortex-M4F) doesn't have data cache, but memory barrier
             // ensures proper ordering of DMA transfers vs CPU reads
             __DMB();
-            const uint8_t buf_idx = rank - 1;
+            const uint8_t buf_idx = get_regular_channel_rank_number(rank) - 1;
             return m_dma_buffer[buf_idx];
         }
     };
@@ -1092,11 +1023,11 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using ADC1ControllerDevice = ADCControllerDevice<1>;
-    using ADC2ControllerDevice = ADCControllerDevice<2>;
-    using ADC3ControllerDevice = ADCControllerDevice<3>;
-    using ADC4ControllerDevice = ADCControllerDevice<4>;
-    using ADC5ControllerDevice = ADCControllerDevice<5>;
+    using ADC1ControllerDevice = ADCControllerDevice<ADCControllerID::kADC1>;
+    using ADC2ControllerDevice = ADCControllerDevice<ADCControllerID::kADC2>;
+    using ADC3ControllerDevice = ADCControllerDevice<ADCControllerID::kADC3>;
+    using ADC4ControllerDevice = ADCControllerDevice<ADCControllerID::kADC4>;
+    using ADC5ControllerDevice = ADCControllerDevice<ADCControllerID::kADC5>;
 
     // ============================================================================
     // ADC CHANNEL (UNIQUE DEVICE)
@@ -1126,7 +1057,6 @@ namespace valle::platform
     };
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
     class ADCChannelDevice
     {
     public:
@@ -1146,11 +1076,9 @@ namespace valle::platform
         using InjectDevices = std::conditional_t<skHasPin, TypeList<ControllerT, PinT>, TypeList<ControllerT>>;
 
         template <ADCControllerID tkCID, ADCChannelID tkChID, ADCInjectChannelRank tkRank>
-            requires(kValidADCChannelID<tkCID, tkChID> && kValidADCInjectRank<tkRank>)
         friend class ADCInjectChannelDevice;
 
         template <ADCControllerID tkCID, ADCChannelID tkChID, ADCRegularChannelRank tkRank>
-            requires(kValidADCChannelID<tkCID, tkChID> && kValidADCRegularRank<tkRank>)
         friend class ADCRegularChannelDevice;
 
     private:
@@ -1172,21 +1100,6 @@ namespace valle::platform
 
     protected:
         // --- Initialization ---
-        /**
-         * @brief Configure and register this channel.
-         *
-         * @tparam tkGroup ADC Channel Group (Regular/Inject).
-         * @tparam tkRank Rank in Sequence (Regular: 1-16, Inject: 1-4).
-         * @param config Physics configuration (Sampling time, Single/Diff, etc.)
-         */
-        template <ADCChannelGroup tkGroup, uint8_t tkRank = 0>
-            requires((tkGroup == ADCChannelGroup::kRegular && kValidADCRegularRank<tkRank>) ||
-                     (tkGroup == ADCChannelGroup::kInject && kValidADCInjectRank<tkRank>))
-        [[nodiscard]] bool init(const ADCChannelConfig& config)
-        {
-            m_adc->template init_channel<tkChannelID, tkGroup, tkRank>(config);
-            return gpio_init();
-        }
 
         /**
          * @brief Configure and register this channel for the Inject Sequence (Interrupt).
@@ -1222,7 +1135,6 @@ namespace valle::platform
          * @tparam tkRank Rank in Inject Sequence (1-4).
          */
         template <ADCInjectChannelRank tkRank>
-            requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline ADCValue read_inject() const
         {
             return m_adc->template read_inject_data<tkRank>();
@@ -1244,7 +1156,6 @@ namespace valle::platform
          * @tparam tkRank Rank in Regular Sequence (1-16).
          */
         template <ADCRegularChannelRank tkRank>
-            requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline ADCValue read_regular() const
         {
             return m_adc->template read_regular_data<tkRank>();
@@ -1268,7 +1179,6 @@ namespace valle::platform
          * @return float Voltage in Volts.
          */
         template <ADCInjectChannelRank tkRank>
-            requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_voltage() const
         {
             return raw_to_voltage_inject(read_inject<tkRank>());
@@ -1291,7 +1201,6 @@ namespace valle::platform
          * @return float Voltage in Volts.
          */
         template <ADCRegularChannelRank tkRank>
-            requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_voltage() const
         {
             return raw_to_voltage_regular(read_regular<tkRank>());
@@ -1315,7 +1224,6 @@ namespace valle::platform
          * @return float Normalized value.
          */
         template <ADCInjectChannelRank tkRank>
-            requires(kValidADCInjectRank<tkRank>)
         [[nodiscard]] inline float read_inject_normalized() const
         {
             return raw_to_normalized_inject(read_inject<tkRank>());
@@ -1338,7 +1246,6 @@ namespace valle::platform
          * @tparam tkRank Rank in Regular Sequence (1-16).
          */
         template <ADCRegularChannelRank tkRank>
-            requires(kValidADCRegularRank<tkRank>)
         [[nodiscard]] inline float read_regular_normalized() const
         {
             return raw_to_normalized_regular(read_regular<tkRank>());
@@ -1394,26 +1301,45 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-#define DECLARE_ADC_CHANNEL_DEVICE_ALIASES(controller_id)                                                  \
-    using ADC##controller_id##Channel0Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel0>;  \
-    using ADC##controller_id##Channel1Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel1>;  \
-    using ADC##controller_id##Channel2Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel2>;  \
-    using ADC##controller_id##Channel3Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel3>;  \
-    using ADC##controller_id##Channel4Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel4>;  \
-    using ADC##controller_id##Channel5Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel5>;  \
-    using ADC##controller_id##Channel6Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel6>;  \
-    using ADC##controller_id##Channel7Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel7>;  \
-    using ADC##controller_id##Channel8Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel8>;  \
-    using ADC##controller_id##Channel9Device  = ADCChannelDevice<controller_id, ADCChannelID::kChannel9>;  \
-    using ADC##controller_id##Channel10Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel10>; \
-    using ADC##controller_id##Channel11Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel11>; \
-    using ADC##controller_id##Channel12Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel12>; \
-    using ADC##controller_id##Channel13Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel13>; \
-    using ADC##controller_id##Channel14Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel14>; \
-    using ADC##controller_id##Channel15Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel15>; \
-    using ADC##controller_id##Channel16Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel16>; \
-    using ADC##controller_id##Channel17Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel17>; \
-    using ADC##controller_id##Channel18Device = ADCChannelDevice<controller_id, ADCChannelID::kChannel18>;
+#define DECLARE_ADC_CHANNEL_DEVICE_ALIASES(controller_id_num)                                        \
+    using ADC##controller_id_num##Channel0Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel0>;  \
+    using ADC##controller_id_num##Channel1Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel1>;  \
+    using ADC##controller_id_num##Channel2Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel2>;  \
+    using ADC##controller_id_num##Channel3Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel3>;  \
+    using ADC##controller_id_num##Channel4Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel4>;  \
+    using ADC##controller_id_num##Channel5Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel5>;  \
+    using ADC##controller_id_num##Channel6Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel6>;  \
+    using ADC##controller_id_num##Channel7Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel7>;  \
+    using ADC##controller_id_num##Channel8Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel8>;  \
+    using ADC##controller_id_num##Channel9Device =                                                   \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel9>;  \
+    using ADC##controller_id_num##Channel10Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel10>; \
+    using ADC##controller_id_num##Channel11Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel11>; \
+    using ADC##controller_id_num##Channel12Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel12>; \
+    using ADC##controller_id_num##Channel13Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel13>; \
+    using ADC##controller_id_num##Channel14Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel14>; \
+    using ADC##controller_id_num##Channel15Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel15>; \
+    using ADC##controller_id_num##Channel16Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel16>; \
+    using ADC##controller_id_num##Channel17Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel17>; \
+    using ADC##controller_id_num##Channel18Device =                                                  \
+        ADCChannelDevice<static_cast<ADCControllerID>(controller_id_num), ADCChannelID::kChannel18>;
 
     DECLARE_ADC_CHANNEL_DEVICE_ALIASES(1);
     DECLARE_ADC_CHANNEL_DEVICE_ALIASES(2);
@@ -1428,8 +1354,6 @@ namespace valle::platform
     // ============================================================================
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID> &&
-                 kValidADCInjectRank<tkRank>)  // Only 4 inject channels supported
     class ADCInjectChannelDevice
     {
     public:
@@ -1500,19 +1424,19 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCInjectChannelRank1Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 1>;
+    using ADCInjectChannelRank1Device =
+        ADCInjectChannelDevice<tkControllerID, tkChannelID, ADCInjectChannelRank::kRank1>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCInjectChannelRank2Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 2>;
+    using ADCInjectChannelRank2Device =
+        ADCInjectChannelDevice<tkControllerID, tkChannelID, ADCInjectChannelRank::kRank2>;
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCInjectChannelRank3Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 3>;
+    using ADCInjectChannelRank3Device =
+        ADCInjectChannelDevice<tkControllerID, tkChannelID, ADCInjectChannelRank::kRank3>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCInjectChannelRank4Device = ADCInjectChannelDevice<tkControllerID, tkChannelID, 4>;
+    using ADCInjectChannelRank4Device =
+        ADCInjectChannelDevice<tkControllerID, tkChannelID, ADCInjectChannelRank::kRank4>;
 
     namespace detail
     {
@@ -1524,64 +1448,102 @@ namespace valle::platform
         struct MakeInjectSequenceImpl<tkControllerID, std::index_sequence<Is...>, tkChannelIDs...>
         {
             // Expand both packs: Channel[i] paired with Rank[i + 1]
-            using type = TypeList<ADCInjectChannelDevice<tkControllerID, tkChannelIDs, (Is + 1)>...>;
+            using type = TypeList<
+                ADCInjectChannelDevice<tkControllerID, tkChannelIDs, static_cast<ADCInjectChannelRank>(Is + 1)>...>;
         };
     }  // namespace detail
 
     template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIDs>
-        requires((kValidADCChannelID<tkControllerID, tkChannelIDs> && ...) &&
-                 (sizeof...(tkChannelIDs) <= kADCMaxInjChannels))
+        requires(sizeof...(tkChannelIDs) <= kADCMaxInjChannels)
     using ADCInjectChannelDeviceSequence =
         typename detail::MakeInjectSequenceImpl<tkControllerID,
                                                 std::make_index_sequence<sizeof...(tkChannelIDs)>,  // Generates 0,
                                                                                                     // 1, 2...
                                                 tkChannelIDs...>::type;
 
-#define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, rank) \
-    using ADC##controller_id##InjectChannel0Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel0, rank>;   \
-    using ADC##controller_id##InjectChannel1Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel1, rank>;   \
-    using ADC##controller_id##InjectChannel2Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel2, rank>;   \
-    using ADC##controller_id##InjectChannel3Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel3, rank>;   \
-    using ADC##controller_id##InjectChannel4Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel4, rank>;   \
-    using ADC##controller_id##InjectChannel5Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel5, rank>;   \
-    using ADC##controller_id##InjectChannel6Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel6, rank>;   \
-    using ADC##controller_id##InjectChannel7Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel7, rank>;   \
-    using ADC##controller_id##InjectChannel8Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel8, rank>;   \
-    using ADC##controller_id##InjectChannel9Rank##rank##Device =                \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel9, rank>;   \
-    using ADC##controller_id##InjectChannel10Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel10, rank>;  \
-    using ADC##controller_id##InjectChannel11Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel11, rank>;  \
-    using ADC##controller_id##InjectChannel12Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel12, rank>;  \
-    using ADC##controller_id##InjectChannel13Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel13, rank>;  \
-    using ADC##controller_id##InjectChannel14Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel14, rank>;  \
-    using ADC##controller_id##InjectChannel15Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel15, rank>;  \
-    using ADC##controller_id##InjectChannel16Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel16, rank>;  \
-    using ADC##controller_id##InjectChannel17Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel17, rank>;  \
-    using ADC##controller_id##InjectChannel18Rank##rank##Device =               \
-        ADCInjectChannelDevice<controller_id, ADCChannelID::kChannel18, rank>;
+#define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, rank_num) \
+    using ADC##controller_id_num##InjectChannel0Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel0,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel1Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel1,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel2Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel2,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel3Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel3,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel4Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel4,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel5Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel5,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel6Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel6,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel7Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel7,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel8Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel8,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel9Rank##rank_num##Device =                \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel9,                                 \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel10Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel10,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel11Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel11,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel12Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel12,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel13Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel13,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel14Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel14,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel15Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel15,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel16Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel16,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel17Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel17,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;            \
+    using ADC##controller_id_num##InjectChannel18Rank##rank_num##Device =               \
+        ADCInjectChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                               ADCChannelID::kChannel18,                                \
+                               static_cast<ADCInjectChannelRank>(rank_num)>;
 
-#define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(controller_id)          \
-    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 1); \
-    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 2); \
-    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 3); \
-    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 4);
+#define DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(controller_id_num)          \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 1); \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 2); \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 3); \
+    DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 4);
 
     DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(1);
     DECLARE_ADC_INJECT_CHANNEL_DEVICE_ALIASES(2);
@@ -1596,8 +1558,6 @@ namespace valle::platform
     // ============================================================================
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID> &&
-                 kValidADCRegularRank<tkRank>)  // Only 16 regular channels supported
     class ADCRegularChannelDevice
     {
     public:
@@ -1667,68 +1627,68 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank1Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 1>;
+    using ADCRegularChannelRank1Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank1>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank2Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 2>;
+    using ADCRegularChannelRank2Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank2>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank3Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 3>;
+    using ADCRegularChannelRank3Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank3>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank4Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 4>;
+    using ADCRegularChannelRank4Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank4>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank5Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 5>;
+    using ADCRegularChannelRank5Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank5>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank6Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 6>;
+    using ADCRegularChannelRank6Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank6>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank7Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 7>;
+    using ADCRegularChannelRank7Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank7>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank8Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 8>;
+    using ADCRegularChannelRank8Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank8>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank9Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 9>;
+    using ADCRegularChannelRank9Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank9>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank10Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 10>;
+    using ADCRegularChannelRank10Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank10>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank11Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 11>;
+    using ADCRegularChannelRank11Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank11>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank12Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 12>;
+    using ADCRegularChannelRank12Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank12>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank13Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 13>;
+    using ADCRegularChannelRank13Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank13>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank14Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 14>;
+    using ADCRegularChannelRank14Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank14>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank15Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 15>;
+    using ADCRegularChannelRank15Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank15>;
 
     template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-        requires(kValidADCChannelID<tkControllerID, tkChannelID>)
-    using ADCRegularChannelRank16Device = ADCRegularChannelDevice<tkControllerID, tkChannelID, 16>;
+    using ADCRegularChannelRank16Device =
+        ADCRegularChannelDevice<tkControllerID, tkChannelID, ADCRegularChannelRank::kRank16>;
 
     namespace detail
     {
@@ -1740,76 +1700,114 @@ namespace valle::platform
         struct MakeRegularSequenceImpl<tkControllerID, std::index_sequence<Is...>, tkChannelIDs...>
         {
             // Expand both packs: Channel[i] paired with Rank[i + 1]
-            using type = TypeList<ADCRegularChannelDevice<tkControllerID, tkChannelIDs, (Is + 1)>...>;
+            using type = TypeList<
+                ADCRegularChannelDevice<tkControllerID, tkChannelIDs, static_cast<ADCRegularChannelRank>(Is + 1)>...>;
         };
     }  // namespace detail
 
     template <ADCControllerID tkControllerID, ADCChannelID... tkChannelIDs>
-        requires((kValidADCChannelID<tkControllerID, tkChannelIDs> && ...) &&
-                 (sizeof...(tkChannelIDs) <= kADCMaxRegChannels))
+        requires(sizeof...(tkChannelIDs) <= kADCMaxRegChannels)
     using ADCRegularChannelDeviceSequence =
         typename detail::MakeRegularSequenceImpl<tkControllerID,
                                                  std::make_index_sequence<sizeof...(tkChannelIDs)>,  // Generates 0,
                                                                                                      // 1, 2...
                                                  tkChannelIDs...>::type;
 
-#define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, rank) \
-    using ADC##controller_id##RegularChannel0Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel0, rank>;   \
-    using ADC##controller_id##RegularChannel1Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel1, rank>;   \
-    using ADC##controller_id##RegularChannel2Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel2, rank>;   \
-    using ADC##controller_id##RegularChannel3Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel3, rank>;   \
-    using ADC##controller_id##RegularChannel4Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel4, rank>;   \
-    using ADC##controller_id##RegularChannel5Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel5, rank>;   \
-    using ADC##controller_id##RegularChannel6Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel6, rank>;   \
-    using ADC##controller_id##RegularChannel7Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel7, rank>;   \
-    using ADC##controller_id##RegularChannel8Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel8, rank>;   \
-    using ADC##controller_id##RegularChannel9Rank##rank##Device =                \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel9, rank>;   \
-    using ADC##controller_id##RegularChannel10Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel10, rank>;  \
-    using ADC##controller_id##RegularChannel11Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel11, rank>;  \
-    using ADC##controller_id##RegularChannel12Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel12, rank>;  \
-    using ADC##controller_id##RegularChannel13Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel13, rank>;  \
-    using ADC##controller_id##RegularChannel14Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel14, rank>;  \
-    using ADC##controller_id##RegularChannel15Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel15, rank>;  \
-    using ADC##controller_id##RegularChannel16Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel16, rank>;  \
-    using ADC##controller_id##RegularChannel17Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel17, rank>;  \
-    using ADC##controller_id##RegularChannel18Rank##rank##Device =               \
-        ADCRegularChannelDevice<controller_id, ADCChannelID::kChannel18, rank>;
+#define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, rank_num) \
+    using ADC##controller_id_num##RegularChannel0Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel0,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel1Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel1,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel2Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel2,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel3Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel3,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel4Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel4,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel5Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel5,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel6Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel6,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel7Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel7,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel8Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel8,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel9Rank##rank_num##Device =                \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel9,                                 \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel10Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel10,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel11Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel11,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel12Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel12,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel13Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel13,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel14Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel14,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel15Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel15,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel16Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel16,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel17Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel17,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;           \
+    using ADC##controller_id_num##RegularChannel18Rank##rank_num##Device =               \
+        ADCRegularChannelDevice<static_cast<ADCControllerID>(controller_id_num),         \
+                                ADCChannelID::kChannel18,                                \
+                                static_cast<ADCRegularChannelRank>(rank_num)>;
 
-#define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(controller_id)           \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 1);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 2);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 3);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 4);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 5);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 6);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 7);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 8);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 9);  \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 10); \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 11); \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 12); \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 13); \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 14); \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 15); \
-    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id, 16);
+#define DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(controller_id_num)           \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 1);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 2);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 3);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 4);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 5);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 6);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 7);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 8);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 9);  \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 10); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 11); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 12); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 13); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 14); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 15); \
+    DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES_FOR_RANK(controller_id_num, 16);
 
     DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(1);
     DECLARE_ADC_REGULAR_CHANNEL_DEVICE_ALIASES(2);

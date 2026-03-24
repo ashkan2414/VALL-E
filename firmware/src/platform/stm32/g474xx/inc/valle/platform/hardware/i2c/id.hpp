@@ -6,10 +6,13 @@
 namespace valle::platform
 {
 
-    using I2CControllerID = uint8_t;
-
-    template <I2CControllerID tkControllerID>
-    constexpr bool kValidI2CControllerID = (tkControllerID >= 1 && tkControllerID <= 4);
+    enum class I2CControllerID : uint8_t
+    {
+        kI2C1 = 1,
+        kI2C2 = 2,
+        kI2C3 = 3,
+        kI2C4 = 4,
+    };
 
     template <bool tkIs10BitAddress>
     struct I2CSlaveAddress

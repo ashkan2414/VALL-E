@@ -153,11 +153,10 @@ namespace valle::platform
     // HARDWARE TRAITS
     // ============================================================================
     template <DMAMuxControllerID tkControllerID>
-        requires(kValidDMAMuxControllerID<tkControllerID>)
     struct DMAMuxControllerTraits;
 
     template <>
-    struct DMAMuxControllerTraits<1>
+    struct DMAMuxControllerTraits<DMAMuxControllerID::kDMAMux1>
     {
         static inline DMAMUX_Channel_TypeDef* const skInstance = DMAMUX1;
         static constexpr uint32_t                   skClock    = LL_AHB1_GRP1_PERIPH_DMAMUX1;

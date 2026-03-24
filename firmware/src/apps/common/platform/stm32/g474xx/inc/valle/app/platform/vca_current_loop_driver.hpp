@@ -17,10 +17,10 @@ namespace valle::platform::app
         using PWMOutput2PinT              = GPIOPinA9Device;
         using CurrentSensorADCDMAChannelT = DMA1Channel2Device;
 
-        static constexpr HRTIMControllerID skVCAHRTIMPWMControllerID = 1;
+        static constexpr HRTIMControllerID skVCAHRTIMPWMControllerID = platform::HRTIMControllerID::kHRTIM1;
         static constexpr HRTIMTimerID      skVCAHRTIMPWMTimerID      = HRTIMTimerID::kA;
 
-        static constexpr ADCControllerID skCurrentSensorADCControllerID = 1;
+        static constexpr ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC1;
         static constexpr ADCChannelID    skCurrentSensorADCChannelId    = ADCChannelID::kChannel1;
 
         static constexpr auto skCurrentSensorModel                 = valle::app::ACS724Model::k2P5ABi;
@@ -51,7 +51,7 @@ namespace valle::platform::app
         using VCAControllerT = VCAControllerHRTIMModule<VCAHRTIMPWMTimerDeviceT, VCAControllerSystemControllerT>;
 
         static constexpr auto skCurrentSensorADCCommonID =
-            BaseT::skCurrentSensorADCControllerID <= 2 ? ADCCommonID::kADC12 : ADCCommonID::kADC345;
+            ADCControllerTraits<BaseT::skCurrentSensorADCControllerID>::skCommonID;
 
         using CurrentSensorADCControllerDeviceT = ADCControllerDevice<BaseT::skCurrentSensorADCControllerID>;
         using CurrentSensorADCChannelDeviceT =

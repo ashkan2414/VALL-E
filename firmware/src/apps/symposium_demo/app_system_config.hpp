@@ -14,7 +14,7 @@
 
 namespace valle::app
 {
-    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = 1;
+    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = platform::HRTIMControllerID::kHRTIM1;
     struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
     {
     };
@@ -29,7 +29,7 @@ namespace valle::app
         static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
         static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kA;
 
-        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = 1;
+        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC1;
         static constexpr platform::ADCChannelID    skCurrentSensorADCChannelId    = platform::ADCChannelID::kChannel1;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
@@ -47,7 +47,7 @@ namespace valle::app
         static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
         static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kD;
 
-        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = 2;
+        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC2;
         static constexpr platform::ADCChannelID    skCurrentSensorADCChannelId    = platform::ADCChannelID::kChannel2;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
@@ -56,7 +56,7 @@ namespace valle::app
     };
 
     // Position Sensor I2C Controller Config
-    constexpr platform::I2CControllerID kPositionSensorI2CID             = 1;
+    constexpr platform::I2CControllerID kPositionSensorI2CID             = platform::I2CControllerID::kI2C1;
     constexpr uint16_t                  kPositionSensorI2CAddress        = 0x2B;
     constexpr bool                      kPositionSensorI2CAddressIs10Bit = false;
 

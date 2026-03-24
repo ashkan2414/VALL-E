@@ -419,12 +419,12 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using USART1ControllerDevice  = UARTControllerDevice<kUSART1>;
-    using USART2ControllerDevice  = UARTControllerDevice<kUSART2>;
-    using USART3ControllerDevice  = UARTControllerDevice<kUSART3>;
-    using UART4ControllerDevice   = UARTControllerDevice<kUART4>;
-    using UART5ControllerDevice   = UARTControllerDevice<kUART5>;
-    using LPUART1ControllerDevice = UARTControllerDevice<kLPUART1>;  // Usually the main USB UART
+    using USART1ControllerDevice  = UARTControllerDevice<UARTControllerID::kUSART1>;
+    using USART2ControllerDevice  = UARTControllerDevice<UARTControllerID::kUSART2>;
+    using USART3ControllerDevice  = UARTControllerDevice<UARTControllerID::kUSART3>;
+    using UART4ControllerDevice   = UARTControllerDevice<UARTControllerID::kUART4>;
+    using UART5ControllerDevice   = UARTControllerDevice<UARTControllerID::kUART5>;
+    using LPUART1ControllerDevice = UARTControllerDevice<UARTControllerID::kLPUART1>;  // Usually the main USB UART
 
 }  // namespace valle::platform
 

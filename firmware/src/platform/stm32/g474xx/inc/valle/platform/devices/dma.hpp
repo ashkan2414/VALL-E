@@ -15,11 +15,9 @@ namespace valle::platform
     class DMARootDevice;
 
     template <DMAControllerID tkControllerID>
-        requires(kValidDMAControllerID<tkControllerID>)
     class DMAControllerDevice;
 
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     class DMAChannelDevice;
 
     // ============================================================================
@@ -30,7 +28,7 @@ namespace valle::platform
     public:
         struct Descriptor : public InterfaceDeviceDescriptor
         {
-            using Children = DeviceTreeList<DMAControllerDevice<1>, DMAControllerDevice<2>>;
+            using Children = DeviceTreeList<DMAControllerDevice<DMAControllerID::kDMA1>, DMAControllerDevice<DMAControllerID::kDMA2>>;
         };
     };
 
@@ -38,21 +36,11 @@ namespace valle::platform
     // DMA CONTROLLER (SHARED)
     // ============================================================================
     template <DMAControllerID tkControllerID>
-        requires(kValidDMAControllerID<tkControllerID>)
     class DMAControllerDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
-            // Declares ownership of all 8 channels for this controller
-            using Children = DeviceTreeList<DMAChannelDevice<tkControllerID, 1>,
-                                            DMAChannelDevice<tkControllerID, 2>,
-                                            DMAChannelDevice<tkControllerID, 3>,
-                                            DMAChannelDevice<tkControllerID, 4>,
-                                            DMAChannelDevice<tkControllerID, 5>,
-                                            DMAChannelDevice<tkControllerID, 6>,
-                                            DMAChannelDevice<tkControllerID, 7>,
-                                            DMAChannelDevice<tkControllerID, 8>>;
         };
 
         static constexpr DMAControllerID skControllerID = tkControllerID;
@@ -69,8 +57,8 @@ namespace valle::platform
         }
     };
 
-    using DMA1ControllerDevice = DMAControllerDevice<1>;
-    using DMA2ControllerDevice = DMAControllerDevice<2>;
+    using DMA1ControllerDevice = DMAControllerDevice<DMAControllerID::kDMA1>;
+    using DMA2ControllerDevice = DMAControllerDevice<DMAControllerID::kDMA2>;
 
     // ============================================================================
     // DMA CHANNEL (UNIQUE)
@@ -114,7 +102,6 @@ namespace valle::platform
     // ----------------------------------------------------------------------------
 
     template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-        requires(kValidDMAControllerID<tkControllerID> && kValidDMAChannel<tkChannelID>)
     class DMAChannelDevice
     {
     public:
@@ -229,35 +216,35 @@ namespace valle::platform
             while (LL_DMA_IsEnabledChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID));
 
             // Now safe to clear all flags
-            if constexpr (tkChannelID == 1)
+            if constexpr (tkChannelID == DMAChannelID::kChannel1)
             {
                 LL_DMA_ClearFlag_GI1(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 2)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel2)
             {
                 LL_DMA_ClearFlag_GI2(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 3)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel3)
             {
                 LL_DMA_ClearFlag_GI3(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 4)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel4)
             {
                 LL_DMA_ClearFlag_GI4(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 5)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel5)
             {
                 LL_DMA_ClearFlag_GI5(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 6)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel6)
             {
                 LL_DMA_ClearFlag_GI6(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 7)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel7)
             {
                 LL_DMA_ClearFlag_GI7(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == 8)
+            else if constexpr (tkChannelID == DMAChannelID::kChannel8)
             {
                 LL_DMA_ClearFlag_GI8(ControllerTraitsT::skInstance);
             }
@@ -372,22 +359,22 @@ namespace valle::platform
     // DEVICE ALIASES
     // ----------------------------------------------------------------------------
 
-    using DMA1Channel1Device = DMAChannelDevice<1, 1>;
-    using DMA1Channel2Device = DMAChannelDevice<1, 2>;
-    using DMA1Channel3Device = DMAChannelDevice<1, 3>;
-    using DMA1Channel4Device = DMAChannelDevice<1, 4>;
-    using DMA1Channel5Device = DMAChannelDevice<1, 5>;
-    using DMA1Channel6Device = DMAChannelDevice<1, 6>;
-    using DMA1Channel7Device = DMAChannelDevice<1, 7>;
-    using DMA1Channel8Device = DMAChannelDevice<1, 8>;
+    using DMA1Channel1Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel1>;
+    using DMA1Channel2Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel2>;
+    using DMA1Channel3Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel3>;
+    using DMA1Channel4Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel4>;
+    using DMA1Channel5Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel5>;
+    using DMA1Channel6Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel6>;
+    using DMA1Channel7Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel7>;
+    using DMA1Channel8Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel8>;
 
-    using DMA2Channel1Device = DMAChannelDevice<2, 1>;
-    using DMA2Channel2Device = DMAChannelDevice<2, 2>;
-    using DMA2Channel3Device = DMAChannelDevice<2, 3>;
-    using DMA2Channel4Device = DMAChannelDevice<2, 4>;
-    using DMA2Channel5Device = DMAChannelDevice<2, 5>;
-    using DMA2Channel6Device = DMAChannelDevice<2, 6>;
-    using DMA2Channel7Device = DMAChannelDevice<2, 7>;
-    using DMA2Channel8Device = DMAChannelDevice<2, 8>;
+    using DMA2Channel1Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel1>;
+    using DMA2Channel2Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel2>;
+    using DMA2Channel3Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel3>;
+    using DMA2Channel4Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel4>;
+    using DMA2Channel5Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel5>;
+    using DMA2Channel6Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel6>;
+    using DMA2Channel7Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel7>;
+    using DMA2Channel8Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel8>;
 
 }  // namespace valle::platform

@@ -900,11 +900,10 @@ namespace valle::platform
     // HARDWARE TRAITS
     // ============================================================================
     template <HRTIMControllerID tkControllerID>
-        requires(kValidHRTIMControllerID<tkControllerID>)
     struct HRTIMControllerTraits;
 
     template <>
-    struct HRTIMControllerTraits<1>
+    struct HRTIMControllerTraits<HRTIMControllerID::kHRTIM1>
     {
         static inline HRTIM_TypeDef* const skInstance = HRTIM1;
 
@@ -1024,7 +1023,7 @@ namespace valle::platform
 
     // HRTIM1 Timer A (tkHRTIMTimerID 0)
     template <>
-    struct HRTIMTimerTraits<1, HRTIMTimerID::kA>
+    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kA>
     {
         static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_A;
         static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_A;
@@ -1036,7 +1035,7 @@ namespace valle::platform
 
     // HRTIM1 Timer B
     template <>
-    struct HRTIMTimerTraits<1, HRTIMTimerID::kB>
+    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kB>
     {
         static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_B;
         static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_B;
@@ -1048,7 +1047,7 @@ namespace valle::platform
 
     // HRTIM1 Timer C
     template <>
-    struct HRTIMTimerTraits<1, HRTIMTimerID::kC>
+    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kC>
     {
         static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_C;
         static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_C;
@@ -1060,7 +1059,7 @@ namespace valle::platform
 
     // HRTIM1 Timer D
     template <>
-    struct HRTIMTimerTraits<1, HRTIMTimerID::kD>
+    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kD>
     {
         static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_D;
         static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_D;
@@ -1072,7 +1071,7 @@ namespace valle::platform
 
     // HRTIM1 Timer E
     template <>
-    struct HRTIMTimerTraits<1, HRTIMTimerID::kE>
+    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kE>
     {
         static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_E;
         static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_E;
@@ -1084,7 +1083,7 @@ namespace valle::platform
 
     // HRTIM1 Timer F
     template <>
-    struct HRTIMTimerTraits<1, HRTIMTimerID::kF>
+    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kF>
     {
         static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_F;
         static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_F;

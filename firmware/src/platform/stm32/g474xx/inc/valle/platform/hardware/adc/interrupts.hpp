@@ -209,7 +209,6 @@ namespace valle::platform
      * @tparam tkControllerID ADC Controller ID (1-5)
      */
     template <ADCControllerID tkControllerID>
-        requires(kValidADCControllerID<tkControllerID>)
     struct ADCGlobalISRRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -230,7 +229,6 @@ namespace valle::platform
      * @tparam tkIntType The interrupt type triggered.
      */
     template <ADCControllerID tkControllerID, ADCInterruptType tkIntType>
-        requires(kValidADCControllerID<tkControllerID>)
     struct ADCISRRouter
     {
         using UnboundIsrHandlerTag = void;
