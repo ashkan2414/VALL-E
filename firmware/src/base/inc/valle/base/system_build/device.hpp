@@ -15,7 +15,6 @@ namespace valle
     {
         kUnique,
         kShared,
-        kInterface,
         kNull
     };
 
@@ -26,11 +25,9 @@ namespace valle
         constexpr static bool       skNeedsInit  = true;
     };
 
-    using UniqueDeviceDescriptor    = DeviceDescriptor<DeviceType::kUnique>;
-    using SharedDeviceDescriptor    = DeviceDescriptor<DeviceType::kShared>;
-    using ProxyDeviceDescriptor     = SharedDeviceDescriptor;
-    using InterfaceDeviceDescriptor = DeviceDescriptor<DeviceType::kInterface>;
-    using NullDeviceDescriptor      = DeviceDescriptor<DeviceType::kNull>;
+    using UniqueDeviceDescriptor = DeviceDescriptor<DeviceType::kUnique>;
+    using SharedDeviceDescriptor = DeviceDescriptor<DeviceType::kShared>;
+    using NullDeviceDescriptor   = DeviceDescriptor<DeviceType::kNull>;
 
     template <typename TDevice>
     static constexpr DeviceType kDeviceType = TDevice::Descriptor::skDeviceType;
@@ -46,13 +43,7 @@ namespace valle
     template <typename T>
     concept CSharedDevice = CDeviceOfType<T, DeviceType::kShared>;
     template <typename T>
-    concept CInterfaceDevice = CDeviceOfType<T, DeviceType::kInterface>;
-    template <typename T>
     concept CNullDevice = CDeviceOfType<T, DeviceType::kNull>;
-
-    template <typename T>
-    concept CHasChildrenDevices = CDevice<T> && requires { typename T::Descriptor::Children; };
-
     // ============================================================================
     // Initialization Traits
     // ============================================================================
@@ -262,7 +253,6 @@ namespace valle
     }  // namespace detail
 
     template <CDevice TDevice>
-        requires(!CInterfaceDevice<TDevice>)
     using DeviceRef = typename detail::DeviceRefSelector<TDevice, kDeviceType<TDevice>>::type;
 
     template <bool tkCondition, typename TDevice, typename TFalseRef = std::monostate>
@@ -279,56 +269,6 @@ namespace valle
 
     template <typename T>
     concept CDeviceRef = CSharedDeviceRef<T> || CUniqueDeviceRef<T> || CNullDeviceRef<T>;
-
-    template <typename... Ts>
-    class DeviceTreeList;
-
-    namespace detail
-    {
-        // The Recursive Flattener Struct
-        // This struct accepts a Type T and exports 'type' which is a std::tuple of the leaf devices.
-        template <typename T>
-        struct DeviceFlattener
-        {
-            // Base Case: T is a leaf resource (no Children Devices, not a Registry)
-            // Exclude interface devices
-            using type = std::conditional_t<CInterfaceDevice<T>, TypeList<>, TypeList<T>>;
-        };
-
-        // Case 2: T is a DeviceTreeList<Ts...>
-        // We must expand the pack and recursively flatten each element.
-        template <typename... InnerTs>
-        struct DeviceFlattener<DeviceTreeList<InnerTs...>>
-        {
-            // tuple_cat joins the tuples resulting from flattening each InnerT
-            using type = typename TypeListMergeUniqueMulti<typename DeviceFlattener<InnerTs>::type...>::type;
-        };
-
-        // Case 3: T has a Children Devices alias
-        // We ignore T itself and recursively flatten the Children Devices type.
-        template <CHasChildrenDevices T>
-        struct DeviceFlattener<T>
-        {
-            // Flatten the Children
-            using ChildrenRaw  = typename T::Descriptor::Children;  // This is a DeviceTreeList<...>
-            using ChildrenFlat = typename DeviceFlattener<ChildrenRaw>::type;
-
-            // Interface device: take only children
-            // Non-interface device: take T + children
-            using type = std::conditional_t<CInterfaceDevice<T>,
-                                            ChildrenFlat,
-                                            typename TypeListMergeUniqueMulti<TypeList<T>, ChildrenFlat>::type>;
-        };
-
-    }  // namespace detail
-
-    template <typename... Ts>
-    class DeviceTreeList
-    {
-    public:
-        // This expands the incoming Ts... into one flat tuple of leaf devices
-        using Devices = typename TypeListMergeUniqueMulti<typename detail::DeviceFlattener<Ts>::type...>::type;
-    };
 
     // =============================================================================
     // Device Dependency Introspection Helpers
@@ -359,14 +299,6 @@ namespace valle
     // =============================================================================
 
     template <typename T>
-    struct IsNotInterfaceDevice : std::bool_constant<!CInterfaceDevice<T>>
-    {
-    };
-
-    template <typename TDeviceList>
-    using FilterInterfaceDevices = typename FilterTypeList<IsNotInterfaceDevice, TDeviceList>::type;
-
-    template <typename T>
     struct IsNotNullDevice : std::bool_constant<!CNullDevice<T>>
     {
     };
@@ -389,8 +321,6 @@ namespace valle
     struct GetInjectDevices<T>
     {
         using type = typename T::InjectDevices;
-        static_assert(TypeListAll<IsNotInterfaceDevice, type>::value,
-                      "InjectDevices list cannot contain Interface Devices!");
     };
 
     // Helper concept to check for additional dependencies
@@ -408,7 +338,7 @@ namespace valle
     template <CHasAdditionalDependDevices T>
     struct GetAdditionalDependDevices<T>
     {
-        using type = FilterInterfaceDevices<typename T::DependDevices>;
+        using type = typename T::DependDevices;
     };
 
     // Helper concept to check for dependencies
@@ -429,39 +359,6 @@ namespace valle
                                                   typename GetInjectDevices<T>::type>::type;
     };
 
-    // ISR Router
-
-    template <typename T>
-    concept CUnboundISRRouter = requires { typename T::UnboundIsrHandlerTag; };
-
-    template <typename T>
-    concept CBoundISRRouter = !CUnboundISRRouter<T>;
-
-    template <bool tkAck = true>
-    struct ISRRouterConfig
-    {
-        static constexpr bool skAck = tkAck;  // Whether to acknowledge the interrupt in the router before handling
-    };
-
-    template <typename T>
-    concept CISRRouterHasConfig = requires { typename T::skConfig; };
-
-    template <typename T>
-    static constexpr auto kISRRouterConfig = []
-    {
-        if constexpr (CISRRouterHasConfig<T>)
-        {
-            return T::skConfig;
-        }
-        else
-        {
-            return ISRRouterConfig<>{};
-        }
-    }();
-
-    template <typename T>
-    static constexpr bool kISRRouterConfigAck = kISRRouterConfig<T>.skAck;
-
     // Constructor helper
 
     namespace detail
@@ -474,7 +371,10 @@ namespace valle
             bool matches[] = {std::is_same_v<TTargetDevice, typename std::remove_cvref_t<TArgs>::DeviceT>...};
             for (size_t i = 0; i < sizeof...(TArgs); ++i)
             {
-                if (matches[i]) return i;
+                if (matches[i])
+                {
+                    return i;
+                }
             }
             return sizeof...(TArgs);  // Return out of bounds if not found
         }

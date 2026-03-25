@@ -3,27 +3,8 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/rcc/lsco.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class LSCORootDevice;
-    class LSCODevice;
-
-    // =============================================================================
-    // ROOT LSCO DEVICE
-    // =============================================================================
-    class LSCORootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<LSCODevice>;
-        };
-    };
-
     // =============================================================================
     // CONFIGURATION
     // =============================================================================
@@ -45,7 +26,7 @@ namespace valle::platform
 
         using InterfaceT = LSCOInterface;
 
-        using DependDevices = TypeList<LSCORootDevice>;
+        using DependDevices = TypeList<>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] inline bool init(const LSCOConfig& config)

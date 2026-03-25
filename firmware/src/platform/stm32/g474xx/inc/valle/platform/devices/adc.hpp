@@ -15,43 +15,6 @@
 namespace valle::platform
 {
     // ============================================================================
-    // FORWARD DECLARATIONS
-    // ============================================================================
-    class ADCRootDevice;
-
-    template <ADCControllerID tkControllerID>
-    class ADCControllerDevice;
-
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-    class ADCChannelDevice;
-
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCInjectChannelRank tkRank>
-    class ADCInjectChannelDevice;
-
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID, ADCRegularChannelRank tkRank>
-    class ADCRegularChannelDevice;
-
-    // ============================================================================
-    // Base ADC DEVICE (INTERFACE DEVICE)
-    // ============================================================================
-    /**
-     * @brief ADC Device (Interface Device), represents the ADC peripheral family.
-     *
-     */
-    class ADCRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<ADCControllerDevice<ADCControllerID::kADC1>,
-                                            ADCControllerDevice<ADCControllerID::kADC2>,
-                                            ADCControllerDevice<ADCControllerID::kADC3>,
-                                            ADCControllerDevice<ADCControllerID::kADC4>,
-                                            ADCControllerDevice<ADCControllerID::kADC5>>;
-        };
-    };
-
-    // ============================================================================
     // ADC CONTROLLER DEVICE (SHARED DEVICE)
     // ============================================================================
 
@@ -283,7 +246,7 @@ namespace valle::platform
         using DMAChannelT                = CTConfigT::DMAChannelT;
         static constexpr bool skHasDMA   = !CNullDMAChannel<DMAChannelT>;
 
-        using DependDevices = TypeList<ClockDeviceT, ADCRootDevice>;
+        using DependDevices = TypeList<ClockDeviceT>;
         using InjectDevices = std::conditional_t<skHasDMA, TypeList<DMAChannelT>, TypeList<>>;
 
     private:

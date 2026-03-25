@@ -16,29 +16,6 @@
 namespace valle::platform
 {
     // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class RCCRootDevice;
-
-    template <typename T>
-    class RCCDevice;
-
-    // =============================================================================
-    // ROOT RCC DEVICE
-    // =============================================================================
-    /**
-     * @brief Root interface device for the system clock tree.
-     */
-    class RCCRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<RCCDevice<void>>;
-        };
-    };
-
-    // =============================================================================
     // RCC INFO DEVICE
     // =============================================================================
     /**
@@ -53,7 +30,6 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using DependDevices = TypeList<RCCRootDevice>;
         using InjectDevices = TypeList<HSIOscillatorInfoDevice<>,
                                        HSEOscillatorInfoDevice<>,
                                        HSI48OscillatorInfoDevice<>,
@@ -1189,7 +1165,6 @@ namespace valle::platform
         {
         };
 
-        using DependDevices = TypeList<RCCRootDevice>;
         using InjectDevices = TypeList<HSIOscillatorDevice<>,
                                        HSEOscillatorDevice<>,
                                        HSI48OscillatorDevice<>,

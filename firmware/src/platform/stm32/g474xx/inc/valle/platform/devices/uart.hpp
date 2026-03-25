@@ -10,32 +10,6 @@
 
 namespace valle::platform
 {
-
-    // ============================================================================
-    // FORWARD DECLARATIONS
-    // ============================================================================
-    class UARTRootDevice;
-
-    template <UARTControllerID tkControllerID>
-    class UARTControllerDevice;
-
-    // ============================================================================
-    // UART ROOT DEVICE
-    // ============================================================================
-    class UARTRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<UARTControllerDevice<kUSART1>,
-                                            UARTControllerDevice<kUSART2>,
-                                            UARTControllerDevice<kUSART3>,
-                                            UARTControllerDevice<kUART4>,
-                                            UARTControllerDevice<kUART5>,
-                                            UARTControllerDevice<kLPUART1>>;
-        };
-    };
-
     // ============================================================================
     // UART CONTROLLER DEVICE
     // ============================================================================
@@ -234,7 +208,6 @@ namespace valle::platform
         static constexpr bool skHasDMATx = !CNullDMAChannel<DMAChannelTxT>;
         using InjectDevices5             = std::conditional_t<skHasDMATx, TypeList<DMAChannelTxT>, TypeList<>>;
 
-        using DependentDevices = TypeList<UARTRootDevice>;
         using InjectDevices =
             typename TypeListConcat<InjectDevices1, InjectDevices2, InjectDevices3, InjectDevices4, InjectDevices5>::
                 type;

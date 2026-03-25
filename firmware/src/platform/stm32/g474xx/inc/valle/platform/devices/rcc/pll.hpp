@@ -9,39 +9,8 @@
 #include "valle/platform/hardware/rcc/pll.hpp"
 #include "valle/platform/hardware/rcc/sct.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class PLLRootDevice;
-
-    template <typename T>
-    class PLLDevice;
-
-    // =============================================================================
-    // ROOT PLL DEVICE
-    // =============================================================================
-    /**
-     * @brief Root interface device for the main PLL.
-     *
-     * This device exists to provide a clean place in the device tree for the PLL
-     * synthesizer. The PLL itself is a single hardware block on STM32G474, so this
-     * is not templated.
-     *
-     * The PLL is not an oscillator. It is a frequency synthesizer that derives one
-     * or more output clocks from an oscillator source such as HSI or HSE.
-     */
-    class PLLRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<PLLDevice<void>>;
-        };
-    };
-
     // =========================================================================
     // PLL INFO DEVICE
     // =========================================================================
@@ -56,7 +25,7 @@ namespace valle::platform
 
         using InterfaceT = PLLInterface;
 
-        using DependDevices = TypeList<PLLRootDevice>;
+        using DependDevices = TypeList<>;
         using InjectDevices = TypeList<HSEOscillatorInfoDevice<>, HSIOscillatorInfoDevice<>>;
 
     private:
@@ -270,7 +239,7 @@ namespace valle::platform
 
         using InterfaceT = PLLInterface;
 
-        using DependDevices = TypeList<PLLRootDevice, PowerDevice<>>;
+        using DependDevices = TypeList<PowerDevice<>>;
         using InjectDevices = TypeList<PLLInfoDevice<>, PowerInfoDevice<>>;
 
     private:

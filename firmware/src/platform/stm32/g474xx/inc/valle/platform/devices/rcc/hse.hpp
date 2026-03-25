@@ -5,31 +5,11 @@
 #include "valle/platform/hardware/rcc/pll.hpp"
 #include "valle/platform/hardware/rcc/sct.hpp"
 
-
 namespace valle::platform
 {
     // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class HSEOscillatorRootDevice;
-    template <typename T>
-    class HSEOscillatorDevice;
-
-    // =============================================================================
-    // ROOT HSE CLOCK DEVICE
-    // =============================================================================
-    class HSEOscillatorRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<HSEOscillatorDevice<void>>;
-        };
-    };
-
-    // =========================================================================
     // HSE OSCILLATOR INFO DEVICE
-    // =========================================================================
+    // =============================================================================
     template <typename T = void>
     class HSEOscillatorInfoDevice
     {
@@ -41,7 +21,6 @@ namespace valle::platform
 
         using InterfaceT = HSEOscillatorInterface;
 
-        using DependDevices = TypeList<HSEOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] bool is_ready() const
@@ -86,7 +65,6 @@ namespace valle::platform
 
         using InterfaceT = HSEOscillatorInterface;
 
-        using DependDevices = TypeList<HSEOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] inline bool init(const HSEOscillatorConfig& config)

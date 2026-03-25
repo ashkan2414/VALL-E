@@ -5,40 +5,6 @@
 
 namespace valle::platform
 {
-    // =============================================================================
-    // Forward Declarations
-    // =============================================================================
-
-    class GPIORootDevice;
-
-    template <GPIOPortID tkPortID>
-    class GPIOPortDevice;
-
-    template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-    class GPIOPinDevice;
-
-    // ============================================================================
-    // GPIO ROOT DEVICE (INTERFACE)
-    // ============================================================================
-    /**
-     * @brief Represents the GPIO Controller (GPIOA, GPIOB...).
-     *
-     */
-    class GPIORootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<GPIOPortDevice<GPIOPortID::kA>,
-                                            GPIOPortDevice<GPIOPortID::kB>,
-                                            GPIOPortDevice<GPIOPortID::kC>,
-                                            GPIOPortDevice<GPIOPortID::kD>,
-                                            GPIOPortDevice<GPIOPortID::kE>,
-                                            GPIOPortDevice<GPIOPortID::kF>,
-                                            GPIOPortDevice<GPIOPortID::kG>>;
-        };
-    };
-
     // ============================================================================
     // GPIO PORT (SHARED DEVICE)
     // ============================================================================
@@ -56,8 +22,7 @@ namespace valle::platform
 
         static constexpr GPIOPortID skPortID = tkPortID;
 
-        using DependDevices = TypeList<GPIORootDevice>;
-        using PortTraitsT   = GPIOPortTraits<tkPortID>;
+        using PortTraitsT = GPIOPortTraits<tkPortID>;
 
         [[nodiscard]] bool init()
         {

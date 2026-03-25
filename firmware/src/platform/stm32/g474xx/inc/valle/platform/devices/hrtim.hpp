@@ -11,38 +11,6 @@
 
 namespace valle::platform
 {
-
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-
-    class HRTIMRootDevice;
-
-    template <HRTIMControllerID tkControllerID>
-    class HRTIMControllerDevice;
-
-    template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID>
-    class HRTIMFaultDevice;
-
-    template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID>
-    class HRTIMEEVDevice;
-
-    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-    class HRTIMTimerDevice;
-
-    // =============================================================================
-    // HRTIM ROOT DEVICE (INTERFACE DEVICE)
-    // =============================================================================
-
-    class HRTIMRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<HRTIMControllerDevice<HRTIMControllerID::kHRTIM1>>;
-        };
-    };
-
     // =============================================================================
     // HRTIM CONTROLLER DEVICE (SHARED DEVICE)
     // =============================================================================
@@ -150,7 +118,6 @@ namespace valle::platform
         using SCOutPinDriverT =
             HRTIMControllerGPIOPinDriver<tkControllerID, HRTIMControllerGPIOPinType::kSCOut, SCOutPinT>;
 
-        using DependDevices = TypeList<HRTIMRootDevice>;
         using InjectDevices = FilterNullDevices<TypeList<SCInPinT, SCOutPinT>>;
 
     private:

@@ -3,28 +3,8 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/rcc/hsi48.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class HSI48OscillatorRootDevice;
-    template <typename T>
-    class HSI48OscillatorDevice;
-
-    // =============================================================================
-    // ROOT HSI48 OSCILLATOR DEVICE
-    // =============================================================================
-    class HSI48OscillatorRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<HSI48OscillatorDevice<void>>;
-        };
-    };
-
     // =========================================================================
     // HSI48 Oscillator INFO DEVICE
     // =========================================================================
@@ -39,7 +19,6 @@ namespace valle::platform
 
         using InterfaceT = HSI48OscillatorInterface;
 
-        using DependDevices = TypeList<HSI48OscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] bool is_ready() const
@@ -83,7 +62,6 @@ namespace valle::platform
 
         using InterfaceT = HSI48OscillatorInterface;
 
-        using DependDevices = TypeList<HSI48OscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] bool init(const HSI48OscillatorConfig& config)

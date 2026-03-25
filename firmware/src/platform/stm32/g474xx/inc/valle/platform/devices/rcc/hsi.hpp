@@ -6,31 +6,8 @@
 #include "valle/platform/hardware/rcc/pll.hpp"
 #include "valle/platform/hardware/rcc/sct.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class HSIOscillatorRootDevice;
-    template <typename T>
-    class HSIOscillatorDevice;
-
-    // =============================================================================
-    // ROOT HSI CLOCK DEVICE (INTERFACE DEVICE)
-    // =============================================================================
-    /**
-     * @brief HSI Oscillator Root Clock Device (Interface Device), represents the HSI oscillator family.
-     */
-    class HSIOscillatorRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<HSIOscillatorDevice<void>>;
-        };
-    };
-
     // =========================================================================
     // HSI OSCILLATOR INFO DEVICE
     // =========================================================================
@@ -45,7 +22,6 @@ namespace valle::platform
 
         using InterfaceT = HSIOscillatorInterface;
 
-        using DependDevices = TypeList<HSIOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] bool is_ready() const
@@ -97,7 +73,6 @@ namespace valle::platform
 
         using InterfaceT = HSIOscillatorInterface;
 
-        using DependDevices = TypeList<HSIOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         // --- Initialization ---

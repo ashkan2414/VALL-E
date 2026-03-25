@@ -7,27 +7,6 @@
 namespace valle::platform
 {
     // ============================================================================
-    // FORWARD DECLARATIONS
-    // ============================================================================
-
-    class DMAMuxRootDevice;
-
-    template <DMAMuxControllerID tkControllerID>
-    class DMAMuxControllerDevice;
-
-    // ============================================================================
-    // DMAMux ROOT DEVICE (INTERFACE)
-    // ============================================================================
-    class DMAMuxRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<DMAMuxControllerDevice<DMAMuxControllerID::kDMAMux1>>;
-        };
-    };
-
-    // ============================================================================
     // DMAMux CONTROLLER (SHARED)
     // ============================================================================
     template <DMAMuxControllerID tkControllerID>
@@ -40,7 +19,6 @@ namespace valle::platform
 
         static constexpr DMAMuxControllerID skControllerID = tkControllerID;
 
-        using DependDevices     = TypeList<DMAMuxRootDevice>;
         using ControllerTraitsT = DMAMuxControllerTraits<tkControllerID>;
 
         static inline bool init()

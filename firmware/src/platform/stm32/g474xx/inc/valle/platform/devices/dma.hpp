@@ -7,31 +7,6 @@
 
 namespace valle::platform
 {
-
-    // ============================================================================
-    // FORWARD DECLARATIONS
-    // ============================================================================
-
-    class DMARootDevice;
-
-    template <DMAControllerID tkControllerID>
-    class DMAControllerDevice;
-
-    template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-    class DMAChannelDevice;
-
-    // ============================================================================
-    // DMA ROOT DEVICE (INTERFACE)
-    // ============================================================================
-    class DMARootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<DMAControllerDevice<DMAControllerID::kDMA1>, DMAControllerDevice<DMAControllerID::kDMA2>>;
-        };
-    };
-
     // ============================================================================
     // DMA CONTROLLER (SHARED)
     // ============================================================================
@@ -47,7 +22,7 @@ namespace valle::platform
 
         using ControllerTraitsT    = DMAControllerTraits<tkControllerID>;
         using MuxControllerDeviceT = DMAMuxControllerDevice<ControllerTraitsT::skMuxControllerID>;
-        using DependDevices        = TypeList<DMARootDevice, MuxControllerDeviceT>;
+        using DependDevices        = TypeList<MuxControllerDeviceT>;
 
         static inline bool init()
         {

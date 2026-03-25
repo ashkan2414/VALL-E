@@ -3,28 +3,8 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/rcc/lsi.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class LSIOscillatorRootDevice;
-    template <typename T>
-    class LSIOscillatorDevice;
-
-    // =============================================================================
-    // ROOT LSI OSCILLATOR DEVICE
-    // =============================================================================
-    class LSIOscillatorRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<LSIOscillatorDevice<void>>;
-        };
-    };
-
     // =============================================================================
     // CONFIGURATION
     // =============================================================================
@@ -52,7 +32,6 @@ namespace valle::platform
 
         using InterfaceT = LSIOscillatorInterface;
 
-        using DependDevices = TypeList<LSIOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] static bool is_ready()
@@ -79,7 +58,6 @@ namespace valle::platform
 
         using InterfaceT = LSIOscillatorInterface;
 
-        using DependDevices = TypeList<LSIOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] inline bool init(const LSIOscillatorConfig& config)

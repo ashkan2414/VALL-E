@@ -13,29 +13,6 @@
 
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class SCTRootDevice;
-
-    template <typename T>
-    class SCTDevice;
-
-    // =============================================================================
-    // ROOT SCT DEVICE
-    // =============================================================================
-    /**
-     * @brief Root interface device for the system clock tree.
-     */
-    class SCTRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<SCTDevice<void>>;
-        };
-    };
-
     // =========================================================================
     // SCT INFO DEVICE
     // =========================================================================
@@ -48,7 +25,7 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using DependDevices = TypeList<SCTRootDevice>;
+        using DependDevices = TypeList<>;
         using InjectDevices = TypeList<HSEOscillatorInfoDevice<>, HSIOscillatorInfoDevice<>, PLLInfoDevice<>>;
 
     private:
@@ -366,7 +343,7 @@ namespace valle::platform
 
         using InterfaceT = SCTInterface;
 
-        using DependDevices = TypeList<SCTRootDevice, HSIOscillatorDevice<>, HSEOscillatorDevice<>, PLLDevice<>>;
+        using DependDevices = TypeList<HSIOscillatorDevice<>, HSEOscillatorDevice<>, PLLDevice<>>;
         using InjectDevices = TypeList<SCTInfoDevice<>, PowerInfoDevice<>>;
 
     private:

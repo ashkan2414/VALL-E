@@ -6,13 +6,13 @@ namespace valle::platform
 {
     enum class GPIOPortID
     {
-        kA,
-        kB,
-        kC,
-        kD,
-        kE,
-        kF,
-        kG,
+        kPortA,
+        kPortB,
+        kPortC,
+        kPortD,
+        kPortE,
+        kPortF,
+        kPortG,
     };
 
     enum class GPIOPinID : uint8_t

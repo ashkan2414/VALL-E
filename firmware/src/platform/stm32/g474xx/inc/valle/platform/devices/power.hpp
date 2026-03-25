@@ -5,36 +5,8 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/hardware/power.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class PowerRootDevice;
-
-    template <typename T>
-    class PowerDevice;
-
-    // =============================================================================
-    // ROOT POWER DEVICE
-    // =============================================================================
-    /**
-     * @brief Root interface device for the PWR peripheral.
-     *
-     * The STM32 PWR peripheral is treated as a single ownership domain.
-     * Functional subdivision lives in PowerInterface, but mutation ownership
-     * remains centralized in PowerDevice.
-     */
-    class PowerRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<PowerDevice<void>>;
-        };
-    };
-
     // =============================================================================
     // POWER INFO DEVICE
     // =============================================================================
@@ -57,7 +29,6 @@ namespace valle::platform
 
         using InterfaceT = PowerInterface;
 
-        using DependDevices = TypeList<PowerRootDevice>;
         using InjectDevices = TypeList<>;
 
         // ---------------------------------------------------------------------
@@ -389,7 +360,6 @@ namespace valle::platform
 
         using InterfaceT = PowerInterface;
 
-        using DependDevices = TypeList<PowerRootDevice>;
         using InjectDevices = TypeList<>;
 
         static constexpr uint32_t skDefaultVoltageScalingTimeoutCount = 100'000U;

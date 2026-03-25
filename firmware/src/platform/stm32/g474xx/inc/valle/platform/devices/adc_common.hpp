@@ -10,31 +10,6 @@
 
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class ADCCommonRootDevice;
-
-    template <ADCCommonID tkCommonID>
-    class ADCCommonDevice;
-
-    // ============================================================================
-    // ROOT ADC CLOCK DEVICE (INTERFACE DEVICE)
-    // ============================================================================
-    /**
-     * @brief ADC Clock Device (Interface Device), represents the ADC clock family.
-     *
-     */
-    class ADCCommonRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children =
-                DeviceTreeList<ADCCommonDevice<ADCCommonID::kADC12>, ADCCommonDevice<ADCCommonID::kADC345>>;
-        };
-    };
-
     // ============================================================================
     // ADC CLOCK DEVICE (SHARED DEVICE)
     // ============================================================================
@@ -185,7 +160,6 @@ namespace valle::platform
         using ClockTraitsT                      = ADCCommonTraits<skCommonID>;
         using RootInterfaceT                    = ADCCommonRootInterface;
 
-        using DependDevices = TypeList<ADCCommonRootDevice>;
         using InjectDevices = TypeList<RCCInfoDevice<>>;
 
     private:

@@ -9,45 +9,6 @@
 namespace valle::platform
 {
     // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-
-    class TIMRootDevice;
-
-    template <TIMControllerID tkControllerID>
-    class TIMControllerDevice;
-
-    template <TIMControllerID tkControllerID, bool tkShared>
-    class TIMMultiChannelControllerDevice;
-
-    template <TIMControllerID tkControllerID, TIMChannelID tkChannelID>
-    class TIMChannelDevice;
-
-    // =============================================================================
-    // TIMER ROOT DEVICE (INTERFACE DEVICE)
-    // =============================================================================
-
-    class TIMRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<TIMControllerDevice<TIMControllerID::kTim1>,
-                                            TIMControllerDevice<TIMControllerID::kTim2>,
-                                            TIMControllerDevice<TIMControllerID::kTim3>,
-                                            TIMControllerDevice<TIMControllerID::kTim4>,
-                                            TIMControllerDevice<TIMControllerID::kTim5>,
-                                            TIMControllerDevice<TIMControllerID::kTim6>,
-                                            TIMControllerDevice<TIMControllerID::kTim7>,
-                                            TIMControllerDevice<TIMControllerID::kTim8>,
-                                            TIMControllerDevice<TIMControllerID::kTim15>,
-                                            TIMControllerDevice<TIMControllerID::kTim16>,
-                                            TIMControllerDevice<TIMControllerID::kTim17>,
-                                            TIMControllerDevice<TIMControllerID::kTim20>>;
-        };
-    };
-
-    // =============================================================================
     // TIMER CONTROLLER DEVICE (SHARED DEVICE)
     // =============================================================================
 
@@ -285,7 +246,6 @@ namespace valle::platform
         using BKINPinDriverT  = PinDriverT<TIMGPIOPinType::kBKIN>;
         using BKIN2PinDriverT = PinDriverT<TIMGPIOPinType::kBKIN2>;
 
-        using DependDevices = TypeList<TIMRootDevice>;
         using InjectDevices = FilterNullDevices<TypeList<Ch1PinT,
                                                          Ch2PinT,
                                                          Ch3PinT,

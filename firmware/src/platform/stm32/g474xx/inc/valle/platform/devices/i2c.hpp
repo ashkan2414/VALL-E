@@ -18,31 +18,6 @@
 namespace valle::platform
 {
     // ============================================================================
-    // FOWARD DECLARATIONS
-    // ============================================================================
-
-    class I2CRootDevice;
-
-    template <I2CControllerID tkControllerID>
-    class I2CControllerDevice;
-
-    // ============================================================================
-    // I2C DEVICE (THE INTERFACE DEVICE)
-    // ============================================================================
-
-    class I2CRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<I2CControllerDevice<I2CControllerID::kI2C1>,
-                                            I2CControllerDevice<I2CControllerID::kI2C2>,
-                                            I2CControllerDevice<I2CControllerID::kI2C3>,
-                                            I2CControllerDevice<I2CControllerID::kI2C4>>;
-        };
-    };
-
-    // ============================================================================
     // I2C CONTROLLER (THE UNIQUE DEVICE)
     // ============================================================================
     // ---------------------------------------------------------------------------
@@ -203,7 +178,6 @@ namespace valle::platform
         using SDAPinDriverT  = PinDriverT<I2CControllerGPIOPinType::kSDA>;
         using SMBAPinDriverT = PinDriverT<I2CControllerGPIOPinType::kSMBA>;
 
-        using DependDevices = TypeList<I2CRootDevice>;
         using InjectDevices = FilterNullDevices<TypeList<DMAChannelRxT, DMAChannelTxT, SCLPinT, SDAPinT, SMBAPinT>>;
 
     private:

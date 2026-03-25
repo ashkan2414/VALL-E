@@ -4,28 +4,8 @@
 #include "valle/platform/devices/power.hpp"
 #include "valle/platform/hardware/rcc/lse.hpp"
 
-
 namespace valle::platform
 {
-    // =============================================================================
-    // FORWARD DECLARATIONS
-    // =============================================================================
-    class LSEOscillatorRootDevice;
-    template <typename T>
-    class LSEOscillatorDevice;
-
-    // =============================================================================
-    // ROOT LSE OSCILLATOR DEVICE
-    // =============================================================================
-    class LSEOscillatorRootDevice
-    {
-    public:
-        struct Descriptor : public InterfaceDeviceDescriptor
-        {
-            using Children = DeviceTreeList<LSEOscillatorDevice<void>>;
-        };
-    };
-
     // =========================================================================
     // LSE Oscillator INFO DEVICE
     // =========================================================================
@@ -40,7 +20,6 @@ namespace valle::platform
 
         using InterfaceT = LSEOscillatorInterface;
 
-        using DependDevices = TypeList<LSEOscillatorRootDevice>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] bool is_ready() const
@@ -91,7 +70,7 @@ namespace valle::platform
 
         using InterfaceT = LSEOscillatorInterface;
 
-        using DependDevices = TypeList<LSEOscillatorRootDevice, PowerDevice<>>;
+        using DependDevices = TypeList<PowerDevice<>>;
         using InjectDevices = TypeList<>;
 
         [[nodiscard]] bool init(const LSEOscillatorConfig& config)

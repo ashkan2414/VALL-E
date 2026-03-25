@@ -735,17 +735,6 @@ namespace valle
         return build_device_storage_from_driver_list<TypeList<TDrivers...>>();
     }
 
-    template <CDevice... TDevices>
-    using DeviceStorageFromDeviceTree =
-        typename detail::DeviceStorageBuilderHelper<typename DeviceTreeList<TDevices...>::Devices>::type;
-
-    template <CDevice... TDevices>
-    [[nodiscard]] inline DeviceStorageFromDeviceTree<TDevices...> build_device_storage_from_device_tree()
-    {
-        using DeviceGraph = typename DeviceTreeList<TDevices...>::Devices;
-        return detail::device_storage_builder_helper(DeviceGraph{});
-    }
-
     template <CDeviceRefRegistry TDeviceRefRegistry, typename TDriverTuple = std::tuple<>>
     class DriverBuilder
     {
