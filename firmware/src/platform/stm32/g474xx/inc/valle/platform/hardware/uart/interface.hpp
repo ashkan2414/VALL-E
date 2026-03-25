@@ -10,7 +10,7 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class UARTBaudRate
+    enum class UartBaudRate
     {
         kBaud1200    = 1200,
         kBaud2400    = 2400,
@@ -28,20 +28,20 @@ namespace valle::platform
         kBaud2000000 = 2000000,
     };
 
-    enum class UARTWordLength
+    enum class UartWordLength
     {
         kBits7 = UART_WORDLENGTH_7B,
         kBits8 = UART_WORDLENGTH_8B,
         kBits9 = UART_WORDLENGTH_9B,
     };
 
-    enum class UARTWakeUpAddressLength
+    enum class UartWakeUpAddressLength
     {
         kBits4 = UART_ADDRESS_DETECT_4B,
         kBits7 = UART_ADDRESS_DETECT_7B,
     };
 
-    enum class UARTStopBits
+    enum class UartStopBits
     {
         kBits1   = UART_STOPBITS_1,
         kBits0_5 = UART_STOPBITS_0_5,
@@ -49,14 +49,14 @@ namespace valle::platform
         kBits1_5 = UART_STOPBITS_1_5,
     };
 
-    enum class UARTParity
+    enum class UartParity
     {
         kNone = UART_PARITY_NONE,
         kEven = UART_PARITY_EVEN,
         kOdd  = UART_PARITY_ODD,
     };
 
-    enum class UARTHardwareFlowControl
+    enum class UartHardwareFlowControl
     {
         kNone    = UART_HWCONTROL_NONE,
         kRTS     = UART_HWCONTROL_RTS,
@@ -64,7 +64,7 @@ namespace valle::platform
         kRTS_CTS = UART_HWCONTROL_RTS_CTS,
     };
 
-    enum class UARTTransferMode
+    enum class UartTransferMode
     {
         kTx   = UART_MODE_TX,
         kRx   = UART_MODE_RX,
@@ -74,20 +74,20 @@ namespace valle::platform
     // ===========================================================================
     // HARDWARE TRAITS
     // ===========================================================================
-    template <UARTControllerID tkID>
-    struct UARTControllerTraits;
+    template <UartPeripheralId tkPeripheralId>
+    struct UartControllerTraits;
 
     template <>
-    struct UARTControllerTraits<UARTControllerID::kUSART1>
+    struct UartControllerTraits<UartPeripheralId::kUSART1>
     {
         static inline USART_TypeDef* const skInstance          = USART1;
         static constexpr IRQn_Type         skIRQn              = USART1_IRQn;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART1Tx;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART1Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortA;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin9;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortA;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin10;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestTx   = DmaMuxRequestId::kUSART1Tx;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestRx   = DmaMuxRequestId::kUSART1Rx;
+        static constexpr GpioPortId        skDefaultGpioTxPort = GpioPortId::kPortA;
+        static constexpr GpioPinId         skDefaultGpioTxPin  = GpioPinId::kPin9;
+        static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortA;
+        static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin10;
 
         static inline void enable_clock()
         {
@@ -96,16 +96,16 @@ namespace valle::platform
     };
 
     template <>
-    struct UARTControllerTraits<UARTControllerID::kUSART2>
+    struct UartControllerTraits<UartPeripheralId::kUSART2>
     {
         static inline USART_TypeDef* const skInstance          = USART2;
         static constexpr IRQn_Type         skIRQn              = USART2_IRQn;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART2Tx;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART2Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortA;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin2;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortA;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin3;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestTx   = DmaMuxRequestId::kUSART2Tx;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestRx   = DmaMuxRequestId::kUSART2Rx;
+        static constexpr GpioPortId        skDefaultGpioTxPort = GpioPortId::kPortA;
+        static constexpr GpioPinId         skDefaultGpioTxPin  = GpioPinId::kPin2;
+        static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortA;
+        static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin3;
 
         static inline void enable_clock()
         {
@@ -114,16 +114,16 @@ namespace valle::platform
     };
 
     template <>
-    struct UARTControllerTraits<UARTControllerID::kUSART3>
+    struct UartControllerTraits<UartPeripheralId::kUSART3>
     {
         static inline USART_TypeDef* const skInstance          = USART3;
         static constexpr IRQn_Type         skIRQn              = USART3_IRQn;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUSART3Tx;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUSART3Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortB;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin10;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortB;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin11;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestTx   = DmaMuxRequestId::kUSART3Tx;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestRx   = DmaMuxRequestId::kUSART3Rx;
+        static constexpr GpioPortId        skDefaultGpioTxPort = GpioPortId::kPortB;
+        static constexpr GpioPinId         skDefaultGpioTxPin  = GpioPinId::kPin10;
+        static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortB;
+        static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin11;
 
         static inline void enable_clock()
         {
@@ -132,16 +132,16 @@ namespace valle::platform
     };
 
     template <>
-    struct UARTControllerTraits<UARTControllerID::kUART4>
+    struct UartControllerTraits<UartPeripheralId::kUart4>
     {
         static inline USART_TypeDef* const skInstance          = UART4;
         static constexpr IRQn_Type         skIRQn              = UART4_IRQn;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUART4Tx;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUART4Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortC;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin10;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortC;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin11;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestTx   = DmaMuxRequestId::kUART4Tx;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestRx   = DmaMuxRequestId::kUART4Rx;
+        static constexpr GpioPortId        skDefaultGpioTxPort = GpioPortId::kPortC;
+        static constexpr GpioPinId         skDefaultGpioTxPin  = GpioPinId::kPin10;
+        static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortC;
+        static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin11;
 
         static inline void enable_clock()
         {
@@ -150,16 +150,16 @@ namespace valle::platform
     };
 
     template <>
-    struct UARTControllerTraits<UARTControllerID::kUART5>
+    struct UartControllerTraits<UartPeripheralId::kUart5>
     {
         static inline USART_TypeDef* const skInstance          = UART5;
         static constexpr IRQn_Type         skIRQn              = UART5_IRQn;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kUART5Tx;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kUART5Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortC;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin12;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortD;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin2;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestTx   = DmaMuxRequestId::kUART5Tx;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestRx   = DmaMuxRequestId::kUART5Rx;
+        static constexpr GpioPortId        skDefaultGpioTxPort = GpioPortId::kPortC;
+        static constexpr GpioPinId         skDefaultGpioTxPin  = GpioPinId::kPin12;
+        static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortD;
+        static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin2;
 
         static inline void enable_clock()
         {
@@ -168,16 +168,16 @@ namespace valle::platform
     };
 
     template <>
-    struct UARTControllerTraits<UARTControllerID::kLPUART1>
+    struct UartControllerTraits<UartPeripheralId::kLPUart1>
     {
         static inline USART_TypeDef* const skInstance          = LPUART1;
         static constexpr IRQn_Type         skIRQn              = LPUART1_IRQn;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestTx   = DMAMuxRequestID::kLPUART1Tx;
-        static constexpr DMAMuxRequestID   skDMAMuxRequestRx   = DMAMuxRequestID::kLPUART1Rx;
-        static constexpr GPIOPortID        skDefaultGPIOTxPort = GPIOPortID::kPortA;
-        static constexpr GPIOPinID         skDefaultGPIOTxPin  = GPIOPinID::kPin2;
-        static constexpr GPIOPortID        skDefaultGPIORxPort = GPIOPortID::kPortA;
-        static constexpr GPIOPinID         skDefaultGPIORxPin  = GPIOPinID::kPin3;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestTx   = DmaMuxRequestId::kLPUART1Tx;
+        static constexpr DmaMuxRequestId   skDmaMuxRequestRx   = DmaMuxRequestId::kLPUART1Rx;
+        static constexpr GpioPortId        skDefaultGpioTxPort = GpioPortId::kPortA;
+        static constexpr GpioPinId         skDefaultGpioTxPin  = GpioPinId::kPin2;
+        static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortA;
+        static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin3;
 
         static inline void enable_clock()
         {

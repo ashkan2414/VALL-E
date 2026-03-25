@@ -4,15 +4,15 @@
 
 namespace valle::platform
 {
-    struct GPIODigitalOutConfig
+    struct GpioDigitalOutConfig
     {
-        GPIOOutputMode mode  = GPIOOutputMode::kPushPull;
-        GPIOSpeedMode  speed = GPIOSpeedMode::kLow;
-        GPIOPullMode   pull  = GPIOPullMode::kNoPull;
+        GpioOutputMode mode  = GpioOutputMode::kPushPull;
+        GpioSpeedMode  speed = GpioSpeedMode::kLow;
+        GpioPullMode   pull  = GpioPullMode::kNoPull;
     };
 
     template <typename TGpioPin>
-    class GPIODigitalOutDriver
+    class GpioDigitalOutDriver
     {
     public:
         using InjectDevices = TypeList<TGpioPin>;
@@ -22,22 +22,22 @@ namespace valle::platform
         bool                                      m_inverted = false;
 
     public:
-        GPIODigitalOutDriver() = delete;
+        GpioDigitalOutDriver() = delete;
 
         /**
          * @brief Construct a new Digital Out
          * @param pin Injected Pin Resource
          */
-        GPIODigitalOutDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
+        GpioDigitalOutDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
         {
         }
 
-        [[nodiscard]] bool init(const GPIODigitalOutConfig& config)
+        [[nodiscard]] bool init(const GpioDigitalOutConfig& config)
         {
-            return m_pin.get().init(GPIOPinConfig{.mode      = static_cast<uint32_t>(config.mode),
+            return m_pin.get().init(GpioPinConfig{.mode      = static_cast<uint32_t>(config.mode),
                                                   .pull      = config.pull,
                                                   .speed     = config.speed,
-                                                  .alternate = GPIOAlternativeFunction::kAF0});
+                                                  .alternate = GpioAlternativeFunction::kAF0});
         }
 
         // --- API ---
@@ -61,13 +61,13 @@ namespace valle::platform
     namespace detail
     {
         template <typename TPin>
-        struct ConditionalGPIODigitalOutDriver
+        struct ConditionalGpioDigitalOutDriver
         {
-            using type = GPIODigitalOutDriver<TPin>;
+            using type = GpioDigitalOutDriver<TPin>;
         };
 
         template <>
-        struct ConditionalGPIODigitalOutDriver<GPIONullPinDevice>
+        struct ConditionalGpioDigitalOutDriver<GpioNullPinDevice>
         {
             using type = std::monostate;
         };
@@ -75,6 +75,6 @@ namespace valle::platform
     }  // namespace detail
 
     template <typename TPin>
-    using ConditionalGPIODigitalOutDriverT = typename detail::ConditionalGPIODigitalOutDriver<TPin>::type;
+    using ConditionalGpioDigitalOutDriverT = typename detail::ConditionalGpioDigitalOutDriver<TPin>::type;
 
 }  // namespace valle::platform

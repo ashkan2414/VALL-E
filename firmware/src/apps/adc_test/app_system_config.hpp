@@ -10,20 +10,20 @@
 namespace valle::app
 {
     // ADC Channel
-    constexpr platform::ADCControllerID kTestADCControllerID = platform::ADCControllerID::kADC1;
-    constexpr platform::ADCChannelID    kTestADCChannelID    = platform::ADCChannelID::kChannel1;
-    constexpr bool                      kTestADCUseInject    = false;
+    constexpr platform::AdcPeripheralId kTestAdcPeripheralId = platform::AdcPeripheralId::kAdc1;
+    constexpr platform::AdcChannelId    kTestAdcChannelId    = platform::AdcChannelId::kChannel1;
+    constexpr bool                      kTestAdcUseInject    = false;
 
-    using TestADCDMAChannelT = platform::DMA1Channel2Device;
-    struct ADCControllerCTConfig : public platform::ADCControllerCTDefaultConfig
+    using TestAdcDmaChannelT = platform::Dma1Channel2Device;
+    struct AdcControllerCTConfig : public platform::AdcControllerCTDefaultConfig
     {
-        using DMAChannelT = TestADCDMAChannelT;
+        using DmaChannelT = TestAdcDmaChannelT;
     };
 
 }  // namespace valle::app
 
 // Bind compile-time configurations
-VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(valle::app::kTestADCControllerID, valle::app::ADCControllerCTConfig{});
+VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(valle::app::kTestAdcPeripheralId, valle::app::AdcControllerCTConfig{});
 
 namespace valle
 {
@@ -33,15 +33,15 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using TestADCChannelT =
-            std::conditional_t<kTestADCUseInject,
-                               platform::ADCInjectChannelRank1Device<kTestADCControllerID, kTestADCChannelID>,
-                               platform::ADCRegularChannelRank1Device<kTestADCControllerID, kTestADCChannelID>>;
-        using TestADCConverterT = platform::ADCVoltageConverter<IdentityConverter<float>>;
-        using TestADCDriverT    = platform::ADCAnalogSensorDriver<TestADCChannelT, TestADCConverterT>;
+        using TestAdcChannelT =
+            std::conditional_t<kTestAdcUseInject,
+                               platform::AdcInjectChannelRank1Device<kTestAdcPeripheralId, kTestAdcChannelId>,
+                               platform::AdcRegularChannelRank1Device<kTestAdcPeripheralId, kTestAdcChannelId>>;
+        using TestAdcConverterT = platform::AdcVoltageConverter<IdentityConverter<float>>;
+        using TestAdcDriverT    = platform::AdcAnalogSensorDriver<TestAdcChannelT, TestAdcConverterT>;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, TestADCDriverT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UartLoggerT, TestAdcDriverT>;
 
         // ============================================================================
         // Root Driver
@@ -52,7 +52,7 @@ namespace valle
             using BaseT = PackedDriverBase<RootDevicesT>;
             using BaseT::BaseT;
 
-            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(adc1, platform::ADC1ControllerDevice);
+            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(adc1, platform::Adc1ControllerDevice);
         };
 
         // ============================================================================
@@ -64,8 +64,8 @@ namespace valle
 
             RootDriver                 root;
             platform::CoreSystemDriver core;
-            UARTLoggerT                uart_logger;
-            TestADCDriverT             test_adc;
+            UartLoggerT                uart_logger;
+            TestAdcDriverT             test_adc;
         };
 
     }  // namespace app

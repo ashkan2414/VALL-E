@@ -12,7 +12,7 @@ namespace valle::app
         return std::move(builder)
             .template install<RootDriver>()
             .template install<platform::CoreSystemDriver>()
-            .template install<UARTLoggerT>()
+            .template install<UartLoggerT>()
             .template install<AMT102ModuleT>()
             .yield();
     }
@@ -25,12 +25,12 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::DMAMux1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
-            [](platform::DMA1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); }});
+            [](platform::DmaMux1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
+            [](platform::Dma1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GpioPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); }});
     }
 
     /**
@@ -39,14 +39,14 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        expect(g_drivers.uart_logger.init(platform::UARTControllerConfig{
-                   .baud_rate         = platform::UARTBaudRate::kBaud230400,
-                   .word_length       = platform::UARTWordLength::kBits8,
-                   .stop_bits         = platform::UARTStopBits::kBits1,
-                   .parity            = platform::UARTParity::kNone,
-                   .transfer_mode     = platform::UARTTransferMode::kTxRx,
-                   .hw_flow_ctrl      = platform::UARTHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DMAPriority::kHigh,
+        expect(g_drivers.uart_logger.init(platform::UartControllerConfig{
+                   .baud_rate         = platform::UartBaudRate::kBaud230400,
+                   .word_length       = platform::UartWordLength::kBits8,
+                   .stop_bits         = platform::UartStopBits::kBits1,
+                   .parity            = platform::UartParity::kNone,
+                   .transfer_mode     = platform::UartTransferMode::kTxRx,
+                   .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
+                   .dma_priority      = platform::DmaPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),
@@ -55,25 +55,25 @@ namespace valle::app
         expect(g_drivers.amt102.init(
                    AMT102ModuleConfigT{
                        .encoder_config =
-                           platform::TIMQuadEncoderConfig{
+                           platform::TimQuadEncoderConfig{
                                .gpio_config =
-                                   platform::GPIOAlternateFunctionConfig{
-                                       .mode  = platform::GPIOAlternateFunctionMode::kPushPull,
-                                       .speed = platform::GPIOSpeedMode::kMedium,
-                                       .pull  = platform::GPIOPullMode::kNoPull,
+                                   platform::GpioAlternateFunctionConfig{
+                                       .mode  = platform::GpioAlternateFunctionMode::kPushPull,
+                                       .speed = platform::GpioSpeedMode::kMedium,
+                                       .pull  = platform::GpioPullMode::kNoPull,
                                    },
                                .encoder_config =
-                                   platform::TIMControllerEncoderConfig{
-                                       .mode = platform::TIMControllerEncoderMode::kX4TimerInput12,
+                                   platform::TimControllerEncoderConfig{
+                                       .mode = platform::TimControllerEncoderMode::kX4TimerInput12,
                                        .ch_config =
-                                           platform::TIMChannelInputCaptureConfig{
+                                           platform::TimChannelInputCaptureConfig{
                                                .active_input =
-                                                   platform::TIMChannelInputCaptureActiveInput::kDirectTimerInput,
-                                               .prescaler = platform::TIMChannelInputCapturePrescaler::kDiv1,
-                                               .filter    = platform::TIMChannelInputCaptureFilter::kFreqDiv2N8Samples,
-                                               .polarity  = platform::TIMChannelInputCapturePolarity::kRising,
+                                                   platform::TimChannelInputCaptureActiveInput::kDirectTimerInput,
+                                               .prescaler = platform::TimChannelInputCapturePrescaler::kDiv1,
+                                               .filter    = platform::TimChannelInputCaptureFilter::kFreqDiv2N8Samples,
+                                               .polarity  = platform::TimChannelInputCapturePolarity::kRising,
                                            },
-                                       .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
+                                       .ch2_polarity = platform::TimChannelInputCapturePolarity::kRising,
                                        .auto_reload  = (static_cast<uint32_t>(kEncoderPPR) * 4 * 2) - 1,
                                    }},
                        .home_rad          = 0.0F,

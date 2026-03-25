@@ -16,12 +16,12 @@ namespace valle::app
         float                                    duty_cycle{};
     };
 
-    static constexpr uint32_t kVCAPWMFreqHz     = 60000U;  // 60 kHz PWM Frequency
+    static constexpr uint32_t kVcaPwmFreqHz     = 60000U;  // 60 kHz PWM Frequency
     static constexpr auto     kTargetSettleTime = system::DelayMicros(150);
     static constexpr size_t   kCaptureSteps     = 10;
     static constexpr auto     kCaptureDuration  = kTargetSettleTime * kCaptureSteps;
     static constexpr size_t   kCaptureSamples =
-        std::chrono::duration_cast<system::DelayMicros>(kCaptureDuration).count() * kVCAPWMFreqHz / 1'000'000U;
+        std::chrono::duration_cast<system::DelayMicros>(kCaptureDuration).count() * kVcaPwmFreqHz / 1'000'000U;
 
     using CurrentResponseCollectorT = system::ISRDataCollector<CurrentResponseData, kCaptureSamples, true>;
 

@@ -9,342 +9,342 @@
 
 namespace valle::platform
 {
-    enum class I2CControllerGPIOPinType : uint8_t
+    enum class I2cControllerGpioPinType : uint8_t
     {
         kSCL,
         kSDA,
         kSMBA,
     };
 
-    constexpr static uint8_t kI2CMaxOutputIndex = 5;  // pick whatever upper bound you want
+    constexpr static uint8_t kI2cMaxOutputIndex = 5;  // pick whatever upper bound you want
 
-    template <I2CControllerID tkControllerID, I2CControllerGPIOPinType tkPinType, uint8_t tkOutputIdx = 0>
+    template <I2cPeripheralId tkPeripheralId, I2cControllerGpioPinType tkPinType, uint8_t tkOutputIdx = 0>
 
-    struct I2CControllerPinMap;
+    struct I2cControllerPinMap;
 
-#define DECLARE_I2C_PIN_MAP(tkControllerID, tkPinType, tkOutputIdx, port, pin, af) \
+#define DECLARE_I2C_PIN_MAP(tkPeripheralId, tkPinType, tkOutputIdx, port, pin, af) \
                                                                                    \
-    static_assert((tkOutputIdx) < kI2CMaxOutputIndex);                             \
+    static_assert((tkOutputIdx) < kI2cMaxOutputIndex);                             \
     template <>                                                                    \
-    struct I2CControllerPinMap<(tkControllerID), (tkPinType), (tkOutputIdx)>       \
+    struct I2cControllerPinMap<(tkPeripheralId), (tkPinType), (tkOutputIdx)>       \
     {                                                                              \
-        constexpr static GPIOPortID              skPortID = (port);                \
-        constexpr static GPIOPinID               skPinID  = (pin);                 \
-        constexpr static GPIOAlternativeFunction skAF     = (af);                  \
+        constexpr static GpioPortId              skPortId = (port);                \
+        constexpr static GpioPinId               skPinId  = (pin);                 \
+        constexpr static GpioAlternativeFunction skAF     = (af);                  \
     };
 
-    // I2C1
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSCL,
+    // I2c1
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSCL,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSCL,
                         1,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSCL,
                         2,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSDA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSDA,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSDA,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSDA,
                         2,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C1,
-                        I2CControllerGPIOPinType::kSMBA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c1,
+                        I2cControllerGpioPinType::kSMBA,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF4);
 
-    // I2C2
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSCL,
+    // I2c2
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSCL,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSCL,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSCL,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSDA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSDA,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSDA,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSMBA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSMBA,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSMBA,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSMBA,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin12,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C2,
-                        I2CControllerGPIOPinType::kSMBA,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin12,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c2,
+                        I2cControllerGpioPinType::kSMBA,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF4);
 
-    // I2C3
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSCL,
+    // I2c3
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSCL,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSCL,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF8);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF8);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSCL,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSCL,
                         3,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSDA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSDA,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF8);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF8);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSDA,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF8);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF8);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSDA,
                         2,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF8);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF8);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSDA,
                         3,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSDA,
                         4,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSMBA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSMBA,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSMBA,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSMBA,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C3,
-                        I2CControllerGPIOPinType::kSMBA,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c3,
+                        I2cControllerGpioPinType::kSMBA,
                         2,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF4);
 
-    // I2C4
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSCL,
+    // I2c4
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSCL,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSCL,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF8);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF8);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSCL,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSCL,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSCL,
                         3,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSDA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSDA,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSDA,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF8);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF8);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSDA,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSDA,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSDA,
                         3,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF4);
 
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSMBA,
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSMBA,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSMBA,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSMBA,
                         1,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_I2C_PIN_MAP(I2CControllerID::kI2C4,
-                        I2CControllerGPIOPinType::kSMBA,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_I2C_PIN_MAP(I2cPeripheralId::kI2c4,
+                        I2cControllerGpioPinType::kSMBA,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF4);
 
 #undef DECLARE_I2C_PIN_MAP
 
     namespace detail
     {
-        template <I2CControllerID          tkControllerID,
-                  I2CControllerGPIOPinType tkPinType,
+        template <I2cPeripheralId          tkPeripheralId,
+                  I2cControllerGpioPinType tkPinType,
                   uint8_t                  tkOutputIdx,
-                  GPIOPortID               tkPortID,
-                  GPIOPinID                tkPinID>
-        concept CValidSpecificI2CControllerPin = requires {
-            I2CControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>::skPortID == tkPortID;
-            I2CControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>::skPinID == tkPinID;
+                  GpioPortId               tkPortId,
+                  GpioPinId                tkPinId>
+        concept CValidSpecificI2cControllerPin = requires {
+            I2cControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>::skPortId == tkPortId;
+            I2cControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>::skPinId == tkPinId;
         };
 
-        template <I2CControllerID          tkControllerID,
-                  I2CControllerGPIOPinType tkPinType,
-                  GPIOPortID               tkPortID,
-                  GPIOPinID                tkPinID,
+        template <I2cPeripheralId          tkPeripheralId,
+                  I2cControllerGpioPinType tkPinType,
+                  GpioPortId               tkPortId,
+                  GpioPinId                tkPinId,
                   uint8_t... tkIdxs>
         constexpr std::optional<uint8_t> get_i2c_controller_pin_output_index(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             std::optional<uint8_t> result = std::nullopt;
-            ((CValidSpecificI2CControllerPin<tkControllerID, tkPinType, tkIdxs, tkPortID, tkPinID>
+            ((CValidSpecificI2cControllerPin<tkPeripheralId, tkPinType, tkIdxs, tkPortId, tkPinId>
                   ? (result = tkIdxs, true)
                   : false) ||
              ...);
             return result;
         }
 
-        template <I2CControllerID          tkControllerID,
-                  I2CControllerGPIOPinType tkPinType,
-                  GPIOPortID               tkPortID,
-                  GPIOPinID                tkPinID,
+        template <I2cPeripheralId          tkPeripheralId,
+                  I2cControllerGpioPinType tkPinType,
+                  GpioPortId               tkPortId,
+                  GpioPinId                tkPinId,
                   uint8_t... tkIdxs>
         constexpr bool check_any_valid_i2c_controller_pin_map(std::integer_sequence<uint8_t, tkIdxs...>)
         {
-            return get_i2c_controller_pin_output_index<tkControllerID, tkPinType, tkPortID, tkPinID>(
+            return get_i2c_controller_pin_output_index<tkPeripheralId, tkPinType, tkPortId, tkPinId>(
                        std::integer_sequence<uint8_t, tkIdxs...>{})
                 .has_value();
         }
     }  // namespace detail
 
-    template <I2CControllerID          tkControllerID,
-              I2CControllerGPIOPinType tkPinType,
-              GPIOPortID               tkPortID,
-              GPIOPinID                tkPinID>
-    concept CValidI2CControllerPin =
-        detail::check_any_valid_i2c_controller_pin_map<tkControllerID, tkPinType, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kI2CMaxOutputIndex>{});
+    template <I2cPeripheralId          tkPeripheralId,
+              I2cControllerGpioPinType tkPinType,
+              GpioPortId               tkPortId,
+              GpioPinId                tkPinId>
+    concept CValidI2cControllerPin =
+        detail::check_any_valid_i2c_controller_pin_map<tkPeripheralId, tkPinType, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kI2cMaxOutputIndex>{});
 
-    template <I2CControllerID          tkControllerID,
-              I2CControllerGPIOPinType tkPinType,
-              GPIOPortID               tkPortID,
-              GPIOPinID                tkPinID>
-        requires(CValidI2CControllerPin<tkControllerID, tkPinType, tkPortID, tkPinID>)
-    constexpr uint8_t kI2CControllerPinOutputIndex =
-        detail::get_i2c_controller_pin_output_index<tkControllerID, tkPinType, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kI2CMaxOutputIndex>{})
+    template <I2cPeripheralId          tkPeripheralId,
+              I2cControllerGpioPinType tkPinType,
+              GpioPortId               tkPortId,
+              GpioPinId                tkPinId>
+        requires(CValidI2cControllerPin<tkPeripheralId, tkPinType, tkPortId, tkPinId>)
+    constexpr uint8_t kI2cControllerPinOutputIndex =
+        detail::get_i2c_controller_pin_output_index<tkPeripheralId, tkPinType, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kI2cMaxOutputIndex>{})
             .value();
 
-    template <I2CControllerID          tkControllerID,
-              I2CControllerGPIOPinType tkPinType,
-              GPIOPortID               tkPortID,
-              GPIOPinID                tkPinID>
-        requires(CValidI2CControllerPin<tkControllerID, tkPinType, tkPortID, tkPinID>)
-    constexpr GPIOAlternativeFunction kI2CControllerPinAF =
-        I2CControllerPinMap<tkControllerID,
+    template <I2cPeripheralId          tkPeripheralId,
+              I2cControllerGpioPinType tkPinType,
+              GpioPortId               tkPortId,
+              GpioPinId                tkPinId>
+        requires(CValidI2cControllerPin<tkPeripheralId, tkPinType, tkPortId, tkPinId>)
+    constexpr GpioAlternativeFunction kI2cControllerPinAF =
+        I2cControllerPinMap<tkPeripheralId,
                             tkPinType,
-                            kI2CControllerPinOutputIndex<tkControllerID, tkPinType, tkPortID, tkPinID>>::skAF;
+                            kI2cControllerPinOutputIndex<tkPeripheralId, tkPinType, tkPortId, tkPinId>>::skAF;
 
 }  // namespace valle::platform

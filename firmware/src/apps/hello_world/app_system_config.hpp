@@ -15,7 +15,7 @@ namespace valle
         // ============================================================================
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UartLoggerT>;
 
         // ============================================================================
         // Root Driver
@@ -37,7 +37,7 @@ namespace valle
 
             RootDriver                 root;
             platform::CoreSystemDriver core;
-            UARTLoggerT                uart_logger;
+            UartLoggerT                uart_logger;
         };
 
     }  // namespace app

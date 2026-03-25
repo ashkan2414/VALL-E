@@ -15,9 +15,9 @@ namespace valle::app
         return std::move(builder)
             .template install<RootDriver>()
             .template install<platform::CoreSystemDriver>()
-            .template install<UARTLoggerT>()
+            .template install<UartLoggerT>()
             .template install<VCACurrentLoopDriverT>()
-            .template install<TestGPIODriverT>()
+            .template install<TestGpioDriverT>()
             .yield();
     }
 
@@ -31,22 +31,22 @@ namespace valle::app
         // TODO: Implement a "owned shared device" concept to allow drivers to allow a clear owner.
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
-            [](platform::HRTIM1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
-            [](platform::DMAMux1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
-            [](platform::DMA1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](platform::ADC12CommonDevice& dev)
+            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GpioPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
+            [](platform::Hrtim1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
+            [](platform::DmaMux1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
+            [](platform::Dma1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::Adc12CommonDevice& dev)
             {
-                expect(dev.init(platform::ADCCommonConfig{
+                expect(dev.init(platform::AdcCommonConfig{
                            .clock_config =
-                               platform::ADCCommonAsyncClockConfig{.prescaler =
-                                                                       platform::ADCCommonAsyncClockPrescaler::kDiv4}}),
-                       "Failed to initialize ADC12 Common Device");
+                               platform::AdcCommonAsyncClockConfig{.prescaler =
+                                                                       platform::AdcCommonAsyncClockPrescaler::kDiv4}}),
+                       "Failed to initialize Adc12 Common Device");
             },
-            [](platform::ADC1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
+            [](platform::Adc1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
         }  // namespace valle
         );
     }
@@ -57,21 +57,21 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        expect(g_drivers.uart_logger.init(platform::UARTControllerConfig{
-                   .baud_rate         = platform::UARTBaudRate::kBaud230400,
-                   .word_length       = platform::UARTWordLength::kBits8,
-                   .stop_bits         = platform::UARTStopBits::kBits1,
-                   .parity            = platform::UARTParity::kNone,
-                   .transfer_mode     = platform::UARTTransferMode::kTxRx,
-                   .hw_flow_ctrl      = platform::UARTHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DMAPriority::kHigh,
+        expect(g_drivers.uart_logger.init(platform::UartControllerConfig{
+                   .baud_rate         = platform::UartBaudRate::kBaud230400,
+                   .word_length       = platform::UartWordLength::kBits8,
+                   .stop_bits         = platform::UartStopBits::kBits1,
+                   .parity            = platform::UartParity::kNone,
+                   .transfer_mode     = platform::UartTransferMode::kTxRx,
+                   .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
+                   .dma_priority      = platform::DmaPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),
                "Failed to initialize UART Logger Driver");
 
         constexpr auto vca_current_loop_driver_config =
-            platform::app::kDefaultVCACurrentLoopDriverConfig<kVCACurrentLoopDriverID>.to_raw();
+            platform::app::kDefaultVcaCurrentLoopDriverConfig<kVcaCurrentLoopDriverId>.to_raw();
         static_assert(
             !vca_current_loop_driver_config.validate(platform::app::kDefaultCoreSystemConfig.rcc_config).has_value(),
             "VCA Current Loop Driver configuration is invalid");
@@ -79,10 +79,10 @@ namespace valle::app
         expect(g_drivers.vca_current_loop_driver.init(vca_current_loop_driver_config),
                "Failed to initialize VCA Current Loop Driver");
 
-        expect(g_drivers.test_gpio.init(platform::GPIODigitalOutConfig{
-                   .mode  = platform::GPIOOutputMode::kPushPull,
-                   .speed = platform::GPIOSpeedMode::kLow,
-                   .pull  = platform::GPIOPullMode::kNoPull,
+        expect(g_drivers.test_gpio.init(platform::GpioDigitalOutConfig{
+                   .mode  = platform::GpioOutputMode::kPushPull,
+                   .speed = platform::GpioSpeedMode::kLow,
+                   .pull  = platform::GpioPullMode::kNoPull,
                }),
                "Failed to initialize Test GPIO Driver");
     }

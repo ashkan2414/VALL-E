@@ -10,26 +10,26 @@
 namespace valle::app
 {
     // HRTIM Controller
-    constexpr platform::HRTIMControllerID kHRTIMControllerID = 1;
-    struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
+    constexpr platform::HrtimPeripheralId kHrtimPeripheralId = 1;
+    struct HrtimControllerCTConfig : public platform::HrtimControllerCTDefaultConfig
     {
     };
 
     // HRTIM Timer
-    constexpr auto kHRTIMTimerID = platform::HRTIMTimerID::kA;
-    struct HRTIMTimerCTConfig : public platform::HRTIMTimerCTDefaultConfig
+    constexpr auto kHrtimTimerId = platform::HrtimTimerId::kTimerA;
+    struct HrtimTimerCTConfig : public platform::HrtimTimerCTDefaultConfig
     {
-        using Output1PinT = platform::GPIOPinA8Device;
-        using Output2PinT = platform::GPIOPinA9Device;
+        using Output1PinT = platform::GpioPinA8Device;
+        using Output2PinT = platform::GpioPinA9Device;
     };
 
 }  // namespace valle::app
 
 // Bind compile-time configurations
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kHRTIMControllerID, valle::app::HRTIMControllerCTConfig{});
-VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(valle::app::kHRTIMControllerID,
-                                   valle::app::kHRTIMTimerID,
-                                   valle::app::HRTIMTimerCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kHrtimPeripheralId, valle::app::HrtimControllerCTConfig{});
+VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(valle::app::kHrtimPeripheralId,
+                                   valle::app::kHrtimTimerId,
+                                   valle::app::HrtimTimerCTConfig{});
 
 namespace valle
 {
@@ -38,11 +38,11 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using HRTIMTimerDeviceT      = platform::HRTIMTimerDevice<kHRTIMControllerID, kHRTIMTimerID>;
-        using HRTIMHalfBridgeDriverT = platform::HRTIMHalfBridgeDriver<HRTIMTimerDeviceT>;
+        using HrtimTimerDeviceT      = platform::HrtimTimerDevice<kHrtimPeripheralId, kHrtimTimerId>;
+        using HrtimHalfBridgeDriverT = platform::HrtimHalfBridgeDriver<HrtimTimerDeviceT>;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, HRTIMHalfBridgeDriverT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UartLoggerT, HrtimHalfBridgeDriverT>;
 
         // ============================================================================
         // Root Driver
@@ -64,8 +64,8 @@ namespace valle
 
             RootDriver                 root;
             platform::CoreSystemDriver core;
-            UARTLoggerT                uart_logger;
-            HRTIMHalfBridgeDriverT     hb_driver;
+            UartLoggerT                uart_logger;
+            HrtimHalfBridgeDriverT     hb_driver;
         };
 
     }  // namespace app

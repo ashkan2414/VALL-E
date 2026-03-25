@@ -13,25 +13,25 @@ namespace valle::platform
     // =============================================================================
 
     // -----------------------------------------------------------------------------
-    // COMPILE TIME CONFIGURATIONS
+    // COMPILE TimE CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct TIMControllerCTDefaultConfig
+    struct TimControllerCTDefaultConfig
     {
-        using Ch1PinT   = GPIONullPinDevice;
-        using Ch2PinT   = GPIONullPinDevice;
-        using Ch3PinT   = GPIONullPinDevice;
-        using Ch4PinT   = GPIONullPinDevice;
-        using Ch1NPinT  = GPIONullPinDevice;
-        using Ch2NPinT  = GPIONullPinDevice;
-        using Ch3NPinT  = GPIONullPinDevice;
-        using Ch4NPinT  = GPIONullPinDevice;
-        using ETRPinT   = GPIONullPinDevice;
-        using BKINPinT  = GPIONullPinDevice;
-        using BKIN2PinT = GPIONullPinDevice;
+        using Ch1PinT   = GpioNullPinDevice;
+        using Ch2PinT   = GpioNullPinDevice;
+        using Ch3PinT   = GpioNullPinDevice;
+        using Ch4PinT   = GpioNullPinDevice;
+        using Ch1NPinT  = GpioNullPinDevice;
+        using Ch2NPinT  = GpioNullPinDevice;
+        using Ch3NPinT  = GpioNullPinDevice;
+        using Ch4NPinT  = GpioNullPinDevice;
+        using ETRPinT   = GpioNullPinDevice;
+        using BKINPinT  = GpioNullPinDevice;
+        using BKIN2PinT = GpioNullPinDevice;
     };
 
-    template <typename T, TIMControllerID tkControllerID>
-    concept CValidTIMControllerCTConfig =
+    template <typename T, TimPeripheralId tkPeripheralId>
+    concept CValidTimControllerCTConfig =
         requires {
             typename T::Ch1PinT;
             typename T::Ch2PinT;
@@ -45,43 +45,43 @@ namespace valle::platform
             typename T::BKINPinT;
             typename T::BKIN2PinT;
         } &&
-        (CNullGPIOPinDevice<typename T::Ch1PinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh1, T::Ch1PinT::skPortID, T::Ch1PinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch2PinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh2, T::Ch2PinT::skPortID, T::Ch2PinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch3PinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh3, T::Ch3PinT::skPortID, T::Ch3PinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch4PinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh4, T::Ch4PinT::skPortID, T::Ch4PinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch1NPinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh1N, T::Ch1NPinT::skPortID, T::Ch1NPinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch2NPinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh2N, T::Ch2NPinT::skPortID, T::Ch2NPinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch3NPinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh3N, T::Ch3NPinT::skPortID, T::Ch3NPinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::Ch4NPinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kCh4N, T::Ch4NPinT::skPortID, T::Ch4NPinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::ETRPinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kETR, T::ETRPinT::skPortID, T::ETRPinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::BKINPinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kBKIN, T::BKINPinT::skPortID, T::BKINPinT::skPinID>) &&
-        (CNullGPIOPinDevice<typename T::BKIN2PinT> ||
-         CValidTIMPin<tkControllerID, TIMGPIOPinType::kBKIN2, T::BKIN2PinT::skPortID, T::BKIN2PinT::skPinID>);
+        (CNullGpioPinDevice<typename T::Ch1PinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh1, T::Ch1PinT::skPortId, T::Ch1PinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch2PinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh2, T::Ch2PinT::skPortId, T::Ch2PinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch3PinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh3, T::Ch3PinT::skPortId, T::Ch3PinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch4PinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh4, T::Ch4PinT::skPortId, T::Ch4PinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch1NPinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh1N, T::Ch1NPinT::skPortId, T::Ch1NPinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch2NPinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh2N, T::Ch2NPinT::skPortId, T::Ch2NPinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch3NPinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh3N, T::Ch3NPinT::skPortId, T::Ch3NPinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::Ch4NPinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kCh4N, T::Ch4NPinT::skPortId, T::Ch4NPinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::ETRPinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kETR, T::ETRPinT::skPortId, T::ETRPinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::BKINPinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kBKIN, T::BKINPinT::skPortId, T::BKINPinT::skPinId>) &&
+        (CNullGpioPinDevice<typename T::BKIN2PinT> ||
+         CValidTimPin<tkPeripheralId, TimGpioPinType::kBKIN2, T::BKIN2PinT::skPortId, T::BKIN2PinT::skPinId>);
 
-    template <TIMControllerID tkControllerID>
-    struct TIMControllerCTConfigRegistry
+    template <TimPeripheralId tkPeripheralId>
+    struct TimControllerCTConfigRegistry
     {
-        static constexpr auto skConfig = TIMControllerCTDefaultConfig{};
+        static constexpr auto skConfig = TimControllerCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(tkControllerID, config)                      \
+#define VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(tkPeripheralId, config)                      \
     namespace valle::platform                                                                \
     {                                                                                        \
         template <>                                                                          \
-        struct TIMControllerCTConfigRegistry<(tkControllerID)>                               \
+        struct TimControllerCTConfigRegistry<(tkPeripheralId)>                               \
         {                                                                                    \
             static constexpr auto skConfig = (config);                                       \
-            static_assert(CValidTIMControllerCTConfig<decltype(skConfig), (tkControllerID)>, \
+            static_assert(CValidTimControllerCTConfig<decltype(skConfig), (tkPeripheralId)>, \
                           "Invalid TIM Controller CT Config");                               \
         };                                                                                   \
     }
@@ -89,37 +89,37 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     // CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    struct TIMChannelComplimentaryOutputCaptureConfig
+    struct TimChannelComplimentaryOutputCaptureConfig
     {
-        TIMChannelOutputCapturePolarity  polarity{};
-        TIMChannelOutputCaptureIdleState idle_state{};
+        TimChannelOutputCapturePolarity  polarity{};
+        TimChannelOutputCaptureIdleState idle_state{};
     };
 
-    struct TIMChannelOutputCaptureConfig
+    struct TimChannelOutputCaptureConfig
     {
-        TIMChannelOutputCaptureMode                               mode{};
-        TIMChannelOutputCapturePolarity                           polarity{};
-        TIMChannelOutputCaptureIdleState                          idle_state{};
+        TimChannelOutputCaptureMode                               mode{};
+        TimChannelOutputCapturePolarity                           polarity{};
+        TimChannelOutputCaptureIdleState                          idle_state{};
         bool                                                      enable_preload{};
         bool                                                      enable_fast_mode{};
         bool                                                      enable_clear{};
-        std::optional<TIMChannelComplimentaryOutputCaptureConfig> complementary_output_config{};
+        std::optional<TimChannelComplimentaryOutputCaptureConfig> complementary_output_config{};
         uint32_t                                                  compare_value{};
     };
 
-    struct TIMChannelInputCaptureConfig
+    struct TimChannelInputCaptureConfig
     {
-        TIMChannelInputCaptureActiveInput active_input{};
-        TIMChannelInputCapturePrescaler   prescaler{};
-        TIMChannelInputCaptureFilter      filter{};
-        TIMChannelInputCapturePolarity    polarity{};
+        TimChannelInputCaptureActiveInput active_input{};
+        TimChannelInputCapturePrescaler   prescaler{};
+        TimChannelInputCaptureFilter      filter{};
+        TimChannelInputCapturePolarity    polarity{};
     };
 
-    struct TIMControllerEncoderConfig
+    struct TimControllerEncoderConfig
     {
-        TIMControllerEncoderMode       mode{};
-        TIMChannelInputCaptureConfig   ch_config{};
-        TIMChannelInputCapturePolarity ch2_polarity{};
+        TimControllerEncoderMode       mode{};
+        TimChannelInputCaptureConfig   ch_config{};
+        TimChannelInputCapturePolarity ch2_polarity{};
         uint32_t                       auto_reload = 0xFFFFFFFFU;
     };
 
@@ -128,123 +128,123 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     namespace detail
     {
-        template <TIMControllerID tkControllerID, TIMGPIOPinType tkPinType, typename TPinDevice>
-        struct TIMGPIOPinDriverHelper
+        template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType, typename TPinDevice>
+        struct TimGpioPinDriverHelper
         {
-            using type = GPIOAlternateFunctionDriver<
+            using type = GpioAlternateFunctionDriver<
                 TPinDevice,
-                kTIMPinAF<tkControllerID, tkPinType, TPinDevice::skPortID, TPinDevice::skPinID>>;
+                kTimPinAF<tkPeripheralId, tkPinType, TPinDevice::skPortId, TPinDevice::skPinId>>;
         };
 
-        template <TIMControllerID tkControllerID, TIMGPIOPinType tkPinType>
-        struct TIMGPIOPinDriverHelper<tkControllerID, tkPinType, GPIONullPinDevice>
+        template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType>
+        struct TimGpioPinDriverHelper<tkPeripheralId, tkPinType, GpioNullPinDevice>
         {
             using type = std::monostate;
         };
     }  // namespace detail
 
-    template <TIMControllerID tkControllerID, TIMGPIOPinType tkPinType, typename TPinDevice>
-    using TIMGPIOPinDriver = typename detail::TIMGPIOPinDriverHelper<tkControllerID, tkPinType, TPinDevice>::type;
+    template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType, typename TPinDevice>
+    using TimGpioPinDriver = typename detail::TimGpioPinDriverHelper<tkPeripheralId, tkPinType, TPinDevice>::type;
 
     // -----------------------------------------------------------------------------
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <TIMControllerID tkControllerID>
-    class TIMControllerDevice
+    template <TimPeripheralId tkPeripheralId>
+    class TimControllerDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        static constexpr TIMControllerID skControllerID = tkControllerID;
+        static constexpr TimPeripheralId skPeripheralId = tkPeripheralId;
 
-        using TraitsT       = TIMControllerTraits<tkControllerID>;
-        using InterfaceT    = TIMControllerInterface<tkControllerID>;
+        using TraitsT       = TimControllerTraits<tkPeripheralId>;
+        using InterfaceT    = TimControllerInterface<tkPeripheralId>;
         using CounterValueT = typename TraitsT::CounterValueT;
 
-        template <TIMChannelID tkChannelID>
-        using ChannelInterfaceT = TIMChannelInterface<tkControllerID, tkChannelID>;
+        template <TimChannelId tkChannelId>
+        using ChannelInterfaceT = TimChannelInterface<tkPeripheralId, tkChannelId>;
 
-        using CTConfigRegistryT          = TIMControllerCTConfigRegistry<tkControllerID>;
+        using CTConfigRegistryT          = TimControllerCTConfigRegistry<tkPeripheralId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         // Pin Aliases
-        template <TIMGPIOPinType tkPinType>
+        template <TimGpioPinType tkPinType>
         using PinDeviceT = std::conditional_t<
-            tkPinType == TIMGPIOPinType::kCh1,
+            tkPinType == TimGpioPinType::kCh1,
             typename CTConfigT::Ch1PinT,
             std::conditional_t<
-                tkPinType == TIMGPIOPinType::kCh2,
+                tkPinType == TimGpioPinType::kCh2,
                 typename CTConfigT::Ch2PinT,
                 std::conditional_t<
-                    tkPinType == TIMGPIOPinType::kCh3,
+                    tkPinType == TimGpioPinType::kCh3,
                     typename CTConfigT::Ch3PinT,
                     std::conditional_t<
-                        tkPinType == TIMGPIOPinType::kCh4,
+                        tkPinType == TimGpioPinType::kCh4,
                         typename CTConfigT::Ch4PinT,
                         std::conditional_t<
-                            tkPinType == TIMGPIOPinType::kCh1N,
+                            tkPinType == TimGpioPinType::kCh1N,
                             typename CTConfigT::Ch1NPinT,
                             std::conditional_t<
-                                tkPinType == TIMGPIOPinType::kCh2N,
+                                tkPinType == TimGpioPinType::kCh2N,
                                 typename CTConfigT::Ch2NPinT,
                                 std::conditional_t<
-                                    tkPinType == TIMGPIOPinType::kCh3N,
+                                    tkPinType == TimGpioPinType::kCh3N,
                                     typename CTConfigT::Ch3NPinT,
                                     std::conditional_t<
-                                        tkPinType == TIMGPIOPinType::kCh4N,
+                                        tkPinType == TimGpioPinType::kCh4N,
                                         typename CTConfigT::Ch4NPinT,
-                                        std::conditional_t<tkPinType == TIMGPIOPinType::kETR,
+                                        std::conditional_t<tkPinType == TimGpioPinType::kETR,
                                                            typename CTConfigT::ETRPinT,
-                                                           std::conditional_t<tkPinType == TIMGPIOPinType::kBKIN,
+                                                           std::conditional_t<tkPinType == TimGpioPinType::kBKIN,
                                                                               typename CTConfigT::BKINPinT,
                                                                               typename CTConfigT::BKIN2PinT>>>>>>>>>>;
 
-        using Ch1PinT   = PinDeviceT<TIMGPIOPinType::kCh1>;
-        using Ch2PinT   = PinDeviceT<TIMGPIOPinType::kCh2>;
-        using Ch3PinT   = PinDeviceT<TIMGPIOPinType::kCh3>;
-        using Ch4PinT   = PinDeviceT<TIMGPIOPinType::kCh4>;
-        using Ch1NPinT  = PinDeviceT<TIMGPIOPinType::kCh1N>;
-        using Ch2NPinT  = PinDeviceT<TIMGPIOPinType::kCh2N>;
-        using Ch3NPinT  = PinDeviceT<TIMGPIOPinType::kCh3N>;
-        using Ch4NPinT  = PinDeviceT<TIMGPIOPinType::kCh4N>;
-        using ETRPinT   = PinDeviceT<TIMGPIOPinType::kETR>;
-        using BKINPinT  = PinDeviceT<TIMGPIOPinType::kBKIN>;
-        using BKIN2PinT = PinDeviceT<TIMGPIOPinType::kBKIN2>;
+        using Ch1PinT   = PinDeviceT<TimGpioPinType::kCh1>;
+        using Ch2PinT   = PinDeviceT<TimGpioPinType::kCh2>;
+        using Ch3PinT   = PinDeviceT<TimGpioPinType::kCh3>;
+        using Ch4PinT   = PinDeviceT<TimGpioPinType::kCh4>;
+        using Ch1NPinT  = PinDeviceT<TimGpioPinType::kCh1N>;
+        using Ch2NPinT  = PinDeviceT<TimGpioPinType::kCh2N>;
+        using Ch3NPinT  = PinDeviceT<TimGpioPinType::kCh3N>;
+        using Ch4NPinT  = PinDeviceT<TimGpioPinType::kCh4N>;
+        using ETRPinT   = PinDeviceT<TimGpioPinType::kETR>;
+        using BKINPinT  = PinDeviceT<TimGpioPinType::kBKIN>;
+        using BKIN2PinT = PinDeviceT<TimGpioPinType::kBKIN2>;
 
         // Check availability
-        template <TIMGPIOPinType tkPinType>
-        static constexpr bool skHasPin = !CNullGPIOPinDevice<PinDeviceT<tkPinType>>;
+        template <TimGpioPinType tkPinType>
+        static constexpr bool skHasPin = !CNullGpioPinDevice<PinDeviceT<tkPinType>>;
 
-        static constexpr bool skHasCh1Pin   = skHasPin<TIMGPIOPinType::kCh1>;
-        static constexpr bool skHasCh2Pin   = skHasPin<TIMGPIOPinType::kCh2>;
-        static constexpr bool skHasCh3Pin   = skHasPin<TIMGPIOPinType::kCh3>;
-        static constexpr bool skHasCh4Pin   = skHasPin<TIMGPIOPinType::kCh4>;
-        static constexpr bool skHasCh1NPin  = skHasPin<TIMGPIOPinType::kCh1N>;
-        static constexpr bool skHasCh2NPin  = skHasPin<TIMGPIOPinType::kCh2N>;
-        static constexpr bool skHasCh3NPin  = skHasPin<TIMGPIOPinType::kCh3N>;
-        static constexpr bool skHasCh4NPin  = skHasPin<TIMGPIOPinType::kCh4N>;
-        static constexpr bool skHasETRPin   = skHasPin<TIMGPIOPinType::kETR>;
-        static constexpr bool skHasBKINPin  = skHasPin<TIMGPIOPinType::kBKIN>;
-        static constexpr bool skHasBKIN2Pin = skHasPin<TIMGPIOPinType::kBKIN2>;
+        static constexpr bool skHasCh1Pin   = skHasPin<TimGpioPinType::kCh1>;
+        static constexpr bool skHasCh2Pin   = skHasPin<TimGpioPinType::kCh2>;
+        static constexpr bool skHasCh3Pin   = skHasPin<TimGpioPinType::kCh3>;
+        static constexpr bool skHasCh4Pin   = skHasPin<TimGpioPinType::kCh4>;
+        static constexpr bool skHasCh1NPin  = skHasPin<TimGpioPinType::kCh1N>;
+        static constexpr bool skHasCh2NPin  = skHasPin<TimGpioPinType::kCh2N>;
+        static constexpr bool skHasCh3NPin  = skHasPin<TimGpioPinType::kCh3N>;
+        static constexpr bool skHasCh4NPin  = skHasPin<TimGpioPinType::kCh4N>;
+        static constexpr bool skHasETRPin   = skHasPin<TimGpioPinType::kETR>;
+        static constexpr bool skHasBKINPin  = skHasPin<TimGpioPinType::kBKIN>;
+        static constexpr bool skHasBKIN2Pin = skHasPin<TimGpioPinType::kBKIN2>;
 
-        template <TIMGPIOPinType tkPinType>
-        using PinDriverT = TIMGPIOPinDriver<tkControllerID, tkPinType, PinDeviceT<tkPinType>>;
+        template <TimGpioPinType tkPinType>
+        using PinDriverT = TimGpioPinDriver<tkPeripheralId, tkPinType, PinDeviceT<tkPinType>>;
 
-        using Ch1PinDriverT   = PinDriverT<TIMGPIOPinType::kCh1>;
-        using Ch2PinDriverT   = PinDriverT<TIMGPIOPinType::kCh2>;
-        using Ch3PinDriverT   = PinDriverT<TIMGPIOPinType::kCh3>;
-        using Ch4PinDriverT   = PinDriverT<TIMGPIOPinType::kCh4>;
-        using Ch1NPinDriverT  = PinDriverT<TIMGPIOPinType::kCh1N>;
-        using Ch2NPinDriverT  = PinDriverT<TIMGPIOPinType::kCh2N>;
-        using Ch3NPinDriverT  = PinDriverT<TIMGPIOPinType::kCh3N>;
-        using Ch4NPinDriverT  = PinDriverT<TIMGPIOPinType::kCh4N>;
-        using ETRPinDriverT   = PinDriverT<TIMGPIOPinType::kETR>;
-        using BKINPinDriverT  = PinDriverT<TIMGPIOPinType::kBKIN>;
-        using BKIN2PinDriverT = PinDriverT<TIMGPIOPinType::kBKIN2>;
+        using Ch1PinDriverT   = PinDriverT<TimGpioPinType::kCh1>;
+        using Ch2PinDriverT   = PinDriverT<TimGpioPinType::kCh2>;
+        using Ch3PinDriverT   = PinDriverT<TimGpioPinType::kCh3>;
+        using Ch4PinDriverT   = PinDriverT<TimGpioPinType::kCh4>;
+        using Ch1NPinDriverT  = PinDriverT<TimGpioPinType::kCh1N>;
+        using Ch2NPinDriverT  = PinDriverT<TimGpioPinType::kCh2N>;
+        using Ch3NPinDriverT  = PinDriverT<TimGpioPinType::kCh3N>;
+        using Ch4NPinDriverT  = PinDriverT<TimGpioPinType::kCh4N>;
+        using ETRPinDriverT   = PinDriverT<TimGpioPinType::kETR>;
+        using BKINPinDriverT  = PinDriverT<TimGpioPinType::kBKIN>;
+        using BKIN2PinDriverT = PinDriverT<TimGpioPinType::kBKIN2>;
 
         using InjectDevices = FilterNullDevices<TypeList<Ch1PinT,
                                                          Ch2PinT,
@@ -272,10 +272,10 @@ namespace valle::platform
         BKIN2PinDriverT m_bkin2_pin{};
 
     public:
-        TIMControllerDevice() = delete;
+        TimControllerDevice() = delete;
 
         template <typename... TArgs>
-        explicit TIMControllerDevice(TArgs&&... args)
+        explicit TimControllerDevice(TArgs&&... args)
             : m_ch1_pin(extract_device_ref<skHasCh1Pin, Ch1PinT>(std::forward<TArgs>(args)...))
             , m_ch2_pin(extract_device_ref<skHasCh2Pin, Ch2PinT>(std::forward<TArgs>(args)...))
             , m_ch3_pin(extract_device_ref<skHasCh3Pin, Ch3PinT>(std::forward<TArgs>(args)...))
@@ -298,15 +298,15 @@ namespace valle::platform
             return true;
         }
 
-        template <TIMGPIOPinType tkPinType>
+        template <TimGpioPinType tkPinType>
             requires(skHasPin<tkPinType>)
-        [[nodiscard]] bool init_pin(const GPIOAlternateFunctionConfig& pin_cfg)
+        [[nodiscard]] bool init_pin(const GpioAlternateFunctionConfig& pin_cfg)
         {
             return get_pin_driver<tkPinType>().init(pin_cfg);
         }
 
-        template <TIMChannelID tkChannel>
-        [[nodiscard]] bool init_channel_output_capture(const TIMChannelOutputCaptureConfig& config)
+        template <TimChannelId tkChannel>
+        [[nodiscard]] bool init_channel_output_capture(const TimChannelOutputCaptureConfig& config)
         {
             using CInterfaceT = ChannelInterfaceT<tkChannel>;
 
@@ -333,8 +333,8 @@ namespace valle::platform
             return true;
         }
 
-        template <TIMChannelID tkChannel>
-        [[nodiscard]] bool init_channel_input_capture(const TIMChannelInputCaptureConfig& config)
+        template <TimChannelId tkChannel>
+        [[nodiscard]] bool init_channel_input_capture(const TimChannelInputCaptureConfig& config)
         {
             using CInterfaceT = ChannelInterfaceT<tkChannel>;
 
@@ -345,22 +345,22 @@ namespace valle::platform
             return true;
         }
 
-        [[nodiscard]] bool init_encoder_gpio(const GPIOAlternateFunctionConfig& gpio_config)
+        [[nodiscard]] bool init_encoder_gpio(const GpioAlternateFunctionConfig& gpio_config)
         {
-            return init_pin<TIMGPIOPinType::kCh1>(gpio_config) && init_pin<TIMGPIOPinType::kCh2>(gpio_config);
+            return init_pin<TimGpioPinType::kCh1>(gpio_config) && init_pin<TimGpioPinType::kCh2>(gpio_config);
         }
 
-        [[nodiscard]] bool init_encoder(const TIMControllerEncoderConfig& config)
+        [[nodiscard]] bool init_encoder(const TimControllerEncoderConfig& config)
         {
             InterfaceT::set_encoder_mode(config.mode);
-            if (!init_channel_input_capture<TIMChannelID::kCh1>(config.ch_config))
+            if (!init_channel_input_capture<TimChannelId::kCh1>(config.ch_config))
             {
                 return false;
             }
 
-            TIMChannelInputCaptureConfig ch2_config = config.ch_config;
+            TimChannelInputCaptureConfig ch2_config = config.ch_config;
             ch2_config.polarity                     = config.ch2_polarity;
-            if (!init_channel_input_capture<TIMChannelID::kCh2>(ch2_config))
+            if (!init_channel_input_capture<TimChannelId::kCh2>(ch2_config))
             {
                 return false;
             }
@@ -379,25 +379,25 @@ namespace valle::platform
             InterfaceT::disable_counter();
         }
 
-        template <TIMChannelID tkChannel>
+        template <TimChannelId tkChannel>
         void enable_channel()
         {
             ChannelInterfaceT<tkChannel>::enable();
         }
 
-        template <TIMChannelID tkChannel>
+        template <TimChannelId tkChannel>
         void disable_channel()
         {
             ChannelInterfaceT<tkChannel>::disable();
         }
 
-        template <TIMChannelID tkChannel>
+        template <TimChannelId tkChannel>
         void enable_channel_complementary()
         {
             ChannelInterfaceT<tkChannel>::enable_complementary();
         }
 
-        template <TIMChannelID tkChannel>
+        template <TimChannelId tkChannel>
         void disable_channel_complementary()
         {
             ChannelInterfaceT<tkChannel>::disable_complementary();
@@ -409,61 +409,61 @@ namespace valle::platform
         }
 
     private:
-        template <TIMGPIOPinType tkPinType>
+        template <TimGpioPinType tkPinType>
             requires(skHasPin<tkPinType>)
         [[nodiscard]] constexpr PinDriverT<tkPinType>& get_pin_driver()
         {
-            if constexpr (tkPinType == TIMGPIOPinType::kCh1)
+            if constexpr (tkPinType == TimGpioPinType::kCh1)
             {
                 return m_ch1_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh2)
+            if constexpr (tkPinType == TimGpioPinType::kCh2)
             {
                 return m_ch2_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh3)
+            if constexpr (tkPinType == TimGpioPinType::kCh3)
             {
                 return m_ch3_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh4)
+            if constexpr (tkPinType == TimGpioPinType::kCh4)
             {
                 return m_ch4_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh1N)
+            if constexpr (tkPinType == TimGpioPinType::kCh1N)
             {
                 return m_ch1n_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh2N)
+            if constexpr (tkPinType == TimGpioPinType::kCh2N)
             {
                 return m_ch2n_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh3N)
+            if constexpr (tkPinType == TimGpioPinType::kCh3N)
             {
                 return m_ch3n_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kCh4N)
+            if constexpr (tkPinType == TimGpioPinType::kCh4N)
             {
                 return m_ch4n_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kETR)
+            if constexpr (tkPinType == TimGpioPinType::kETR)
             {
                 return m_etr_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kBKIN)
+            if constexpr (tkPinType == TimGpioPinType::kBKIN)
             {
                 return m_bkin_pin;
             }
 
-            if constexpr (tkPinType == TIMGPIOPinType::kBKIN2)
+            if constexpr (tkPinType == TimGpioPinType::kBKIN2)
             {
                 return m_bkin2_pin;
             }
@@ -474,41 +474,41 @@ namespace valle::platform
     // DEVICE ALIASES
     // ---------------------------------------------------------------------------
 
-    using TIM1ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim1>;
-    using TIM2ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim2>;
-    using TIM3ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim3>;
-    using TIM4ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim4>;
-    using TIM5ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim5>;
-    using TIM6ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim6>;
-    using TIM7ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim7>;
-    using TIM8ControllerDevice  = TIMControllerDevice<TIMControllerID::kTim8>;
-    using TIM15ControllerDevice = TIMControllerDevice<TIMControllerID::kTim15>;
-    using TIM16ControllerDevice = TIMControllerDevice<TIMControllerID::kTim16>;
-    using TIM17ControllerDevice = TIMControllerDevice<TIMControllerID::kTim17>;
-    using TIM20ControllerDevice = TIMControllerDevice<TIMControllerID::kTim20>;
+    using Tim1ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim1>;
+    using Tim2ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim2>;
+    using Tim3ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim3>;
+    using Tim4ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim4>;
+    using Tim5ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim5>;
+    using Tim6ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim6>;
+    using Tim7ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim7>;
+    using Tim8ControllerDevice  = TimControllerDevice<TimPeripheralId::kTim8>;
+    using Tim15ControllerDevice = TimControllerDevice<TimPeripheralId::kTim15>;
+    using Tim16ControllerDevice = TimControllerDevice<TimPeripheralId::kTim16>;
+    using Tim17ControllerDevice = TimControllerDevice<TimPeripheralId::kTim17>;
+    using Tim20ControllerDevice = TimControllerDevice<TimPeripheralId::kTim20>;
 
     // =============================================================================
     // MULTI-CHANNEL CONTROLLER DEVICE (SHARED DEVICE)
     // Consumes the Unique Controller to allow multiple Channel Devices to coexist.
     // =============================================================================
 
-    template <TIMControllerID tkControllerID, bool tkShared = true>
-    class TIMMultiChannelControllerDevice
+    template <TimPeripheralId tkPeripheralId, bool tkShared = true>
+    class TimMultiChannelControllerDevice
     {
     public:
         struct Descriptor : public std::conditional_t<tkShared, SharedDeviceDescriptor, UniqueDeviceDescriptor>
         {
         };
-        using ControllerT   = TIMControllerDevice<tkControllerID>;
+        using ControllerT   = TimControllerDevice<tkPeripheralId>;
         using InjectDevices = TypeList<ControllerT>;
 
     private:
         DeviceRef<ControllerT> m_controller;
 
     public:
-        TIMMultiChannelControllerDevice() = delete;
+        TimMultiChannelControllerDevice() = delete;
 
-        explicit TIMMultiChannelControllerDevice(DeviceRef<ControllerT>&& controller)
+        explicit TimMultiChannelControllerDevice(DeviceRef<ControllerT>&& controller)
             : m_controller(std::move(controller))
         {
         }
@@ -524,25 +524,25 @@ namespace valle::platform
     // Manages a single CCR register and its associated CHx/CHxN pins.
     // =============================================================================
 
-    struct TIMChannelCTConfig
+    struct TimChannelCTConfig
     {
-        using ChPinT  = GPIONullPinDevice;
-        using ChNPinT = GPIONullPinDevice;
+        using ChPinT  = GpioNullPinDevice;
+        using ChNPinT = GpioNullPinDevice;
     };
 
-    template <TIMControllerID tkControllerID, TIMChannelID tkChannel>
-    class TIMChannelDevice
+    template <TimPeripheralId tkPeripheralId, TimChannelId tkChannel>
+    class TimChannelDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using MultiControllerT = TIMMultiChannelControllerDevice<tkControllerID, true>;
+        using MultiControllerT = TimMultiChannelControllerDevice<tkPeripheralId, true>;
 
         // Pins for this specific channel
-        using ChPinT  = typename TIMChannelCTConfig::ChPinT;
-        using ChNPinT = typename TIMChannelCTConfig::ChNPinT;
+        using ChPinT  = typename TimChannelCTConfig::ChPinT;
+        using ChNPinT = typename TimChannelCTConfig::ChNPinT;
 
         using InjectDevices = FilterNullDevices<TypeList<MultiControllerT, ChPinT, ChNPinT>>;
 
@@ -550,9 +550,9 @@ namespace valle::platform
         DeviceRef<MultiControllerT> m_multi;
 
     public:
-        TIMChannelDevice() = delete;
+        TimChannelDevice() = delete;
 
-        explicit TIMChannelDevice(DeviceRef<MultiControllerT>&& multi) : m_multi(std::move(multi))
+        explicit TimChannelDevice(DeviceRef<MultiControllerT>&& multi) : m_multi(std::move(multi))
         {
         }
 

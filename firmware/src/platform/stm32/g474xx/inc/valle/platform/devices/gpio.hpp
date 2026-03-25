@@ -9,20 +9,20 @@ namespace valle::platform
     // GPIO PORT (SHARED DEVICE)
     // ============================================================================
     /**
-     * @brief Represents the GPIO Port Hardware (GPIOA, GPIOB...).
+     * @brief Represents the GPIO Port Hardware (GpioA, GpioB...).
      * Responsibility: Managing the AHB Clock.
      */
-    template <GPIOPortID tkPortID>
-    class GPIOPortDevice
+    template <GpioPortId tkPortId>
+    class GpioPortDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        static constexpr GPIOPortID skPortID = tkPortID;
+        static constexpr GpioPortId skPortId = tkPortId;
 
-        using PortTraitsT = GPIOPortTraits<tkPortID>;
+        using PortTraitsT = GpioPortTraits<tkPortId>;
 
         [[nodiscard]] bool init()
         {
@@ -35,13 +35,13 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using GPIOPortADevice = GPIOPortDevice<GPIOPortID::kPortA>;
-    using GPIOPortBDevice = GPIOPortDevice<GPIOPortID::kPortB>;
-    using GPIOPortCDevice = GPIOPortDevice<GPIOPortID::kPortC>;
-    using GPIOPortDDevice = GPIOPortDevice<GPIOPortID::kPortD>;
-    using GPIOPortEDevice = GPIOPortDevice<GPIOPortID::kPortE>;
-    using GPIOPortFDevice = GPIOPortDevice<GPIOPortID::kPortF>;
-    using GPIOPortGDevice = GPIOPortDevice<GPIOPortID::kPortG>;
+    using GpioPortADevice = GpioPortDevice<GpioPortId::kPortA>;
+    using GpioPortBDevice = GpioPortDevice<GpioPortId::kPortB>;
+    using GpioPortCDevice = GpioPortDevice<GpioPortId::kPortC>;
+    using GpioPortDDevice = GpioPortDevice<GpioPortId::kPortD>;
+    using GpioPortEDevice = GpioPortDevice<GpioPortId::kPortE>;
+    using GpioPortFDevice = GpioPortDevice<GpioPortId::kPortF>;
+    using GpioPortGDevice = GpioPortDevice<GpioPortId::kPortG>;
 
     // ============================================================================
     // GPIO PIN (UNIQUE DEVICE)
@@ -55,12 +55,12 @@ namespace valle::platform
      * @brief Configuration structure for GPIO Pin initialization.
      *
      */
-    struct GPIOPinConfig
+    struct GpioPinConfig
     {
-        uint32_t                mode      = GPIO_MODE_INPUT;
-        GPIOPullMode            pull      = GPIOPullMode::kNoPull;
-        GPIOSpeedMode           speed     = GPIOSpeedMode::kLow;
-        GPIOAlternativeFunction alternate = GPIOAlternativeFunction::kAF0;
+        uint32_t                mode      = Gpio_MODE_INPUT;
+        GpioPullMode            pull      = GpioPullMode::kNoPull;
+        GpioSpeedMode           speed     = GpioSpeedMode::kLow;
+        GpioAlternativeFunction alternate = GpioAlternativeFunction::kAF0;
     };
 
     // -----------------------------------------------------------------------------
@@ -71,27 +71,27 @@ namespace valle::platform
      * @brief Represents the Physical Pin.
      * Pure resource container. No functional API.
      */
-    template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-    class GPIOPinDevice
+    template <GpioPortId tkPortId, GpioPinId tkPinId>
+    class GpioPinDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        constexpr static GPIOPortID skPortID = tkPortID;
-        constexpr static GPIOPinID  skPinID  = tkPinID;
+        constexpr static GpioPortId skPortId = tkPortId;
+        constexpr static GpioPinId  skPinId  = tkPinId;
 
-        using PortTraitsT          = GPIOPortTraits<tkPortID>;
-        using PinTraitsT           = GPIOPinTraits<tkPortID, tkPinID>;
-        using InterruptControllerT = GPIOPinInterruptController<tkPortID, tkPinID>;
+        using PortTraitsT          = GpioPortTraits<tkPortId>;
+        using PinTraitsT           = GpioPinTraits<tkPortId, tkPinId>;
+        using InterruptControllerT = GpioPinInterruptController<tkPortId, tkPinId>;
 
-        using DependDevices = TypeList<GPIOPortDevice<tkPortID>>;
+        using DependDevices = TypeList<GpioPortDevice<tkPortId>>;
 
     public:
-        [[nodiscard]] inline bool init(const GPIOPinConfig& config)
+        [[nodiscard]] inline bool init(const GpioPinConfig& config)
         {
-            GPIO_InitTypeDef init{};
+            Gpio_InitTypeDef init{};
             init.Pin       = PinTraitsT::skPinMask;
             init.Mode      = static_cast<uint32_t>(config.mode);
             init.Pull      = static_cast<uint32_t>(config.pull);
@@ -101,7 +101,7 @@ namespace valle::platform
             return true;
         }
 
-        void enable_interrupts(const GPIOPinInterruptConfig& config)
+        void enable_interrupts(const GpioPinInterruptConfig& config)
         {
             InterruptControllerT::enable_interrupts(config);
         }
@@ -113,7 +113,7 @@ namespace valle::platform
 
         inline void write(bool state)
         {
-            HAL_GPIO_WritePin(PortTraitsT::skInstance, PinTraitsT::skPinMask, state ? GPIO_PIN_SET : GPIO_PIN_RESET);
+            HAL_GPIO_WritePin(PortTraitsT::skInstance, PinTraitsT::skPinMask, state ? Gpio_PIN_SET : Gpio_PIN_RESET);
         }
 
         inline void toggle()
@@ -123,11 +123,11 @@ namespace valle::platform
 
         [[nodiscard]] static inline bool read()
         {
-            return (HAL_GPIO_ReadPin(PortTraitsT::skInstance, PinTraitsT::skPinMask) == GPIO_PIN_SET);
+            return (HAL_GPIO_ReadPin(PortTraitsT::skInstance, PinTraitsT::skPinMask) == Gpio_PIN_SET);
         }
     };
 
-    class GPIONullPinDevice
+    class GpioNullPinDevice
     {
     public:
         struct Descriptor : public NullDeviceDescriptor
@@ -136,115 +136,115 @@ namespace valle::platform
     };
 
     template <typename T>
-    concept CNullGPIOPinDevice = std::is_same_v<T, GPIONullPinDevice>;
+    concept CNullGpioPinDevice = std::is_same_v<T, GpioNullPinDevice>;
 
     template <typename T>
-    concept CGPIOPinDevice = std::is_base_of_v<GPIOPinDevice<T::skPortID, T::skPinID>, T>;
+    concept CGpioPinDevice = std::is_base_of_v<GpioPinDevice<T::skPortId, T::skPinId>, T>;
 
     // -----------------------------------------------------------------------------
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using GPIOPinA0Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin0>;
-    using GPIOPinA1Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin1>;
-    using GPIOPinA2Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin2>;
-    using GPIOPinA3Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin3>;
-    using GPIOPinA4Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin4>;
-    using GPIOPinA5Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin5>;
-    using GPIOPinA6Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin6>;
-    using GPIOPinA7Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin7>;
-    using GPIOPinA8Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin8>;
-    using GPIOPinA9Device  = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin9>;
-    using GPIOPinA10Device = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin10>;
-    using GPIOPinA11Device = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin11>;
-    using GPIOPinA12Device = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin12>;
-    using GPIOPinA13Device = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin13>;
-    using GPIOPinA14Device = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin14>;
-    using GPIOPinA15Device = GPIOPinDevice<GPIOPortID::kPortA, GPIOPinID::kPin15>;
+    using GpioPinA0Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin0>;
+    using GpioPinA1Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin1>;
+    using GpioPinA2Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin2>;
+    using GpioPinA3Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin3>;
+    using GpioPinA4Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin4>;
+    using GpioPinA5Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin5>;
+    using GpioPinA6Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin6>;
+    using GpioPinA7Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin7>;
+    using GpioPinA8Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin8>;
+    using GpioPinA9Device  = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin9>;
+    using GpioPinA10Device = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin10>;
+    using GpioPinA11Device = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin11>;
+    using GpioPinA12Device = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin12>;
+    using GpioPinA13Device = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin13>;
+    using GpioPinA14Device = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin14>;
+    using GpioPinA15Device = GpioPinDevice<GpioPortId::kPortA, GpioPinId::kPin15>;
 
-    using GPIOPinB0Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin0>;
-    using GPIOPinB1Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin1>;
-    using GPIOPinB2Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin2>;
-    using GPIOPinB3Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin3>;
-    using GPIOPinB4Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin4>;
-    using GPIOPinB5Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin5>;
-    using GPIOPinB6Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin6>;
-    using GPIOPinB7Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin7>;
-    using GPIOPinB8Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin8>;
-    using GPIOPinB9Device  = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin9>;
-    using GPIOPinB10Device = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin10>;
-    using GPIOPinB11Device = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin11>;
-    using GPIOPinB12Device = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin12>;
-    using GPIOPinB13Device = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin13>;
-    using GPIOPinB14Device = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin14>;
-    using GPIOPinB15Device = GPIOPinDevice<GPIOPortID::kPortB, GPIOPinID::kPin15>;
+    using GpioPinB0Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin0>;
+    using GpioPinB1Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin1>;
+    using GpioPinB2Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin2>;
+    using GpioPinB3Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin3>;
+    using GpioPinB4Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin4>;
+    using GpioPinB5Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin5>;
+    using GpioPinB6Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin6>;
+    using GpioPinB7Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin7>;
+    using GpioPinB8Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin8>;
+    using GpioPinB9Device  = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin9>;
+    using GpioPinB10Device = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin10>;
+    using GpioPinB11Device = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin11>;
+    using GpioPinB12Device = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin12>;
+    using GpioPinB13Device = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin13>;
+    using GpioPinB14Device = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin14>;
+    using GpioPinB15Device = GpioPinDevice<GpioPortId::kPortB, GpioPinId::kPin15>;
 
-    using GPIOPinC0Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin0>;
-    using GPIOPinC1Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin1>;
-    using GPIOPinC2Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin2>;
-    using GPIOPinC3Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin3>;
-    using GPIOPinC4Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin4>;
-    using GPIOPinC5Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin5>;
-    using GPIOPinC6Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin6>;
-    using GPIOPinC7Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin7>;
-    using GPIOPinC8Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin8>;
-    using GPIOPinC9Device  = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin9>;
-    using GPIOPinC10Device = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin10>;
-    using GPIOPinC11Device = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin11>;
-    using GPIOPinC12Device = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin12>;
-    using GPIOPinC13Device = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin13>;
-    using GPIOPinC14Device = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin14>;
-    using GPIOPinC15Device = GPIOPinDevice<GPIOPortID::kPortC, GPIOPinID::kPin15>;
+    using GpioPinC0Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin0>;
+    using GpioPinC1Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin1>;
+    using GpioPinC2Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin2>;
+    using GpioPinC3Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin3>;
+    using GpioPinC4Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin4>;
+    using GpioPinC5Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin5>;
+    using GpioPinC6Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin6>;
+    using GpioPinC7Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin7>;
+    using GpioPinC8Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin8>;
+    using GpioPinC9Device  = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin9>;
+    using GpioPinC10Device = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin10>;
+    using GpioPinC11Device = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin11>;
+    using GpioPinC12Device = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin12>;
+    using GpioPinC13Device = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin13>;
+    using GpioPinC14Device = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin14>;
+    using GpioPinC15Device = GpioPinDevice<GpioPortId::kPortC, GpioPinId::kPin15>;
 
-    using GPIOPinD0Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin0>;
-    using GPIOPinD1Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin1>;
-    using GPIOPinD2Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin2>;
-    using GPIOPinD3Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin3>;
-    using GPIOPinD4Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin4>;
-    using GPIOPinD5Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin5>;
-    using GPIOPinD6Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin6>;
-    using GPIOPinD7Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin7>;
-    using GPIOPinD8Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin8>;
-    using GPIOPinD9Device  = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin9>;
-    using GPIOPinD10Device = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin10>;
-    using GPIOPinD11Device = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin11>;
-    using GPIOPinD12Device = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin12>;
-    using GPIOPinD13Device = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin13>;
-    using GPIOPinD14Device = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin14>;
-    using GPIOPinD15Device = GPIOPinDevice<GPIOPortID::kPortD, GPIOPinID::kPin15>;
+    using GpioPinD0Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin0>;
+    using GpioPinD1Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin1>;
+    using GpioPinD2Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin2>;
+    using GpioPinD3Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin3>;
+    using GpioPinD4Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin4>;
+    using GpioPinD5Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin5>;
+    using GpioPinD6Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin6>;
+    using GpioPinD7Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin7>;
+    using GpioPinD8Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin8>;
+    using GpioPinD9Device  = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin9>;
+    using GpioPinD10Device = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin10>;
+    using GpioPinD11Device = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin11>;
+    using GpioPinD12Device = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin12>;
+    using GpioPinD13Device = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin13>;
+    using GpioPinD14Device = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin14>;
+    using GpioPinD15Device = GpioPinDevice<GpioPortId::kPortD, GpioPinId::kPin15>;
 
-    using GPIOPinE0Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin0>;
-    using GPIOPinE1Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin1>;
-    using GPIOPinE2Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin2>;
-    using GPIOPinE3Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin3>;
-    using GPIOPinE4Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin4>;
-    using GPIOPinE5Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin5>;
-    using GPIOPinE6Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin6>;
-    using GPIOPinE7Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin7>;
-    using GPIOPinE8Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin8>;
-    using GPIOPinE9Device  = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin9>;
-    using GPIOPinE10Device = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin10>;
-    using GPIOPinE11Device = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin11>;
-    using GPIOPinE12Device = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin12>;
-    using GPIOPinE13Device = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin13>;
-    using GPIOPinE14Device = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin14>;
-    using GPIOPinE15Device = GPIOPinDevice<GPIOPortID::kPortE, GPIOPinID::kPin15>;
+    using GpioPinE0Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin0>;
+    using GpioPinE1Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin1>;
+    using GpioPinE2Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin2>;
+    using GpioPinE3Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin3>;
+    using GpioPinE4Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin4>;
+    using GpioPinE5Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin5>;
+    using GpioPinE6Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin6>;
+    using GpioPinE7Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin7>;
+    using GpioPinE8Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin8>;
+    using GpioPinE9Device  = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin9>;
+    using GpioPinE10Device = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin10>;
+    using GpioPinE11Device = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin11>;
+    using GpioPinE12Device = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin12>;
+    using GpioPinE13Device = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin13>;
+    using GpioPinE14Device = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin14>;
+    using GpioPinE15Device = GpioPinDevice<GpioPortId::kPortE, GpioPinId::kPin15>;
 
-    using GPIOPinF0Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin0>;
-    using GPIOPinF1Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin1>;
-    using GPIOPinF2Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin2>;
-    using GPIOPinF3Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin3>;
-    using GPIOPinF4Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin4>;
-    using GPIOPinF5Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin5>;
-    using GPIOPinF6Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin6>;
-    using GPIOPinF7Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin7>;
-    using GPIOPinF8Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin8>;
-    using GPIOPinF9Device  = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin9>;
-    using GPIOPinF10Device = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin10>;
-    using GPIOPinF11Device = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin11>;
-    using GPIOPinF12Device = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin12>;
-    using GPIOPinF13Device = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin13>;
-    using GPIOPinF14Device = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin14>;
-    using GPIOPinF15Device = GPIOPinDevice<GPIOPortID::kPortF, GPIOPinID::kPin15>;
+    using GpioPinF0Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin0>;
+    using GpioPinF1Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin1>;
+    using GpioPinF2Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin2>;
+    using GpioPinF3Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin3>;
+    using GpioPinF4Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin4>;
+    using GpioPinF5Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin5>;
+    using GpioPinF6Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin6>;
+    using GpioPinF7Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin7>;
+    using GpioPinF8Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin8>;
+    using GpioPinF9Device  = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin9>;
+    using GpioPinF10Device = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin10>;
+    using GpioPinF11Device = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin11>;
+    using GpioPinF12Device = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin12>;
+    using GpioPinF13Device = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin13>;
+    using GpioPinF14Device = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin14>;
+    using GpioPinF15Device = GpioPinDevice<GpioPortId::kPortF, GpioPinId::kPin15>;
 
 }  // namespace valle::platform

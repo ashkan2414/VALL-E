@@ -11,70 +11,70 @@
 
 namespace valle::app
 {
-    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = platform::HRTIMControllerID::kHRTIM1;
-    struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
+    static constexpr platform::HrtimPeripheralId kVcaHrtimPwmPeripheralId = platform::HrtimPeripheralId::kHrtim1;
+    struct HrtimControllerCTConfig : public platform::HrtimControllerCTDefaultConfig
     {
     };
 
-    static constexpr uint8_t kIntakeValveVCACurrentLoopDriverID = 0;
-    struct IntakeValveVCACurrentLoopDriverCTConfig
+    static constexpr uint8_t kIntakeValveVcaCurrentLoopDriverId = 0;
+    struct IntakeValveVcaCurrentLoopDriverCTConfig
     {
-        using PWMOutput1PinT              = platform::GPIOPinA8Device;
-        using PWMOutput2PinT              = platform::GPIOPinA9Device;
-        using CurrentSensorADCDMAChannelT = platform::DMA1Channel2Device;
+        using PWMOutput1PinT              = platform::GpioPinA8Device;
+        using PWMOutput2PinT              = platform::GpioPinA9Device;
+        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel2Device;
 
-        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
-        static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kA;
+        static constexpr platform::HrtimPeripheralId skVcaHrtimPwmPeripheralId = kVcaHrtimPwmPeripheralId;
+        static constexpr platform::HrtimTimerId      skVcaHrtimPwmTimerId      = platform::HrtimTimerId::kTimerA;
 
-        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC1;
-        static constexpr platform::ADCChannelID    skCurrentSensorADCChannelId    = platform::ADCChannelID::kChannel1;
+        static constexpr platform::AdcPeripheralId skCurrentSensorAdcPeripheralId = platform::AdcPeripheralId::kAdc1;
+        static constexpr platform::AdcChannelId    skCurrentSensorAdcChannelId    = platform::AdcChannelId::kChannel1;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
-        static constexpr auto        skCurrentSensorADCHRTIMTriggerSource =
-            platform::ADCInjectGroupTriggerSource::kExtHrtimTRG2;
+        static constexpr auto        skCurrentSensorAdcHrtimTriggerSource =
+            platform::AdcInjectGroupTriggerSource::kExtHrtimTRG2;
     };
 
-    static constexpr uint8_t kExhaustValveVCACurrentLoopDriverID = 1;
-    struct ExhaustValveVCACurrentLoopDriverCTConfig
+    static constexpr uint8_t kExhaustValveVcaCurrentLoopDriverId = 1;
+    struct ExhaustValveVcaCurrentLoopDriverCTConfig
     {
-        using PWMOutput1PinT              = platform::GPIOPinB14Device;
-        using PWMOutput2PinT              = platform::GPIOPinB15Device;
-        using CurrentSensorADCDMAChannelT = platform::DMA1Channel3Device;
+        using PWMOutput1PinT              = platform::GpioPinB14Device;
+        using PWMOutput2PinT              = platform::GpioPinB15Device;
+        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel3Device;
 
-        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
-        static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kD;
+        static constexpr platform::HrtimPeripheralId skVcaHrtimPwmPeripheralId = kVcaHrtimPwmPeripheralId;
+        static constexpr platform::HrtimTimerId      skVcaHrtimPwmTimerId      = platform::HrtimTimerId::kTimerD;
 
-        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC2;
-        static constexpr platform::ADCChannelID    skCurrentSensorADCChannelId    = platform::ADCChannelID::kChannel2;
+        static constexpr platform::AdcPeripheralId skCurrentSensorAdcPeripheralId = platform::AdcPeripheralId::kAdc2;
+        static constexpr platform::AdcChannelId    skCurrentSensorAdcChannelId    = platform::AdcChannelId::kChannel2;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
-        static constexpr auto        skCurrentSensorADCHRTIMTriggerSource =
-            platform::ADCInjectGroupTriggerSource::kExtHrtimTRG2;
+        static constexpr auto        skCurrentSensorAdcHrtimTriggerSource =
+            platform::AdcInjectGroupTriggerSource::kExtHrtimTRG2;
     };
 
     // Position Sensor I2C Controller Config
-    constexpr platform::I2CControllerID kPositionSensorI2CID             = platform::I2CControllerID::kI2C1;
-    constexpr uint16_t                  kPositionSensorI2CAddress        = 0x2B;
-    constexpr bool                      kPositionSensorI2CAddressIs10Bit = false;
+    constexpr platform::I2cPeripheralId kPositionSensorI2cId             = platform::I2cPeripheralId::kI2c1;
+    constexpr uint16_t                  kPositionSensorI2cAddress        = 0x2B;
+    constexpr bool                      kPositionSensorI2cAddressIs10Bit = false;
 
-    struct PositionSensorI2CControllerCTConfig : public platform::I2CControllerCTDefaultConfig
+    struct PositionSensorI2cControllerCTConfig : public platform::I2cControllerCTDefaultConfig
     {
-        using DMAChannelRxT = platform::DMA1Channel4Device;
-        using DMAChannelTxT = platform::DMA1Channel5Device;
-        using SCLPinT       = platform::GPIOPinB8Device;
-        using SDAPinT       = platform::GPIOPinB9Device;
+        using DmaChannelRxT = platform::Dma1Channel4Device;
+        using DmaChannelTxT = platform::Dma1Channel5Device;
+        using SCLPinT       = platform::GpioPinB8Device;
+        using SDAPinT       = platform::GpioPinB9Device;
     };
 }  // namespace valle::app
 
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAHRTIMPWMControllerID, valle::app::HRTIMControllerCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVcaHrtimPwmPeripheralId, valle::app::HrtimControllerCTConfig{});
 VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(Intake,
-                                               valle::app::kIntakeValveVCACurrentLoopDriverID,
-                                               valle::app::IntakeValveVCACurrentLoopDriverCTConfig{});
+                                               valle::app::kIntakeValveVcaCurrentLoopDriverId,
+                                               valle::app::IntakeValveVcaCurrentLoopDriverCTConfig{});
 VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(Exhaust,
-                                               valle::app::kExhaustValveVCACurrentLoopDriverID,
-                                               valle::app::ExhaustValveVCACurrentLoopDriverCTConfig{});
-VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2CID,
-                                      valle::app::PositionSensorI2CControllerCTConfig{});
+                                               valle::app::kExhaustValveVcaCurrentLoopDriverId,
+                                               valle::app::ExhaustValveVcaCurrentLoopDriverCTConfig{});
+VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2cId,
+                                      valle::app::PositionSensorI2cControllerCTConfig{});
 
 namespace valle
 {
@@ -85,59 +85,59 @@ namespace valle
         // ============================================================================
 
         // VCA Current Loop Driver Configurations
-        using IntakeValveVCACurrentLoopDriverT =
-            platform::app::VCACurrentLoopDriver<kIntakeValveVCACurrentLoopDriverID>;
-        using IntakeValveVCACurrentLoopDriverConfigT = typename IntakeValveVCACurrentLoopDriverT::ConfigT;
+        using IntakeValveVcaCurrentLoopDriverT =
+            platform::app::VCACurrentLoopDriver<kIntakeValveVcaCurrentLoopDriverId>;
+        using IntakeValveVcaCurrentLoopDriverConfigT = typename IntakeValveVcaCurrentLoopDriverT::ConfigT;
 
-        using ExhaustValveVCACurrentLoopDriverT =
-            platform::app::VCACurrentLoopDriver<kExhaustValveVCACurrentLoopDriverID>;
-        using ExhaustValveVCACurrentLoopDriverConfigT = typename ExhaustValveVCACurrentLoopDriverT::ConfigT;
+        using ExhaustValveVcaCurrentLoopDriverT =
+            platform::app::VCACurrentLoopDriver<kExhaustValveVcaCurrentLoopDriverId>;
+        using ExhaustValveVcaCurrentLoopDriverConfigT = typename ExhaustValveVcaCurrentLoopDriverT::ConfigT;
 
         // Position Sensor (LDC161X) Configurations
-        using PositionSensorI2CControllerT  = platform::I2CCommandBufferDevice<kPositionSensorI2CID>;
-        using PositionSensorI2CSlaveDeviceT = platform::I2CCommandBufferSlaveDevice<kPositionSensorI2CID,
-                                                                                    kPositionSensorI2CAddress,
-                                                                                    kPositionSensorI2CAddressIs10Bit>;
+        using PositionSensorI2cControllerT  = platform::I2cCommandBufferDevice<kPositionSensorI2cId>;
+        using PositionSensorI2cSlaveDeviceT = platform::I2cCommandBufferSlaveDevice<kPositionSensorI2cId,
+                                                                                    kPositionSensorI2cAddress,
+                                                                                    kPositionSensorI2cAddressIs10Bit>;
 
-        using PositionSensorINTBPinT = platform::GPIOPinC11Device;
+        using PositionSensorINTBPinT = platform::GpioPinC11Device;
         using PositionSensorModuleT =
-            platform::app::LDC161XSensorModule<PositionSensorI2CSlaveDeviceT, 2, PositionSensorINTBPinT>;
+            platform::app::LDC161XSensorModule<PositionSensorI2cSlaveDeviceT, 2, PositionSensorINTBPinT>;
         using PositionSensorModuleConfigT = typename PositionSensorModuleT::ConfigT;
         using PositionSensorConfigT       = typename PositionSensorModuleT::SensorConfigT;
 
         using PositionSensorConverterT       = LDC161XFrequencyToDistanceTableConverter<9>;
         using PositionSensorConverterConfigT = typename PositionSensorConverterT::ConfigT;
 
-        using IntakeValvePositionLoopDriverVCAControllerInterfaceT =
-            platform::app::LDC161XPositionLoopDriverVCAValveInterface<IntakeValveVCACurrentLoopDriverT>;
-        using IntakeValvePositionVCAControllerInterfaceConfigT =
-            typename IntakeValvePositionLoopDriverVCAControllerInterfaceT::ConfigT;
+        using IntakeValvePositionLoopDriverVcaControllerInterfaceT =
+            platform::app::LDC161XPositionLoopDriverVcaValveInterface<IntakeValveVcaCurrentLoopDriverT>;
+        using IntakeValvePositionVcaControllerInterfaceConfigT =
+            typename IntakeValvePositionLoopDriverVcaControllerInterfaceT::ConfigT;
 
-        using ExhaustValvePositionLoopDriverVCAControllerInterfaceT =
-            platform::app::LDC161XPositionLoopDriverVCAValveInterface<ExhaustValveVCACurrentLoopDriverT>;
-        using ExhaustValvePositionVCAControllerInterfaceConfigT =
-            typename ExhaustValvePositionLoopDriverVCAControllerInterfaceT::ConfigT;
+        using ExhaustValvePositionLoopDriverVcaControllerInterfaceT =
+            platform::app::LDC161XPositionLoopDriverVcaValveInterface<ExhaustValveVcaCurrentLoopDriverT>;
+        using ExhaustValvePositionVcaControllerInterfaceConfigT =
+            typename ExhaustValvePositionLoopDriverVcaControllerInterfaceT::ConfigT;
 
         using PositionLoopDriverT =
             platform::app::LDC161XPositionLoopDriver<PositionSensorModuleT,
                                                      PositionSensorConverterT,
-                                                     ExhaustValvePositionLoopDriverVCAControllerInterfaceT,
-                                                     IntakeValvePositionLoopDriverVCAControllerInterfaceT>;
+                                                     ExhaustValvePositionLoopDriverVcaControllerInterfaceT,
+                                                     IntakeValvePositionLoopDriverVcaControllerInterfaceT>;
         using PositionLoopDriverConfigT = typename PositionLoopDriverT::ConfigT;
 
         static constexpr LDC161XChannel kExhaustValvePositionChannel = LDC161XChannel::kChannel0;
         static constexpr LDC161XChannel kIntakeValvePositionChannel  = LDC161XChannel::kChannel1;
 
         // Test GPIO Driver
-        using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;
+        using TestGpioDriverT = platform::GpioDigitalOutDriver<platform::GpioPinB6Device>;
 
         // Declare Main Driver List
         using MainDriversT = TypeList<platform::CoreSystemDriver,
-                                      UARTLoggerT,
-                                      IntakeValveVCACurrentLoopDriverT,
-                                      ExhaustValveVCACurrentLoopDriverT,
+                                      UartLoggerT,
+                                      IntakeValveVcaCurrentLoopDriverT,
+                                      ExhaustValveVcaCurrentLoopDriverT,
                                       PositionLoopDriverT,
-                                      TestGPIODriverT>;
+                                      TestGpioDriverT>;
 
         // ============================================================================
         // Root Driver
@@ -148,7 +148,7 @@ namespace valle
             using BaseT = PackedDriverBase<RootDevicesT>;
             using BaseT::BaseT;
 
-            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2C1CommandBufferDevice<>);
+            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2c1CommandBufferDevice<>);
         };
 
         // ============================================================================
@@ -161,11 +161,11 @@ namespace valle
 
             RootDriver                        root;
             platform::CoreSystemDriver        core;
-            UARTLoggerT                       uart_logger;
-            IntakeValveVCACurrentLoopDriverT  intake_vca_current_loop_driver;
-            ExhaustValveVCACurrentLoopDriverT exhaust_vca_current_loop_driver;
+            UartLoggerT                       uart_logger;
+            IntakeValveVcaCurrentLoopDriverT  intake_vca_current_loop_driver;
+            ExhaustValveVcaCurrentLoopDriverT exhaust_vca_current_loop_driver;
             PositionLoopDriverT               position_loop_driver;
-            TestGPIODriverT                   test_gpio;
+            TestGpioDriverT                   test_gpio;
         };
 
     }  // namespace app

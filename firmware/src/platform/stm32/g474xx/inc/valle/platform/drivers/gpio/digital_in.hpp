@@ -5,22 +5,22 @@
 namespace valle::platform
 {
 
-    struct GPIODigitalInInterruptConfig
+    struct GpioDigitalInInterruptConfig
     {
         uint32_t                  priority;
-        GPIOInputInterruptTrigger trigger;
-        GPIOInputInterruptAction  action;
+        GpioInputInterruptTrigger trigger;
+        GpioInputInterruptAction  action;
     };
 
-    struct GPIODigitalInConfig
+    struct GpioDigitalInConfig
     {
-        GPIOPullMode                                pull      = GPIOPullMode::kNoPull;
-        std::optional<GPIODigitalInInterruptConfig> interrupt = std::nullopt;
+        GpioPullMode                                pull      = GpioPullMode::kNoPull;
+        std::optional<GpioDigitalInInterruptConfig> interrupt = std::nullopt;
         bool                                        inverted  = false;
     };
 
     template <typename TGpioPin>
-    class GPIODigitalInDriver
+    class GpioDigitalInDriver
     {
     public:
         using InjectDevices = TypeList<TGpioPin>;
@@ -30,34 +30,34 @@ namespace valle::platform
         bool                                      m_inverted;
 
     public:
-        GPIODigitalInDriver() = delete;
+        GpioDigitalInDriver() = delete;
 
-        GPIODigitalInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
+        GpioDigitalInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
         {
         }
 
-        [[nodiscard]] bool init(const GPIODigitalInConfig& config)
+        [[nodiscard]] bool init(const GpioDigitalInConfig& config)
         {
             m_inverted = config.inverted;
 
-            uint32_t mode = GPIO_MODE_INPUT;
+            uint32_t mode = Gpio_MODE_INPUT;
             if (config.interrupt.has_value())
             {
                 mode |=
                     static_cast<uint32_t>(config.interrupt->trigger) | static_cast<uint32_t>(config.interrupt->action);
             }
 
-            if (!m_pin->init(GPIOPinConfig{.mode      = mode,
+            if (!m_pin->init(GpioPinConfig{.mode      = mode,
                                            .pull      = config.pull,
-                                           .speed     = GPIOSpeedMode::kLow,
-                                           .alternate = GPIOAlternativeFunction::kAF0}))
+                                           .speed     = GpioSpeedMode::kLow,
+                                           .alternate = GpioAlternativeFunction::kAF0}))
             {
                 return false;
             }
 
             if (config.interrupt.has_value())
             {
-                m_pin->enable_interrupts(GPIOPinInterruptConfig{
+                m_pin->enable_interrupts(GpioPinInterruptConfig{
                     .priority = config.interrupt->priority,
                 });
             }
@@ -76,13 +76,13 @@ namespace valle::platform
     namespace detail
     {
         template <typename TPin>
-        struct ConditionalGPIODigitalInDriver
+        struct ConditionalGpioDigitalInDriver
         {
-            using type = GPIODigitalInDriver<TPin>;
+            using type = GpioDigitalInDriver<TPin>;
         };
 
         template <>
-        struct ConditionalGPIODigitalInDriver<GPIONullPinDevice>
+        struct ConditionalGpioDigitalInDriver<GpioNullPinDevice>
         {
             using type = std::monostate;
         };
@@ -90,6 +90,6 @@ namespace valle::platform
     }  // namespace detail
 
     template <typename TPin>
-    using ConditionalGPIODigitalInDriverT = typename detail::ConditionalGPIODigitalInDriver<TPin>::type;
+    using ConditionalGpioDigitalInDriverT = typename detail::ConditionalGpioDigitalInDriver<TPin>::type;
 
 }  // namespace valle::platform

@@ -4,7 +4,7 @@
 
 namespace valle::platform
 {
-    enum class GPIOPortID
+    enum class GpioPortId
     {
         kPortA,
         kPortB,
@@ -15,7 +15,7 @@ namespace valle::platform
         kPortG,
     };
 
-    enum class GPIOPinID : uint8_t
+    enum class GpioPinId : uint8_t
     {
         kPin0 = 0,
         kPin1,

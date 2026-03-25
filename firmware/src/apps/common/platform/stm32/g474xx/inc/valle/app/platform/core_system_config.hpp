@@ -18,68 +18,68 @@ namespace valle::platform::app
                 .pupd_config     = {},
             },
         .rcc_config =
-            RCCConfig{
+            RccConfig{
                 .hsi =
-                    HSIOscillatorConfig{
+                    HsiOscillatorConfig{
                         .enabled  = true,
-                        .trimming = kDefaultHSICalibrationTrim,
+                        .trimming = kDefaultHsiCalibrationTrim,
                     },
                 .hse =
-                    HSEOscillatorConfig{
+                    HseOscillatorConfig{
                         .enabled = false,
                     },
                 .hsi48 =
-                    HSI48OscillatorConfig{
+                    Hsi48OscillatorConfig{
                         .enabled = false,
                     },
                 .lsi =
-                    LSIOscillatorConfig{
+                    LsiOscillatorConfig{
                         .enabled = false,
                     },
                 .lse =
-                    LSEOscillatorConfig{
+                    LseOscillatorConfig{
                         .enabled = false,
                     },
                 .pll =
-                    PLLConfig{
+                    PllConfig{
                         .enabled          = true,
-                        .source           = PLLSource::kHSI,     // 16 MHz
-                        .m_divider        = PLLMDivider::kDiv4,  // 16 MHz / 4 = 4 MHz PLL input
+                        .source           = PllSource::kHSI,     // 16 MHz
+                        .m_divider        = PllMDivider::kDiv4,  // 16 MHz / 4 = 4 MHz PLL input
                         .n_multiplier     = 85,                  // 4 MHz * 85 = 340 MHz VCO
-                        .r_divider        = PLLRDivider::kDiv2,  // 340 MHz / 2 = 170 MHz PLL_R (HRTIM)
-                        .p_divider        = PLLPDivider::kDiv2,  // 340 MHz / 2 = 170 MHz PLL_P (SYSCLK)
-                        .q_divider        = PLLQDivider::kDiv2,  // 340 MHz / 2 = 170 MHz PLL_Q (USB, ADC)
+                        .r_divider        = PllRDivider::kDiv2,  // 340 MHz / 2 = 170 MHz Pll_R (HRTIM)
+                        .p_divider        = PllPDivider::kDiv2,  // 340 MHz / 2 = 170 MHz Pll_P (SYSCLK)
+                        .q_divider        = PllQDivider::kDiv2,  // 340 MHz / 2 = 170 MHz Pll_Q (USB, ADC)
                         .r_output_enabled = true,
                         .p_output_enabled = false,
                         .q_output_enabled = false,
                     },
                 .sct =
-                    SCTConfig{
-                        .sysclk_source  = SCTSYSCLKSource::kPLL,
-                        .ahb_prescaler  = SCTAHBPrescaler::kDiv1,
-                        .apb1_prescaler = SCTAPB1Prescaler::kDiv1,
-                        .apb2_prescaler = SCTAPB2Prescaler::kDiv1,
-                        .mco_source     = SCTMCOClockSource::kSysclk,
-                        .mco_prescaler  = SCTMCOPrescaler::kDiv1,
-                        .usart1_source  = SCTUSART1ClockSource::kPclk2,
-                        .usart2_source  = SCTUSART2ClockSource::kPclk1,
-                        .usart3_source  = SCTUSART3ClockSource::kPclk1,
-                        .uart4_source   = SCTUART4ClockSource::kPclk1,
-                        .uart5_source   = SCTUART5ClockSource::kPclk1,
-                        .lpuart1_source = SCTLPUART1ClockSource::kPclk1,
-                        .i2c1_source    = SCTI2C1ClockSource::kPclk1,
-                        .i2c2_source    = SCTI2C2ClockSource::kPclk1,
-                        .i2c3_source    = SCTI2C3ClockSource::kPclk1,
-                        .i2c4_source    = SCTI2C4ClockSource::kPclk1,
-                        .lptim1_source  = SCTLPTIM1ClockSource::kPclk1,
-                        .sai1_source    = SCTSAI1ClockSource::kSysclk,
-                        .i2s_source     = SCTI2SClockSource::kSysclk,
-                        .fdcan_source   = SCTFDCANClockSource::kHSE,
-                        .rng_source     = SCTRNGClockSource::kHSI48,
-                        .usb_source     = SCTUSBClockSource::kHSI48,
-                        .adc12_source   = SCTADC12ClockSource::kSysclk,
-                        .adc345_source  = SCTADC345ClockSource::kSysclk,
-                        .quadspi_source = SCTQUADSPIClockSource::kSysclk,
+                    SctConfig{
+                        .sysclk_source  = SctSYSCLKSource::kPLL,
+                        .ahb_prescaler  = SctAHBPrescaler::kDiv1,
+                        .apb1_prescaler = SctAPB1Prescaler::kDiv1,
+                        .apb2_prescaler = SctAPB2Prescaler::kDiv1,
+                        .mco_source     = SctMCOClockSource::kSysclk,
+                        .mco_prescaler  = SctMCOPrescaler::kDiv1,
+                        .usart1_source  = SctUSART1ClockSource::kPclk2,
+                        .usart2_source  = SctUSART2ClockSource::kPclk1,
+                        .usart3_source  = SctUSART3ClockSource::kPclk1,
+                        .uart4_source   = SctUart4ClockSource::kPclk1,
+                        .uart5_source   = SctUart5ClockSource::kPclk1,
+                        .lpuart1_source = SctLPUart1ClockSource::kPclk1,
+                        .i2c1_source    = SctI2c1ClockSource::kPclk1,
+                        .i2c2_source    = SctI2c2ClockSource::kPclk1,
+                        .i2c3_source    = SctI2c3ClockSource::kPclk1,
+                        .i2c4_source    = SctI2c4ClockSource::kPclk1,
+                        .lptim1_source  = SctLPTim1ClockSource::kPclk1,
+                        .sai1_source    = SctSAI1ClockSource::kSysclk,
+                        .i2s_source     = SctI2SClockSource::kSysclk,
+                        .fdcan_source   = SctFDCANClockSource::kHSE,
+                        .rng_source     = SctRNGClockSource::kHsi48,
+                        .usb_source     = SctUSBClockSource::kHsi48,
+                        .adc12_source   = SctAdc12ClockSource::kSysclk,
+                        .adc345_source  = SctAdc345ClockSource::kSysclk,
+                        .quadspi_source = SctQuadSpiClockSource::kSysclk,
                     },
             },
     };

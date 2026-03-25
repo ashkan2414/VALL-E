@@ -15,59 +15,59 @@ namespace valle::platform
     // ============================================================================
 
     // -----------------------------------------------------------------------------
-    // COMPILE TIME CONFIGURATIONS
+    // COMPILE TimE CONFIGURATIONS
     // -----------------------------------------------------------------------------
 
-    template <UARTControllerID tkControllerID>
-    using UARTDefaultTxGPIOPin = GPIOPinDevice<UARTControllerTraits<tkControllerID>::skDefaultGPIOTxPort,
-                                               UARTControllerTraits<tkControllerID>::skDefaultGPIOTxPin>;
+    template <UartPeripheralId tkPeripheralId>
+    using UartDefaultTxGpioPin = GpioPinDevice<UartControllerTraits<tkPeripheralId>::skDefaultGpioTxPort,
+                                               UartControllerTraits<tkPeripheralId>::skDefaultGpioTxPin>;
 
-    template <UARTControllerID tkControllerID>
-    using UARTDefaultRxGPIOPin = GPIOPinDevice<UARTControllerTraits<tkControllerID>::skDefaultGPIORxPort,
-                                               UARTControllerTraits<tkControllerID>::skDefaultGPIORxPin>;
+    template <UartPeripheralId tkPeripheralId>
+    using UartDefaultRxGpioPin = GpioPinDevice<UartControllerTraits<tkPeripheralId>::skDefaultGpioRxPort,
+                                               UartControllerTraits<tkPeripheralId>::skDefaultGpioRxPin>;
 
     // TODO: Add RX DMA Channel as well
-    template <UARTControllerID tkControllerID>
-    struct UARTControllerCTDefaultConfig
+    template <UartPeripheralId tkPeripheralId>
+    struct UartControllerCTDefaultConfig
     {
-        using TxPinT        = UARTDefaultTxGPIOPin<tkControllerID>;
-        using RxPinT        = UARTDefaultRxGPIOPin<tkControllerID>;
-        using CKPinT        = GPIONullPinDevice;
-        using CTSPinT       = GPIONullPinDevice;
-        using RTSPinT       = GPIONullPinDevice;
-        using DMAChannelTxT = DMANullChannelDevice;
+        using TxPinT        = UartDefaultTxGpioPin<tkPeripheralId>;
+        using RxPinT        = UartDefaultRxGpioPin<tkPeripheralId>;
+        using CKPinT        = GpioNullPinDevice;
+        using CTSPinT       = GpioNullPinDevice;
+        using RTSPinT       = GpioNullPinDevice;
+        using DmaChannelTxT = DmaNullChannelDevice;
     };
 
     template <typename T>
-    concept CValidUARTControllerCTConfig =
+    concept CValidUartControllerCTConfig =
         requires {
             typename T::TxPinT;
             typename T::RxPinT;
             typename T::CKPinT;
             typename T::CTSPinT;
             typename T::RTSPinT;
-            typename T::DMAChannelTxT;
-        } && (CGPIOPinDevice<typename T::TxPinT> || CNullGPIOPinDevice<typename T::TxPinT>) &&
-        (CGPIOPinDevice<typename T::RxPinT> || CNullGPIOPinDevice<typename T::RxPinT>) &&
-        (CGPIOPinDevice<typename T::CKPinT> || CNullGPIOPinDevice<typename T::CKPinT>) &&
-        (CGPIOPinDevice<typename T::CTSPinT> || CNullGPIOPinDevice<typename T::CTSPinT>) &&
-        (CGPIOPinDevice<typename T::RTSPinT> || CNullGPIOPinDevice<typename T::RTSPinT>) &&
-        (CDMAChannelDevice<typename T::DMAChannelTxT> || CNullDMAChannel<typename T::DMAChannelTxT>);
+            typename T::DmaChannelTxT;
+        } && (CGpioPinDevice<typename T::TxPinT> || CNullGpioPinDevice<typename T::TxPinT>) &&
+        (CGpioPinDevice<typename T::RxPinT> || CNullGpioPinDevice<typename T::RxPinT>) &&
+        (CGpioPinDevice<typename T::CKPinT> || CNullGpioPinDevice<typename T::CKPinT>) &&
+        (CGpioPinDevice<typename T::CTSPinT> || CNullGpioPinDevice<typename T::CTSPinT>) &&
+        (CGpioPinDevice<typename T::RTSPinT> || CNullGpioPinDevice<typename T::RTSPinT>) &&
+        (CDmaChannelDevice<typename T::DmaChannelTxT> || CNullDmaChannel<typename T::DmaChannelTxT>);
 
-    template <UARTControllerID tkControllerID>
-    struct UARTControllerCTConfigRegistry
+    template <UartPeripheralId tkPeripheralId>
+    struct UartControllerCTConfigRegistry
     {
-        static constexpr auto skConfig = UARTControllerCTDefaultConfig<tkControllerID>{};
+        static constexpr auto skConfig = UartControllerCTDefaultConfig<tkPeripheralId>{};
     };
 
-#define VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(tkControllerID, config)                                            \
+#define VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(tkPeripheralId, config)                                            \
     namespace valle::platform                                                                                     \
     {                                                                                                             \
         template <>                                                                                               \
-        struct UARTControllerCTConfigRegistry<(tkControllerID)>                                                   \
+        struct UartControllerCTConfigRegistry<(tkPeripheralId)>                                                   \
         {                                                                                                         \
             static constexpr auto skConfig = (config);                                                            \
-            static_assert(CValidUARTControllerCTConfig<decltype(skConfig)>, "Invalid UART Controller CT Config"); \
+            static_assert(CValidUartControllerCTConfig<decltype(skConfig)>, "Invalid UART Controller CT Config"); \
         };                                                                                                        \
     }
 
@@ -75,17 +75,17 @@ namespace valle::platform
     // CONFIGURATIONS
     // -----------------------------------------------------------------------------
 
-    struct UARTControllerConfig
+    struct UartControllerConfig
     {
-        UARTBaudRate            baud_rate     = UARTBaudRate::kBaud115200;
-        UARTWordLength          word_length   = UARTWordLength::kBits8;
-        UARTStopBits            stop_bits     = UARTStopBits::kBits1;
-        UARTParity              parity        = UARTParity::kNone;
-        UARTTransferMode        transfer_mode = UARTTransferMode::kTxRx;
-        UARTHardwareFlowControl hw_flow_ctrl  = UARTHardwareFlowControl::kNone;
+        UartBaudRate            baud_rate     = UartBaudRate::kBaud115200;
+        UartWordLength          word_length   = UartWordLength::kBits8;
+        UartStopBits            stop_bits     = UartStopBits::kBits1;
+        UartParity              parity        = UartParity::kNone;
+        UartTransferMode        transfer_mode = UartTransferMode::kTxRx;
+        UartHardwareFlowControl hw_flow_ctrl  = UartHardwareFlowControl::kNone;
 
         // DMA Settings
-        DMAPriority dma_priority      = DMAPriority::kHigh;
+        DmaPriority dma_priority      = DmaPriority::kHigh;
         uint8_t     dma_int_priority  = 5;  // NVIC Priority (0-15)  // NOLINT(readability-magic-numbers)
         uint8_t     uart_int_priority = 5;  // NVIC Priority (0-15)  // NOLINT(readability-magic-numbers)
     };
@@ -96,124 +96,125 @@ namespace valle::platform
 
     namespace detail
     {
-        template <UARTControllerID tkID, typename TPinDevice, UARTPinType tkType>
-        struct ValidUARTPinDeviceHelper
-            : public std::bool_constant<CValidUARTPin<tkID, TPinDevice::skPortID, TPinDevice::skPinID, tkType>>
+        template <UartPeripheralId tkPeripheralId, typename TPinDevice, UartPinType tkType>
+        struct ValidUartPinDeviceHelper
+            : public std::bool_constant<
+                  CValidUartPin<tkPeripheralId, TPinDevice::skPortId, TPinDevice::skPinId, tkType>>
         {
         };
 
-        template <UARTControllerID tkID, UARTPinType tkType>
-        struct ValidUARTPinDeviceHelper<tkID, GPIONullPinDevice, tkType> : public std::bool_constant<true>
+        template <UartPeripheralId tkPeripheralId, UartPinType tkType>
+        struct ValidUartPinDeviceHelper<tkPeripheralId, GpioNullPinDevice, tkType> : public std::bool_constant<true>
         {
         };
 
-        template <UARTControllerID tkControllerID, typename TPinDevice, UARTPinType tkType>
-        struct UARTGPIOPinDriverHelper
+        template <UartPeripheralId tkPeripheralId, typename TPinDevice, UartPinType tkType>
+        struct UartGpioPinDriverHelper
         {
-            using type = GPIOAlternateFunctionDriver<
+            using type = GpioAlternateFunctionDriver<
                 TPinDevice,
-                UARTGPIOPinAF<tkControllerID, TPinDevice::skPortID, TPinDevice::skPinID, tkType>::skAF>;
+                UartGpioPinAF<tkPeripheralId, TPinDevice::skPortId, TPinDevice::skPinId, tkType>::skAF>;
         };
 
-        template <UARTControllerID tkControllerID, UARTPinType tkType>
-        struct UARTGPIOPinDriverHelper<tkControllerID, GPIONullPinDevice, tkType>
+        template <UartPeripheralId tkPeripheralId, UartPinType tkType>
+        struct UartGpioPinDriverHelper<tkPeripheralId, GpioNullPinDevice, tkType>
         {
             using type = std::monostate;
         };
 
     }  // namespace detail
 
-    template <UARTControllerID tkID, typename TPinDevice, UARTPinType tkType>
-    concept CValidUARTPinDevice = detail::ValidUARTPinDeviceHelper<tkID, TPinDevice, tkType>::value;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice, UartPinType tkType>
+    concept CValidUartPinDevice = detail::ValidUartPinDeviceHelper<tkPeripheralId, TPinDevice, tkType>::value;
 
-    template <UARTControllerID tkID, typename TPinDevice>
-    concept CValidUARTRxPinDevice = CValidUARTPinDevice<tkID, TPinDevice, UARTPinType::kRx>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    concept CValidUartRxPinDevice = CValidUartPinDevice<tkPeripheralId, TPinDevice, UartPinType::kRx>;
 
-    template <UARTControllerID tkID, typename TPinDevice>
-    concept CValidUARTTxPinDevice = CValidUARTPinDevice<tkID, TPinDevice, UARTPinType::kTx>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    concept CValidUartTxPinDevice = CValidUartPinDevice<tkPeripheralId, TPinDevice, UartPinType::kTx>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    concept CValidUARTCKPinDevice = CValidUARTPinDevice<tkControllerID, TPinDevice, UARTPinType::kCK>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    concept CValidUartCKPinDevice = CValidUartPinDevice<tkPeripheralId, TPinDevice, UartPinType::kCK>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    concept CValidUARTCTSPinDevice = CValidUARTPinDevice<tkControllerID, TPinDevice, UARTPinType::kCTS>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    concept CValidUartCTSPinDevice = CValidUartPinDevice<tkPeripheralId, TPinDevice, UartPinType::kCTS>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    concept CValidUARTRTSPinDevice = CValidUARTPinDevice<tkControllerID, TPinDevice, UARTPinType::kRTS>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    concept CValidUartRTSPinDevice = CValidUartPinDevice<tkPeripheralId, TPinDevice, UartPinType::kRTS>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice, UARTPinType tkType>
-    using UARTGPIOPinDriver = typename detail::UARTGPIOPinDriverHelper<tkControllerID, TPinDevice, tkType>::type;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice, UartPinType tkType>
+    using UartGpioPinDriver = typename detail::UartGpioPinDriverHelper<tkPeripheralId, TPinDevice, tkType>::type;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    using UARTTxPinDriver = UARTGPIOPinDriver<tkControllerID, TPinDevice, UARTPinType::kTx>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    using UartTxPinDriver = UartGpioPinDriver<tkPeripheralId, TPinDevice, UartPinType::kTx>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    using UARTRxPinDriver = UARTGPIOPinDriver<tkControllerID, TPinDevice, UARTPinType::kRx>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    using UartRxPinDriver = UartGpioPinDriver<tkPeripheralId, TPinDevice, UartPinType::kRx>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    using UARTCKPinDriver = UARTGPIOPinDriver<tkControllerID, TPinDevice, UARTPinType::kCK>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    using UartCKPinDriver = UartGpioPinDriver<tkPeripheralId, TPinDevice, UartPinType::kCK>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    using UARTCTSPinDriver = UARTGPIOPinDriver<tkControllerID, TPinDevice, UARTPinType::kCTS>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    using UartCTSPinDriver = UartGpioPinDriver<tkPeripheralId, TPinDevice, UartPinType::kCTS>;
 
-    template <UARTControllerID tkControllerID, typename TPinDevice>
-    using UARTRTSPinDriver = UARTGPIOPinDriver<tkControllerID, TPinDevice, UARTPinType::kRTS>;
+    template <UartPeripheralId tkPeripheralId, typename TPinDevice>
+    using UartRTSPinDriver = UartGpioPinDriver<tkPeripheralId, TPinDevice, UartPinType::kRTS>;
 
     // -----------------------------------------------------------------------------
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <UARTControllerID tkControllerID>
-    class UARTControllerDevice
+    template <UartPeripheralId tkPeripheralId>
+    class UartControllerDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using ControllerTraitsT                          = UARTControllerTraits<tkControllerID>;
-        static constexpr UARTControllerID skControllerID = tkControllerID;
+        using ControllerTraitsT                          = UartControllerTraits<tkPeripheralId>;
+        static constexpr UartPeripheralId skPeripheralId = tkPeripheralId;
 
-        using CTConfigRegistryT          = UARTControllerCTConfigRegistry<tkControllerID>;
+        using CTConfigRegistryT          = UartControllerCTConfigRegistry<tkPeripheralId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         using TxPinT = typename CTConfigT::TxPinT;
-        static_assert(CValidUARTTxPinDevice<tkControllerID, TxPinT>, "Invalid UART TX Pin Device");
+        static_assert(CValidUartTxPinDevice<tkPeripheralId, TxPinT>, "Invalid UART TX Pin Device");
         using RxPinT = typename CTConfigT::RxPinT;
-        static_assert(CValidUARTRxPinDevice<tkControllerID, RxPinT>, "Invalid UART RX Pin Device");
-        using TxPinDriverT   = UARTTxPinDriver<tkControllerID, TxPinT>;
-        using RxPinDriverT   = UARTRxPinDriver<tkControllerID, RxPinT>;
+        static_assert(CValidUartRxPinDevice<tkPeripheralId, RxPinT>, "Invalid UART RX Pin Device");
+        using TxPinDriverT   = UartTxPinDriver<tkPeripheralId, TxPinT>;
+        using RxPinDriverT   = UartRxPinDriver<tkPeripheralId, RxPinT>;
         using InjectDevices1 = TypeList<TxPinT, RxPinT>;
 
         using CKPinT = typename CTConfigT::CKPinT;
-        static_assert(CVoid<CKPinT> || CValidUARTCKPinDevice<tkControllerID, CKPinT>, "Invalid UART CK Pin Device");
-        static constexpr bool skHasCKPin = !CNullGPIOPinDevice<CKPinT>;
-        using CKPinDriverT               = UARTCKPinDriver<tkControllerID, CKPinT>;
+        static_assert(CVoid<CKPinT> || CValidUartCKPinDevice<tkPeripheralId, CKPinT>, "Invalid UART CK Pin Device");
+        static constexpr bool skHasCKPin = !CNullGpioPinDevice<CKPinT>;
+        using CKPinDriverT               = UartCKPinDriver<tkPeripheralId, CKPinT>;
         using InjectDevices2             = std::conditional_t<skHasCKPin, TypeList<CKPinT>, TypeList<>>;
 
         using CTSPinT = typename CTConfigT::CTSPinT;
-        static_assert(CVoid<CTSPinT> || CValidUARTCTSPinDevice<tkControllerID, CTSPinT>, "Invalid UART CTS Pin Device");
-        static constexpr bool skHasCTSPin = !CNullGPIOPinDevice<CTSPinT>;
-        using CTSPinDriverT               = UARTCTSPinDriver<tkControllerID, CTSPinT>;
+        static_assert(CVoid<CTSPinT> || CValidUartCTSPinDevice<tkPeripheralId, CTSPinT>, "Invalid UART CTS Pin Device");
+        static constexpr bool skHasCTSPin = !CNullGpioPinDevice<CTSPinT>;
+        using CTSPinDriverT               = UartCTSPinDriver<tkPeripheralId, CTSPinT>;
         using InjectDevices3              = std::conditional_t<skHasCTSPin, TypeList<CTSPinT>, TypeList<>>;
 
         using RTSPinT = typename CTConfigT::RTSPinT;
-        static_assert(CVoid<RTSPinT> || CValidUARTRTSPinDevice<tkControllerID, RTSPinT>, "Invalid UART RTS Pin Device");
-        static constexpr bool skHasRTSPin = !CNullGPIOPinDevice<RTSPinT>;
-        using RTSPinDriverT               = UARTRTSPinDriver<tkControllerID, RTSPinT>;
+        static_assert(CVoid<RTSPinT> || CValidUartRTSPinDevice<tkPeripheralId, RTSPinT>, "Invalid UART RTS Pin Device");
+        static constexpr bool skHasRTSPin = !CNullGpioPinDevice<RTSPinT>;
+        using RTSPinDriverT               = UartRTSPinDriver<tkPeripheralId, RTSPinT>;
         using InjectDevices4              = std::conditional_t<skHasRTSPin, TypeList<RTSPinT>, TypeList<>>;
 
-        using DMAChannelTxT              = typename CTConfigT::DMAChannelTxT;
-        static constexpr bool skHasDMATx = !CNullDMAChannel<DMAChannelTxT>;
-        using InjectDevices5             = std::conditional_t<skHasDMATx, TypeList<DMAChannelTxT>, TypeList<>>;
+        using DmaChannelTxT              = typename CTConfigT::DmaChannelTxT;
+        static constexpr bool skHasDmaTx = !CNullDmaChannel<DmaChannelTxT>;
+        using InjectDevices5             = std::conditional_t<skHasDmaTx, TypeList<DmaChannelTxT>, TypeList<>>;
 
         using InjectDevices =
             typename TypeListConcat<InjectDevices1, InjectDevices2, InjectDevices3, InjectDevices4, InjectDevices5>::
                 type;
 
     private:
-        [[no_unique_address]] ConditionalDeviceRef<skHasDMATx, DMAChannelTxT> m_dma_tx{};
+        [[no_unique_address]] ConditionalDeviceRef<skHasDmaTx, DmaChannelTxT> m_dma_tx{};
         TxPinDriverT                                                          m_tx_pin{};
         RxPinDriverT                                                          m_rx_pin{};
         CKPinDriverT                                                          m_ck_pin{};
@@ -221,43 +222,43 @@ namespace valle::platform
         RTSPinDriverT                                                         m_rts_pin{};
 
         // HAL handles
-        UART_HandleTypeDef                                                m_huart{};
-        std::conditional_t<skHasDMATx, DMA_HandleTypeDef, std::monostate> m_hdma_tx{};
+        Uart_HandleTypeDef                                                m_huart{};
+        std::conditional_t<skHasDmaTx, Dma_HandleTypeDef, std::monostate> m_hdma_tx{};
 
     public:
         template <typename... Args>
-        explicit UARTControllerDevice(Args&&... args)
+        explicit UartControllerDevice(Args&&... args)
             : m_tx_pin(extract_device_ref<true, TxPinT>(std::forward<Args>(args)...))
             , m_rx_pin(extract_device_ref<true, RxPinT>(std::forward<Args>(args)...))
             , m_ck_pin(extract_device_ref<skHasCKPin, CKPinT>(std::forward<Args>(args)...))
             , m_cts_pin(extract_device_ref<skHasCTSPin, CTSPinT>(std::forward<Args>(args)...))
             , m_rts_pin(extract_device_ref<skHasRTSPin, RTSPinT>(std::forward<Args>(args)...))
-            , m_dma_tx(extract_device_ref<skHasDMATx, DMAChannelTxT>(std::forward<Args>(args)...))
+            , m_dma_tx(extract_device_ref<skHasDmaTx, DmaChannelTxT>(std::forward<Args>(args)...))
         {
         }
 
-        [[nodiscard]] bool init(const UARTControllerConfig& config)
+        [[nodiscard]] bool init(const UartControllerConfig& config)
         {
             // Enable Peripheral Clock
             ControllerTraitsT::enable_clock();
 
             // Init Pins (AF mode)
-            if (!m_tx_pin.init(GPIOAlternateFunctionConfig{
-                    .mode = GPIOAlternateFunctionMode::kPushPull,
+            if (!m_tx_pin.init(GpioAlternateFunctionConfig{
+                    .mode = GpioAlternateFunctionMode::kPushPull,
                     // Use Medium speed for bauds > 1M to keep edges sharp
-                    .speed = (static_cast<uint32_t>(config.baud_rate) > 1000000) ? GPIOSpeedMode::kMedium
-                                                                                 : GPIOSpeedMode::kLow,
-                    .pull  = GPIOPullMode::kPullUp,
+                    .speed = (static_cast<uint32_t>(config.baud_rate) > 1000000) ? GpioSpeedMode::kMedium
+                                                                                 : GpioSpeedMode::kLow,
+                    .pull  = GpioPullMode::kPullUp,
                 }))
             {
                 VALLE_LOG_FATAL("Failed to initialize UART TX Pin");
                 return false;
             }
 
-            if (!m_rx_pin.init(GPIOAlternateFunctionConfig{
-                    .mode  = GPIOAlternateFunctionMode::kPushPull,
-                    .speed = GPIOSpeedMode::kLow,
-                    .pull  = GPIOPullMode::kPullUp,
+            if (!m_rx_pin.init(GpioAlternateFunctionConfig{
+                    .mode  = GpioAlternateFunctionMode::kPushPull,
+                    .speed = GpioSpeedMode::kLow,
+                    .pull  = GpioPullMode::kPullUp,
                 }))
             {
                 VALLE_LOG_FATAL("Failed to initialize UART RX Pin");
@@ -266,10 +267,10 @@ namespace valle::platform
 
             if constexpr (skHasCKPin)
             {
-                if (!m_ck_pin.init(GPIOAlternateFunctionConfig{
-                        .mode  = GPIOAlternateFunctionMode::kPushPull,
-                        .speed = GPIOSpeedMode::kHigh,
-                        .pull  = GPIOPullMode::kNoPull,
+                if (!m_ck_pin.init(GpioAlternateFunctionConfig{
+                        .mode  = GpioAlternateFunctionMode::kPushPull,
+                        .speed = GpioSpeedMode::kHigh,
+                        .pull  = GpioPullMode::kNoPull,
                     }))
                 {
                     VALLE_LOG_FATAL("Failed to initialize UART CK Pin");
@@ -279,10 +280,10 @@ namespace valle::platform
 
             if constexpr (skHasCTSPin)
             {
-                if (!m_cts_pin.init(GPIOAlternateFunctionConfig{
-                        .mode  = GPIOAlternateFunctionMode::kPushPull,
-                        .speed = GPIOSpeedMode::kLow,
-                        .pull  = GPIOPullMode::kPullUp,
+                if (!m_cts_pin.init(GpioAlternateFunctionConfig{
+                        .mode  = GpioAlternateFunctionMode::kPushPull,
+                        .speed = GpioSpeedMode::kLow,
+                        .pull  = GpioPullMode::kPullUp,
                     }))
                 {
                     VALLE_LOG_FATAL("Failed to initialize UART CTS Pin");
@@ -292,10 +293,10 @@ namespace valle::platform
 
             if constexpr (skHasRTSPin)
             {
-                if (!m_rts_pin.init(GPIOAlternateFunctionConfig{
-                        .mode  = GPIOAlternateFunctionMode::kPushPull,
-                        .speed = GPIOSpeedMode::kMedium,
-                        .pull  = GPIOPullMode::kPullUp,
+                if (!m_rts_pin.init(GpioAlternateFunctionConfig{
+                        .mode  = GpioAlternateFunctionMode::kPushPull,
+                        .speed = GpioSpeedMode::kMedium,
+                        .pull  = GpioPullMode::kPullUp,
                     }))
                 {
                     VALLE_LOG_FATAL("Failed to initialize UART RTS Pin");
@@ -312,33 +313,33 @@ namespace valle::platform
             m_huart.Init.Parity         = static_cast<uint32_t>(config.parity);
             m_huart.Init.Mode           = static_cast<uint32_t>(config.transfer_mode);
             m_huart.Init.HwFlowCtl      = static_cast<uint32_t>(config.hw_flow_ctrl);
-            m_huart.Init.OverSampling   = UART_OVERSAMPLING_16;
-            m_huart.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-            m_huart.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+            m_huart.Init.OverSampling   = Uart_OVERSAMPLING_16;
+            m_huart.Init.OneBitSampling = Uart_ONE_BIT_SAMPLE_DISABLE;
+            m_huart.Init.ClockPrescaler = Uart_PRESCALER_DIV1;
 
             HAL_UART_Init(&m_huart);
 
             // Link DMA if present
-            if constexpr (skHasDMATx)
+            if constexpr (skHasDmaTx)
             {
                 // We don't use the DMA device to init the DMA channel since HAL handles DMA differently
                 // We only hold the dma channel device to lock it.
 
-                m_hdma_tx.Instance                 = DMAChannelTxT::ChannelTraitsT::skInstance;
-                m_hdma_tx.Init.Request             = static_cast<uint32_t>(ControllerTraitsT::skDMAMuxRequestTx);
-                m_hdma_tx.Init.Direction           = DMA_MEMORY_TO_PERIPH;
-                m_hdma_tx.Init.PeriphInc           = DMA_PINC_DISABLE;
-                m_hdma_tx.Init.MemInc              = DMA_MINC_ENABLE;
-                m_hdma_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-                m_hdma_tx.Init.MemDataAlignment    = DMA_MDATAALIGN_BYTE;
-                m_hdma_tx.Init.Mode                = DMA_NORMAL;
+                m_hdma_tx.Instance                 = DmaChannelTxT::ChannelTraitsT::skInstance;
+                m_hdma_tx.Init.Request             = static_cast<uint32_t>(ControllerTraitsT::skDmaMuxRequestTx);
+                m_hdma_tx.Init.Direction           = Dma_MEMORY_TO_PERIPH;
+                m_hdma_tx.Init.PeriphInc           = Dma_PINC_DISABLE;
+                m_hdma_tx.Init.MemInc              = Dma_MINC_ENABLE;
+                m_hdma_tx.Init.PeriphDataAlignment = Dma_PDATAALIGN_BYTE;
+                m_hdma_tx.Init.MemDataAlignment    = Dma_MDATAALIGN_BYTE;
+                m_hdma_tx.Init.Mode                = Dma_NORMAL;
                 m_hdma_tx.Init.Priority            = static_cast<uint32_t>(config.dma_priority);
 
                 HAL_DMA_Init(&m_hdma_tx);
                 __HAL_LINKDMA(&m_huart, hdmatx, m_hdma_tx);
 
                 // Enable UART Interrupt (required for HAL DMA mode to clean up after transfer)
-                m_dma_tx->enable_interrupts(DMAChannelInterruptConfig{.priority   = config.dma_int_priority,
+                m_dma_tx->enable_interrupts(DmaChannelInterruptConfig{.priority   = config.dma_int_priority,
                                                                       .interrupts = {
                                                                           .transfer_complete = true,
                                                                           .half_transfer     = true,
@@ -364,7 +365,7 @@ namespace valle::platform
 
         HAL_StatusTypeDef transmit_async(std::span<const std::byte> data)
         {
-            if constexpr (skHasDMATx)  // NOLINT(bugprone-branch-clone)
+            if constexpr (skHasDmaTx)  // NOLINT(bugprone-branch-clone)
             {
                 return HAL_UART_Transmit_DMA(&m_huart,
                                              const_cast<uint8_t*>(reinterpret_cast<const uint8_t*>(data.data())),
@@ -392,12 +393,12 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using USART1ControllerDevice  = UARTControllerDevice<UARTControllerID::kUSART1>;
-    using USART2ControllerDevice  = UARTControllerDevice<UARTControllerID::kUSART2>;
-    using USART3ControllerDevice  = UARTControllerDevice<UARTControllerID::kUSART3>;
-    using UART4ControllerDevice   = UARTControllerDevice<UARTControllerID::kUART4>;
-    using UART5ControllerDevice   = UARTControllerDevice<UARTControllerID::kUART5>;
-    using LPUART1ControllerDevice = UARTControllerDevice<UARTControllerID::kLPUART1>;  // Usually the main USB UART
+    using USART1ControllerDevice  = UartControllerDevice<UartPeripheralId::kUSART1>;
+    using USART2ControllerDevice  = UartControllerDevice<UartPeripheralId::kUSART2>;
+    using USART3ControllerDevice  = UartControllerDevice<UartPeripheralId::kUSART3>;
+    using Uart4ControllerDevice   = UartControllerDevice<UartPeripheralId::kUart4>;
+    using Uart5ControllerDevice   = UartControllerDevice<UartPeripheralId::kUart5>;
+    using LPUart1ControllerDevice = UartControllerDevice<UartPeripheralId::kLPUart1>;  // Usually the main USB UART
 
 }  // namespace valle::platform
 
@@ -405,11 +406,11 @@ namespace valle::platform
 #define VALLE_BIND_UART_DMA_ISR_ROUTER(instance)                                                            \
     namespace valle::platform                                                                               \
     {                                                                                                       \
-        static_assert(std::remove_cvref_t<decltype((instance))>::skHasDMATx,                                \
+        static_assert(std::remove_cvref_t<decltype((instance))>::skHasDmaTx,                                \
                       "Instance does not have DMA TX capability");                                          \
         template <>                                                                                         \
-        struct DMAGlobalISRRouter<std::remove_cvref_t<decltype((instance))>::DMAChannelTxT::skControllerID, \
-                                  std::remove_cvref_t<decltype((instance))>::DMAChannelTxT::skChannelID>    \
+        struct DmaGlobalIsrRouter<std::remove_cvref_t<decltype((instance))>::DmaChannelTxT::skPeripheralId, \
+                                  std::remove_cvref_t<decltype((instance))>::DmaChannelTxT::skChannelId>    \
         {                                                                                                   \
             static void handle()                                                                            \
             {                                                                                               \
@@ -422,7 +423,7 @@ namespace valle::platform
     namespace valle::platform                                                                 \
     {                                                                                         \
         template <>                                                                           \
-        struct UARTGlobalISRRouter<std::remove_cvref_t<decltype((instance))>::skControllerID> \
+        struct UartGlobalIsrRouter<std::remove_cvref_t<decltype((instance))>::skPeripheralId> \
         {                                                                                     \
             static void handle()                                                              \
             {                                                                                 \

@@ -9,9 +9,9 @@ namespace valle::platform
     // HARDWARE TRAITS
     // ============================================================================
 
-    struct HSIOscillatorInterface
+    struct HsiOscillatorInterface
     {
-        static constexpr uint32_t skFrequencyHz                = HSI_VALUE;
+        static constexpr uint32_t skFrequencyHz                = Hsi_VALUE;
         static constexpr uint32_t skDefaultCalibrationTrim     = 0x40U;
         static constexpr uint32_t skDefaultEnableTimeoutCount  = 100'000U;
         static constexpr uint32_t skDefaultDisableTimeoutCount = 100'000U;

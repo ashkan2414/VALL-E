@@ -4,13 +4,13 @@
 
 namespace valle::platform
 {
-    enum class DMAControllerID : uint8_t
+    enum class DmaPeripheralId : uint8_t
     {
-        kDMA1 = 1,
-        kDMA2 = 2,
+        kDma1 = 1,
+        kDma2 = 2,
     };
 
-    enum class DMAChannelID : uint8_t
+    enum class DmaChannelId : uint8_t
     {
         kChannel1 = 1,
         kChannel2,
@@ -22,10 +22,10 @@ namespace valle::platform
         kChannel8,
     };
 
-    struct DMAChannelFullID
+    struct DmaChannelFullId
     {
-        DMAControllerID controller_id = DMAControllerID::kDMA1;
-        DMAChannelID    channel_id    = DMAChannelID::kChannel1;
+        DmaPeripheralId controller_id = DmaPeripheralId::kDma1;
+        DmaChannelId    channel_id    = DmaChannelId::kChannel1;
     };
 
 }  // namespace valle::platform

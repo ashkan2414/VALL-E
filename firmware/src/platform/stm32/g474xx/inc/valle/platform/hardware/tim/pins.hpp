@@ -11,7 +11,7 @@ namespace valle::platform
     // ---------------------------------------------------------------------------
     // TIMER PIN TYPES
     // ---------------------------------------------------------------------------
-    enum class TIMGPIOPinType : uint8_t
+    enum class TimGpioPinType : uint8_t
     {
         kCh1,
         kCh2,
@@ -27,929 +27,944 @@ namespace valle::platform
     };
 
     // The G474 has high pin density; some timer channels can be mapped to 4+ locations.
-    constexpr static uint8_t kTIMMaxOutputIndex = 5;
+    constexpr static uint8_t kTimMaxOutputIndex = 5;
 
-    template <TIMControllerID tkControllerID, TIMGPIOPinType tkPinType, uint8_t tkOutputIdx = 0>
-        requires(tkOutputIdx < kTIMMaxOutputIndex)
-    struct TIMPinMap;
+    template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType, uint8_t tkOutputIdx = 0>
+        requires(tkOutputIdx < kTimMaxOutputIndex)
+    struct TimPinMap;
 
 #define DECLARE_TIM_PIN_MAP(id, type, idx, port, pin, af)           \
     template <>                                                     \
-    struct TIMPinMap<(id), (type), (idx)>                           \
+    struct TimPinMap<(id), (type), (idx)>                           \
     {                                                               \
-        constexpr static GPIOPortID              skPortID = (port); \
-        constexpr static GPIOPinID               skPinID  = (pin);  \
-        constexpr static GPIOAlternativeFunction skAF     = (af);   \
+        constexpr static GpioPortId              skPortId = (port); \
+        constexpr static GpioPinId               skPinId  = (pin);  \
+        constexpr static GpioAlternativeFunction skAF     = (af);   \
     };
 
     // ===========================================================================
-    // ADVANCED TIMERS (TIM1, TIM8, TIM20)
+    // ADVANCED TIMERS (Tim1, Tim8, Tim20)
     // ===========================================================================
 
-    // --- TIM1 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim1 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1N,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1N,
                         1,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1N,
                         2,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1N,
                         3,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh1N,
                         4,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh2,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh2N,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh2N,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh2N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh2N,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh2N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh2N,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh3,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh3,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh3N,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh3N,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh3N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh3N,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh3N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh3N,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin12,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin12,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF11);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF11);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh4,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kCh4,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kETR,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin12,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin12,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kETR,
                         1,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kBKIN,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kBKIN,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin12,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin12,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kBKIN,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kBKIN2,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF9);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF9);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kBKIN2,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim1,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim1,
+                        TimGpioPinType::kBKIN2,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF4);
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF4);
 
-    // --- TIM8 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim8 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh1N,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh1N,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh1N,
                         2,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh2N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh2N,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh2N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh2N,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh3N,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh3N,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh3N,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh3N,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin12,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin12,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kETR,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kBKIN,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF4);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF4);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kBKIN,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF10);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF10);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kBKIN,
                         2,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kBKIN,
                         3,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kBKIN2,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF10);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim8,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF10);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim8,
+                        TimGpioPinType::kBKIN2,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF6);
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF6);
 
-    // --- TIM20 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim20 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh3,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kCh4,
                         1,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kBKIN,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF10);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF10);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kBKIN,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kBKIN2,
                         0,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF6);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim20,
-                        TIMGPIOPinType::kBKIN2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF6);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim20,
+                        TimGpioPinType::kBKIN2,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF3);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF3);
 
     // ===========================================================================
-    // GENERAL PURPOSE 32-BIT (TIM2, TIM5) - PREFERRED FOR ENCODERS
+    // GENERAL PURPOSE 32-BIT (Tim2, Tim5) - PREFERRED FOR ENCODERS
     // ===========================================================================
 
-    // --- TIM2 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim2 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh1,
                         3,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh2,
                         2,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh3,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh3,
                         2,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh4,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin11,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin11,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kCh4,
                         2,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kETR,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF14);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF14);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kETR,
                         1,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kETR,
                         2,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim2,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim2,
+                        TimGpioPinType::kETR,
                         3,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF2);
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF2);
 
-    // --- TIM5 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim5 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh3,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim5,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim5,
+                        TimGpioPinType::kCh4,
                         1,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF2);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF2);
 
     // ===========================================================================
-    // GENERAL PURPOSE 16-BIT (TIM3, TIM4)
+    // GENERAL PURPOSE 16-BIT (Tim3, Tim4)
     // ===========================================================================
 
-    // --- TIM3 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim3 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh1,
                         3,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh2,
                         2,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh2,
                         3,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin0,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin0,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh3,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh3,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin4,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin4,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh4,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kCh4,
                         2,
-                        GPIOPortID::kPortE,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim3,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortE,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim3,
+                        TimGpioPinType::kETR,
                         0,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF2);
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF2);
 
-    // --- TIM4 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim4 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin12,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin12,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF5);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF5);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin13,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin13,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh2,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF5);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF5);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh3,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh3,
                         1,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh3,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh3,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF5);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF5);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh4,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh4,
                         1,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF2);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kCh4,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF2);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kCh4,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF5);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim4,
-                        TIMGPIOPinType::kETR,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF5);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim4,
+                        TimGpioPinType::kETR,
                         0,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF10);
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF10);
 
     // ===========================================================================
-    // LITE TIMERS (TIM15, 16, 17)
+    // LITE TIMERS (Tim15, 16, 17)
     // ===========================================================================
 
-    // --- TIM15 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim15 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF9);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF9);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin14,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin14,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh1,
                         3,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin2,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin2,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh1N,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin1,
-                        GPIOAlternativeFunction::kAF9);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin1,
+                        GpioAlternativeFunction::kAF9);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh1N,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh2,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF9);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF9);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh2,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin15,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin15,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh2,
                         2,
-                        GPIOPortID::kPortF,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kCh2,
+                        GpioPortId::kPortF,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kCh2,
                         3,
-                        GPIOPortID::kPortG,
-                        GPIOPinID::kPin3,
-                        GPIOAlternativeFunction::kAF3);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortG,
+                        GpioPinId::kPin3,
+                        GpioAlternativeFunction::kAF3);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kBKIN,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF9);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim15,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF9);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim15,
+                        TimGpioPinType::kBKIN,
                         1,
-                        GPIOPortID::kPortC,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF2);
+                        GpioPortId::kPortC,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF2);
 
-    // --- TIM16 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim16,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim16 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim16,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim16,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim16,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin8,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim16,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin8,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim16,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim16,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim16,
+                        TimGpioPinType::kCh1N,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin6,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim16,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin6,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim16,
+                        TimGpioPinType::kBKIN,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin5,
-                        GPIOAlternativeFunction::kAF1);
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin5,
+                        GpioAlternativeFunction::kAF1);
 
-    // --- TIM17 ---
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim17,
-                        TIMGPIOPinType::kCh1,
+    // --- Tim17 ---
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim17,
+                        TimGpioPinType::kCh1,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim17,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim17,
+                        TimGpioPinType::kCh1,
                         1,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin9,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim17,
-                        TIMGPIOPinType::kCh1,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin9,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim17,
+                        TimGpioPinType::kCh1,
                         2,
-                        GPIOPortID::kPortD,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim17,
-                        TIMGPIOPinType::kCh1N,
+                        GpioPortId::kPortD,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim17,
+                        TimGpioPinType::kCh1N,
                         0,
-                        GPIOPortID::kPortB,
-                        GPIOPinID::kPin7,
-                        GPIOAlternativeFunction::kAF1);
-    DECLARE_TIM_PIN_MAP(TIMControllerID::kTim17,
-                        TIMGPIOPinType::kBKIN,
+                        GpioPortId::kPortB,
+                        GpioPinId::kPin7,
+                        GpioAlternativeFunction::kAF1);
+    DECLARE_TIM_PIN_MAP(TimPeripheralId::kTim17,
+                        TimGpioPinType::kBKIN,
                         0,
-                        GPIOPortID::kPortA,
-                        GPIOPinID::kPin10,
-                        GPIOAlternativeFunction::kAF1);
+                        GpioPortId::kPortA,
+                        GpioPinId::kPin10,
+                        GpioAlternativeFunction::kAF1);
 
 #undef DECLARE_TIM_PIN_MAP
 
     // ---------------------------------------------------------------------------
-    // VALIDATION AND LOOKUP MACHINERY (CONCEPTUAL)
+    // VALIdATION AND LOOKUP MACHINERY (CONCEPTUAL)
     // ---------------------------------------------------------------------------
 
     namespace detail
     {
-        template <TIMControllerID tkID, TIMGPIOPinType tkPinType, uint8_t tkIdx, GPIOPortID tkPort, GPIOPinID tkPin>
-        concept CValidSpecificTIMPin = requires {
-            typename TIMPinMap<tkID, tkPinType, tkIdx>;
-            TIMPinMap<tkID, tkPinType, tkIdx>::skPortID == tkPort;
-            TIMPinMap<tkID, tkPinType, tkIdx>::skPinID == tkPin;
+        template <TimPeripheralId tkPeripheralId,
+                  TimGpioPinType  tkPinType,
+                  uint8_t         tkIdx,
+                  GpioPortId      tkPort,
+                  GpioPinId       tkPin>
+        concept CValidSpecificTimPin = requires {
+            typename TimPinMap<tkPeripheralId, tkPinType, tkIdx>;
+            TimPinMap<tkPeripheralId, tkPinType, tkIdx>::skPortId == tkPort;
+            TimPinMap<tkPeripheralId, tkPinType, tkIdx>::skPinId == tkPin;
         };
 
-        template <TIMControllerID tkID, TIMGPIOPinType tkPinType, GPIOPortID tkPort, GPIOPinID tkPin, uint8_t... tkIdxs>
+        template <TimPeripheralId tkPeripheralId,
+                  TimGpioPinType  tkPinType,
+                  GpioPortId      tkPort,
+                  GpioPinId       tkPin,
+                  uint8_t... tkIdxs>
         constexpr std::optional<uint8_t> get_timer_pin_index(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             std::optional<uint8_t> result = std::nullopt;
-            ((CValidSpecificTIMPin<tkID, tkPinType, tkIdxs, tkPort, tkPin> ? (result = tkIdxs, true) : false) || ...);
+            ((CValidSpecificTimPin<tkPeripheralId, tkPinType, tkIdxs, tkPort, tkPin> ? (result = tkIdxs, true)
+                                                                                     : false) ||
+             ...);
             return result;
         }
 
-        template <TIMControllerID tkID, TIMGPIOPinType tkPinType, GPIOPortID tkPort, GPIOPinID tkPin, uint8_t... tkIdxs>
+        template <TimPeripheralId tkPeripheralId,
+                  TimGpioPinType  tkPinType,
+                  GpioPortId      tkPort,
+                  GpioPinId       tkPin,
+                  uint8_t... tkIdxs>
         constexpr bool check_any_valid_timer_pin(std::integer_sequence<uint8_t, tkIdxs...>)
         {
-            return get_timer_pin_index<tkID, tkPinType, tkPort, tkPin>(std::integer_sequence<uint8_t, tkIdxs...>{})
+            return get_timer_pin_index<tkPeripheralId, tkPinType, tkPort, tkPin>(
+                       std::integer_sequence<uint8_t, tkIdxs...>{})
                 .has_value();
         }
     }  // namespace detail
 
-    template <TIMControllerID tkID, TIMGPIOPinType tkPinType, GPIOPortID tkPort, GPIOPinID tkPin>
-    concept CValidTIMPin = detail::check_any_valid_timer_pin<tkID, tkPinType, tkPort, tkPin>(
-        std::make_integer_sequence<uint8_t, kTIMMaxOutputIndex>{});
+    template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType, GpioPortId tkPort, GpioPinId tkPin>
+    concept CValidTimPin = detail::check_any_valid_timer_pin<tkPeripheralId, tkPinType, tkPort, tkPin>(
+        std::make_integer_sequence<uint8_t, kTimMaxOutputIndex>{});
 
-    template <TIMControllerID tkID, TIMGPIOPinType tkPinType, GPIOPortID tkPort, GPIOPinID tkPin>
-        requires(CValidTIMPin<tkID, tkPinType, tkPort, tkPin>)
-    constexpr uint8_t kTIMPinOutputIndex = detail::get_timer_pin_index<tkID, tkPinType, tkPort, tkPin>(
-                                               std::make_integer_sequence<uint8_t, kTIMMaxOutputIndex>{})
+    template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType, GpioPortId tkPort, GpioPinId tkPin>
+        requires(CValidTimPin<tkPeripheralId, tkPinType, tkPort, tkPin>)
+    constexpr uint8_t kTimPinOutputIndex = detail::get_timer_pin_index<tkPeripheralId, tkPinType, tkPort, tkPin>(
+                                               std::make_integer_sequence<uint8_t, kTimMaxOutputIndex>{})
                                                .value();
 
-    template <TIMControllerID tkID, TIMGPIOPinType tkPinType, GPIOPortID tkPort, GPIOPinID tkPin>
-        requires(CValidTIMPin<tkID, tkPinType, tkPort, tkPin>)
-    constexpr GPIOAlternativeFunction kTIMPinAF =
-        TIMPinMap<tkID, tkPinType, kTIMPinOutputIndex<tkID, tkPinType, tkPort, tkPin>>::skAF;
+    template <TimPeripheralId tkPeripheralId, TimGpioPinType tkPinType, GpioPortId tkPort, GpioPinId tkPin>
+        requires(CValidTimPin<tkPeripheralId, tkPinType, tkPort, tkPin>)
+    constexpr GpioAlternativeFunction kTimPinAF =
+        TimPinMap<tkPeripheralId, tkPinType, kTimPinOutputIndex<tkPeripheralId, tkPinType, tkPort, tkPin>>::skAF;
 
 }  // namespace valle::platform

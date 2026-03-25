@@ -8,610 +8,626 @@ namespace valle::platform
     // ---------------------------------------------------------------------------
     // HRTIM CONTROLLER
     // ---------------------------------------------------------------------------
-    enum class HRTIMControllerGPIOPinType : uint8_t
+    enum class HrtimControllerGpioPinType : uint8_t
     {
         kSCIn,
         kSCOut,
     };
 
-    constexpr static uint8_t kHRTIMMaxOutputIndex = 2;
+    constexpr static uint8_t kHrtimMaxOutputIndex = 2;
 
-    template <HRTIMControllerID tkControllerID, HRTIMControllerGPIOPinType tkPinType, uint8_t tkOutputIdx = 0>
-        requires(tkOutputIdx < kHRTIMMaxOutputIndex)
-    struct HRTIMControllerPinMap;
+    template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType, uint8_t tkOutputIdx = 0>
+        requires(tkOutputIdx < kHrtimMaxOutputIndex)
+    struct HrtimControllerPinMap;
 
-#define DECLARE_HRTIM_PIN_MAP(tkControllerID, tkPinType, tkOutputIdx, port, pin, af) \
-    static_assert((tkOutputIdx) < kHRTIMMaxOutputIndex);                             \
+#define DECLARE_HRTIM_PIN_MAP(tkPeripheralId, tkPinType, tkOutputIdx, port, pin, af) \
+    static_assert((tkOutputIdx) < kHrtimMaxOutputIndex);                             \
     template <>                                                                      \
-    struct HRTIMControllerPinMap<(tkControllerID), (tkPinType), (tkOutputIdx)>       \
+    struct HrtimControllerPinMap<(tkPeripheralId), (tkPinType), (tkOutputIdx)>       \
     {                                                                                \
-        constexpr static GPIOPortID              skPortID = (port);                  \
-        constexpr static GPIOPinID               skPinID  = (pin);                   \
-        constexpr static GPIOAlternativeFunction skAF     = (af);                    \
+        constexpr static GpioPortId              skPortId = (port);                  \
+        constexpr static GpioPinId               skPinId  = (pin);                   \
+        constexpr static GpioAlternativeFunction skAF     = (af);                    \
     };
 
-    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                          HRTIMControllerGPIOPinType::kSCIn,
+    DECLARE_HRTIM_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                          HrtimControllerGpioPinType::kSCIn,
                           0,
-                          GPIOPortID::kPortB,
-                          GPIOPinID::kPin2,
-                          GPIOAlternativeFunction::kAF13);  // PB2
-    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                          HRTIMControllerGPIOPinType::kSCIn,
+                          GpioPortId::kPortB,
+                          GpioPinId::kPin2,
+                          GpioAlternativeFunction::kAF13);  // PB2
+    DECLARE_HRTIM_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                          HrtimControllerGpioPinType::kSCIn,
                           1,
-                          GPIOPortID::kPortB,
-                          GPIOPinID::kPin6,
-                          GPIOAlternativeFunction::kAF12);  // PB6
-    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                          HRTIMControllerGPIOPinType::kSCOut,
+                          GpioPortId::kPortB,
+                          GpioPinId::kPin6,
+                          GpioAlternativeFunction::kAF12);  // PB6
+    DECLARE_HRTIM_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                          HrtimControllerGpioPinType::kSCOut,
                           0,
-                          GPIOPortID::kPortB,
-                          GPIOPinID::kPin1,
-                          GPIOAlternativeFunction::kAF13);  // PB1
-    DECLARE_HRTIM_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                          HRTIMControllerGPIOPinType::kSCOut,
+                          GpioPortId::kPortB,
+                          GpioPinId::kPin1,
+                          GpioAlternativeFunction::kAF13);  // PB1
+    DECLARE_HRTIM_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                          HrtimControllerGpioPinType::kSCOut,
                           1,
-                          GPIOPortID::kPortB,
-                          GPIOPinID::kPin3,
-                          GPIOAlternativeFunction::kAF12);  // PB3
+                          GpioPortId::kPortB,
+                          GpioPinId::kPin3,
+                          GpioAlternativeFunction::kAF12);  // PB3
 
 #undef DECLARE_HRTIM_PIN_MAP
     namespace detail
     {
-        template <HRTIMControllerID          tkControllerID,
-                  HRTIMControllerGPIOPinType tkPinType,
+        template <HrtimPeripheralId          tkPeripheralId,
+                  HrtimControllerGpioPinType tkPinType,
                   uint8_t                    tkOutputIdx,
-                  GPIOPortID                 tkPortID,
-                  GPIOPinID                  tkPinID>
-        concept CValidSpecificHRTIMControllerPin = requires {
-            typename HRTIMControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>;
-            { HRTIMControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>::skPortID } -> std::same_as<GPIOPortID>;
-            { HRTIMControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>::skPinID } -> std::same_as<GPIOPinID>;
-            HRTIMControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>::skPortID == tkPortID;
-            HRTIMControllerPinMap<tkControllerID, tkPinType, tkOutputIdx>::skPinID == tkPinID;
+                  GpioPortId                 tkPortId,
+                  GpioPinId                  tkPinId>
+        concept CValidSpecificHrtimControllerPin = requires {
+            typename HrtimControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>;
+            { HrtimControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>::skPortId } -> std::same_as<GpioPortId>;
+            { HrtimControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>::skPinId } -> std::same_as<GpioPinId>;
+            HrtimControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>::skPortId == tkPortId;
+            HrtimControllerPinMap<tkPeripheralId, tkPinType, tkOutputIdx>::skPinId == tkPinId;
         };
 
-        template <HRTIMControllerID          tkControllerID,
-                  HRTIMControllerGPIOPinType tkPinType,
-                  GPIOPortID                 tkPortID,
-                  GPIOPinID                  tkPinID,
+        template <HrtimPeripheralId          tkPeripheralId,
+                  HrtimControllerGpioPinType tkPinType,
+                  GpioPortId                 tkPortId,
+                  GpioPinId                  tkPinId,
                   uint8_t... tkIdxs>
         constexpr std::optional<uint8_t> get_hrtim_controller_pin_output_index(
             std::integer_sequence<uint8_t, tkIdxs...>)
         {
             // This will return the first matching index, or -1 if none match
             std::optional<uint8_t> result = std::nullopt;
-            ((CValidSpecificHRTIMControllerPin<tkControllerID, tkPinType, tkIdxs, tkPortID, tkPinID>
+            ((CValidSpecificHrtimControllerPin<tkPeripheralId, tkPinType, tkIdxs, tkPortId, tkPinId>
                   ? (result = tkIdxs, true)
                   : false) ||
              ...);
             return result;
         }
 
-        template <HRTIMControllerID          tkControllerID,
-                  HRTIMControllerGPIOPinType tkPinType,
-                  GPIOPortID                 tkPortID,
-                  GPIOPinID                  tkPinID,
+        template <HrtimPeripheralId          tkPeripheralId,
+                  HrtimControllerGpioPinType tkPinType,
+                  GpioPortId                 tkPortId,
+                  GpioPinId                  tkPinId,
                   uint8_t... tkIdxs>
         constexpr bool check_any_valid_hrtim_controller_pin_map(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             // This will return true if ANY of the indices match
-            return get_hrtim_controller_pin_output_index<tkControllerID, tkPinType, tkPortID, tkPinID>(
+            return get_hrtim_controller_pin_output_index<tkPeripheralId, tkPinType, tkPortId, tkPinId>(
                        std::integer_sequence<uint8_t, tkIdxs...>{})
                 .has_value();
         }
     }  // namespace detail
 
-    template <HRTIMControllerID          tkControllerID,
-              HRTIMControllerGPIOPinType tkPinType,
-              GPIOPortID                 tkPortID,
-              GPIOPinID                  tkPinID>
-    concept CValidHRTIMControllerPin =
-        detail::check_any_valid_hrtim_controller_pin_map<tkControllerID, tkPinType, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{});
+    template <HrtimPeripheralId          tkPeripheralId,
+              HrtimControllerGpioPinType tkPinType,
+              GpioPortId                 tkPortId,
+              GpioPinId                  tkPinId>
+    concept CValidHrtimControllerPin =
+        detail::check_any_valid_hrtim_controller_pin_map<tkPeripheralId, tkPinType, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{});
 
-    template <HRTIMControllerID          tkControllerID,
-              HRTIMControllerGPIOPinType tkPinType,
-              GPIOPortID                 tkPortID,
-              GPIOPinID                  tkPinID>
-        requires(CValidHRTIMControllerPin<tkControllerID, tkPinType, tkPortID, tkPinID>)
-    constexpr uint8_t kHRTIMControllerPinOutputIndex =
-        detail::get_hrtim_controller_pin_output_index<tkControllerID, tkPinType, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{})
+    template <HrtimPeripheralId          tkPeripheralId,
+              HrtimControllerGpioPinType tkPinType,
+              GpioPortId                 tkPortId,
+              GpioPinId                  tkPinId>
+        requires(CValidHrtimControllerPin<tkPeripheralId, tkPinType, tkPortId, tkPinId>)
+    constexpr uint8_t kHrtimControllerPinOutputIndex =
+        detail::get_hrtim_controller_pin_output_index<tkPeripheralId, tkPinType, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{})
             .value();
 
-    template <HRTIMControllerID          tkControllerID,
-              HRTIMControllerGPIOPinType tkPinType,
-              GPIOPortID                 tkPortID,
-              GPIOPinID                  tkPinID>
-        requires(CValidHRTIMControllerPin<tkControllerID, tkPinType, tkPortID, tkPinID>)
-    constexpr GPIOAlternativeFunction kHRTIMControllerPinAF =
-        HRTIMControllerPinMap<tkControllerID,
+    template <HrtimPeripheralId          tkPeripheralId,
+              HrtimControllerGpioPinType tkPinType,
+              GpioPortId                 tkPortId,
+              GpioPinId                  tkPinId>
+        requires(CValidHrtimControllerPin<tkPeripheralId, tkPinType, tkPortId, tkPinId>)
+    constexpr GpioAlternativeFunction kHrtimControllerPinAF =
+        HrtimControllerPinMap<tkPeripheralId,
                               tkPinType,
-                              kHRTIMControllerPinOutputIndex<tkControllerID, tkPinType, tkPortID, tkPinID>>::skAF;
+                              kHrtimControllerPinOutputIndex<tkPeripheralId, tkPinType, tkPortId, tkPinId>>::skAF;
     // ---------------------------------------------------------------------------
     // HRTIM Fault
     // ---------------------------------------------------------------------------
 
-    template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID, uint8_t tkOutputIdx = 0>
-        requires(tkOutputIdx < kHRTIMMaxOutputIndex)
-    struct HRTIMFaultPinMap;
+    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, uint8_t tkOutputIdx = 0>
+        requires(tkOutputIdx < kHrtimMaxOutputIndex)
+    struct HrtimFaultPinMap;
 
-#define DECLARE_HRTIM_FAULT_PIN_MAP(tkControllerID, tkFaultID, tkOutputIdx, port, pin, af) \
-    static_assert((tkOutputIdx) < kHRTIMMaxOutputIndex);                                   \
+#define DECLARE_HRTIM_FAULT_PIN_MAP(tkPeripheralId, tkFaultId, tkOutputIdx, port, pin, af) \
+    static_assert((tkOutputIdx) < kHrtimMaxOutputIndex);                                   \
     template <>                                                                            \
-    struct HRTIMFaultPinMap<(tkControllerID), (tkFaultID), (tkOutputIdx)>                  \
+    struct HrtimFaultPinMap<(tkPeripheralId), (tkFaultId), (tkOutputIdx)>                  \
     {                                                                                      \
-        constexpr static GPIOPortID              skPortID = (port);                        \
-        constexpr static GPIOPinID               skPinID  = (pin);                         \
-        constexpr static GPIOAlternativeFunction skAF     = (af);                          \
+        constexpr static GpioPortId              skPortId = (port);                        \
+        constexpr static GpioPinId               skPinId  = (pin);                         \
+        constexpr static GpioAlternativeFunction skAF     = (af);                          \
     };
 
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault1,
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault1,
                                 0,
-                                GPIOPortID::kPortA,
-                                GPIOPinID::kPin12,
-                                GPIOAlternativeFunction::kAF13);  // PA12
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault2,
+                                GpioPortId::kPortA,
+                                GpioPinId::kPin12,
+                                GpioAlternativeFunction::kAF13);  // PA12
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault2,
                                 0,
-                                GPIOPortID::kPortA,
-                                GPIOPinID::kPin15,
-                                GPIOAlternativeFunction::kAF13);  // PA15
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault3,
+                                GpioPortId::kPortA,
+                                GpioPinId::kPin15,
+                                GpioAlternativeFunction::kAF13);  // PA15
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault3,
                                 0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin10,
-                                GPIOAlternativeFunction::kAF13);  // PB10
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault4,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin10,
+                                GpioAlternativeFunction::kAF13);  // PB10
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault4,
                                 0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin11,
-                                GPIOAlternativeFunction::kAF13);  // PB11
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault5,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin11,
+                                GpioAlternativeFunction::kAF13);  // PB11
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault5,
                                 0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin0,
-                                GPIOAlternativeFunction::kAF13);  // PB0
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault5,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin0,
+                                GpioAlternativeFunction::kAF13);  // PB0
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault5,
                                 1,
-                                GPIOPortID::kPortC,
-                                GPIOPinID::kPin7,
-                                GPIOAlternativeFunction::kAF3);  // PC7
+                                GpioPortId::kPortC,
+                                GpioPinId::kPin7,
+                                GpioAlternativeFunction::kAF3);  // PC7
 
-    DECLARE_HRTIM_FAULT_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMFaultID::kFault6,
+    DECLARE_HRTIM_FAULT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimFaultId::kFault6,
                                 0,
-                                GPIOPortID::kPortC,
-                                GPIOPinID::kPin10,
-                                GPIOAlternativeFunction::kAF13);  // PC10
+                                GpioPortId::kPortC,
+                                GpioPinId::kPin10,
+                                GpioAlternativeFunction::kAF13);  // PC10
 
 #undef DECLARE_HRTIM_FAULT_PIN_MAP
     namespace detail
     {
-        template <HRTIMControllerID tkControllerID,
-                  HRTIMFaultID      tkFaultID,
+        template <HrtimPeripheralId tkPeripheralId,
+                  HrtimFaultId      tkFaultId,
                   uint8_t           tkOutputIdx,
-                  GPIOPortID        tkPortID,
-                  GPIOPinID         tkPinID>
-        concept CValidSpecificHRTIMFaultPin = requires {
-            typename HRTIMFaultPinMap<tkControllerID, tkFaultID, tkOutputIdx>;
-            { HRTIMFaultPinMap<tkControllerID, tkFaultID, tkOutputIdx>::skPortID } -> std::same_as<GPIOPortID>;
-            { HRTIMFaultPinMap<tkControllerID, tkFaultID, tkOutputIdx>::skPinID } -> std::same_as<GPIOPinID>;
-            HRTIMFaultPinMap<tkControllerID, tkFaultID, tkOutputIdx>::skPortID == tkPortID;
-            HRTIMFaultPinMap<tkControllerID, tkFaultID, tkOutputIdx>::skPinID == tkPinID;
+                  GpioPortId        tkPortId,
+                  GpioPinId         tkPinId>
+        concept CValidSpecificHrtimFaultPin = requires {
+            typename HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>;
+            { HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>::skPortId } -> std::same_as<GpioPortId>;
+            { HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>::skPinId } -> std::same_as<GpioPinId>;
+            HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>::skPortId == tkPortId;
+            HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>::skPinId == tkPinId;
         };
 
-        template <HRTIMControllerID tkControllerID,
-                  HRTIMFaultID      tkFaultID,
-                  GPIOPortID        tkPortID,
-                  GPIOPinID         tkPinID,
+        template <HrtimPeripheralId tkPeripheralId,
+                  HrtimFaultId      tkFaultId,
+                  GpioPortId        tkPortId,
+                  GpioPinId         tkPinId,
                   uint8_t... tkIdxs>
         constexpr std::optional<uint8_t> get_hrtim_fault_pin_output_index(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             // This will return the first matching index, or -1 if none match
             std::optional<uint8_t> result = std::nullopt;
-            ((CValidSpecificHRTIMFaultPin<tkControllerID, tkFaultID, tkIdxs, tkPortID, tkPinID>
+            ((CValidSpecificHrtimFaultPin<tkPeripheralId, tkFaultId, tkIdxs, tkPortId, tkPinId>
                   ? (result = tkIdxs, true)
                   : false) ||
              ...);
             return result;
         }
 
-        template <HRTIMControllerID tkControllerID,
-                  HRTIMFaultID      tkFaultID,
-                  GPIOPortID        tkPortID,
-                  GPIOPinID         tkPinID,
+        template <HrtimPeripheralId tkPeripheralId,
+                  HrtimFaultId      tkFaultId,
+                  GpioPortId        tkPortId,
+                  GpioPinId         tkPinId,
                   uint8_t... tkIdxs>
         constexpr bool check_any_valid_hrtim_fault_pin_map(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             // This will return true if ANY of the indices match
-            return get_hrtim_fault_pin_output_index<tkControllerID, tkFaultID, tkPortID, tkPinID>(
+            return get_hrtim_fault_pin_output_index<tkPeripheralId, tkFaultId, tkPortId, tkPinId>(
                        std::integer_sequence<uint8_t, tkIdxs...>{})
                 .has_value();
         }
     }  // namespace detail
 
-    template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID, GPIOPortID tkPortID, GPIOPinID tkPinID>
-    concept CValidHRTIMFaultPin =
-        detail::check_any_valid_hrtim_fault_pin_map<tkControllerID, tkFaultID, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{});
+    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, GpioPortId tkPortId, GpioPinId tkPinId>
+    concept CValidHrtimFaultPin =
+        detail::check_any_valid_hrtim_fault_pin_map<tkPeripheralId, tkFaultId, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{});
 
-    template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID, GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(CValidHRTIMFaultPin<tkControllerID, tkFaultID, tkPortID, tkPinID>)
-    constexpr uint8_t kHRTIMFaultPinOutputIndex =
-        detail::get_hrtim_fault_pin_output_index<tkControllerID, tkFaultID, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{})
+    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, GpioPortId tkPortId, GpioPinId tkPinId>
+        requires(CValidHrtimFaultPin<tkPeripheralId, tkFaultId, tkPortId, tkPinId>)
+    constexpr uint8_t kHrtimFaultPinOutputIndex =
+        detail::get_hrtim_fault_pin_output_index<tkPeripheralId, tkFaultId, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{})
             .value();
 
-    template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID, GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(CValidHRTIMFaultPin<tkControllerID, tkFaultID, tkPortID, tkPinID>)
-    constexpr GPIOAlternativeFunction kHRTIMFaultPinAF =
-        HRTIMFaultPinMap<tkControllerID,
-                         tkFaultID,
-                         kHRTIMFaultPinOutputIndex<tkControllerID, tkFaultID, tkPortID, tkPinID>>::skAF;
+    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, GpioPortId tkPortId, GpioPinId tkPinId>
+        requires(CValidHrtimFaultPin<tkPeripheralId, tkFaultId, tkPortId, tkPinId>)
+    constexpr GpioAlternativeFunction kHrtimFaultPinAF =
+        HrtimFaultPinMap<tkPeripheralId,
+                         tkFaultId,
+                         kHrtimFaultPinOutputIndex<tkPeripheralId, tkFaultId, tkPortId, tkPinId>>::skAF;
 
     // ---------------------------------------------------------------------------
     // HRTIM EEV
     // ---------------------------------------------------------------------------
 
-    template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID, uint8_t tkOutputIdx = 0>
-        requires(tkOutputIdx < kHRTIMMaxOutputIndex)
-    struct HRTIMEEVPinMap;
+    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId, uint8_t tkOutputIdx = 0>
+        requires(tkOutputIdx < kHrtimMaxOutputIndex)
+    struct HrtimExternalEventPinMap;
 
-#define DECLARE_HRTIM_EEV_PIN_MAP(tkControllerID, tkEEVID, tkOutputIdx, port, pin, af) \
-    static_assert((tkOutputIdx) < kHRTIMMaxOutputIndex);                               \
-    template <>                                                                        \
-    struct HRTIMEEVPinMap<(tkControllerID), (tkEEVID), (tkOutputIdx)>                  \
-    {                                                                                  \
-        constexpr static GPIOPortID              skPortID = (port);                    \
-        constexpr static GPIOPinID               skPinID  = (pin);                     \
-        constexpr static GPIOAlternativeFunction skAF     = (af);                      \
+#define DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(tkPeripheralId, tkExternalEventId, tkOutputIdx, port, pin, af) \
+    static_assert((tkOutputIdx) < kHrtimMaxOutputIndex);                                                    \
+    template <>                                                                                             \
+    struct HrtimExternalEventPinMap<(tkPeripheralId), (tkExternalEventId), (tkOutputIdx)>                   \
+    {                                                                                                       \
+        constexpr static GpioPortId              skPortId = (port);                                         \
+        constexpr static GpioPinId               skPinId  = (pin);                                          \
+        constexpr static GpioAlternativeFunction skAF     = (af);                                           \
     };
 
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV1,
-                              0,
-                              GPIOPortID::kPortC,
-                              GPIOPinID::kPin12,
-                              GPIOAlternativeFunction::kAF3);  // PC12
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV2,
-                              0,
-                              GPIOPortID::kPortC,
-                              GPIOPinID::kPin11,
-                              GPIOAlternativeFunction::kAF3);  // PC11
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV3,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin7,
-                              GPIOAlternativeFunction::kAF13);  // PB7
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV4,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin6,
-                              GPIOAlternativeFunction::kAF13);  // PB6
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV5,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin9,
-                              GPIOAlternativeFunction::kAF13);  // PB9
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV6,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin5,
-                              GPIOAlternativeFunction::kAF13);  // PB5
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV7,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin4,
-                              GPIOAlternativeFunction::kAF13);  // PB4
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV8,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin8,
-                              GPIOAlternativeFunction::kAF13);  // PB8
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV9,
-                              0,
-                              GPIOPortID::kPortB,
-                              GPIOPinID::kPin3,
-                              GPIOAlternativeFunction::kAF13);  // PB3
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV10,
-                              0,
-                              GPIOPortID::kPortC,
-                              GPIOPinID::kPin5,
-                              GPIOAlternativeFunction::kAF13);  // PC5
-    DECLARE_HRTIM_EEV_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                              HRTIMEEVID::kEEV10,
-                              1,
-                              GPIOPortID::kPortC,
-                              GPIOPinID::kPin6,
-                              GPIOAlternativeFunction::kAF3);  // PC6
-#undef DECLARE_HRTIM_EEV_PIN_MAP
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent1,
+                                         0,
+                                         GpioPortId::kPortC,
+                                         GpioPinId::kPin12,
+                                         GpioAlternativeFunction::kAF3);  // PC12
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent2,
+                                         0,
+                                         GpioPortId::kPortC,
+                                         GpioPinId::kPin11,
+                                         GpioAlternativeFunction::kAF3);  // PC11
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent3,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin7,
+                                         GpioAlternativeFunction::kAF13);  // PB7
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent4,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin6,
+                                         GpioAlternativeFunction::kAF13);  // PB6
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent5,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin9,
+                                         GpioAlternativeFunction::kAF13);  // PB9
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent6,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin5,
+                                         GpioAlternativeFunction::kAF13);  // PB5
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent7,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin4,
+                                         GpioAlternativeFunction::kAF13);  // PB4
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent8,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin8,
+                                         GpioAlternativeFunction::kAF13);  // PB8
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent9,
+                                         0,
+                                         GpioPortId::kPortB,
+                                         GpioPinId::kPin3,
+                                         GpioAlternativeFunction::kAF13);  // PB3
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent10,
+                                         0,
+                                         GpioPortId::kPortC,
+                                         GpioPinId::kPin5,
+                                         GpioAlternativeFunction::kAF13);  // PC5
+    DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                         HrtimExternalEventId::kExternalEvent10,
+                                         1,
+                                         GpioPortId::kPortC,
+                                         GpioPinId::kPin6,
+                                         GpioAlternativeFunction::kAF3);  // PC6
+#undef DECLARE_HRTIM_EXTERNAL_EVENT_PIN_MAP
     namespace detail
     {
-        template <HRTIMControllerID tkControllerID,
-                  HRTIMEEVID        tkEEVID,
-                  uint8_t           tkOutputIdx,
-                  GPIOPortID        tkPortID,
-                  GPIOPinID         tkPinID>
-        concept CValidSpecificHRTIMEEVPin = requires {
-            typename HRTIMEEVPinMap<tkControllerID, tkEEVID, tkOutputIdx>;
-            { HRTIMEEVPinMap<tkControllerID, tkEEVID, tkOutputIdx>::skPortID } -> std::same_as<GPIOPortID>;
-            { HRTIMEEVPinMap<tkControllerID, tkEEVID, tkOutputIdx>::skPinID } -> std::same_as<GPIOPinID>;
-            HRTIMEEVPinMap<tkControllerID, tkEEVID, tkOutputIdx>::skPortID == tkPortID;
-            HRTIMEEVPinMap<tkControllerID, tkEEVID, tkOutputIdx>::skPinID == tkPinID;
+        template <HrtimPeripheralId    tkPeripheralId,
+                  HrtimExternalEventId tkExternalEventId,
+                  uint8_t              tkOutputIdx,
+                  GpioPortId           tkPortId,
+                  GpioPinId            tkPinId>
+        concept CValidSpecificHrtimExternalEventPin = requires {
+            typename HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>;
+            {
+                HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>::skPortId
+            } -> std::same_as<GpioPortId>;
+            {
+                HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>::skPinId
+            } -> std::same_as<GpioPinId>;
+            HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>::skPortId == tkPortId;
+            HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>::skPinId == tkPinId;
         };
 
-        template <HRTIMControllerID tkControllerID,
-                  HRTIMEEVID        tkEEVID,
-                  GPIOPortID        tkPortID,
-                  GPIOPinID         tkPinID,
+        template <HrtimPeripheralId    tkPeripheralId,
+                  HrtimExternalEventId tkExternalEventId,
+                  GpioPortId           tkPortId,
+                  GpioPinId            tkPinId,
                   uint8_t... tkIdxs>
         constexpr std::optional<uint8_t> get_hrtim_eev_pin_output_index(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             // This will return the first matching index, or -1 if none match
             std::optional<uint8_t> result = std::nullopt;
-            ((CValidSpecificHRTIMEEVPin<tkControllerID, tkEEVID, tkIdxs, tkPortID, tkPinID> ? (result = tkIdxs, true)
-                                                                                            : false) ||
-             ...);
-            return result;
-        }
-
-        template <HRTIMControllerID tkControllerID,
-                  HRTIMEEVID        tkEEVID,
-                  GPIOPortID        tkPortID,
-                  GPIOPinID         tkPinID,
-                  uint8_t... tkIdxs>
-        constexpr bool check_any_valid_hrtim_eev_pin_map(std::integer_sequence<uint8_t, tkIdxs...>)
-        {
-            // This will return true if ANY of the indices match
-            return get_hrtim_eev_pin_output_index<tkControllerID, tkEEVID, tkPortID, tkPinID>(
-                       std::integer_sequence<uint8_t, tkIdxs...>{})
-                .has_value();
-        }
-    }  // namespace detail
-
-    template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID, GPIOPortID tkPortID, GPIOPinID tkPinID>
-    concept CValidHRTIMEEVPin = detail::check_any_valid_hrtim_eev_pin_map<tkControllerID, tkEEVID, tkPortID, tkPinID>(
-        std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{});
-
-    template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID, GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(CValidHRTIMEEVPin<tkControllerID, tkEEVID, tkPortID, tkPinID>)
-    constexpr uint8_t kHRTIMEEVPinOutputIndex =
-        detail::get_hrtim_eev_pin_output_index<tkControllerID, tkEEVID, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{})
-            .value();
-
-    template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID, GPIOPortID tkPortID, GPIOPinID tkPinID>
-        requires(CValidHRTIMEEVPin<tkControllerID, tkEEVID, tkPortID, tkPinID>)
-    constexpr GPIOAlternativeFunction kHRTIMEEVPinAF =
-        HRTIMEEVPinMap<tkControllerID, tkEEVID, kHRTIMEEVPinOutputIndex<tkControllerID, tkEEVID, tkPortID, tkPinID>>::
-            skAF;
-
-    // ---------------------------------------------------------------------------
-    // HRTIM TIMER
-    // ---------------------------------------------------------------------------
-
-    enum class HRTIMTimerGPIOPinType : uint8_t
-    {
-        kOutput1,
-        kOutput2,
-    };
-
-    template <HRTIMControllerID     tkControllerID,
-              HRTIMTimerID          tkTimerID,
-              HRTIMTimerGPIOPinType tkPinType,
-              uint8_t               tkOutputIdx = 0>
-        requires(tkOutputIdx < kHRTIMMaxOutputIndex)
-    struct HRTIMTimerPinMap;
-
-#define DECLARE_HRTIM_TIMER_PIN_MAP(tkControllerID, tkTimerID, tkPinType, tkOutputIdx, port, pin, af) \
-    static_assert((tkOutputIdx) < kHRTIMMaxOutputIndex);                                              \
-    template <>                                                                                       \
-    struct HRTIMTimerPinMap<(tkControllerID), (tkTimerID), (tkPinType), (tkOutputIdx)>                \
-    {                                                                                                 \
-        constexpr static GPIOPortID              skPortID = (port);                                   \
-        constexpr static GPIOPinID               skPinID  = (pin);                                    \
-        constexpr static GPIOAlternativeFunction skAF     = (af);                                     \
-    };
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kA,
-                                HRTIMTimerGPIOPinType::kOutput1,
-                                0,
-                                GPIOPortID::kPortA,
-                                GPIOPinID::kPin8,
-                                GPIOAlternativeFunction::kAF13);  // PA8
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kA,
-                                HRTIMTimerGPIOPinType::kOutput2,
-                                0,
-                                GPIOPortID::kPortA,
-                                GPIOPinID::kPin9,
-                                GPIOAlternativeFunction::kAF13);  // PA9
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kB,
-                                HRTIMTimerGPIOPinType::kOutput1,
-                                0,
-                                GPIOPortID::kPortA,
-                                GPIOPinID::kPin10,
-                                GPIOAlternativeFunction::kAF13);  // PA10
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kB,
-                                HRTIMTimerGPIOPinType::kOutput2,
-                                0,
-                                GPIOPortID::kPortA,
-                                GPIOPinID::kPin11,
-                                GPIOAlternativeFunction::kAF13);  // PA11
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kC,
-                                HRTIMTimerGPIOPinType::kOutput1,
-                                0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin12,
-                                GPIOAlternativeFunction::kAF13);  // PB12
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kC,
-                                HRTIMTimerGPIOPinType::kOutput2,
-                                0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin13,
-                                GPIOAlternativeFunction::kAF13);  // PB13
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kD,
-                                HRTIMTimerGPIOPinType::kOutput1,
-                                0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin14,
-                                GPIOAlternativeFunction::kAF13);  // PB14
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kD,
-                                HRTIMTimerGPIOPinType::kOutput2,
-                                0,
-                                GPIOPortID::kPortB,
-                                GPIOPinID::kPin15,
-                                GPIOAlternativeFunction::kAF13);  // PB15
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kE,
-                                HRTIMTimerGPIOPinType::kOutput1,
-                                0,
-                                GPIOPortID::kPortC,
-                                GPIOPinID::kPin8,
-                                GPIOAlternativeFunction::kAF3);  // PC8
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kE,
-                                HRTIMTimerGPIOPinType::kOutput2,
-                                0,
-                                GPIOPortID::kPortC,
-                                GPIOPinID::kPin9,
-                                GPIOAlternativeFunction::kAF3);  // PC9
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kF,
-                                HRTIMTimerGPIOPinType::kOutput1,
-                                0,
-                                GPIOPortID::kPortC,
-                                GPIOPinID::kPin6,
-                                GPIOAlternativeFunction::kAF13);  // PC6
-
-    DECLARE_HRTIM_TIMER_PIN_MAP(HRTIMControllerID::kHRTIM1,
-                                HRTIMTimerID::kF,
-                                HRTIMTimerGPIOPinType::kOutput2,
-                                0,
-                                GPIOPortID::kPortC,
-                                GPIOPinID::kPin7,
-                                GPIOAlternativeFunction::kAF13);  // PC7
-
-#undef DECLARE_HRTIM_PIN_MAP
-    namespace detail
-    {
-        template <HRTIMControllerID     tkControllerID,
-                  HRTIMTimerID          tkTimerID,
-                  HRTIMTimerGPIOPinType tkPinType,
-                  uint8_t               tkOutputIdx,
-                  GPIOPortID            tkPortID,
-                  GPIOPinID             tkPinID>
-        concept CValidSpecificHRTIMTimerPin = requires {
-            typename HRTIMTimerPinMap<tkControllerID, tkTimerID, tkPinType, tkOutputIdx>;
-            HRTIMTimerPinMap<tkControllerID, tkTimerID, tkPinType, tkOutputIdx>::skPortID == tkPortID;
-            HRTIMTimerPinMap<tkControllerID, tkTimerID, tkPinType, tkOutputIdx>::skPinID == tkPinID;
-        };
-
-        template <HRTIMControllerID     tkControllerID,
-                  HRTIMTimerID          tkTimerID,
-                  HRTIMTimerGPIOPinType tkPinType,
-                  GPIOPortID            tkPortID,
-                  GPIOPinID             tkPinID,
-                  uint8_t... tkIdxs>
-        constexpr std::optional<uint8_t> get_hrtim_timer_pin_output_index(std::integer_sequence<uint8_t, tkIdxs...>)
-        {
-            // This will return the first matching index, or std::nullopt if none match
-            std::optional<uint8_t> result = std::nullopt;
-            ((CValidSpecificHRTIMTimerPin<tkControllerID, tkTimerID, tkPinType, tkIdxs, tkPortID, tkPinID>
+            ((CValidSpecificHrtimExternalEventPin<tkPeripheralId, tkExternalEventId, tkIdxs, tkPortId, tkPinId>
                   ? (result = tkIdxs, true)
                   : false) ||
              ...);
             return result;
         }
 
-        template <HRTIMControllerID     tkControllerID,
-                  HRTIMTimerID          tkTimerID,
-                  HRTIMTimerGPIOPinType tkPinType,
-                  GPIOPortID            tkPortID,
-                  GPIOPinID             tkPinID,
+        template <HrtimPeripheralId    tkPeripheralId,
+                  HrtimExternalEventId tkExternalEventId,
+                  GpioPortId           tkPortId,
+                  GpioPinId            tkPinId,
+                  uint8_t... tkIdxs>
+        constexpr bool check_any_valid_hrtim_eev_pin_map(std::integer_sequence<uint8_t, tkIdxs...>)
+        {
+            // This will return true if ANY of the indices match
+            return get_hrtim_eev_pin_output_index<tkPeripheralId, tkExternalEventId, tkPortId, tkPinId>(
+                       std::integer_sequence<uint8_t, tkIdxs...>{})
+                .has_value();
+        }
+    }  // namespace detail
+
+    template <HrtimPeripheralId    tkPeripheralId,
+              HrtimExternalEventId tkExternalEventId,
+              GpioPortId           tkPortId,
+              GpioPinId            tkPinId>
+    concept CValidHrtimExternalEventPin =
+        detail::check_any_valid_hrtim_eev_pin_map<tkPeripheralId, tkExternalEventId, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{});
+
+    template <HrtimPeripheralId    tkPeripheralId,
+              HrtimExternalEventId tkExternalEventId,
+              GpioPortId           tkPortId,
+              GpioPinId            tkPinId>
+        requires(CValidHrtimExternalEventPin<tkPeripheralId, tkExternalEventId, tkPortId, tkPinId>)
+    constexpr uint8_t kHrtimExternalEventPinOutputIndex =
+        detail::get_hrtim_eev_pin_output_index<tkPeripheralId, tkExternalEventId, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{})
+            .value();
+
+    template <HrtimPeripheralId    tkPeripheralId,
+              HrtimExternalEventId tkExternalEventId,
+              GpioPortId           tkPortId,
+              GpioPinId            tkPinId>
+        requires(CValidHrtimExternalEventPin<tkPeripheralId, tkExternalEventId, tkPortId, tkPinId>)
+    constexpr GpioAlternativeFunction kHrtimExternalEventPinAF = HrtimExternalEventPinMap<
+        tkPeripheralId,
+        tkExternalEventId,
+        kHrtimExternalEventPinOutputIndex<tkPeripheralId, tkExternalEventId, tkPortId, tkPinId>>::skAF;
+
+    // ---------------------------------------------------------------------------
+    // HRTIM TIMER
+    // ---------------------------------------------------------------------------
+
+    enum class HrtimTimerGpioPinType : uint8_t
+    {
+        kOutput1,
+        kOutput2,
+    };
+
+    template <HrtimPeripheralId     tkPeripheralId,
+              HrtimTimerId          tkTimerId,
+              HrtimTimerGpioPinType tkPinType,
+              uint8_t               tkOutputIdx = 0>
+        requires(tkOutputIdx < kHrtimMaxOutputIndex)
+    struct HrtimTimerPinMap;
+
+#define DECLARE_HRTIM_TIMER_PIN_MAP(tkPeripheralId, tkTimerId, tkPinType, tkOutputIdx, port, pin, af) \
+    static_assert((tkOutputIdx) < kHrtimMaxOutputIndex);                                              \
+    template <>                                                                                       \
+    struct HrtimTimerPinMap<(tkPeripheralId), (tkTimerId), (tkPinType), (tkOutputIdx)>                \
+    {                                                                                                 \
+        constexpr static GpioPortId              skPortId = (port);                                   \
+        constexpr static GpioPinId               skPinId  = (pin);                                    \
+        constexpr static GpioAlternativeFunction skAF     = (af);                                     \
+    };
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerA,
+                                HrtimTimerGpioPinType::kOutput1,
+                                0,
+                                GpioPortId::kPortA,
+                                GpioPinId::kPin8,
+                                GpioAlternativeFunction::kAF13);  // PA8
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerA,
+                                HrtimTimerGpioPinType::kOutput2,
+                                0,
+                                GpioPortId::kPortA,
+                                GpioPinId::kPin9,
+                                GpioAlternativeFunction::kAF13);  // PA9
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerB,
+                                HrtimTimerGpioPinType::kOutput1,
+                                0,
+                                GpioPortId::kPortA,
+                                GpioPinId::kPin10,
+                                GpioAlternativeFunction::kAF13);  // PA10
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerB,
+                                HrtimTimerGpioPinType::kOutput2,
+                                0,
+                                GpioPortId::kPortA,
+                                GpioPinId::kPin11,
+                                GpioAlternativeFunction::kAF13);  // PA11
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerC,
+                                HrtimTimerGpioPinType::kOutput1,
+                                0,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin12,
+                                GpioAlternativeFunction::kAF13);  // PB12
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerC,
+                                HrtimTimerGpioPinType::kOutput2,
+                                0,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin13,
+                                GpioAlternativeFunction::kAF13);  // PB13
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerD,
+                                HrtimTimerGpioPinType::kOutput1,
+                                0,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin14,
+                                GpioAlternativeFunction::kAF13);  // PB14
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerD,
+                                HrtimTimerGpioPinType::kOutput2,
+                                0,
+                                GpioPortId::kPortB,
+                                GpioPinId::kPin15,
+                                GpioAlternativeFunction::kAF13);  // PB15
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerE,
+                                HrtimTimerGpioPinType::kOutput1,
+                                0,
+                                GpioPortId::kPortC,
+                                GpioPinId::kPin8,
+                                GpioAlternativeFunction::kAF3);  // PC8
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerE,
+                                HrtimTimerGpioPinType::kOutput2,
+                                0,
+                                GpioPortId::kPortC,
+                                GpioPinId::kPin9,
+                                GpioAlternativeFunction::kAF3);  // PC9
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerF,
+                                HrtimTimerGpioPinType::kOutput1,
+                                0,
+                                GpioPortId::kPortC,
+                                GpioPinId::kPin6,
+                                GpioAlternativeFunction::kAF13);  // PC6
+
+    DECLARE_HRTIM_TIMER_PIN_MAP(HrtimPeripheralId::kHrtim1,
+                                HrtimTimerId::kTimerF,
+                                HrtimTimerGpioPinType::kOutput2,
+                                0,
+                                GpioPortId::kPortC,
+                                GpioPinId::kPin7,
+                                GpioAlternativeFunction::kAF13);  // PC7
+
+#undef DECLARE_HRTIM_PIN_MAP
+    namespace detail
+    {
+        template <HrtimPeripheralId     tkPeripheralId,
+                  HrtimTimerId          tkTimerId,
+                  HrtimTimerGpioPinType tkPinType,
+                  uint8_t               tkOutputIdx,
+                  GpioPortId            tkPortId,
+                  GpioPinId             tkPinId>
+        concept CValidSpecificHrtimTimerPin = requires {
+            typename HrtimTimerPinMap<tkPeripheralId, tkTimerId, tkPinType, tkOutputIdx>;
+            HrtimTimerPinMap<tkPeripheralId, tkTimerId, tkPinType, tkOutputIdx>::skPortId == tkPortId;
+            HrtimTimerPinMap<tkPeripheralId, tkTimerId, tkPinType, tkOutputIdx>::skPinId == tkPinId;
+        };
+
+        template <HrtimPeripheralId     tkPeripheralId,
+                  HrtimTimerId          tkTimerId,
+                  HrtimTimerGpioPinType tkPinType,
+                  GpioPortId            tkPortId,
+                  GpioPinId             tkPinId,
+                  uint8_t... tkIdxs>
+        constexpr std::optional<uint8_t> get_hrtim_timer_pin_output_index(std::integer_sequence<uint8_t, tkIdxs...>)
+        {
+            // This will return the first matching index, or std::nullopt if none match
+            std::optional<uint8_t> result = std::nullopt;
+            ((CValidSpecificHrtimTimerPin<tkPeripheralId, tkTimerId, tkPinType, tkIdxs, tkPortId, tkPinId>
+                  ? (result = tkIdxs, true)
+                  : false) ||
+             ...);
+            return result;
+        }
+
+        template <HrtimPeripheralId     tkPeripheralId,
+                  HrtimTimerId          tkTimerId,
+                  HrtimTimerGpioPinType tkPinType,
+                  GpioPortId            tkPortId,
+                  GpioPinId             tkPinId,
                   uint8_t... tkIdxs>
         constexpr bool check_any_valid_hrtim_timer_pin_map(std::integer_sequence<uint8_t, tkIdxs...>)
         {
             // This will return true if ANY of the indices match
-            return get_hrtim_timer_pin_output_index<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>(
+            return get_hrtim_timer_pin_output_index<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>(
                        std::integer_sequence<uint8_t, tkIdxs...>{})
                 .has_value();
         }
 
-        template <HRTIMControllerID     tkControllerID,
-                  HRTIMTimerID          tkTimerID,
-                  HRTIMTimerGPIOPinType tkPinType,
-                  GPIOPortID            tkPortID,
-                  GPIOPinID             tkPinID>
-        constexpr bool kAnyValidHRTIMTimerPinMap =
-            check_any_valid_hrtim_timer_pin_map<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>(
-                std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{});
+        template <HrtimPeripheralId     tkPeripheralId,
+                  HrtimTimerId          tkTimerId,
+                  HrtimTimerGpioPinType tkPinType,
+                  GpioPortId            tkPortId,
+                  GpioPinId             tkPinId>
+        constexpr bool kAnyValidHrtimTimerPinMap =
+            check_any_valid_hrtim_timer_pin_map<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>(
+                std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{});
 
     }  // namespace detail
 
-    template <HRTIMControllerID     tkControllerID,
-              HRTIMTimerID          tkTimerID,
-              HRTIMTimerGPIOPinType tkPinType,
-              GPIOPortID            tkPortID,
-              GPIOPinID             tkPinID>
-    concept CValidHRTIMTimerPin =
-        detail::check_any_valid_hrtim_timer_pin_map<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{});
+    template <HrtimPeripheralId     tkPeripheralId,
+              HrtimTimerId          tkTimerId,
+              HrtimTimerGpioPinType tkPinType,
+              GpioPortId            tkPortId,
+              GpioPinId             tkPinId>
+    concept CValidHrtimTimerPin =
+        detail::check_any_valid_hrtim_timer_pin_map<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{});
 
-    template <HRTIMControllerID     tkControllerID,
-              HRTIMTimerID          tkTimerID,
-              HRTIMTimerGPIOPinType tkPinType,
-              GPIOPortID            tkPortID,
-              GPIOPinID             tkPinID>
-        requires(CValidHRTIMTimerPin<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>)
-    constexpr uint8_t kHRTIMTimerPinOutputIndex =
-        detail::get_hrtim_timer_pin_output_index<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>(
-            std::make_integer_sequence<uint8_t, kHRTIMMaxOutputIndex>{})
+    template <HrtimPeripheralId     tkPeripheralId,
+              HrtimTimerId          tkTimerId,
+              HrtimTimerGpioPinType tkPinType,
+              GpioPortId            tkPortId,
+              GpioPinId             tkPinId>
+        requires(CValidHrtimTimerPin<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>)
+    constexpr uint8_t kHrtimTimerPinOutputIndex =
+        detail::get_hrtim_timer_pin_output_index<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>(
+            std::make_integer_sequence<uint8_t, kHrtimMaxOutputIndex>{})
             .value();
 
-    template <HRTIMControllerID     tkControllerID,
-              HRTIMTimerID          tkTimerID,
-              HRTIMTimerGPIOPinType tkPinType,
-              GPIOPortID            tkPortID,
-              GPIOPinID             tkPinID>
-        requires(CValidHRTIMTimerPin<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>)
-    constexpr GPIOAlternativeFunction kHRTIMTimerPinAF =
-        HRTIMTimerPinMap<tkControllerID,
-                         tkTimerID,
+    template <HrtimPeripheralId     tkPeripheralId,
+              HrtimTimerId          tkTimerId,
+              HrtimTimerGpioPinType tkPinType,
+              GpioPortId            tkPortId,
+              GpioPinId             tkPinId>
+        requires(CValidHrtimTimerPin<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>)
+    constexpr GpioAlternativeFunction kHrtimTimerPinAF =
+        HrtimTimerPinMap<tkPeripheralId,
+                         tkTimerId,
                          tkPinType,
-                         kHRTIMTimerPinOutputIndex<tkControllerID, tkTimerID, tkPinType, tkPortID, tkPinID>>::skAF;
+                         kHrtimTimerPinOutputIndex<tkPeripheralId, tkTimerId, tkPinType, tkPortId, tkPinId>>::skAF;
 
 }  // namespace valle::platform

@@ -46,7 +46,7 @@ namespace valle
     struct EngineKinematicsCalculatorModelConfig;
 
     // =========================================================================
-    // CONFIG: SINUSOIDAL
+    // CONFIG: SINUSOIdAL
     // =========================================================================
 
     template <>
@@ -59,7 +59,7 @@ namespace valle
     };
 
     // =========================================================================
-    // CONFIG: CRANK-SLIDER
+    // CONFIG: CRANK-SLIdER
     // =========================================================================
 
     template <>
@@ -306,7 +306,7 @@ namespace valle
         }
 
         // ---------------------------------------------------------------------
-        // CYLINDER POSITION (SINUSOIDAL APPROXIMATION)
+        // CYLINDER POSITION (SINUSOIdAL APPROXIMATION)
         // ---------------------------------------------------------------------
 
         [[nodiscard]] constexpr ValueT cylinder_angle_rad_to_cylinder_pos_norm_approx(
@@ -330,7 +330,7 @@ namespace valle
         }
 
         // ---------------------------------------------------------------------
-        // PHYSICAL DISPLACEMENT (CRANK-SLIDER MODEL)
+        // PHYSICAL DISPLACEMENT (CRANK-SLIdER MODEL)
         // ---------------------------------------------------------------------
 
         [[nodiscard]] constexpr ValueT cylinder_angle_rad_to_cylinder_displacement(
@@ -365,7 +365,7 @@ namespace valle
         }
 
         // ---------------------------------------------------------------------
-        // CYLINDER POSITION (CRANK-SLIDER MODEL)
+        // CYLINDER POSITION (CRANK-SLIdER MODEL)
         // ---------------------------------------------------------------------
         [[nodiscard]] constexpr ValueT cylinder_displacement_to_cylinder_pos_norm(const ValueT disp) const noexcept
             requires(skIsCrankSlider)
@@ -397,7 +397,7 @@ namespace valle
         }
 
         // ---------------------------------------------------------------------
-        // INVERSE CYLINDER POSITION (SINUSOIDAL APPROXIMATION)
+        // INVERSE CYLINDER POSITION (SINUSOIdAL APPROXIMATION)
         // ---------------------------------------------------------------------
 
         [[nodiscard]] constexpr ValueT cylinder_pos_norm_to_cylinder_angle_rad_approx(

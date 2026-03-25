@@ -62,24 +62,24 @@ namespace valle::platform::app
 
             return m_encoder.init(EncoderConfigT{
                 .encoder_config =
-                    platform::TIMQuadEncoderConfig{
+                    platform::TimQuadEncoderConfig{
                         .gpio_config =
-                            platform::GPIOAlternateFunctionConfig{
-                                .mode  = platform::GPIOAlternateFunctionMode::kPushPull,
-                                .speed = platform::GPIOSpeedMode::kMedium,
-                                .pull  = platform::GPIOPullMode::kNoPull,
+                            platform::GpioAlternateFunctionConfig{
+                                .mode  = platform::GpioAlternateFunctionMode::kPushPull,
+                                .speed = platform::GpioSpeedMode::kMedium,
+                                .pull  = platform::GpioPullMode::kNoPull,
                             },
                         .encoder_config =
-                            platform::TIMControllerEncoderConfig{
-                                .mode = platform::TIMControllerEncoderMode::kX4TimerInput12,
+                            platform::TimControllerEncoderConfig{
+                                .mode = platform::TimControllerEncoderMode::kX4TimerInput12,
                                 .ch_config =
-                                    platform::TIMChannelInputCaptureConfig{
-                                        .active_input = platform::TIMChannelInputCaptureActiveInput::kDirectTimerInput,
-                                        .prescaler    = platform::TIMChannelInputCapturePrescaler::kDiv1,
-                                        .filter       = platform::TIMChannelInputCaptureFilter::kFreqDiv2N8Samples,
-                                        .polarity     = platform::TIMChannelInputCapturePolarity::kRising,
+                                    platform::TimChannelInputCaptureConfig{
+                                        .active_input = platform::TimChannelInputCaptureActiveInput::kDirectTimerInput,
+                                        .prescaler    = platform::TimChannelInputCapturePrescaler::kDiv1,
+                                        .filter       = platform::TimChannelInputCaptureFilter::kFreqDiv2N8Samples,
+                                        .polarity     = platform::TimChannelInputCapturePolarity::kRising,
                                     },
-                                .ch2_polarity = platform::TIMChannelInputCapturePolarity::kRising,
+                                .ch2_polarity = platform::TimChannelInputCapturePolarity::kRising,
                                 .auto_reload  = static_cast<uint32_t>(skCounterAutoReload),
                             }},
                 .home_rad          = config.home_rad,

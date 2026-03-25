@@ -8,28 +8,28 @@ namespace valle::platform
     // =============================================================================
     // CONFIGURATION
     // =============================================================================
-    struct LSCOConfig
+    struct LscoConfig
     {
         bool            enabled = true;
-        LSCOClockSource source  = LSCOClockSource::kLSI;
+        LscoClockSource source  = LscoClockSource::kLSI;
     };
 
     // =============================================================================
     // DEVICE
     // =============================================================================
-    class LSCODevice
+    class LscoDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = LSCOInterface;
+        using InterfaceT = LscoInterface;
 
         using DependDevices = TypeList<>;
         using InjectDevices = TypeList<>;
 
-        [[nodiscard]] inline bool init(const LSCOConfig& config)
+        [[nodiscard]] inline bool init(const LscoConfig& config)
         {
             InterfaceT::set_source(config.source);
 

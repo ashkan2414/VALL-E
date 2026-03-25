@@ -3,7 +3,7 @@
 
 namespace valle::platform
 {
-    enum class TIMControllerID : uint32_t
+    enum class TimPeripheralId : uint32_t
     {
         kTim1 = 0,
         kTim2,
@@ -19,7 +19,7 @@ namespace valle::platform
         kTim20
     };
 
-    enum class TIMChannelID : uint32_t
+    enum class TimChannelId : uint32_t
     {
         kCh1 = 0,
         kCh2,

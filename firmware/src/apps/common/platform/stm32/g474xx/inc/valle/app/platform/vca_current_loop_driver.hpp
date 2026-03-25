@@ -13,56 +13,56 @@ namespace valle::platform::app
 {
     struct VCACurrentLoopDriverDefaultCTConfig
     {
-        using PWMOutput1PinT              = GPIOPinA8Device;
-        using PWMOutput2PinT              = GPIOPinA9Device;
-        using CurrentSensorADCDMAChannelT = DMA1Channel2Device;
+        using PWMOutput1PinT              = GpioPinA8Device;
+        using PWMOutput2PinT              = GpioPinA9Device;
+        using CurrentSensorAdcDmaChannelT = Dma1Channel2Device;
 
-        static constexpr HRTIMControllerID skVCAHRTIMPWMControllerID = platform::HRTIMControllerID::kHRTIM1;
-        static constexpr HRTIMTimerID      skVCAHRTIMPWMTimerID      = HRTIMTimerID::kA;
+        static constexpr HrtimPeripheralId skVcaHrtimPwmPeripheralId = platform::HrtimPeripheralId::kHrtim1;
+        static constexpr HrtimTimerId      skVcaHrtimPwmTimerId      = HrtimTimerId::kTimerA;
 
-        static constexpr ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC1;
-        static constexpr ADCChannelID    skCurrentSensorADCChannelId    = ADCChannelID::kChannel1;
+        static constexpr AdcPeripheralId skCurrentSensorAdcPeripheralId = platform::AdcPeripheralId::kAdc1;
+        static constexpr AdcChannelId    skCurrentSensorAdcChannelId    = AdcChannelId::kChannel1;
 
         static constexpr auto skCurrentSensorModel                 = valle::app::ACS724Model::k2P5ABi;
-        static constexpr auto skCurrentSensorADCHRTIMTriggerSource = ADCInjectGroupTriggerSource::kExtHrtimTRG2;
+        static constexpr auto skCurrentSensorAdcHrtimTriggerSource = AdcInjectGroupTriggerSource::kExtHrtimTRG2;
     };
 
-    template <uint8_t tkID>
+    template <uint8_t tkPeripheralId>
     struct VCACurrentLoopDriverCTConfigRegistry
     {
         static constexpr auto skConfig = VCACurrentLoopDriverDefaultCTConfig{};
     };
 
-    template <uint8_t tkID>
-    using VCACurrentLoopDriverCTConfigT = decltype(VCACurrentLoopDriverCTConfigRegistry<tkID>::skConfig);
+    template <uint8_t tkPeripheralId>
+    using VCACurrentLoopDriverCTConfigT = decltype(VCACurrentLoopDriverCTConfigRegistry<tkPeripheralId>::skConfig);
 
-    template <uint8_t tkID>
-    struct VCACurrentLoopDriverCTConfigTraits : public VCACurrentLoopDriverCTConfigT<tkID>
+    template <uint8_t tkPeripheralId>
+    struct VCACurrentLoopDriverCTConfigTraits : public VCACurrentLoopDriverCTConfigT<tkPeripheralId>
     {
-        using BaseT = VCACurrentLoopDriverCTConfigT<tkID>;
+        using BaseT = VCACurrentLoopDriverCTConfigT<tkPeripheralId>;
 
         using ValueT                               = float;
         using VCAControllerSystemControllerT       = valle::app::VCAClosedLoopCurrentFeedbackController<ValueT>;
         using VCAControllerSystemControllerConfigT = typename VCAControllerSystemControllerT::ConfigT;
-        using VCAControllerConfigT = VCAControllerHRTIMModuleConfig<VCAControllerSystemControllerConfigT>;
+        using VCAControllerConfigT = VCAControllerHrtimModuleConfig<VCAControllerSystemControllerConfigT>;
 
-        using VCAHRTIMPWMControllerDeviceT = HRTIMControllerDevice<BaseT::skVCAHRTIMPWMControllerID>;
-        using VCAHRTIMPWMTimerDeviceT = HRTIMTimerDevice<BaseT::skVCAHRTIMPWMControllerID, BaseT::skVCAHRTIMPWMTimerID>;
-        using VCAControllerT = VCAControllerHRTIMModule<VCAHRTIMPWMTimerDeviceT, VCAControllerSystemControllerT>;
+        using VCAHrtimPwmControllerDeviceT = HrtimControllerDevice<BaseT::skVcaHrtimPwmPeripheralId>;
+        using VCAHrtimPwmTimerDeviceT = HrtimTimerDevice<BaseT::skVcaHrtimPwmPeripheralId, BaseT::skVcaHrtimPwmTimerId>;
+        using VCAControllerT = VCAControllerHrtimModule<VCAHrtimPwmTimerDeviceT, VCAControllerSystemControllerT>;
 
-        static constexpr auto skCurrentSensorADCCommonID =
-            ADCControllerTraits<BaseT::skCurrentSensorADCControllerID>::skCommonID;
+        static constexpr auto skCurrentSensorAdcCommonId =
+            AdcControllerTraits<BaseT::skCurrentSensorAdcPeripheralId>::skCommonId;
 
-        using CurrentSensorADCControllerDeviceT = ADCControllerDevice<BaseT::skCurrentSensorADCControllerID>;
-        using CurrentSensorADCChannelDeviceT =
-            ADCInjectChannelRank1Device<BaseT::skCurrentSensorADCControllerID, BaseT::skCurrentSensorADCChannelId>;
-        using CurrentSensorT = ACS724Module<CurrentSensorADCChannelDeviceT, BaseT::skCurrentSensorModel>;
+        using CurrentSensorAdcControllerDeviceT = AdcControllerDevice<BaseT::skCurrentSensorAdcPeripheralId>;
+        using CurrentSensorAdcChannelDeviceT =
+            AdcInjectChannelRank1Device<BaseT::skCurrentSensorAdcPeripheralId, BaseT::skCurrentSensorAdcChannelId>;
+        using CurrentSensorT = ACS724Module<CurrentSensorAdcChannelDeviceT, BaseT::skCurrentSensorModel>;
 
-        static constexpr auto skCurrentSensorHRTIMADCTriggerID =
-            adc_trigger_to_hrtim_trigger(BaseT::skCurrentSensorADCHRTIMTriggerSource);
+        static constexpr auto skCurrentSensorHrtimAdcTriggerId =
+            adc_trigger_to_hrtim_trigger(BaseT::skCurrentSensorAdcHrtimTriggerSource);
 
-        using HRTIMTimerADCTriggerConfigT =
-            HRTIMTimerADCTriggerConfig<BaseT::skVCAHRTIMPWMTimerID, skCurrentSensorHRTIMADCTriggerID>;
+        using HrtimTimerAdcTriggerConfigT =
+            HrtimTimerAdcTriggerConfig<BaseT::skVcaHrtimPwmTimerId, skCurrentSensorHrtimAdcTriggerId>;
     };
 
 #define VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(name, id, config)                                 \
@@ -73,45 +73,45 @@ namespace valle::platform::app
         {                                                                                                \
             static constexpr auto skConfig = config;                                                     \
         };                                                                                               \
-        struct VCACurrentLoopDriver##name##HRTIMTimerCTConfig : HRTIMTimerCTDefaultConfig                \
+        struct VCACurrentLoopDriver##name##HrtimTimerCTConfig : HrtimTimerCTDefaultConfig                \
         {                                                                                                \
             using Output1PinT = typename VCACurrentLoopDriverCTConfigT<id>::PWMOutput1PinT;              \
             using Output2PinT = typename VCACurrentLoopDriverCTConfigT<id>::PWMOutput2PinT;              \
         };                                                                                               \
-        struct VCACurrentLoopDriver##name##ADCControllerCTConfig : ADCControllerCTDefaultConfig          \
+        struct VCACurrentLoopDriver##name##AdcControllerCTConfig : AdcControllerCTDefaultConfig          \
         {                                                                                                \
-            using DMAChannelT = typename VCACurrentLoopDriverCTConfigT<id>::CurrentSensorADCDMAChannelT; \
+            using DmaChannelT = typename VCACurrentLoopDriverCTConfigT<id>::CurrentSensorAdcDmaChannelT; \
         };                                                                                               \
     }                                                                                                    \
     VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(                                                                  \
-        valle::platform::app::VCACurrentLoopDriverCTConfigT<id>::skVCAHRTIMPWMControllerID,              \
-        valle::platform::app::VCACurrentLoopDriverCTConfigT<id>::skVCAHRTIMPWMTimerID,                   \
-        valle::platform::app::VCACurrentLoopDriver##name##HRTIMTimerCTConfig{});                         \
+        valle::platform::app::VCACurrentLoopDriverCTConfigT<id>::skVcaHrtimPwmPeripheralId,              \
+        valle::platform::app::VCACurrentLoopDriverCTConfigT<id>::skVcaHrtimPwmTimerId,                   \
+        valle::platform::app::VCACurrentLoopDriver##name##HrtimTimerCTConfig{});                         \
     VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(                                                               \
-        valle::platform::app::VCACurrentLoopDriverCTConfigT<id>::skCurrentSensorADCControllerID,         \
-        valle::platform::app::VCACurrentLoopDriver##name##ADCControllerCTConfig{});
+        valle::platform::app::VCACurrentLoopDriverCTConfigT<id>::skCurrentSensorAdcPeripheralId,         \
+        valle::platform::app::VCACurrentLoopDriver##name##AdcControllerCTConfig{});
 
-    template <uint8_t tkID>
+    template <uint8_t tkPeripheralId>
     struct VCACurrentLoopDriverConfigRaw
     {
-        using CTConfigTraitsT             = VCACurrentLoopDriverCTConfigTraits<tkID>;
+        using CTConfigTraitsT             = VCACurrentLoopDriverCTConfigTraits<tkPeripheralId>;
         using VCAControllerConfigT        = typename CTConfigTraitsT::VCAControllerConfigT;
-        using HRTIMTimerADCTriggerConfigT = typename CTConfigTraitsT::HRTIMTimerADCTriggerConfigT;
+        using HrtimTimerAdcTriggerConfigT = typename CTConfigTraitsT::HrtimTimerAdcTriggerConfigT;
 
         VCAControllerConfigT        vca_controller_config{};
-        ADCControllerConfig         current_sensor_adc_controller_config{};
+        AdcControllerConfig         current_sensor_adc_controller_config{};
         ACS724ModuleConfig          current_sensor_config{};
-        HRTIMTimerADCTriggerConfigT hrtim_adc_trigger_config{};
-        ADCInterruptConfig          current_sensor_adc_interrupt_config{};
+        HrtimTimerAdcTriggerConfigT hrtim_adc_trigger_config{};
+        AdcInterruptConfig          current_sensor_adc_interrupt_config{};
 
-        [[nodiscard]] constexpr std::optional<std::string_view> validate(const RCCConfig& rcc_config) const
+        [[nodiscard]] constexpr std::optional<std::string_view> validate(const RccConfig& rcc_config) const
         {
-            const auto current_sensor_channel_sample_time = ADCRootInterface::calculate_channel_sample_time(
-                ADCCommonConfigTraits<CTConfigTraitsT::skCurrentSensorADCCommonID>::get_source_clock_freq_hz(
+            const auto current_sensor_channel_sample_time = AdcRootInterface::calculate_channel_sample_time(
+                AdcCommonConfigTraits<CTConfigTraitsT::skCurrentSensorAdcCommonId>::get_source_clock_freq_hz(
                     rcc_config),
                 current_sensor_config.channel_config.sampling_time,
                 current_sensor_adc_controller_config.oversampling.has_value()
-                    ? std::optional<ADCOversamplingRatio>(current_sensor_adc_controller_config.oversampling->ratio)
+                    ? std::optional<AdcOversamplingRatio>(current_sensor_adc_controller_config.oversampling->ratio)
                     : std::nullopt);
 
             const auto current_sample_period =
@@ -129,15 +129,15 @@ namespace valle::platform::app
         }
     };
 
-    template <uint8_t tkID>
+    template <uint8_t tkPeripheralId>
     struct VCACurrentLoopDriverConfig
     {
-        using CTConfigTraitsT = VCACurrentLoopDriverCTConfigTraits<tkID>;
+        using CTConfigTraitsT = VCACurrentLoopDriverCTConfigTraits<tkPeripheralId>;
 
         using ValueT                               = typename CTConfigTraitsT::ValueT;
         using VCAControllerSystemControllerConfigT = typename CTConfigTraitsT::VCAControllerSystemControllerConfigT;
         using VCAControllerConfigT                 = typename CTConfigTraitsT::VCAControllerConfigT;
-        using HRTIMTimerADCTriggerConfigT          = typename CTConfigTraitsT::HRTIMTimerADCTriggerConfigT;
+        using HrtimTimerAdcTriggerConfigT          = typename CTConfigTraitsT::HrtimTimerAdcTriggerConfigT;
 
         uint32_t pwm_freq_hz          = 60000U;  // 60 kHz PWM Frequency
         ValueT   max_current_amp      = 1.0F;    // Maximum current in Amps for control loop scaling
@@ -148,9 +148,9 @@ namespace valle::platform::app
             .offset = 0.0F,  // Default to zero offset (no calibration)
         };
 
-        [[nodiscard]] constexpr VCACurrentLoopDriverConfigRaw<tkID> to_raw() const
+        [[nodiscard]] constexpr VCACurrentLoopDriverConfigRaw<tkPeripheralId> to_raw() const
         {
-            return VCACurrentLoopDriverConfigRaw<tkID>{
+            return VCACurrentLoopDriverConfigRaw<tkPeripheralId>{
                 .vca_controller_config                = get_vca_controller_config(),
                 .current_sensor_adc_controller_config = get_adc_controller_config(),
                 .current_sensor_config                = get_current_sensor_config(),
@@ -162,32 +162,32 @@ namespace valle::platform::app
         {
             return VCAControllerConfigT{
                 .half_bridge_config =
-                    HRTIMHalfBridgeDriverConfig{
+                    HrtimHalfBridgeDriverConfig{
                         .freq_hz          = pwm_freq_hz,
                         .repetition       = 1,
-                        .rollover_mode    = HRTIMTimerRolloverMode::kPeriodReset,
-                        .interrupt_config = HRTIMTimerInterruptConfig{.priority = interrupt_priority,
+                        .rollover_mode    = HrtimTimerRolloverMode::kPeriodReset,
+                        .interrupt_config = HrtimTimerInterruptConfig{.priority = interrupt_priority,
                                                                       .interrupts =
-                                                                          HRTIMTimerInterruptMask{
+                                                                          HrtimTimerInterruptMask{
                                                                               .repetition = true,
                                                                           }},
                         .output_config =
-                            HRTIMHalfBridgeOutputConfig{
-                                .polarity    = HRTIMTimerOutputPolarity::kPositive,
-                                .idle_mode   = HRTIMTimerOutputIdleMode::kNoIdle,
-                                .idle_level  = HRTIMTimerOutputIdleLevel::kInactive,
-                                .fault_state = HRTIMTimerOutputFaultState::kInactive,
+                            HrtimHalfBridgeOutputConfig{
+                                .polarity    = HrtimTimerOutputPolarity::kPositive,
+                                .idle_mode   = HrtimTimerOutputIdleMode::kNoIdle,
+                                .idle_level  = HrtimTimerOutputIdleLevel::kInactive,
+                                .fault_state = HrtimTimerOutputFaultState::kInactive,
                                 .gpio_config =
-                                    HRTIMTimerOutputGPIOConfig{
-                                        .speed = GPIOSpeedMode::kLow,
-                                        .pull  = GPIOPullMode::kNoPull,
+                                    HrtimTimerOutputGpioConfig{
+                                        .speed = GpioSpeedMode::kLow,
+                                        .pull  = GpioPullMode::kNoPull,
                                     },
                             },
-                        .deadtime_config = HRTIMTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},
+                        .deadtime_config = HrtimTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},
                         .min_duty        = 0.05F,
                         .max_duty        = 0.95F,
                         .center_aligned  = true,
-                        .compare_unit    = HRTIMTimerCompareUnit::kCompare1,
+                        .compare_unit    = HrtimTimerCompareUnit::kCompare1,
                     },
                 .controller_config = VCAControllerSystemControllerConfigT{
                     // Control loop at PWM frequency
@@ -196,33 +196,33 @@ namespace valle::platform::app
                     .target_tolerance_amp = target_tolerance_amp}};
         }
 
-        [[nodiscard]] constexpr ADCControllerConfig get_adc_controller_config() const
+        [[nodiscard]] constexpr AdcControllerConfig get_adc_controller_config() const
         {
-            return ADCControllerConfig{
-                .resolution     = ADCResolution::k12Bit,
-                .data_alignment = ADCDataAlignment::kRight,
-                .low_power      = ADCLowPowerMode::kNone,
+            return AdcControllerConfig{
+                .resolution     = AdcResolution::k12Bit,
+                .data_alignment = AdcDataAlignment::kRight,
+                .low_power      = AdcLowPowerMode::kNone,
                 .inj =
-                    ADCInjectGroupConfig{
-                        .trigger_source            = CTConfigTraitsT::skCurrentSensorADCHRTIMTriggerSource,
-                        .trigger_edge              = ADCInjectGroupTriggerEdge::kRising,
+                    AdcInjectGroupConfig{
+                        .trigger_source            = CTConfigTraitsT::skCurrentSensorAdcHrtimTriggerSource,
+                        .trigger_edge              = AdcInjectGroupTriggerEdge::kRising,
                         .auto_trigger_from_regular = false,
                     },
                 .reg = {},
                 .oversampling =
-                    ADCOversamplingConfig{
-                        .ratio = ADCOversamplingRatio::k8x,
-                        .shift = ADCOversamplingShift::kDiv2,
-                        .scope = ADCOversamplingScope::kInject,
+                    AdcOversamplingConfig{
+                        .ratio = AdcOversamplingRatio::k8x,
+                        .shift = AdcOversamplingShift::kDiv2,
+                        .scope = AdcOversamplingScope::kInject,
                     },
             };
         }
 
-        [[nodiscard]] constexpr ADCChannelConfig get_adc_channel_config() const
+        [[nodiscard]] constexpr AdcChannelConfig get_adc_channel_config() const
         {
-            return ADCChannelConfig{
-                .sampling_time = ADCChannelSampleTime::k24Cycles5,
-                .input_mode    = ADCChannelInputMode::kSingleEnded,
+            return AdcChannelConfig{
+                .sampling_time = AdcChannelSampleTime::k24Cycles5,
+                .input_mode    = AdcChannelInputMode::kSingleEnded,
                 .offset        = std::nullopt,
             };
         }
@@ -233,59 +233,59 @@ namespace valle::platform::app
                                       .calibration    = current_sensor_calibration};
         }
 
-        [[nodiscard]] constexpr HRTIMTimerADCTriggerConfigT get_hrtim_adc_trigger_config() const
+        [[nodiscard]] constexpr HrtimTimerAdcTriggerConfigT get_hrtim_adc_trigger_config() const
         {
-            return HRTIMTimerADCTriggerConfigT{
-                .source        = HRTIMTimerADCTriggerSourceID<CTConfigTraitsT::skVCAHRTIMPWMTimerID,
-                                                              CTConfigTraitsT::skCurrentSensorHRTIMADCTriggerID>::kPeriod,
-                .rollover_mode = HRTIMTimerADCRolloverMode::kPeriodReset,
+            return HrtimTimerAdcTriggerConfigT{
+                .source        = HrtimTimerAdcTriggerSourceId<CTConfigTraitsT::skVcaHrtimPwmTimerId,
+                                                              CTConfigTraitsT::skCurrentSensorHrtimAdcTriggerId>::kPeriod,
+                .rollover_mode = HrtimTimerAdcRolloverMode::kPeriodReset,
                 .post_scaler   = 0,
             };
         }
 
-        [[nodiscard]] constexpr ADCInterruptConfig get_adc_interrupt_config() const
+        [[nodiscard]] constexpr AdcInterruptConfig get_adc_interrupt_config() const
         {
-            return ADCInterruptConfig{
+            return AdcInterruptConfig{
                 .priority = interrupt_priority,
                 .interrupts =
-                    platform::ADCInterruptMask{
+                    platform::AdcInterruptMask{
                         .inj_eos = true,
                     },
             };
         }
     };
 
-    template <uint8_t tkID>
+    template <uint8_t tkPeripheralId>
     class VCACurrentLoopDriver
     {
     public:
-        using CTConfigTraitsT = VCACurrentLoopDriverCTConfigTraits<tkID>;
+        using CTConfigTraitsT = VCACurrentLoopDriverCTConfigTraits<tkPeripheralId>;
 
         using ValueT                            = typename CTConfigTraitsT::ValueT;
-        using VCAHRTIMPWMControllerDeviceT      = typename CTConfigTraitsT::VCAHRTIMPWMControllerDeviceT;
-        using VCAHRTIMPWMTimerDeviceT           = typename CTConfigTraitsT::VCAHRTIMPWMTimerDeviceT;
+        using VCAHrtimPwmControllerDeviceT      = typename CTConfigTraitsT::VCAHrtimPwmControllerDeviceT;
+        using VCAHrtimPwmTimerDeviceT           = typename CTConfigTraitsT::VCAHrtimPwmTimerDeviceT;
         using VCAControllerT                    = typename CTConfigTraitsT::VCAControllerT;
-        using CurrentSensorADCControllerDeviceT = typename CTConfigTraitsT::CurrentSensorADCControllerDeviceT;
-        using CurrentSensorADCChannelDeviceT    = typename CTConfigTraitsT::CurrentSensorADCChannelDeviceT;
+        using CurrentSensorAdcControllerDeviceT = typename CTConfigTraitsT::CurrentSensorAdcControllerDeviceT;
+        using CurrentSensorAdcChannelDeviceT    = typename CTConfigTraitsT::CurrentSensorAdcChannelDeviceT;
         using CurrentSensorT                    = typename CTConfigTraitsT::CurrentSensorT;
 
-        static constexpr auto skVCAHRTIMPWMControllerID      = CTConfigTraitsT::skVCAHRTIMPWMControllerID;
-        static constexpr auto skVCAHRTIMPWMTimerID           = CTConfigTraitsT::skVCAHRTIMPWMTimerID;
-        static constexpr auto skCurrentSensorADCControllerID = CTConfigTraitsT::skCurrentSensorADCControllerID;
-        static constexpr auto skCurrentSensorADCChannelId    = CTConfigTraitsT::skCurrentSensorADCChannelId;
+        static constexpr auto skVcaHrtimPwmPeripheralId      = CTConfigTraitsT::skVcaHrtimPwmPeripheralId;
+        static constexpr auto skVcaHrtimPwmTimerId           = CTConfigTraitsT::skVcaHrtimPwmTimerId;
+        static constexpr auto skCurrentSensorAdcPeripheralId = CTConfigTraitsT::skCurrentSensorAdcPeripheralId;
+        static constexpr auto skCurrentSensorAdcChannelId    = CTConfigTraitsT::skCurrentSensorAdcChannelId;
 
-        using ConfigT    = VCACurrentLoopDriverConfig<tkID>;
-        using RawConfigT = VCACurrentLoopDriverConfigRaw<tkID>;
+        using ConfigT    = VCACurrentLoopDriverConfig<tkPeripheralId>;
+        using RawConfigT = VCACurrentLoopDriverConfigRaw<tkPeripheralId>;
 
-        using InjectDevices = TypeList<VCAHRTIMPWMControllerDeviceT,
-                                       VCAHRTIMPWMTimerDeviceT,
-                                       CurrentSensorADCControllerDeviceT,
-                                       CurrentSensorADCChannelDeviceT>;
+        using InjectDevices = TypeList<VCAHrtimPwmControllerDeviceT,
+                                       VCAHrtimPwmTimerDeviceT,
+                                       CurrentSensorAdcControllerDeviceT,
+                                       CurrentSensorAdcChannelDeviceT>;
 
     private:
-        [[no_unique_address]] DeviceRef<VCAHRTIMPWMControllerDeviceT>      m_hrtim_controller;
+        [[no_unique_address]] DeviceRef<VCAHrtimPwmControllerDeviceT>      m_hrtim_controller;
         VCAControllerT                                                     m_vca_controller;
-        [[no_unique_address]] DeviceRef<CurrentSensorADCControllerDeviceT> m_adc_controller;
+        [[no_unique_address]] DeviceRef<CurrentSensorAdcControllerDeviceT> m_adc_controller;
         CurrentSensorT                                                     m_current_sensor;
 
         static constexpr float skSampleSwitchLower = 0.4F;  // switch to PERIOD only if duty < 0.4
@@ -298,10 +298,10 @@ namespace valle::platform::app
     public:
         VCACurrentLoopDriver() = delete;
 
-        VCACurrentLoopDriver(DeviceRef<VCAHRTIMPWMControllerDeviceT>&&      hrtim_controller_device,
-                             DeviceRef<VCAHRTIMPWMTimerDeviceT>&&           hrtim_timer_device,
-                             DeviceRef<CurrentSensorADCControllerDeviceT>&& adc_controller_device,
-                             DeviceRef<CurrentSensorADCChannelDeviceT>&&    adc_channel_device)
+        VCACurrentLoopDriver(DeviceRef<VCAHrtimPwmControllerDeviceT>&&      hrtim_controller_device,
+                             DeviceRef<VCAHrtimPwmTimerDeviceT>&&           hrtim_timer_device,
+                             DeviceRef<CurrentSensorAdcControllerDeviceT>&& adc_controller_device,
+                             DeviceRef<CurrentSensorAdcChannelDeviceT>&&    adc_channel_device)
             : m_hrtim_controller(std::move(hrtim_controller_device))
             , m_vca_controller(std::move(hrtim_timer_device))
             , m_adc_controller(std::move(adc_controller_device))
@@ -423,8 +423,8 @@ namespace valle::platform::app
         }
     };
 
-    template <uint8_t tkID>
-    constexpr auto kDefaultVCACurrentLoopDriverConfig = VCACurrentLoopDriverConfig<tkID>{
+    template <uint8_t tkPeripheralId>
+    constexpr auto kDefaultVcaCurrentLoopDriverConfig = VCACurrentLoopDriverConfig<tkPeripheralId>{
         .pwm_freq_hz          = 60000U,
         .max_current_amp      = 0.3F,
         .target_tolerance_amp = 0.001F,
@@ -442,8 +442,8 @@ namespace valle::platform::app
     namespace valle::platform                                                                          \
     {                                                                                                  \
         template <>                                                                                    \
-        struct ADCISRRouter<std::remove_cvref_t<decltype(instance)>::skCurrentSensorADCControllerID,   \
-                            ADCInterruptType::kInjectEndOfSequence>                                    \
+        struct AdcIsrRouter<std::remove_cvref_t<decltype(instance)>::skCurrentSensorAdcPeripheralId,   \
+                            AdcInterruptType::kInjectEndOfSequence>                                    \
         {                                                                                              \
             static void handle()                                                                       \
             {                                                                                          \
@@ -453,9 +453,9 @@ namespace valle::platform::app
             }                                                                                          \
         };                                                                                             \
         template <>                                                                                    \
-        struct HRTIMTimerISRRouter<std::remove_cvref_t<decltype(instance)>::skVCAHRTIMPWMControllerID, \
-                                   std::remove_cvref_t<decltype(instance)>::skVCAHRTIMPWMTimerID,      \
-                                   HRTIMTimerInterruptType::kRepetition>                               \
+        struct HrtimTimerIsrRouter<std::remove_cvref_t<decltype(instance)>::skVcaHrtimPwmPeripheralId, \
+                                   std::remove_cvref_t<decltype(instance)>::skVcaHrtimPwmTimerId,      \
+                                   HrtimTimerInterruptType::kRepetition>                               \
         {                                                                                              \
             static void handle()                                                                       \
             {                                                                                          \

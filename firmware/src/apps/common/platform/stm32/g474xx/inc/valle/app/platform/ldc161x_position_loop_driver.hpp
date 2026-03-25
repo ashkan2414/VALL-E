@@ -14,7 +14,7 @@ namespace valle::platform::app
     // =============================================================================
 
     template <std::floating_point T>
-    struct LDC161XVCAValvePositionControllerConfig
+    struct LDC161XVcaValvePositionControllerConfig
     {
         using ValueT = T;
 
@@ -24,23 +24,23 @@ namespace valle::platform::app
     };
 
     template <std::floating_point T>
-    class LDC161XVCAValvePositionController : public ISystemBlock<LDC161XVCAValvePositionController<T>, T>
+    class LDC161XVcaValvePositionController : public ISystemBlock<LDC161XVcaValvePositionController<T>, T>
     {
     public:
         using ValueT  = T;
-        using ConfigT = LDC161XVCAValvePositionControllerConfig<ValueT>;
+        using ConfigT = LDC161XVcaValvePositionControllerConfig<ValueT>;
 
     private:
         constexpr static T skPidP = static_cast<T>(1.3);
         constexpr static T skPidI = static_cast<T>(0.1);
         constexpr static T skPidD = static_cast<T>(0.0001);
 
-        PIDSystem<ValueT> system{};
+        PIdSystem<ValueT> system{};
 
     public:
-        LDC161XVCAValvePositionController() = default;
+        LDC161XVcaValvePositionController() = default;
 
-        explicit LDC161XVCAValvePositionController(const ConfigT& config)
+        explicit LDC161XVcaValvePositionController(const ConfigT& config)
             : system(skPidP, skPidI, skPidD, config.sample_time, -config.max_current_amp, config.max_current_amp)
         {
         }
@@ -57,7 +57,7 @@ namespace valle::platform::app
     };
 
     template <std::floating_point T>
-    struct LDC161XVCAValvePositionClosedLoopControllerConfig
+    struct LDC161XVcaValvePositionClosedLoopControllerConfig
     {
         using ValueT = T;
 
@@ -71,13 +71,13 @@ namespace valle::platform::app
     };
 
     template <std::floating_point T>
-    class LDC161XVCAValvePositionClosedLoopController
-        : public ISystemBlock<LDC161XVCAValvePositionClosedLoopController<T>, T>
+    class LDC161XVcaValvePositionClosedLoopController
+        : public ISystemBlock<LDC161XVcaValvePositionClosedLoopController<T>, T>
     {
     public:
         using ValueT              = T;
-        using ConfigT             = LDC161XVCAValvePositionClosedLoopControllerConfig<ValueT>;
-        using OpenLoopControllerT = LDC161XVCAValvePositionController<ValueT>;
+        using ConfigT             = LDC161XVcaValvePositionClosedLoopControllerConfig<ValueT>;
+        using OpenLoopControllerT = LDC161XVcaValvePositionController<ValueT>;
         using FeedbackSystemT     = ExFeedbackSystem2<OpenLoopControllerT>;
 
     private:
@@ -86,10 +86,10 @@ namespace valle::platform::app
         ValueT          m_max_position_mm{};  /// Maximum valve position in millimeters
 
     public:
-        LDC161XVCAValvePositionClosedLoopController() = default;
+        LDC161XVcaValvePositionClosedLoopController() = default;
 
-        explicit LDC161XVCAValvePositionClosedLoopController(const ConfigT& config)
-            : m_feedback_system(OpenLoopControllerT(LDC161XVCAValvePositionControllerConfig<ValueT>{
+        explicit LDC161XVcaValvePositionClosedLoopController(const ConfigT& config)
+            : m_feedback_system(OpenLoopControllerT(LDC161XVcaValvePositionControllerConfig<ValueT>{
                                     .sample_time = config.sample_time, .max_current_amp = config.max_current_amp}),
                                 config.target_tolerance_mm)
             , m_min_position_mm(config.min_position_mm)
@@ -123,34 +123,34 @@ namespace valle::platform::app
             { controller.reset() } -> std::same_as<void>;
         };
 
-    template <typename TVCAController>
-    struct LDC161XPositionLoopDriverVCAValveInterfaceConfig
+    template <typename TVcaController>
+    struct LDC161XPositionLoopDriverVcaValveInterfaceConfig
     {
-        using VCAControllerT = TVCAController;
+        using VCAControllerT = TVcaController;
         using ValueT         = typename VCAControllerT::ValueT;
 
-        std::reference_wrapper<TVCAController>                    vca_controller;
-        LDC161XVCAValvePositionClosedLoopControllerConfig<ValueT> controller_config{};
+        std::reference_wrapper<TVcaController>                    vca_controller;
+        LDC161XVcaValvePositionClosedLoopControllerConfig<ValueT> controller_config{};
     };
 
-    template <typename TVCAController>
-    class LDC161XPositionLoopDriverVCAValveInterface
+    template <typename TVcaController>
+    class LDC161XPositionLoopDriverVcaValveInterface
     {
     public:
-        using VCAControllerT = TVCAController;
+        using VCAControllerT = TVcaController;
         using ValueT         = typename VCAControllerT::ValueT;
-        using ControllerT    = LDC161XVCAValvePositionClosedLoopController<ValueT>;
+        using ControllerT    = LDC161XVcaValvePositionClosedLoopController<ValueT>;
 
-        using ConfigT = LDC161XPositionLoopDriverVCAValveInterfaceConfig<VCAControllerT>;
+        using ConfigT = LDC161XPositionLoopDriverVcaValveInterfaceConfig<VCAControllerT>;
 
     private:
         std::reference_wrapper<VCAControllerT> m_vca;
         ControllerT                            m_controller{};
 
     public:
-        LDC161XPositionLoopDriverVCAValveInterface() = delete;
+        LDC161XPositionLoopDriverVcaValveInterface() = delete;
 
-        explicit LDC161XPositionLoopDriverVCAValveInterface(const ConfigT& config)
+        explicit LDC161XPositionLoopDriverVcaValveInterface(const ConfigT& config)
             : m_vca(config.vca_controller), m_controller(config.controller_config)
         {
         }
@@ -197,7 +197,7 @@ namespace valle::platform::app
 
         using SensorModuleConfigT                = typename SensorModuleT::ConfigT;
         using ReadCallbackResultT                = typename SensorModuleT::ReadCallbackResultT;
-        using INTBPinT                           = typename SensorModuleT::I2CInterfaceT::INTBPinT;
+        using INTBPinT                           = typename SensorModuleT::I2cInterfaceT::INTBPinT;
         static constexpr uint8_t skNumChannels   = SensorModuleT::skNumChannels;
         static constexpr bool    skSingleChannel = skNumChannels == 1;
 
@@ -435,8 +435,8 @@ namespace valle::platform::app
     namespace valle::platform                                                                \
     {                                                                                        \
         template <>                                                                          \
-        struct GPIOPinISRRouter<std::remove_cvref_t<decltype(instance)>::INTBPinT::skPortID, \
-                                std::remove_cvref_t<decltype(instance)>::INTBPinT::skPinID>  \
+        struct GpioPinIsrRouter<std::remove_cvref_t<decltype(instance)>::INTBPinT::skPortId, \
+                                std::remove_cvref_t<decltype(instance)>::INTBPinT::skPinId>  \
         {                                                                                    \
             static void handle()                                                             \
             {                                                                                \

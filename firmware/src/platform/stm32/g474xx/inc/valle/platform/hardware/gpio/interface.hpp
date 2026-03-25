@@ -12,47 +12,47 @@ namespace valle::platform
     // ENUMERATIONS
     // =============================================================================
 
-    enum class GPIOPullMode
+    enum class GpioPullMode
     {
-        kNoPull   = GPIO_NOPULL,
-        kPullUp   = GPIO_PULLUP,
-        kPullDown = GPIO_PULLDOWN,
+        kNoPull   = Gpio_NOPULL,
+        kPullUp   = Gpio_PULLUP,
+        kPullDown = Gpio_PULLDOWN,
     };
 
-    enum class GPIOSpeedMode
+    enum class GpioSpeedMode
     {
-        kLow      = GPIO_SPEED_FREQ_LOW,        // range up to 5 MHz
-        kMedium   = GPIO_SPEED_FREQ_MEDIUM,     // range  5 MHz to 25 MHz
-        kHigh     = GPIO_SPEED_FREQ_HIGH,       // range 25 MHz to 50 MHz
-        kVeryHigh = GPIO_SPEED_FREQ_VERY_HIGH,  // range 50 MHz to 120 MHz
+        kLow      = Gpio_SPEED_FREQ_LOW,        // range up to 5 MHz
+        kMedium   = Gpio_SPEED_FREQ_MEDIUM,     // range  5 MHz to 25 MHz
+        kHigh     = Gpio_SPEED_FREQ_HIGH,       // range 25 MHz to 50 MHz
+        kVeryHigh = Gpio_SPEED_FREQ_VERY_HIGH,  // range 50 MHz to 120 MHz
     };
 
-    enum class GPIOOutputMode
+    enum class GpioOutputMode
     {
-        kPushPull  = GPIO_MODE_OUTPUT_PP,
-        kOpenDrain = GPIO_MODE_OUTPUT_OD,
+        kPushPull  = Gpio_MODE_OUTPUT_PP,
+        kOpenDrain = Gpio_MODE_OUTPUT_OD,
     };
 
-    enum class GPIOInputInterruptTrigger
+    enum class GpioInputInterruptTrigger
     {
         kIntRisingEdge  = TRIGGER_RISING,
         kIntFallingEdge = TRIGGER_FALLING,
         kIntBothEdges   = TRIGGER_RISING | TRIGGER_FALLING,
     };
 
-    enum class GPIOInputInterruptAction
+    enum class GpioInputInterruptAction
     {
         kInterrupt = EXTI_IT,
         kEvent     = EXTI_EVT,
     };
 
-    enum class GPIOAlternateFunctionMode
+    enum class GpioAlternateFunctionMode
     {
-        kPushPull  = GPIO_MODE_AF_PP,
-        kOpenDrain = GPIO_MODE_AF_OD,
+        kPushPull  = Gpio_MODE_AF_PP,
+        kOpenDrain = Gpio_MODE_AF_OD,
     };
 
-    enum class GPIOAlternativeFunction
+    enum class GpioAlternativeFunction
     {
         kAF0  = 0,
         kAF1  = 1,
@@ -79,13 +79,13 @@ namespace valle::platform
     // ---------------------------------------------------------------------------
     // GPIO PORT
     // ---------------------------------------------------------------------------
-    template <GPIOPortID tkPortID>
-    struct GPIOPortTraits;
+    template <GpioPortId tkPortId>
+    struct GpioPortTraits;
 
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortA>
+    struct GpioPortTraits<GpioPortId::kPortA>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOA;
+        static inline Gpio_TypeDef* const skInstance         = GpioA;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTA;
 
         static void enable_clock()
@@ -95,9 +95,9 @@ namespace valle::platform
     };
 
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortB>
+    struct GpioPortTraits<GpioPortId::kPortB>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOB;
+        static inline Gpio_TypeDef* const skInstance         = GpioB;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTB;
 
         static void enable_clock()
@@ -106,9 +106,9 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortC>
+    struct GpioPortTraits<GpioPortId::kPortC>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOC;
+        static inline Gpio_TypeDef* const skInstance         = GpioC;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTC;
 
         static void enable_clock()
@@ -117,9 +117,9 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortD>
+    struct GpioPortTraits<GpioPortId::kPortD>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOD;
+        static inline Gpio_TypeDef* const skInstance         = GpioD;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTD;
 
         static void enable_clock()
@@ -128,9 +128,9 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortE>
+    struct GpioPortTraits<GpioPortId::kPortE>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOE;
+        static inline Gpio_TypeDef* const skInstance         = GpioE;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTE;
 
         static void enable_clock()
@@ -139,9 +139,9 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortF>
+    struct GpioPortTraits<GpioPortId::kPortF>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOF;
+        static inline Gpio_TypeDef* const skInstance         = GpioF;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTF;
 
         static void enable_clock()
@@ -150,9 +150,9 @@ namespace valle::platform
         }
     };
     template <>
-    struct GPIOPortTraits<GPIOPortID::kPortG>
+    struct GpioPortTraits<GpioPortId::kPortG>
     {
-        static inline GPIO_TypeDef* const skInstance         = GPIOG;
+        static inline Gpio_TypeDef* const skInstance         = GpioG;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTG;
 
         static void enable_clock()
@@ -165,11 +165,11 @@ namespace valle::platform
     // GPIO PIN
     // ---------------------------------------------------------------------------
 
-    template <GPIOPortID tkPortID, GPIOPinID tkPinID>
-    struct GPIOPinTraits
+    template <GpioPortId tkPortId, GpioPinId tkPinId>
+    struct GpioPinTraits
     {
     private:
-        static constexpr uint8_t skPinIdx = static_cast<uint8_t>(tkPinID);
+        static constexpr uint8_t skPinIdx = static_cast<uint8_t>(tkPinId);
 
         static consteval IRQn_Type get_irq_n()
         {

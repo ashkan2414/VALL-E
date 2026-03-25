@@ -7,33 +7,33 @@
 
 namespace valle::platform::app
 {
-    struct LDC161XSensorModuleI2CInterfaceConfig
+    struct LDC161XSensorModuleI2cInterfaceConfig
     {
         uint32_t intb_interrupt_priority = 5;
     };
 
-    template <typename TI2CSlaveDevice, uint8_t tkNumChannels, typename TINTBPin = GPIONullPinDevice>
+    template <typename TI2cSlaveDevice, uint8_t tkNumChannels, typename TINTBPin = GpioNullPinDevice>
         requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
-    class LDC161XSensorModuleI2CInterface
-        : public valle::app::LDC161XSensorModuleI2CInterfaceX<
-              LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels, TINTBPin>,
-              LDC161XSensorModuleI2CInterfaceConfig>
+    class LDC161XSensorModuleI2cInterface
+        : public valle::app::LDC161XSensorModuleI2cInterfaceX<
+              LDC161XSensorModuleI2cInterface<TI2cSlaveDevice, tkNumChannels, TINTBPin>,
+              LDC161XSensorModuleI2cInterfaceConfig>
     {
     public:
-        using I2CSlaveDeviceT                  = TI2CSlaveDevice;
+        using I2cSlaveDeviceT                  = TI2cSlaveDevice;
         using INTBPinT                         = TINTBPin;
         static constexpr uint8_t skNumChannels = tkNumChannels;
-        static constexpr bool    skHasINTBPin  = !CNullGPIOPinDevice<INTBPinT>;
+        static constexpr bool    skHasINTBPin  = !CNullGpioPinDevice<INTBPinT>;
 
-        using ConfigT                   = LDC161XSensorModuleI2CInterfaceConfig;
-        constexpr static auto skAddress = TI2CSlaveDevice::skAddress;
+        using ConfigT                   = LDC161XSensorModuleI2cInterfaceConfig;
+        constexpr static auto skAddress = TI2cSlaveDevice::skAddress;
 
-        using InjectDevices = FilterNullDevices<TypeList<I2CSlaveDeviceT, INTBPinT>>;
+        using InjectDevices = FilterNullDevices<TypeList<I2cSlaveDeviceT, INTBPinT>>;
 
     private:
-        [[no_unique_address]] DeviceRef<I2CSlaveDeviceT>    m_i2c;
-        ConditionalGPIODigitalInDriverT<INTBPinT>           m_intb_pin;
-        valle::app::LDC161XSensorModuleI2CInterfaceCallback m_callback;
+        [[no_unique_address]] DeviceRef<I2cSlaveDeviceT>    m_i2c;
+        ConditionalGpioDigitalInDriverT<INTBPinT>           m_intb_pin;
+        valle::app::LDC161XSensorModuleI2cInterfaceCallback m_callback;
 
         // --- Persistent Memory for DMA ---
         // These must live in the class so DMA can access them after the function returns
@@ -42,15 +42,15 @@ namespace valle::platform::app
 
         // --- Command Queue State ---
         // The CommandBuffer array must stay alive while the I2C ISR is processing it
-        I2CCommandBuffer<2> m_read_commands;
-        I2CCommandBuffer<1> m_write_commands;
+        I2cCommandBuffer<2> m_read_commands;
+        I2cCommandBuffer<1> m_write_commands;
 
     public:
-        LDC161XSensorModuleI2CInterface() = delete;
+        LDC161XSensorModuleI2cInterface() = delete;
 
         template <typename... TArgs>
-        explicit LDC161XSensorModuleI2CInterface(TArgs&&... args)
-            : m_i2c(extract_device_ref<true, I2CSlaveDeviceT>(std::forward<TArgs>(args)...))
+        explicit LDC161XSensorModuleI2cInterface(TArgs&&... args)
+            : m_i2c(extract_device_ref<true, I2cSlaveDeviceT>(std::forward<TArgs>(args)...))
             , m_intb_pin(extract_device_ref<skHasINTBPin, INTBPinT>(std::forward<TArgs>(args)...))
         {
         }
@@ -64,14 +64,14 @@ namespace valle::platform::app
 
             if constexpr (skHasINTBPin)
             {
-                if (!m_intb_pin.init(GPIODigitalInConfig{
-                        .pull = GPIOPullMode::kNoPull,
+                if (!m_intb_pin.init(GpioDigitalInConfig{
+                        .pull = GpioPullMode::kNoPull,
                         .interrupt =
-                            GPIODigitalInInterruptConfig{
+                            GpioDigitalInInterruptConfig{
                                 .priority = config.intb_interrupt_priority,
-                                .trigger  = GPIOInputInterruptTrigger::kIntFallingEdge,  // INTB is
+                                .trigger  = GpioInputInterruptTrigger::kIntFallingEdge,  // INTB is
                                                                                          // active low
-                                .action = GPIOInputInterruptAction::kInterrupt,
+                                .action = GpioInputInterruptAction::kInterrupt,
                             },
                         .inverted = false,
                     }))
@@ -83,7 +83,7 @@ namespace valle::platform::app
             return true;
         }
 
-        void set_async_callback_impl(valle::app::LDC161XSensorModuleI2CInterfaceCallback&& callback)
+        void set_async_callback_impl(valle::app::LDC161XSensorModuleI2cInterfaceCallback&& callback)
         {
             m_callback = std::move(callback);
         }
@@ -106,9 +106,9 @@ namespace valle::platform::app
             prepare_write<tkWriteBytes>(write_data);
 
             // Submit
-            const I2CBlockingTransactionError error = m_i2c->submit_transaction_blocking(m_write_commands, timeout_ms);
+            const I2cBlockingTransactionError error = m_i2c->submit_transaction_blocking(m_write_commands, timeout_ms);
 
-            return error == I2CBlockingTransactionError::kNone;
+            return error == I2cBlockingTransactionError::kNone;
         }
 
         template <uint8_t tkReadBytes>
@@ -125,10 +125,10 @@ namespace valle::platform::app
             prepare_read<tkReadBytes>(reg);
 
             // Submit
-            const I2CBlockingTransactionError error = m_i2c->submit_transaction_blocking(m_read_commands, timeout_ms);
+            const I2cBlockingTransactionError error = m_i2c->submit_transaction_blocking(m_read_commands, timeout_ms);
 
             // If successful, copy the persistent RX buffer back to the user's output
-            if (error == I2CBlockingTransactionError::kNone)
+            if (error == I2cBlockingTransactionError::kNone)
             {
                 // Copy the persistent RX buffer back to the user's output
                 std::copy(m_reg_rx_buffer.begin(), m_reg_rx_buffer.begin() + tkReadBytes, data_out.begin());
@@ -152,20 +152,20 @@ namespace valle::platform::app
             // Submit
             return m_i2c->submit_transaction(
                 m_write_commands,
-                [this](I2CCallbackType status)
+                [this](I2cCallbackType status)
                 {
                     if (m_callback)
                     {
                         switch (status)
                         {
-                            case I2CCallbackType::kComplete:
-                                m_callback(valle::app::LDC161XSensorModuleI2CInterfaceCallbackStatus::kComplete);
+                            case I2cCallbackType::kComplete:
+                                m_callback(valle::app::LDC161XSensorModuleI2cInterfaceCallbackStatus::kComplete);
                                 break;
-                            case I2CCallbackType::kAborted:
-                                m_callback(valle::app::LDC161XSensorModuleI2CInterfaceCallbackStatus::kAborted);
+                            case I2cCallbackType::kAborted:
+                                m_callback(valle::app::LDC161XSensorModuleI2cInterfaceCallbackStatus::kAborted);
                                 break;
-                            case I2CCallbackType::kError:
-                                m_callback(valle::app::LDC161XSensorModuleI2CInterfaceCallbackStatus::kError);
+                            case I2cCallbackType::kError:
+                                m_callback(valle::app::LDC161XSensorModuleI2cInterfaceCallbackStatus::kError);
                                 break;
                         }
                     }
@@ -186,20 +186,20 @@ namespace valle::platform::app
             // Submit
             return m_i2c->submit_transaction(
                 m_read_commands,
-                [this](I2CCallbackType status)
+                [this](I2cCallbackType status)
                 {
                     if (m_callback)
                     {
                         switch (status)
                         {
-                            case I2CCallbackType::kComplete:
-                                m_callback(valle::app::LDC161XSensorModuleI2CInterfaceCallbackStatus::kComplete);
+                            case I2cCallbackType::kComplete:
+                                m_callback(valle::app::LDC161XSensorModuleI2cInterfaceCallbackStatus::kComplete);
                                 break;
-                            case I2CCallbackType::kAborted:
-                                m_callback(valle::app::LDC161XSensorModuleI2CInterfaceCallbackStatus::kAborted);
+                            case I2cCallbackType::kAborted:
+                                m_callback(valle::app::LDC161XSensorModuleI2cInterfaceCallbackStatus::kAborted);
                                 break;
-                            case I2CCallbackType::kError:
-                                m_callback(valle::app::LDC161XSensorModuleI2CInterfaceCallbackStatus::kError);
+                            case I2cCallbackType::kError:
+                                m_callback(valle::app::LDC161XSensorModuleI2cInterfaceCallbackStatus::kError);
                                 break;
                         }
                     }
@@ -228,7 +228,7 @@ namespace valle::platform::app
 
             // Build the command using the persistent class command array and TX buffer
             m_write_commands =
-                I2CTransactionGenerator<>::begin().write(std::span(m_reg_tx_buffer.data(), tkWriteBytes)).build();
+                I2cTransactionGenerator<>::begin().write(std::span(m_reg_tx_buffer.data(), tkWriteBytes)).build();
         }
 
         template <uint8_t tkReadBytes>
@@ -241,7 +241,7 @@ namespace valle::platform::app
             m_reg_tx_buffer[0] = static_cast<std::byte>(reg);
 
             // Build the command using persistent arrays for both commands and data
-            m_read_commands = I2CTransactionGenerator<>::begin()
+            m_read_commands = I2cTransactionGenerator<>::begin()
                                   .write_restart(std::span(m_reg_tx_buffer.data(), 1))
                                   .read(std::span(m_reg_rx_buffer.data(), tkReadBytes))
                                   .build();
@@ -251,12 +251,12 @@ namespace valle::platform::app
     template <uint8_t tkNumChannels>
         requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
     using LDC161XSensorModuleConfig =
-        valle::app::LDC161XSensorModuleConfigX<LDC161XSensorModuleI2CInterfaceConfig, tkNumChannels>;
+        valle::app::LDC161XSensorModuleConfigX<LDC161XSensorModuleI2cInterfaceConfig, tkNumChannels>;
 
-    template <typename TI2CSlaveDevice, uint8_t tkNumChannels, typename TINTBPin = GPIONullPinDevice>
+    template <typename TI2cSlaveDevice, uint8_t tkNumChannels, typename TINTBPin = GpioNullPinDevice>
         requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
     using LDC161XSensorModule =
-        valle::app::LDC161XSensorModuleX<LDC161XSensorModuleI2CInterface<TI2CSlaveDevice, tkNumChannels, TINTBPin>,
+        valle::app::LDC161XSensorModuleX<LDC161XSensorModuleI2cInterface<TI2cSlaveDevice, tkNumChannels, TINTBPin>,
                                          tkNumChannels>;
 
 }  // namespace valle::platform::app

@@ -4,19 +4,19 @@
 
 namespace valle::app
 {
-    constexpr auto kLoggerUARTID = valle::platform::UARTControllerID::kLPUART1;
-    struct UARTControllerCTConfig : valle::platform::UARTControllerCTDefaultConfig<kLoggerUARTID>
+    constexpr auto kLoggerUartId = valle::platform::UartPeripheralId::kLPUart1;
+    struct UartControllerCTConfig : valle::platform::UartControllerCTDefaultConfig<kLoggerUartId>
     {
-        using DMAChannelTxT = valle::platform::DMA1Channel1Device;
+        using DmaChannelTxT = valle::platform::Dma1Channel1Device;
     };
-    static constexpr UARTControllerCTConfig kLoggerUARTCTConfig{};
+    static constexpr UartControllerCTConfig kLoggerUartCTConfig{};
 
 }  // namespace valle::app
 
-VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(valle::app::kLoggerUARTID, valle::app::kLoggerUARTCTConfig);
+VALLE_DEFINE_UART_CONTROLLER_CT_CONFIG(valle::app::kLoggerUartId, valle::app::kLoggerUartCTConfig);
 
 namespace valle::app
 {
-    using LoggerUARTControllerT = valle::platform::UARTControllerDevice<kLoggerUARTID>;
-    using UARTLoggerT           = valle::platform::UARTLogger<LoggerUARTControllerT>;
+    using LoggerUartControllerT = valle::platform::UartControllerDevice<kLoggerUartId>;
+    using UartLoggerT           = valle::platform::UartLogger<LoggerUartControllerT>;
 }  // namespace valle::app

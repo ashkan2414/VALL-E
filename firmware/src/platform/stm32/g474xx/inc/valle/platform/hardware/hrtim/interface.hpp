@@ -10,20 +10,20 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class HRTIMFaultSource : uint32_t
+    enum class HrtimFaultSource : uint32_t
     {
-        kDigitalInput = LL_HRTIM_FLT_SRC_DIGITALINPUT,
-        kInternal     = LL_HRTIM_FLT_SRC_INTERNAL,
-        kEEVInput     = LL_HRTIM_FLT_SRC_EEVINPUT,
+        kDigitalInput       = LL_HRTIM_FLT_SRC_DIGITALINPUT,
+        kInternal           = LL_HRTIM_FLT_SRC_INTERNAL,
+        kExternalEventInput = LL_HRTIM_FLT_SRC_EEVINPUT,
     };
 
-    enum class HRTIMFaultPolarity : uint32_t
+    enum class HrtimFaultPolarity : uint32_t
     {
         kLow  = LL_HRTIM_FLT_POLARITY_LOW,
         kHigh = LL_HRTIM_FLT_POLARITY_HIGH,
     };
 
-    enum class HRTIMFaultFilter : uint32_t
+    enum class HrtimFaultFilter : uint32_t
     {
         kNone     = LL_HRTIM_FLT_FILTER_NONE,
         kFilter1  = LL_HRTIM_FLT_FILTER_1,
@@ -43,7 +43,7 @@ namespace valle::platform
         kFilter15 = LL_HRTIM_FLT_FILTER_15
     };
 
-    enum class HRTIMFaultPrescaler : uint32_t
+    enum class HrtimFaultPrescaler : uint32_t
     {
         kDiv1 = LL_HRTIM_FLT_PRESCALER_DIV1,
         kDiv2 = LL_HRTIM_FLT_PRESCALER_DIV2,
@@ -51,33 +51,33 @@ namespace valle::platform
         kDiv8 = LL_HRTIM_FLT_PRESCALER_DIV8,
     };
 
-    enum class HRTIMFaultBlankingSource : uint32_t
+    enum class HrtimFaultBlankingSource : uint32_t
     {
         kRSTAligned = LL_HRTIM_FLT_BLANKING_RSTALIGNED,
         kMoving     = LL_HRTIM_FLT_BLANKING_MOVING,
     };
 
-    enum class HRTIMFaultResetMode : uint32_t
+    enum class HrtimFaultResetMode : uint32_t
     {
         kUnconditional = LL_HRTIM_FLT_COUNTERRST_UNCONDITIONAL,
         kConditional   = LL_HRTIM_FLT_COUNTERRST_CONDITIONAL
     };
 
-    enum class HRTIMEEVSource : uint32_t
+    enum class HrtimExternalEventSource : uint32_t
     {
         kSource1 = 0x00000000U,
-        kSource2 = HRTIM_EECR1_EE1SRC_0,
-        kSource3 = HRTIM_EECR1_EE1SRC_1,
-        kSource4 = HRTIM_EECR1_EE1SRC_1 | HRTIM_EECR1_EE1SRC_0,
+        kSource2 = Hrtim_EECR1_EE1SRC_0,
+        kSource3 = Hrtim_EECR1_EE1SRC_1,
+        kSource4 = Hrtim_EECR1_EE1SRC_1 | Hrtim_EECR1_EE1SRC_0,
     };
 
-    enum class HRTIMEEVPolarity : uint32_t
+    enum class HrtimExternalEventPolarity : uint32_t
     {
         kHigh = LL_HRTIM_EE_POLARITY_HIGH,
         kLow  = LL_HRTIM_EE_POLARITY_LOW,
     };
 
-    enum class HRTIMEEVSensitivity : uint32_t
+    enum class HrtimExternalEventSensitivity : uint32_t
     {
         kLevel       = LL_HRTIM_EE_SENSITIVITY_LEVEL,
         kRisingEdge  = LL_HRTIM_EE_SENSITIVITY_RISINGEDGE,
@@ -85,13 +85,13 @@ namespace valle::platform
         kBothEdges   = LL_HRTIM_EE_SENSITIVITY_BOTHEDGES
     };
 
-    enum class HRTIMEEVFastMode : uint32_t
+    enum class HrtimExternalEventFastMode : uint32_t
     {
         kDisable = LL_HRTIM_EE_FASTMODE_DISABLE,
         kEnable  = LL_HRTIM_EE_FASTMODE_ENABLE,
     };
 
-    enum class HRTIMEEVFilter : uint32_t
+    enum class HrtimExternalEventFilter : uint32_t
     {
         kNone     = LL_HRTIM_EE_FILTER_NONE,
         kFilter1  = LL_HRTIM_EE_FILTER_1,
@@ -111,7 +111,7 @@ namespace valle::platform
         kFilter15 = LL_HRTIM_EE_FILTER_15
     };
 
-    enum class HRTIMEEVPrescaler : uint32_t
+    enum class HrtimExternalEventPrescaler : uint32_t
     {
         kDiv1 = LL_HRTIM_EE_PRESCALER_DIV1,
         kDiv2 = LL_HRTIM_EE_PRESCALER_DIV2,
@@ -119,7 +119,7 @@ namespace valle::platform
         kDiv8 = LL_HRTIM_EE_PRESCALER_DIV8,
     };
 
-    enum class HRTIMTimerPrescaler : uint32_t
+    enum class HrtimTimerPrescaler : uint32_t
     {
         kMul32 = LL_HRTIM_PRESCALERRATIO_MUL32,
         kMul16 = LL_HRTIM_PRESCALERRATIO_MUL16,
@@ -131,7 +131,7 @@ namespace valle::platform
         kDiv4  = LL_HRTIM_PRESCALERRATIO_DIV4,
     };
 
-    enum class HRTIMTimerDeadtimePrescaler : uint32_t
+    enum class HrtimTimerDeadtimePrescaler : uint32_t
     {
         kMul8  = LL_HRTIM_DT_PRESCALER_MUL8,
         kMul4  = LL_HRTIM_DT_PRESCALER_MUL4,
@@ -143,27 +143,27 @@ namespace valle::platform
         kDiv16 = LL_HRTIM_DT_PRESCALER_DIV16,
     };
 
-    enum class HRTIMTimerCounterMode : uint32_t
+    enum class HrtimTimerCounterMode : uint32_t
     {
         kContinuous = LL_HRTIM_MODE_CONTINUOUS,
         kSingleShot = LL_HRTIM_MODE_SINGLESHOT,
         kBurst      = LL_HRTIM_MODE_RETRIGGERABLE,
     };
 
-    enum class HRTIMTimerCountingMode : uint32_t
+    enum class HrtimTimerCountingMode : uint32_t
     {
         kUp     = LL_HRTIM_COUNTING_MODE_UP,
         kUpDown = LL_HRTIM_COUNTING_MODE_UP_DOWN,
     };
 
-    enum class HRTIMTimerRolloverMode : uint32_t
+    enum class HrtimTimerRolloverMode : uint32_t
     {
         kPeriodReset = LL_HRTIM_ROLLOVER_MODE_BOTH,
         kReset       = LL_HRTIM_ROLLOVER_MODE_RST,
         kPeriod      = LL_HRTIM_ROLLOVER_MODE_PER,
     };
 
-    enum class HRTIMTimerCompareUnit : uint8_t
+    enum class HrtimTimerCompareUnit : uint8_t
     {
         kCompare1 = 1,
         kCompare2 = 2,
@@ -171,7 +171,7 @@ namespace valle::platform
         kCompare4 = 4
     };
 
-    enum class HRTIMTimerOutputSetSource : uint32_t
+    enum class HrtimTimerOutputSetSource : uint32_t
     {
         kNone                       = LL_HRTIM_OUTPUTSET_NONE,
         kResync                     = LL_HRTIM_OUTPUTSET_RESYNC,
@@ -252,7 +252,7 @@ namespace valle::platform
         kUpdate                     = LL_HRTIM_OUTPUTSET_UPDATE,
     };
 
-    enum class HRTIMTimerOutputResetSource : uint32_t
+    enum class HrtimTimerOutputResetSource : uint32_t
     {
         kNone                       = LL_HRTIM_OUTPUTRESET_NONE,
         kResync                     = LL_HRTIM_OUTPUTRESET_RESYNC,
@@ -333,25 +333,25 @@ namespace valle::platform
         kUpdate                     = LL_HRTIM_OUTPUTRESET_UPDATE,
     };
 
-    enum class HRTIMTimerOutputPolarity : uint32_t
+    enum class HrtimTimerOutputPolarity : uint32_t
     {
         kPositive = LL_HRTIM_OUT_POSITIVE_POLARITY,  /// Output active high
         kNegative = LL_HRTIM_OUT_NEGATIVE_POLARITY   /// Output active low
     };
 
-    enum class HRTIMTimerOutputIdleMode : uint32_t
+    enum class HrtimTimerOutputIdleMode : uint32_t
     {
-        kNoIdle = LL_HRTIM_OUT_NO_IDLE,          /// Never idle
-        kBurst  = LL_HRTIM_OUT_IDLE_WHEN_BURST,  /// Idle during burst mode
+        kNoIdle = LL_HRTIM_OUT_NO_IdLE,          /// Never idle
+        kBurst  = LL_HRTIM_OUT_IdLE_WHEN_BURST,  /// Idle during burst mode
     };
 
-    enum class HRTIMTimerOutputIdleLevel : uint32_t
+    enum class HrtimTimerOutputIdleLevel : uint32_t
     {
-        kInactive = LL_HRTIM_OUT_IDLELEVEL_INACTIVE,  /// Inactive when idle
-        kActive   = LL_HRTIM_OUT_IDLELEVEL_ACTIVE     /// Active when idle
+        kInactive = LL_HRTIM_OUT_IdLELEVEL_INACTIVE,  /// Inactive when idle
+        kActive   = LL_HRTIM_OUT_IdLELEVEL_ACTIVE     /// Active when idle
     };
 
-    enum class HRTIMTimerOutputFaultState : uint32_t
+    enum class HrtimTimerOutputFaultState : uint32_t
     {
         kInactive = LL_HRTIM_OUT_FAULTSTATE_INACTIVE,   /// Output inactive on fault
         kActive   = LL_HRTIM_OUT_FAULTSTATE_ACTIVE,     /// Output active on fault
@@ -359,116 +359,116 @@ namespace valle::platform
         kHighZ    = LL_HRTIM_OUT_FAULTSTATE_HIGHZ       /// High impedance on fault
     };
 
-    enum class HRTIMTimerOutputChopperMode : uint32_t
+    enum class HrtimTimerOutputChopperMode : uint32_t
     {
         kDisabled = LL_HRTIM_OUT_CHOPPERMODE_DISABLED,
         kEnabled  = LL_HRTIM_OUT_CHOPPERMODE_ENABLED,
     };
 
-    enum class HRTIMTimerOutputBurstModeEntryMode : uint32_t
+    enum class HrtimTimerOutputBurstModeEntryMode : uint32_t
     {
         kRegular = LL_HRTIM_OUT_BM_ENTRYMODE_REGULAR,
         kDelayed = LL_HRTIM_OUT_BM_ENTRYMODE_DELAYED,
     };
 
-    enum class HRTIMTimerMasterADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerMasterAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare1 = LL_HRTIM_ADCTRIG_SRC13_MCMP1,
-        kCompare2 = LL_HRTIM_ADCTRIG_SRC13_MCMP2,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_MCMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_MCMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_MPER,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare1       = LL_HRTIM_ADCTRIG_SRC13_MCMP1,
+        kCompare2       = LL_HRTIM_ADCTRIG_SRC13_MCMP2,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_MCMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_MCMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_MPER,
     };
 
-    enum class HRTIMTimerAADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerAAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_TIMACMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_TIMACMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_TIMAPER,
-        kReset    = LL_HRTIM_ADCTRIG_SRC13_TIMARST,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_TIMACMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_TIMACMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_TIMAPER,
+        kReset          = LL_HRTIM_ADCTRIG_SRC13_TIMARST,
     };
 
-    enum class HRTIMTimerBADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerBAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_TIMBCMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_TIMBCMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_TIMBPER,
-        kReset    = LL_HRTIM_ADCTRIG_SRC13_TIMBRST,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_TIMBCMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_TIMBCMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_TIMBPER,
+        kReset          = LL_HRTIM_ADCTRIG_SRC13_TIMBRST,
     };
 
-    enum class HRTIMTimerCADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerCAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_TIMCCMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_TIMCCMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_TIMCPER,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_TIMCCMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_TIMCCMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_TIMCPER,
     };
 
-    enum class HRTIMTimerDADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerDAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_TIMDCMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_TIMDCMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_TIMDPER,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_TIMDCMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_TIMDCMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_TIMDPER,
     };
 
-    enum class HRTIMTimerEADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerEAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_TIMECMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_TIMECMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_TIMEPER,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_TIMECMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_TIMECMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_TIMEPER,
     };
 
-    enum class HRTIMTimerFADCTriggerSourceID13 : uint32_t
+    enum class HrtimTimerFAdcTriggerSourceId13 : uint32_t
     {
-        kNone     = LL_HRTIM_ADCTRIG_SRC13_NONE,
-        kEEV1     = LL_HRTIM_ADCTRIG_SRC13_EEV1,
-        kEEV2     = LL_HRTIM_ADCTRIG_SRC13_EEV2,
-        kEEV3     = LL_HRTIM_ADCTRIG_SRC13_EEV3,
-        kEEV4     = LL_HRTIM_ADCTRIG_SRC13_EEV4,
-        kEEV5     = LL_HRTIM_ADCTRIG_SRC13_EEV5,
-        kCompare2 = LL_HRTIM_ADCTRIG_SRC13_TIMFCMP2,
-        kCompare3 = LL_HRTIM_ADCTRIG_SRC13_TIMFCMP3,
-        kCompare4 = LL_HRTIM_ADCTRIG_SRC13_TIMFCMP4,
-        kPeriod   = LL_HRTIM_ADCTRIG_SRC13_TIMFPER,
-        kReset    = LL_HRTIM_ADCTRIG_SRC13_TIMFRST,
+        kNone           = LL_HRTIM_ADCTRIG_SRC13_NONE,
+        kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC13_EEV1,
+        kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC13_EEV2,
+        kExternalEvent3 = LL_HRTIM_ADCTRIG_SRC13_EEV3,
+        kExternalEvent4 = LL_HRTIM_ADCTRIG_SRC13_EEV4,
+        kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC13_EEV5,
+        kCompare2       = LL_HRTIM_ADCTRIG_SRC13_TIMFCMP2,
+        kCompare3       = LL_HRTIM_ADCTRIG_SRC13_TIMFCMP3,
+        kCompare4       = LL_HRTIM_ADCTRIG_SRC13_TIMFCMP4,
+        kPeriod         = LL_HRTIM_ADCTRIG_SRC13_TIMFPER,
+        kReset          = LL_HRTIM_ADCTRIG_SRC13_TIMFRST,
     };
 
-    enum class HRTIMTimerMasterADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerMasterAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kCompare1        = LL_HRTIM_ADCTRIG_SRC24_MCMP1,
@@ -483,7 +483,7 @@ namespace valle::platform
         kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC24_EEV10,
     };
 
-    enum class HRTIMTimerAADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerAAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
@@ -496,7 +496,7 @@ namespace valle::platform
         kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMAPER,
     };
 
-    enum class HRTIMTimerBADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerBAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
@@ -509,7 +509,7 @@ namespace valle::platform
         kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMBPER,
     };
 
-    enum class HRTIMTimerCADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerCAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
@@ -523,7 +523,7 @@ namespace valle::platform
         kReset           = LL_HRTIM_ADCTRIG_SRC24_TIMCRST,
     };
 
-    enum class HRTIMTimerDADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerDAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
@@ -537,7 +537,7 @@ namespace valle::platform
         kReset           = LL_HRTIM_ADCTRIG_SRC24_TIMDRST,
     };
 
-    enum class HRTIMTimerEADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerEAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
@@ -551,7 +551,7 @@ namespace valle::platform
         kReset           = LL_HRTIM_ADCTRIG_SRC24_TIMERST,
     };
 
-    enum class HRTIMTimerFADCTriggerSourceID24 : uint32_t
+    enum class HrtimTimerFAdcTriggerSourceId24 : uint32_t
     {
         kNone            = LL_HRTIM_ADCTRIG_SRC24_NONE,
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC24_EEV6,
@@ -565,7 +565,7 @@ namespace valle::platform
         kPeriod          = LL_HRTIM_ADCTRIG_SRC24_TIMFPER,
     };
 
-    enum class HRTIMTimerMasterADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerMasterAdcTriggerSourceId579 : uint32_t
     {
         kCompare1       = LL_HRTIM_ADCTRIG_SRC579_MCMP1,
         kCompare2       = LL_HRTIM_ADCTRIG_SRC579_MCMP2,
@@ -579,7 +579,7 @@ namespace valle::platform
         kExternalEvent5 = LL_HRTIM_ADCTRIG_SRC579_EEV5,
     };
 
-    enum class HRTIMTimerAADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerAAdcTriggerSourceId579 : uint32_t
     {
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
@@ -592,7 +592,7 @@ namespace valle::platform
         kReset          = LL_HRTIM_ADCTRIG_SRC579_TIMA_RST,
     };
 
-    enum class HRTIMTimerBADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerBAdcTriggerSourceId579 : uint32_t
     {
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
@@ -605,7 +605,7 @@ namespace valle::platform
         kReset          = LL_HRTIM_ADCTRIG_SRC579_TIMB_RST,
     };
 
-    enum class HRTIMTimerCADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerCAdcTriggerSourceId579 : uint32_t
     {
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
@@ -617,7 +617,7 @@ namespace valle::platform
         kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMC_PER,
     };
 
-    enum class HRTIMTimerDADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerDAdcTriggerSourceId579 : uint32_t
     {
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
@@ -629,7 +629,7 @@ namespace valle::platform
         kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIMD_PER,
     };
 
-    enum class HRTIMTimerEADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerEAdcTriggerSourceId579 : uint32_t
     {
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
@@ -641,7 +641,7 @@ namespace valle::platform
         kPeriod         = LL_HRTIM_ADCTRIG_SRC579_TIME_PER,
     };
 
-    enum class HRTIMTimerFADCTriggerSourceID579 : uint32_t
+    enum class HrtimTimerFAdcTriggerSourceId579 : uint32_t
     {
         kExternalEvent1 = LL_HRTIM_ADCTRIG_SRC579_EEV1,
         kExternalEvent2 = LL_HRTIM_ADCTRIG_SRC579_EEV2,
@@ -655,7 +655,7 @@ namespace valle::platform
         kReset          = LL_HRTIM_ADCTRIG_SRC579_TIMF_RST,
     };
 
-    enum class HRTIMTimerMasterADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerMasterAdcTriggerSourceId6810 : uint32_t
     {
         kMasterCompare1  = LL_HRTIM_ADCTRIG_SRC6810_MCMP1,
         kMasterCompare2  = LL_HRTIM_ADCTRIG_SRC6810_MCMP2,
@@ -669,7 +669,7 @@ namespace valle::platform
         kExternalEvent10 = LL_HRTIM_ADCTRIG_SRC6810_EEV10,
     };
 
-    enum class HRTIMTimerAADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerAAdcTriggerSourceId6810 : uint32_t
     {
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
         kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
@@ -681,7 +681,7 @@ namespace valle::platform
         kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMA_PER,
     };
 
-    enum class HRTIMTimerBADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerBAdcTriggerSourceId6810 : uint32_t
     {
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
         kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
@@ -693,7 +693,7 @@ namespace valle::platform
         kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMB_PER,
     };
 
-    enum class HRTIMTimerCADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerCAdcTriggerSourceId6810 : uint32_t
     {
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
         kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
@@ -706,7 +706,7 @@ namespace valle::platform
         kReset           = LL_HRTIM_ADCTRIG_SRC6810_TIMC_RST,
     };
 
-    enum class HRTIMTimerDADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerDAdcTriggerSourceId6810 : uint32_t
     {
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
         kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
@@ -719,7 +719,7 @@ namespace valle::platform
         kReset           = LL_HRTIM_ADCTRIG_SRC6810_TIMD_RST,
     };
 
-    enum class HRTIMTimerEADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerEAdcTriggerSourceId6810 : uint32_t
     {
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
         kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
@@ -732,7 +732,7 @@ namespace valle::platform
         kReset           = LL_HRTIM_ADCTRIG_SRC6810_TIME_RST,
     };
 
-    enum class HRTIMTimerFADCTriggerSourceID6810 : uint32_t
+    enum class HrtimTimerFAdcTriggerSourceId6810 : uint32_t
     {
         kExternalEvent6  = LL_HRTIM_ADCTRIG_SRC6810_EEV6,
         kExternalEvent7  = LL_HRTIM_ADCTRIG_SRC6810_EEV7,
@@ -745,105 +745,107 @@ namespace valle::platform
         kPeriod          = LL_HRTIM_ADCTRIG_SRC6810_TIMF_PER,
     };
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID13 = std::conditional_t<
-        tkTimerID == HRTIMTimerID::kA,
-        HRTIMTimerAADCTriggerSourceID13,
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId13 = std::conditional_t<
+        tkTimerId == HrtimTimerId::kTimerA,
+        HrtimTimerAAdcTriggerSourceId13,
         std::conditional_t<
-            tkTimerID == HRTIMTimerID::kB,
-            HRTIMTimerBADCTriggerSourceID13,
-            std::conditional_t<tkTimerID == HRTIMTimerID::kC,
-                               HRTIMTimerCADCTriggerSourceID13,
-                               std::conditional_t<tkTimerID == HRTIMTimerID::kD,
-                                                  HRTIMTimerDADCTriggerSourceID13,
-                                                  std::conditional_t<tkTimerID == HRTIMTimerID::kE,
-                                                                     HRTIMTimerEADCTriggerSourceID13,
-                                                                     std::conditional_t<tkTimerID == HRTIMTimerID::kF,
-                                                                                        HRTIMTimerFADCTriggerSourceID13,
-                                                                                        void>>>>>>;
-
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID24 = std::conditional_t<
-        tkTimerID == HRTIMTimerID::kA,
-        HRTIMTimerAADCTriggerSourceID24,
-        std::conditional_t<
-            tkTimerID == HRTIMTimerID::kB,
-            HRTIMTimerBADCTriggerSourceID24,
-            std::conditional_t<tkTimerID == HRTIMTimerID::kC,
-                               HRTIMTimerCADCTriggerSourceID24,
-                               std::conditional_t<tkTimerID == HRTIMTimerID::kD,
-                                                  HRTIMTimerDADCTriggerSourceID24,
-                                                  std::conditional_t<tkTimerID == HRTIMTimerID::kE,
-                                                                     HRTIMTimerEADCTriggerSourceID24,
-                                                                     std::conditional_t<tkTimerID == HRTIMTimerID::kF,
-                                                                                        HRTIMTimerFADCTriggerSourceID24,
-                                                                                        void>>>>>>;
-
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID579 = std::conditional_t<
-        tkTimerID == HRTIMTimerID::kA,
-        HRTIMTimerAADCTriggerSourceID579,
-        std::conditional_t<
-            tkTimerID == HRTIMTimerID::kB,
-            HRTIMTimerBADCTriggerSourceID579,
+            tkTimerId == HrtimTimerId::kTimerB,
+            HrtimTimerBAdcTriggerSourceId13,
             std::conditional_t<
-                tkTimerID == HRTIMTimerID::kC,
-                HRTIMTimerCADCTriggerSourceID579,
-                std::conditional_t<
-                    tkTimerID == HRTIMTimerID::kD,
-                    HRTIMTimerDADCTriggerSourceID579,
-                    std::conditional_t<
-                        tkTimerID == HRTIMTimerID::kE,
-                        HRTIMTimerEADCTriggerSourceID579,
-                        std::conditional_t<tkTimerID == HRTIMTimerID::kF, HRTIMTimerFADCTriggerSourceID579, void>>>>>>;
+                tkTimerId == HrtimTimerId::kTimerC,
+                HrtimTimerCAdcTriggerSourceId13,
+                std::conditional_t<tkTimerId == HrtimTimerId::kTimerD,
+                                   HrtimTimerDAdcTriggerSourceId13,
+                                   std::conditional_t<tkTimerId == HrtimTimerId::kTimerE,
+                                                      HrtimTimerEAdcTriggerSourceId13,
+                                                      std::conditional_t<tkTimerId == HrtimTimerId::kTimerF,
+                                                                         HrtimTimerFAdcTriggerSourceId13,
+                                                                         void>>>>>>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID6810 = std::conditional_t<
-        tkTimerID == HRTIMTimerID::kA,
-        HRTIMTimerAADCTriggerSourceID6810,
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId24 = std::conditional_t<
+        tkTimerId == HrtimTimerId::kTimerA,
+        HrtimTimerAAdcTriggerSourceId24,
         std::conditional_t<
-            tkTimerID == HRTIMTimerID::kB,
-            HRTIMTimerBADCTriggerSourceID6810,
+            tkTimerId == HrtimTimerId::kTimerB,
+            HrtimTimerBAdcTriggerSourceId24,
             std::conditional_t<
-                tkTimerID == HRTIMTimerID::kC,
-                HRTIMTimerCADCTriggerSourceID6810,
-                std::conditional_t<
-                    tkTimerID == HRTIMTimerID::kD,
-                    HRTIMTimerDADCTriggerSourceID6810,
-                    std::conditional_t<
-                        tkTimerID == HRTIMTimerID::kE,
-                        HRTIMTimerEADCTriggerSourceID6810,
-                        std::conditional_t<tkTimerID == HRTIMTimerID::kF, HRTIMTimerFADCTriggerSourceID6810, void>>>>>>;
+                tkTimerId == HrtimTimerId::kTimerC,
+                HrtimTimerCAdcTriggerSourceId24,
+                std::conditional_t<tkTimerId == HrtimTimerId::kTimerD,
+                                   HrtimTimerDAdcTriggerSourceId24,
+                                   std::conditional_t<tkTimerId == HrtimTimerId::kTimerE,
+                                                      HrtimTimerEAdcTriggerSourceId24,
+                                                      std::conditional_t<tkTimerId == HrtimTimerId::kTimerF,
+                                                                         HrtimTimerFAdcTriggerSourceId24,
+                                                                         void>>>>>>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID1 = HRTIMTimerADCTriggerSourceID13<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId579 = std::conditional_t<
+        tkTimerId == HrtimTimerId::kTimerA,
+        HrtimTimerAAdcTriggerSourceId579,
+        std::conditional_t<
+            tkTimerId == HrtimTimerId::kTimerB,
+            HrtimTimerBAdcTriggerSourceId579,
+            std::conditional_t<
+                tkTimerId == HrtimTimerId::kTimerC,
+                HrtimTimerCAdcTriggerSourceId579,
+                std::conditional_t<tkTimerId == HrtimTimerId::kTimerD,
+                                   HrtimTimerDAdcTriggerSourceId579,
+                                   std::conditional_t<tkTimerId == HrtimTimerId::kTimerE,
+                                                      HrtimTimerEAdcTriggerSourceId579,
+                                                      std::conditional_t<tkTimerId == HrtimTimerId::kTimerF,
+                                                                         HrtimTimerFAdcTriggerSourceId579,
+                                                                         void>>>>>>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID2 = HRTIMTimerADCTriggerSourceID24<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId6810 = std::conditional_t<
+        tkTimerId == HrtimTimerId::kTimerA,
+        HrtimTimerAAdcTriggerSourceId6810,
+        std::conditional_t<
+            tkTimerId == HrtimTimerId::kTimerB,
+            HrtimTimerBAdcTriggerSourceId6810,
+            std::conditional_t<
+                tkTimerId == HrtimTimerId::kTimerC,
+                HrtimTimerCAdcTriggerSourceId6810,
+                std::conditional_t<tkTimerId == HrtimTimerId::kTimerD,
+                                   HrtimTimerDAdcTriggerSourceId6810,
+                                   std::conditional_t<tkTimerId == HrtimTimerId::kTimerE,
+                                                      HrtimTimerEAdcTriggerSourceId6810,
+                                                      std::conditional_t<tkTimerId == HrtimTimerId::kTimerF,
+                                                                         HrtimTimerFAdcTriggerSourceId6810,
+                                                                         void>>>>>>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID3 = HRTIMTimerADCTriggerSourceID13<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId1 = HrtimTimerAdcTriggerSourceId13<tkTimerId>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID4 = HRTIMTimerADCTriggerSourceID24<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId2 = HrtimTimerAdcTriggerSourceId24<tkTimerId>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID5 = HRTIMTimerADCTriggerSourceID579<tkTimerID>;
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID6 = HRTIMTimerADCTriggerSourceID6810<tkTimerID>;
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID7 = HRTIMTimerADCTriggerSourceID579<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId3 = HrtimTimerAdcTriggerSourceId13<tkTimerId>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID8 = HRTIMTimerADCTriggerSourceID6810<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId4 = HrtimTimerAdcTriggerSourceId24<tkTimerId>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID9 = HRTIMTimerADCTriggerSourceID579<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId5 = HrtimTimerAdcTriggerSourceId579<tkTimerId>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId6 = HrtimTimerAdcTriggerSourceId6810<tkTimerId>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId7 = HrtimTimerAdcTriggerSourceId579<tkTimerId>;
 
-    template <HRTIMTimerID tkTimerID>
-    using HRTIMTimerADCTriggerSourceID10 = HRTIMTimerADCTriggerSourceID6810<tkTimerID>;
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId8 = HrtimTimerAdcTriggerSourceId6810<tkTimerId>;
 
-    enum class HRTIMTimerADCTriggerID : uint32_t
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId9 = HrtimTimerAdcTriggerSourceId579<tkTimerId>;
+
+    template <HrtimTimerId tkTimerId>
+    using HrtimTimerAdcTriggerSourceId10 = HrtimTimerAdcTriggerSourceId6810<tkTimerId>;
+
+    enum class HrtimTimerAdcTriggerId : uint32_t
     {
         kTrig1  = LL_HRTIM_ADCTRIG_1,
         kTrig2  = LL_HRTIM_ADCTRIG_2,
@@ -857,39 +859,39 @@ namespace valle::platform
         kTrig10 = LL_HRTIM_ADCTRIG_10,
     };
 
-    template <HRTIMTimerID tkTimerID, HRTIMTimerADCTriggerID tkTriggerID>
-    using HRTIMTimerADCTriggerSourceID = std::conditional_t<
-        tkTriggerID == HRTIMTimerADCTriggerID::kTrig1,
-        HRTIMTimerADCTriggerSourceID1<tkTimerID>,
+    template <HrtimTimerId tkTimerId, HrtimTimerAdcTriggerId tkTriggerId>
+    using HrtimTimerAdcTriggerSourceId = std::conditional_t<
+        tkTriggerId == HrtimTimerAdcTriggerId::kTrig1,
+        HrtimTimerAdcTriggerSourceId1<tkTimerId>,
         std::conditional_t<
-            tkTriggerID == HRTIMTimerADCTriggerID::kTrig2,
-            HRTIMTimerADCTriggerSourceID2<tkTimerID>,
+            tkTriggerId == HrtimTimerAdcTriggerId::kTrig2,
+            HrtimTimerAdcTriggerSourceId2<tkTimerId>,
             std::conditional_t<
-                tkTriggerID == HRTIMTimerADCTriggerID::kTrig3,
-                HRTIMTimerADCTriggerSourceID3<tkTimerID>,
+                tkTriggerId == HrtimTimerAdcTriggerId::kTrig3,
+                HrtimTimerAdcTriggerSourceId3<tkTimerId>,
                 std::conditional_t<
-                    tkTriggerID == HRTIMTimerADCTriggerID::kTrig4,
-                    HRTIMTimerADCTriggerSourceID4<tkTimerID>,
+                    tkTriggerId == HrtimTimerAdcTriggerId::kTrig4,
+                    HrtimTimerAdcTriggerSourceId4<tkTimerId>,
                     std::conditional_t<
-                        tkTriggerID == HRTIMTimerADCTriggerID::kTrig5,
-                        HRTIMTimerADCTriggerSourceID5<tkTimerID>,
+                        tkTriggerId == HrtimTimerAdcTriggerId::kTrig5,
+                        HrtimTimerAdcTriggerSourceId5<tkTimerId>,
                         std::conditional_t<
-                            tkTriggerID == HRTIMTimerADCTriggerID::kTrig6,
-                            HRTIMTimerADCTriggerSourceID6<tkTimerID>,
+                            tkTriggerId == HrtimTimerAdcTriggerId::kTrig6,
+                            HrtimTimerAdcTriggerSourceId6<tkTimerId>,
                             std::conditional_t<
-                                tkTriggerID == HRTIMTimerADCTriggerID::kTrig7,
-                                HRTIMTimerADCTriggerSourceID7<tkTimerID>,
+                                tkTriggerId == HrtimTimerAdcTriggerId::kTrig7,
+                                HrtimTimerAdcTriggerSourceId7<tkTimerId>,
                                 std::conditional_t<
-                                    tkTriggerID == HRTIMTimerADCTriggerID::kTrig8,
-                                    HRTIMTimerADCTriggerSourceID8<tkTimerID>,
+                                    tkTriggerId == HrtimTimerAdcTriggerId::kTrig8,
+                                    HrtimTimerAdcTriggerSourceId8<tkTimerId>,
                                     std::conditional_t<
-                                        tkTriggerID == HRTIMTimerADCTriggerID::kTrig9,
-                                        HRTIMTimerADCTriggerSourceID9<tkTimerID>,
-                                        std::conditional_t<tkTriggerID == HRTIMTimerADCTriggerID::kTrig10,
-                                                           HRTIMTimerADCTriggerSourceID10<tkTimerID>,
+                                        tkTriggerId == HrtimTimerAdcTriggerId::kTrig9,
+                                        HrtimTimerAdcTriggerSourceId9<tkTimerId>,
+                                        std::conditional_t<tkTriggerId == HrtimTimerAdcTriggerId::kTrig10,
+                                                           HrtimTimerAdcTriggerSourceId10<tkTimerId>,
                                                            void>>>>>>>>>>;
 
-    enum class HRTIMTimerADCRolloverMode : uint32_t
+    enum class HrtimTimerAdcRolloverMode : uint32_t
     {
         kPeriodReset = LL_HRTIM_ROLLOVER_MODE_BOTH,
         kReset       = LL_HRTIM_ROLLOVER_MODE_RST,
@@ -899,297 +901,297 @@ namespace valle::platform
     // ============================================================================
     // HARDWARE TRAITS
     // ============================================================================
-    template <HRTIMControllerID tkControllerID>
-    struct HRTIMControllerTraits;
+    template <HrtimPeripheralId tkPeripheralId>
+    struct HrtimControllerTraits;
 
     template <>
-    struct HRTIMControllerTraits<HRTIMControllerID::kHRTIM1>
+    struct HrtimControllerTraits<HrtimPeripheralId::kHrtim1>
     {
-        static inline HRTIM_TypeDef* const skInstance = HRTIM1;
+        static inline Hrtim_TypeDef* const skInstance = Hrtim1;
 
         static void enable_clock()
         {
-            LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_HRTIM1);
+            LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_HRTim1);
         }
     };
 
     // ---------------------------------------------------------------------------
     // HRTIM FAULT
     // ---------------------------------------------------------------------------
-    template <HRTIMControllerID tkControllerID, HRTIMFaultID tkFaultID>
-    struct HRTIMFaultTraits
+    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
+    struct HrtimFaultTraits
     {
     private:
         [[nodiscard]] static constexpr uint32_t get_ll_id()
         {
-            if constexpr (tkFaultID == HRTIMFaultID::kFault1)
+            if constexpr (tkFaultId == HrtimFaultId::kFault1)
             {
                 return LL_HRTIM_FAULT_1;
             }
-            else if constexpr (tkFaultID == HRTIMFaultID::kFault2)
+            else if constexpr (tkFaultId == HrtimFaultId::kFault2)
             {
                 return LL_HRTIM_FAULT_2;
             }
-            else if constexpr (tkFaultID == HRTIMFaultID::kFault3)
+            else if constexpr (tkFaultId == HrtimFaultId::kFault3)
             {
                 return LL_HRTIM_FAULT_3;
             }
-            else if constexpr (tkFaultID == HRTIMFaultID::kFault4)
+            else if constexpr (tkFaultId == HrtimFaultId::kFault4)
             {
                 return LL_HRTIM_FAULT_4;
             }
-            else if constexpr (tkFaultID == HRTIMFaultID::kFault5)
+            else if constexpr (tkFaultId == HrtimFaultId::kFault5)
             {
                 return LL_HRTIM_FAULT_5;
             }
-            else if constexpr (tkFaultID == HRTIMFaultID::kFault6)
+            else if constexpr (tkFaultId == HrtimFaultId::kFault6)
             {
                 return LL_HRTIM_FAULT_6;
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkFaultID>, "Invalid HRTIMFaultID");
+                static_assert(kAlwaysFalseV<tkFaultId>, "Invalid HrtimFaultId");
             }
         }
 
     public:
-        static constexpr uint32_t skLLID = get_ll_id();
+        static constexpr uint32_t skLLId = get_ll_id();
     };
 
     // ---------------------------------------------------------------------------
     // HRTIM EEV
     // ---------------------------------------------------------------------------
-    template <HRTIMControllerID tkControllerID, HRTIMEEVID tkEEVID>
-    struct HRTIMEEVTraits
+    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
+    struct HrtimExternalEventTraits
     {
     private:
         [[nodiscard]] static constexpr uint32_t get_ll_id()
         {
-            if constexpr (tkEEVID == HRTIMEEVID::kEEV1)
+            if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent1)
             {
                 return LL_HRTIM_EVENT_1;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV2)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent2)
             {
                 return LL_HRTIM_EVENT_2;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV3)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent3)
             {
                 return LL_HRTIM_EVENT_3;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV4)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent4)
             {
                 return LL_HRTIM_EVENT_4;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV5)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent5)
             {
                 return LL_HRTIM_EVENT_5;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV6)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent6)
             {
                 return LL_HRTIM_EVENT_6;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV7)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent7)
             {
                 return LL_HRTIM_EVENT_7;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV8)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent8)
             {
                 return LL_HRTIM_EVENT_8;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV9)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent9)
             {
                 return LL_HRTIM_EVENT_9;
             }
-            else if constexpr (tkEEVID == HRTIMEEVID::kEEV10)
+            else if constexpr (tkExternalEventId == HrtimExternalEventId::kExternalEvent10)
             {
                 return LL_HRTIM_EVENT_10;
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkEEVID>, "Invalid HRTIMEEVID");
+                static_assert(kAlwaysFalseV<tkExternalEventId>, "Invalid HrtimExternalEventId");
             }
         }
 
     public:
-        static constexpr uint32_t skLLID = get_ll_id();
+        static constexpr uint32_t skLLId = get_ll_id();
     };
 
     // ----------------------------------------------------------------------------
     // HRTIM TIMER
     // ----------------------------------------------------------------------------
-    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-    struct HRTIMTimerTraits;
+    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    struct HrtimTimerTraits;
 
-    // HRTIM1 Timer A (tkHRTIMTimerID 0)
+    // Hrtim1 Timer A (tkHrtimTimerId 0)
     template <>
-    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kA>
+    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerA>
     {
-        static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_A;
-        static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_A;
-        static constexpr uint32_t  skOutput1         = HRTIM_OUTPUT_TA1;
-        static constexpr uint32_t  skOutput2         = HRTIM_OUTPUT_TA2;
-        static constexpr IRQn_Type skIRQn            = HRTIM1_TIMA_IRQn;
-        static constexpr uint32_t  skADCTrigUpdateID = LL_HRTIM_ADCTRIG_UPDATE_TIMER_A;
+        static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_A;
+        static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_A;
+        static constexpr uint32_t  skOutput1         = Hrtim_OUTPUT_TA1;
+        static constexpr uint32_t  skOutput2         = Hrtim_OUTPUT_TA2;
+        static constexpr IRQn_Type skIRQn            = Hrtim1_TIMA_IRQn;
+        static constexpr uint32_t  skAdcTrigUpdateId = LL_HRTIM_ADCTRIG_UPDATE_TIMER_A;
     };
 
-    // HRTIM1 Timer B
+    // Hrtim1 Timer B
     template <>
-    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kB>
+    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerB>
     {
-        static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_B;
-        static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_B;
-        static constexpr uint32_t  skOutput1         = HRTIM_OUTPUT_TB1;
-        static constexpr uint32_t  skOutput2         = HRTIM_OUTPUT_TB2;
-        static constexpr IRQn_Type skIRQn            = HRTIM1_TIMB_IRQn;
-        static constexpr uint32_t  skADCTrigUpdateID = LL_HRTIM_ADCTRIG_UPDATE_TIMER_B;
+        static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_B;
+        static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_B;
+        static constexpr uint32_t  skOutput1         = Hrtim_OUTPUT_TB1;
+        static constexpr uint32_t  skOutput2         = Hrtim_OUTPUT_TB2;
+        static constexpr IRQn_Type skIRQn            = Hrtim1_TIMB_IRQn;
+        static constexpr uint32_t  skAdcTrigUpdateId = LL_HRTIM_ADCTRIG_UPDATE_TIMER_B;
     };
 
-    // HRTIM1 Timer C
+    // Hrtim1 Timer C
     template <>
-    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kC>
+    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerC>
     {
-        static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_C;
-        static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_C;
-        static constexpr uint32_t  skOutput1         = HRTIM_OUTPUT_TC1;
-        static constexpr uint32_t  skOutput2         = HRTIM_OUTPUT_TC2;
-        static constexpr IRQn_Type skIRQn            = HRTIM1_TIMC_IRQn;
-        static constexpr uint32_t  skADCTrigUpdateID = LL_HRTIM_ADCTRIG_UPDATE_TIMER_C;
+        static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_C;
+        static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_C;
+        static constexpr uint32_t  skOutput1         = Hrtim_OUTPUT_TC1;
+        static constexpr uint32_t  skOutput2         = Hrtim_OUTPUT_TC2;
+        static constexpr IRQn_Type skIRQn            = Hrtim1_TIMC_IRQn;
+        static constexpr uint32_t  skAdcTrigUpdateId = LL_HRTIM_ADCTRIG_UPDATE_TIMER_C;
     };
 
-    // HRTIM1 Timer D
+    // Hrtim1 Timer D
     template <>
-    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kD>
+    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerD>
     {
-        static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_D;
-        static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_D;
-        static constexpr uint32_t  skOutput1         = HRTIM_OUTPUT_TD1;
-        static constexpr uint32_t  skOutput2         = HRTIM_OUTPUT_TD2;
-        static constexpr IRQn_Type skIRQn            = HRTIM1_TIMD_IRQn;
-        static constexpr uint32_t  skADCTrigUpdateID = LL_HRTIM_ADCTRIG_UPDATE_TIMER_D;
+        static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_D;
+        static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_D;
+        static constexpr uint32_t  skOutput1         = Hrtim_OUTPUT_TD1;
+        static constexpr uint32_t  skOutput2         = Hrtim_OUTPUT_TD2;
+        static constexpr IRQn_Type skIRQn            = Hrtim1_TIMD_IRQn;
+        static constexpr uint32_t  skAdcTrigUpdateId = LL_HRTIM_ADCTRIG_UPDATE_TIMER_D;
     };
 
-    // HRTIM1 Timer E
+    // Hrtim1 Timer E
     template <>
-    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kE>
+    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerE>
     {
-        static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_E;
-        static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_E;
-        static constexpr uint32_t  skOutput1         = HRTIM_OUTPUT_TE1;
-        static constexpr uint32_t  skOutput2         = HRTIM_OUTPUT_TE2;
-        static constexpr IRQn_Type skIRQn            = HRTIM1_TIME_IRQn;
-        static constexpr uint32_t  skADCTrigUpdateID = LL_HRTIM_ADCTRIG_UPDATE_TIMER_E;
+        static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_E;
+        static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_E;
+        static constexpr uint32_t  skOutput1         = Hrtim_OUTPUT_TE1;
+        static constexpr uint32_t  skOutput2         = Hrtim_OUTPUT_TE2;
+        static constexpr IRQn_Type skIRQn            = Hrtim1_TIME_IRQn;
+        static constexpr uint32_t  skAdcTrigUpdateId = LL_HRTIM_ADCTRIG_UPDATE_TIMER_E;
     };
 
-    // HRTIM1 Timer F
+    // Hrtim1 Timer F
     template <>
-    struct HRTIMTimerTraits<HRTIMControllerID::kHRTIM1, HRTIMTimerID::kF>
+    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerF>
     {
-        static constexpr uint32_t  skLLID            = LL_HRTIM_TIMER_F;
-        static constexpr uint32_t  skTimerIdx        = HRTIM_TIMERINDEX_TIMER_F;
-        static constexpr uint32_t  skOutput1         = HRTIM_OUTPUT_TF1;
-        static constexpr uint32_t  skOutput2         = HRTIM_OUTPUT_TF2;
-        static constexpr IRQn_Type skIRQn            = HRTIM1_TIMF_IRQn;
-        static constexpr uint32_t  skADCTrigUpdateID = LL_HRTIM_ADCTRIG_UPDATE_TIMER_F;
+        static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_F;
+        static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_F;
+        static constexpr uint32_t  skOutput1         = Hrtim_OUTPUT_TF1;
+        static constexpr uint32_t  skOutput2         = Hrtim_OUTPUT_TF2;
+        static constexpr IRQn_Type skIRQn            = Hrtim1_TIMF_IRQn;
+        static constexpr uint32_t  skAdcTrigUpdateId = LL_HRTIM_ADCTRIG_UPDATE_TIMER_F;
     };
 
     // ============================================================================
     // Interface
     // ============================================================================
 
-    template <HRTIMControllerID tkControllerID, HRTIMTimerID tkTimerID>
-    struct HRTIMTimerInterface
+    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    struct HrtimTimerInterface
     {
-        static constexpr HRTIMControllerID skControllerID = tkControllerID;
-        static constexpr HRTIMTimerID      skTimerID      = tkTimerID;
+        static constexpr HrtimPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr HrtimTimerId      skTimerId      = tkTimerId;
 
-        using ControllerTraitsT = HRTIMControllerTraits<tkControllerID>;
-        using TimerTraitsT      = HRTIMTimerTraits<tkControllerID, tkTimerID>;
+        using ControllerTraitsT = HrtimControllerTraits<tkPeripheralId>;
+        using TimerTraitsT      = HrtimTimerTraits<tkPeripheralId, tkTimerId>;
 
         static constexpr uint32_t            skMinPrescalerNum      = 0;
         static constexpr uint32_t            skMaxPrescalerNum      = 7;
-        static constexpr HRTIMTimerPrescaler skMinPrescaler         = HRTIMTimerPrescaler::kMul32;
-        static constexpr HRTIMTimerPrescaler skMaxPrescaler         = HRTIMTimerPrescaler::kDiv4;
+        static constexpr HrtimTimerPrescaler skMinPrescaler         = HrtimTimerPrescaler::kMul32;
+        static constexpr HrtimTimerPrescaler skMaxPrescaler         = HrtimTimerPrescaler::kDiv4;
         static constexpr uint32_t            skPrescalerScaleFactor = 32;
 
         static constexpr uint32_t skMaxPeriod = 65535;
 
         static constexpr uint32_t                    skDeadtimeMinPrescalerNum = 0;
         static constexpr uint32_t                    skDeadtimeMaxPrescalerNum = 7;
-        static constexpr HRTIMTimerDeadtimePrescaler skDeadtimeMinPrescaler    = HRTIMTimerDeadtimePrescaler::kMul8;
-        static constexpr HRTIMTimerDeadtimePrescaler skDeadtimeMaxPrescaler    = HRTIMTimerDeadtimePrescaler::kDiv16;
+        static constexpr HrtimTimerDeadtimePrescaler skDeadtimeMinPrescaler    = HrtimTimerDeadtimePrescaler::kMul8;
+        static constexpr HrtimTimerDeadtimePrescaler skDeadtimeMaxPrescaler    = HrtimTimerDeadtimePrescaler::kDiv16;
         static constexpr uint32_t                    skDeadtimePrescalerScaleFactor = 8;
         static constexpr uint32_t                    skDeadtimeCounterMax           = 511;
 
         // -------------------------------------------------------------------------
-        // TIMING
+        // TimING
         // -------------------------------------------------------------------------
-        [[nodiscard]] static HRTIMTimerPrescaler get_timer_prescaler()
+        [[nodiscard]] static HrtimTimerPrescaler get_timer_prescaler()
         {
-            return static_cast<HRTIMTimerPrescaler>(
-                LL_HRTIM_TIM_GetPrescaler(ControllerTraitsT::skInstance, TimerTraitsT::skLLID));
+            return static_cast<HrtimTimerPrescaler>(
+                LL_HRTIM_TIM_GetPrescaler(ControllerTraitsT::skInstance, TimerTraitsT::skLLId));
         }
 
-        [[nodiscard]] static uint8_t timer_prescaler_to_prescaler_num(HRTIMTimerPrescaler prescaler)
+        [[nodiscard]] static uint8_t timer_prescaler_to_prescaler_num(HrtimTimerPrescaler prescaler)
         {
             // NOLINTBEGIN(readability-magic-numbers)
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul32) == 0,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul32) == 0,
                           "Assumes prescaler enum starts at 0 with Mul32");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul16) == 1,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul16) == 1,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul8) == 2,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul8) == 2,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul4) == 3,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul4) == 3,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul2) == 4,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul2) == 4,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kDiv1) == 5,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kDiv1) == 5,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kDiv2) == 6,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kDiv2) == 6,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kDiv4) == 7,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kDiv4) == 7,
                           "Assumes prescaler enum values are sequential");
             // NOLINTEND(readability-magic-numbers)
 
             return static_cast<uint8_t>(prescaler);
         }
 
-        [[nodiscard]] static constexpr HRTIMTimerPrescaler timer_prescaler_num_to_prescaler(uint8_t prescaler_num)
+        [[nodiscard]] static constexpr HrtimTimerPrescaler timer_prescaler_num_to_prescaler(uint8_t prescaler_num)
         {
             // NOLINTBEGIN(readability-magic-numbers)
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul32) == 0,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul32) == 0,
                           "Assumes prescaler enum starts at 0 with Mul32");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul16) == 1,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul16) == 1,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul8) == 2,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul8) == 2,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul4) == 3,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul4) == 3,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kMul2) == 4,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul2) == 4,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kDiv1) == 5,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kDiv1) == 5,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kDiv2) == 6,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kDiv2) == 6,
                           "Assumes prescaler enum values are sequential");
-            static_assert(static_cast<uint32_t>(HRTIMTimerPrescaler::kDiv4) == 7,
+            static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kDiv4) == 7,
                           "Assumes prescaler enum values are sequential");
             // NOLINTEND(readability-magic-numbers)
 
-            return static_cast<HRTIMTimerPrescaler>(prescaler_num);
+            return static_cast<HrtimTimerPrescaler>(prescaler_num);
         }
 
         [[nodiscard]] static uint32_t get_period_ticks()
         {
-            return LL_HRTIM_TIM_GetPeriod(ControllerTraitsT::skInstance, TimerTraitsT::skLLID);
+            return LL_HRTIM_TIM_GetPeriod(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
 
         [[nodiscard]] static uint32_t get_repetition()
         {
-            return LL_HRTIM_TIM_GetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skLLID);
+            return LL_HRTIM_TIM_GetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
 
         [[nodiscard]] static uint64_t calculate_hrck_freq_hz(const uint32_t            f_hrtim_hz,
-                                                             const HRTIMTimerPrescaler prescaler)
+                                                             const HrtimTimerPrescaler prescaler)
         {
             const uint8_t prescaler_num = timer_prescaler_to_prescaler_num(prescaler);
             return (static_cast<uint64_t>(f_hrtim_hz) * static_cast<uint64_t>(skPrescalerScaleFactor)) /
@@ -1228,16 +1230,16 @@ namespace valle::platform
         [[nodiscard]] static constexpr uint64_t calculate_min_freq_hz(const uint32_t f_hrtim_hz)
         {
             // Minimum frequency is achieved with maximum prescaler (7) and maximum period (65535)
-            return calculate_timer_freq_hz(calculate_hrck_freq_hz(f_hrtim_hz, HRTIMTimerPrescaler::kDiv4), skMaxPeriod);
+            return calculate_timer_freq_hz(calculate_hrck_freq_hz(f_hrtim_hz, HrtimTimerPrescaler::kDiv4), skMaxPeriod);
         }
 
         [[nodiscard]] static constexpr uint64_t calculate_max_freq_hz(const uint32_t f_hrtim_hz)
         {
             // Maximum frequency is achieved with minimum prescaler (0) and minimum period (1)
-            return calculate_timer_freq_hz(calculate_hrck_freq_hz(f_hrtim_hz, HRTIMTimerPrescaler::kMul32), 1);
+            return calculate_timer_freq_hz(calculate_hrck_freq_hz(f_hrtim_hz, HrtimTimerPrescaler::kMul32), 1);
         }
 
-        [[nodiscard]] static constexpr HRTIMTimerPrescaler
+        [[nodiscard]] static constexpr HrtimTimerPrescaler
         calculate_timer_prescaler_for_freq(  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
             const uint32_t f_hrtim_hz,
             const uint64_t target_freq_hz)
@@ -1276,59 +1278,59 @@ namespace valle::platform
         }
 
         // -------------------------------------------------------------------------
-        // DEADTIME
+        // DEADTimE
         // -------------------------------------------------------------------------
 
-        [[nodiscard]] static constexpr HRTIMTimerDeadtimePrescaler deadtime_prescaler_num_to_prescaler(
+        [[nodiscard]] static constexpr HrtimTimerDeadtimePrescaler deadtime_prescaler_num_to_prescaler(
             uint8_t prescaler_num)
         {
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(0 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kMul8,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(0 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kMul8,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(1 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kMul4,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(1 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kMul4,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(2 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kMul2,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(2 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kMul2,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(3 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kDiv1,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(3 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kDiv1,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(4 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kDiv2,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(4 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kDiv2,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(5 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kDiv4,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(5 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kDiv4,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(6 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kDiv8,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(6 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kDiv8,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
-            static_assert(static_cast<HRTIMTimerDeadtimePrescaler>(7 << HRTIM_DTR_DTPRSC_Pos) ==
-                              HRTIMTimerDeadtimePrescaler::kDiv16,
+            static_assert(static_cast<HrtimTimerDeadtimePrescaler>(7 << Hrtim_DTR_DTPRSC_Pos) ==
+                              HrtimTimerDeadtimePrescaler::kDiv16,
                           "Assumes deadtime prescaler enum values are sequential and start at 0 with Mul8");
 
             uint8_t clamped_num =
                 std::clamp<uint8_t>(prescaler_num, skDeadtimeMinPrescalerNum, skDeadtimeMaxPrescalerNum);
 
-            // Deadtime prescaler value is offset by bit 0 of the DTRRSC register (HRTIM_DTR_DTPRSC_Pos)
-            return static_cast<HRTIMTimerDeadtimePrescaler>(clamped_num << HRTIM_DTR_DTPRSC_Pos);
+            // Deadtime prescaler value is offset by bit 0 of the DTRRSC register (Hrtim_DTR_DTPRSC_Pos)
+            return static_cast<HrtimTimerDeadtimePrescaler>(clamped_num << Hrtim_DTR_DTPRSC_Pos);
         }
 
         [[nodiscard]] static constexpr uint8_t deadtime_prescaler_to_prescaler_num(
-            const HRTIMTimerDeadtimePrescaler prescaler)
+            const HrtimTimerDeadtimePrescaler prescaler)
         {
-            return (static_cast<uint32_t>(prescaler) >> HRTIM_DTR_DTPRSC_Pos) & 0x7;
+            return (static_cast<uint32_t>(prescaler) >> Hrtim_DTR_DTPRSC_Pos) & 0x7;
         }
 
         [[nodiscard]] static constexpr float calculate_deadtime_period(const uint32_t                    f_hrtim_hz,
-                                                                       const HRTIMTimerDeadtimePrescaler prescaler)
+                                                                       const HrtimTimerDeadtimePrescaler prescaler)
         {
             constexpr float to_ns_factor = 1e9F;
 
@@ -1342,15 +1344,15 @@ namespace valle::platform
 
         [[nodiscard]] static constexpr float calculate_max_deadtime_ns(const uint32_t f_hrtim_hz)
         {
-            return skDeadtimeCounterMax * calculate_deadtime_period(f_hrtim_hz, HRTIMTimerDeadtimePrescaler::kDiv16);
+            return skDeadtimeCounterMax * calculate_deadtime_period(f_hrtim_hz, HrtimTimerDeadtimePrescaler::kDiv16);
         }
 
         [[nodiscard]] static constexpr float calculate_min_deadtime_ns(const uint32_t f_hrtim_hz)
         {
-            return calculate_deadtime_period(f_hrtim_hz, HRTIMTimerDeadtimePrescaler::kMul8);
+            return calculate_deadtime_period(f_hrtim_hz, HrtimTimerDeadtimePrescaler::kMul8);
         }
 
-        [[nodiscard]] static constexpr HRTIMTimerDeadtimePrescaler
+        [[nodiscard]] static constexpr HrtimTimerDeadtimePrescaler
         calculate_deadtime_prescaler(  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
             const uint32_t f_hrtim_hz,
             const float    target_deadtime_ns)
@@ -1394,7 +1396,7 @@ namespace valle::platform
         }
 
         [[nodiscard]] static constexpr uint32_t calculate_deadtime_count(const uint32_t                    f_hrtim_hz,
-                                                                         const HRTIMTimerDeadtimePrescaler prescaler,
+                                                                         const HrtimTimerDeadtimePrescaler prescaler,
                                                                          const float target_deadtime_ns)
         {
             // Once we have the appropriate prescaler, we can calculate the required counts for the desired deadtime.
@@ -1411,12 +1413,12 @@ namespace valle::platform
         // ---------------------------------------------------------------------------
         static void enable_counter()
         {
-            LL_HRTIM_TIM_CounterEnable(ControllerTraitsT::skInstance, TimerTraitsT::skLLID);
+            LL_HRTIM_TIM_CounterEnable(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
 
         static void disable_counter()
         {
-            LL_HRTIM_TIM_CounterDisable(ControllerTraitsT::skInstance, TimerTraitsT::skLLID);
+            LL_HRTIM_TIM_CounterDisable(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
 
         // ----------------------------------------------------------------------------
@@ -1456,139 +1458,139 @@ namespace valle::platform
         // COMPARE
         // ----------------------------------------------------------------------------
 
-        template <HRTIMTimerCompareUnit tkCompareUnit>
+        template <HrtimTimerCompareUnit tkCompareUnit>
         static constexpr void set_compare(uint32_t compare_value)
         {
-            if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare1)
+            if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare1)
             {
-                LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, compare_value);
+                LL_HRTIM_TIM_SetCompare1(ControllerTraitsT::skInstance, TimerTraitsT::skLLId, compare_value);
             }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare2)
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare2)
             {
-                LL_HRTIM_TIM_SetCompare2(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, compare_value);
+                LL_HRTIM_TIM_SetCompare2(ControllerTraitsT::skInstance, TimerTraitsT::skLLId, compare_value);
             }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare3)
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare3)
             {
-                LL_HRTIM_TIM_SetCompare3(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, compare_value);
+                LL_HRTIM_TIM_SetCompare3(ControllerTraitsT::skInstance, TimerTraitsT::skLLId, compare_value);
             }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare4)
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare4)
             {
-                LL_HRTIM_TIM_SetCompare4(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, compare_value);
-            }
-            else
-            {
-                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
-            }
-        }
-
-        static constexpr void set_compare(HRTIMTimerCompareUnit compare_unit, uint32_t compare_value)
-        {
-            switch (compare_unit)
-            {
-                case HRTIMTimerCompareUnit::kCompare1:
-                    set_compare<HRTIMTimerCompareUnit::kCompare1>(compare_value);
-                    break;
-                case HRTIMTimerCompareUnit::kCompare2:
-                    set_compare<HRTIMTimerCompareUnit::kCompare2>(compare_value);
-                    break;
-                case HRTIMTimerCompareUnit::kCompare3:
-                    set_compare<HRTIMTimerCompareUnit::kCompare3>(compare_value);
-                    break;
-                case HRTIMTimerCompareUnit::kCompare4:
-                    set_compare<HRTIMTimerCompareUnit::kCompare4>(compare_value);
-                    break;
-                default:
-                    // Invalid compare unit, default to Compare1
-                    set_compare<HRTIMTimerCompareUnit::kCompare1>(compare_value);
-                    break;
-            }
-        }
-
-        template <HRTIMTimerCompareUnit tkCompareUnit>
-        [[nodiscard]] static constexpr HRTIMTimerOutputSetSource set_source_for_compare_unit()
-        {
-            if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare1)
-            {
-                return HRTIMTimerOutputSetSource::kTimerCompare1;
-            }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare2)
-            {
-                return HRTIMTimerOutputSetSource::kTimerCompare2;
-            }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare3)
-            {
-                return HRTIMTimerOutputSetSource::kTimerCompare3;
-            }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare4)
-            {
-                return HRTIMTimerOutputSetSource::kTimerCompare4;
+                LL_HRTIM_TIM_SetCompare4(ControllerTraitsT::skInstance, TimerTraitsT::skLLId, compare_value);
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
+                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HrtimTimerCompareUnit");
             }
         }
 
-        [[nodiscard]] static constexpr HRTIMTimerOutputSetSource set_source_for_compare_unit(
-            HRTIMTimerCompareUnit compare_unit)
+        static constexpr void set_compare(HrtimTimerCompareUnit compare_unit, uint32_t compare_value)
         {
             switch (compare_unit)
             {
-                case HRTIMTimerCompareUnit::kCompare1:
-                    return set_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare1>();
-                case HRTIMTimerCompareUnit::kCompare2:
-                    return set_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare2>();
-                case HRTIMTimerCompareUnit::kCompare3:
-                    return set_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare3>();
-                case HRTIMTimerCompareUnit::kCompare4:
-                    return set_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare4>();
+                case HrtimTimerCompareUnit::kCompare1:
+                    set_compare<HrtimTimerCompareUnit::kCompare1>(compare_value);
+                    break;
+                case HrtimTimerCompareUnit::kCompare2:
+                    set_compare<HrtimTimerCompareUnit::kCompare2>(compare_value);
+                    break;
+                case HrtimTimerCompareUnit::kCompare3:
+                    set_compare<HrtimTimerCompareUnit::kCompare3>(compare_value);
+                    break;
+                case HrtimTimerCompareUnit::kCompare4:
+                    set_compare<HrtimTimerCompareUnit::kCompare4>(compare_value);
+                    break;
                 default:
                     // Invalid compare unit, default to Compare1
-                    return set_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare1>();
+                    set_compare<HrtimTimerCompareUnit::kCompare1>(compare_value);
+                    break;
             }
         }
 
-        template <HRTIMTimerCompareUnit tkCompareUnit>
-        [[nodiscard]] static constexpr HRTIMTimerOutputResetSource reset_source_for_compare_unit()
+        template <HrtimTimerCompareUnit tkCompareUnit>
+        [[nodiscard]] static constexpr HrtimTimerOutputSetSource set_source_for_compare_unit()
         {
-            if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare1)
+            if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare1)
             {
-                return HRTIMTimerOutputResetSource::kTimerCompare1;
+                return HrtimTimerOutputSetSource::kTimerCompare1;
             }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare2)
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare2)
             {
-                return HRTIMTimerOutputResetSource::kTimerCompare2;
+                return HrtimTimerOutputSetSource::kTimerCompare2;
             }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare3)
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare3)
             {
-                return HRTIMTimerOutputResetSource::kTimerCompare3;
+                return HrtimTimerOutputSetSource::kTimerCompare3;
             }
-            else if constexpr (tkCompareUnit == HRTIMTimerCompareUnit::kCompare4)
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare4)
             {
-                return HRTIMTimerOutputResetSource::kTimerCompare4;
+                return HrtimTimerOutputSetSource::kTimerCompare4;
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HRTIMTimerCompareUnit");
+                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HrtimTimerCompareUnit");
             }
         }
 
-        [[nodiscard]] static constexpr HRTIMTimerOutputResetSource reset_source_for_compare_unit(
-            HRTIMTimerCompareUnit compare_unit)
+        [[nodiscard]] static constexpr HrtimTimerOutputSetSource set_source_for_compare_unit(
+            HrtimTimerCompareUnit compare_unit)
         {
             switch (compare_unit)
             {
-                case HRTIMTimerCompareUnit::kCompare1:
-                    return reset_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare1>();
-                case HRTIMTimerCompareUnit::kCompare2:
-                    return reset_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare2>();
-                case HRTIMTimerCompareUnit::kCompare3:
-                    return reset_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare3>();
-                case HRTIMTimerCompareUnit::kCompare4:
-                    return reset_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare4>();
+                case HrtimTimerCompareUnit::kCompare1:
+                    return set_source_for_compare_unit<HrtimTimerCompareUnit::kCompare1>();
+                case HrtimTimerCompareUnit::kCompare2:
+                    return set_source_for_compare_unit<HrtimTimerCompareUnit::kCompare2>();
+                case HrtimTimerCompareUnit::kCompare3:
+                    return set_source_for_compare_unit<HrtimTimerCompareUnit::kCompare3>();
+                case HrtimTimerCompareUnit::kCompare4:
+                    return set_source_for_compare_unit<HrtimTimerCompareUnit::kCompare4>();
                 default:
                     // Invalid compare unit, default to Compare1
-                    return reset_source_for_compare_unit<HRTIMTimerCompareUnit::kCompare1>();
+                    return set_source_for_compare_unit<HrtimTimerCompareUnit::kCompare1>();
+            }
+        }
+
+        template <HrtimTimerCompareUnit tkCompareUnit>
+        [[nodiscard]] static constexpr HrtimTimerOutputResetSource reset_source_for_compare_unit()
+        {
+            if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare1)
+            {
+                return HrtimTimerOutputResetSource::kTimerCompare1;
+            }
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare2)
+            {
+                return HrtimTimerOutputResetSource::kTimerCompare2;
+            }
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare3)
+            {
+                return HrtimTimerOutputResetSource::kTimerCompare3;
+            }
+            else if constexpr (tkCompareUnit == HrtimTimerCompareUnit::kCompare4)
+            {
+                return HrtimTimerOutputResetSource::kTimerCompare4;
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<tkCompareUnit>, "Invalid HrtimTimerCompareUnit");
+            }
+        }
+
+        [[nodiscard]] static constexpr HrtimTimerOutputResetSource reset_source_for_compare_unit(
+            HrtimTimerCompareUnit compare_unit)
+        {
+            switch (compare_unit)
+            {
+                case HrtimTimerCompareUnit::kCompare1:
+                    return reset_source_for_compare_unit<HrtimTimerCompareUnit::kCompare1>();
+                case HrtimTimerCompareUnit::kCompare2:
+                    return reset_source_for_compare_unit<HrtimTimerCompareUnit::kCompare2>();
+                case HrtimTimerCompareUnit::kCompare3:
+                    return reset_source_for_compare_unit<HrtimTimerCompareUnit::kCompare3>();
+                case HrtimTimerCompareUnit::kCompare4:
+                    return reset_source_for_compare_unit<HrtimTimerCompareUnit::kCompare4>();
+                default:
+                    // Invalid compare unit, default to Compare1
+                    return reset_source_for_compare_unit<HrtimTimerCompareUnit::kCompare1>();
             }
         }
     };

@@ -12,33 +12,33 @@
 
 namespace valle::app
 {
-    static constexpr platform::HRTIMControllerID kVCAHRTIMPWMControllerID = platform::HRTIMControllerID::kHRTIM1;
-    struct HRTIMControllerCTConfig : public platform::HRTIMControllerCTDefaultConfig
+    static constexpr platform::HrtimPeripheralId kVcaHrtimPwmPeripheralId = platform::HrtimPeripheralId::kHrtim1;
+    struct HrtimControllerCTConfig : public platform::HrtimControllerCTDefaultConfig
     {
     };
 
-    static constexpr uint8_t kVCACurrentLoopDriverID = 0;
+    static constexpr uint8_t kVcaCurrentLoopDriverId = 0;
     struct VCACurrentLoopDriverCTConfig
     {
-        using PWMOutput1PinT              = platform::GPIOPinA8Device;
-        using PWMOutput2PinT              = platform::GPIOPinA9Device;
-        using CurrentSensorADCDMAChannelT = platform::DMA1Channel2Device;
+        using PWMOutput1PinT              = platform::GpioPinA8Device;
+        using PWMOutput2PinT              = platform::GpioPinA9Device;
+        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel2Device;
 
-        static constexpr platform::HRTIMControllerID skVCAHRTIMPWMControllerID = kVCAHRTIMPWMControllerID;
-        static constexpr platform::HRTIMTimerID      skVCAHRTIMPWMTimerID      = platform::HRTIMTimerID::kA;
+        static constexpr platform::HrtimPeripheralId skVcaHrtimPwmPeripheralId = kVcaHrtimPwmPeripheralId;
+        static constexpr platform::HrtimTimerId      skVcaHrtimPwmTimerId      = platform::HrtimTimerId::kTimerA;
 
-        static constexpr platform::ADCControllerID skCurrentSensorADCControllerID = platform::ADCControllerID::kADC1;
-        static constexpr platform::ADCChannelID    skCurrentSensorADCChannelId    = platform::ADCChannelID::kChannel1;
+        static constexpr platform::AdcPeripheralId skCurrentSensorAdcPeripheralId = platform::AdcPeripheralId::kAdc1;
+        static constexpr platform::AdcChannelId    skCurrentSensorAdcChannelId    = platform::AdcChannelId::kChannel1;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
-        static constexpr auto        skCurrentSensorADCHRTIMTriggerSource =
-            platform::ADCInjectGroupTriggerSource::kExtHrtimTRG2;
+        static constexpr auto        skCurrentSensorAdcHrtimTriggerSource =
+            platform::AdcInjectGroupTriggerSource::kExtHrtimTRG2;
     };
 }  // namespace valle::app
 
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVCAHRTIMPWMControllerID, valle::app::HRTIMControllerCTConfig{});
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kVcaHrtimPwmPeripheralId, valle::app::HrtimControllerCTConfig{});
 VALLE_DEFINE_VCA_CURRENT_LOOP_DRIVER_CT_CONFIG(Test,
-                                               valle::app::kVCACurrentLoopDriverID,
+                                               valle::app::kVcaCurrentLoopDriverId,
                                                valle::app::VCACurrentLoopDriverCTConfig{});
 
 namespace valle
@@ -48,13 +48,13 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using VCACurrentLoopDriverT       = platform::app::VCACurrentLoopDriver<kVCACurrentLoopDriverID>;
+        using VCACurrentLoopDriverT       = platform::app::VCACurrentLoopDriver<kVcaCurrentLoopDriverId>;
         using VCACurrentLoopDriverConfigT = typename VCACurrentLoopDriverT::ConfigT;
 
-        using TestGPIODriverT = platform::GPIODigitalOutDriver<platform::GPIOPinB6Device>;
+        using TestGpioDriverT = platform::GpioDigitalOutDriver<platform::GpioPinB6Device>;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, VCACurrentLoopDriverT, TestGPIODriverT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UartLoggerT, VCACurrentLoopDriverT, TestGpioDriverT>;
 
         // ============================================================================
         // Root Driver
@@ -76,9 +76,9 @@ namespace valle
 
             RootDriver                 root;
             platform::CoreSystemDriver core;
-            UARTLoggerT                uart_logger;
+            UartLoggerT                uart_logger;
             VCACurrentLoopDriverT      vca_current_loop_driver;
-            TestGPIODriverT            test_gpio;
+            TestGpioDriverT            test_gpio;
         };
 
     }  // namespace app

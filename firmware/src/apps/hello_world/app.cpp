@@ -12,7 +12,7 @@ namespace valle::app
         return std::move(builder)
             .template install<RootDriver>()
             .template install<platform::CoreSystemDriver>()
-            .template install<UARTLoggerT>()
+            .template install<UartLoggerT>()
             .yield();
     }
 
@@ -24,11 +24,11 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::DMAMux1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
-            [](platform::DMA1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::DmaMux1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
+            [](platform::Dma1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
         }  // namespace valle
         );
     }
@@ -39,14 +39,14 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        expect(g_drivers.uart_logger.init(platform::UARTControllerConfig{
-                   .baud_rate         = platform::UARTBaudRate::kBaud230400,
-                   .word_length       = platform::UARTWordLength::kBits8,
-                   .stop_bits         = platform::UARTStopBits::kBits1,
-                   .parity            = platform::UARTParity::kNone,
-                   .transfer_mode     = platform::UARTTransferMode::kTxRx,
-                   .hw_flow_ctrl      = platform::UARTHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DMAPriority::kHigh,
+        expect(g_drivers.uart_logger.init(platform::UartControllerConfig{
+                   .baud_rate         = platform::UartBaudRate::kBaud230400,
+                   .word_length       = platform::UartWordLength::kBits8,
+                   .stop_bits         = platform::UartStopBits::kBits1,
+                   .parity            = platform::UartParity::kNone,
+                   .transfer_mode     = platform::UartTransferMode::kTxRx,
+                   .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
+                   .dma_priority      = platform::DmaPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),

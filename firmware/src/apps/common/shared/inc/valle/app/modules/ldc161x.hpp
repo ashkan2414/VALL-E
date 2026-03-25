@@ -62,8 +62,8 @@ namespace valle::app
         kDriveCurrentChannel2 = 0x20,  // LDC1614 Only
         kDriveCurrentChannel3 = 0x21,  // LDC1614 Only
 
-        kReadManufacturerID = 0x7E,
-        kReadDeviceID       = 0x7F
+        kReadManufacturerId = 0x7E,
+        kReadDeviceId       = 0x7F
     };
 
     enum class LDC161XDataRegFields : uint8_t
@@ -131,7 +131,7 @@ namespace valle::app
          * Sets the divider for Channel 0 input.
          * @note Must be set to >=2 if the Sensor frequency is >= 8.75MHz.
          * 0x0000: Reserved. Do not use.
-         * FIN_DIVIDER >= 0x0001: f_IN = ƒ_SENSOR/FIN_DIVIDER
+         * FIN_DIVIdER >= 0x0001: f_IN = ƒ_SENSOR/FIN_DIVIdER
          */
         kFinDivider,
         kReserved,  // Reserved
@@ -143,7 +143,7 @@ namespace valle::app
          * Use this to scale the maximum conversion frequency.
          *
          * 0x000: Reserved. Do not use.
-         * FREF_DIVIDER >= 0x001: f_REF = f_CLK / FREF_DIVIDER
+         * FREF_DIVIdER >= 0x001: f_REF = f_CLK / FREF_DIVIdER
          */
         kFrefDivider,
     };
@@ -252,7 +252,7 @@ namespace valle::app
 
         /**
          * @brief Automatic Amplitude Control Disable
-         * Setting this bit disables automatic amplitude and stop the updating of INIT_IDRIVEx field.
+         * Setting this bit disables automatic amplitude and stop the updating of INIT_IdRIVEx field.
          * 0: Automatic Amplitude Control enabled
          * 1: Automatic Amplitude Control disabled. Recommended for precision applications.
          */
@@ -342,7 +342,7 @@ namespace valle::app
 
     enum class LDC161XDriveCurrentRegFields : uint8_t
     {
-        kIDrive,  // Drive Current Setting used during the settling and conversion time of the sensor. RP OVERRIDE must
+        kIdrive,  // Drive Current Setting used during the settling and conversion time of the sensor. RP OVERRIdE must
                   // be 1.
 
         /**
@@ -351,29 +351,29 @@ namespace valle::app
          * It is updated after each amplitude Correction phase of the sensor conversion if AUTO_AMP_DIS=0.
          * When writing to DRIVE CURRENTx register, set this field to 0b00000.
          */
-        kInitIDrive,
+        kInitIdrive,
         kReserved,  // Reserved
     };
 
     using LDC161XDriveCurrentReg = jungles::Bitfields<uint16_t,
-                                                      jungles::Field<LDC161XDriveCurrentRegFields::kIDrive, 5>,
-                                                      jungles::Field<LDC161XDriveCurrentRegFields::kInitIDrive, 5>,
+                                                      jungles::Field<LDC161XDriveCurrentRegFields::kIdrive, 5>,
+                                                      jungles::Field<LDC161XDriveCurrentRegFields::kInitIdrive, 5>,
                                                       jungles::Field<LDC161XDriveCurrentRegFields::kReserved, 6>>;
 
-    enum class LDC161XManufacturerIDRegFields : uint8_t
+    enum class LDC161XManufacturerIdRegFields : uint8_t
     {
-        kManufacturerID,  // Manufacturer ID, must be 0x5449
+        kManufacturerId,  // Manufacturer ID, must be 0x5449
     };
 
-    using LDC161XManufacturerIDReg =
-        jungles::Bitfields<uint16_t, jungles::Field<LDC161XManufacturerIDRegFields::kManufacturerID, 16>>;
+    using LDC161XManufacturerIdReg =
+        jungles::Bitfields<uint16_t, jungles::Field<LDC161XManufacturerIdRegFields::kManufacturerId, 16>>;
 
-    enum class LDC161XDeviceIDRegFields : uint8_t
+    enum class LDC161XDeviceIdRegFields : uint8_t
     {
-        kDeviceID,  // Device ID, must be 0x3055
+        kDeviceId,  // Device ID, must be 0x3055
     };
 
-    using LDC161XDeviceIDReg = jungles::Bitfields<uint16_t, jungles::Field<LDC161XDeviceIDRegFields::kDeviceID, 16>>;
+    using LDC161XDeviceIdReg = jungles::Bitfields<uint16_t, jungles::Field<LDC161XDeviceIdRegFields::kDeviceId, 16>>;
 
     // ------------------------------------------------------------------------------
     // GENERAL TRAITS AND DATA STRUCTURES
@@ -427,8 +427,8 @@ namespace valle::app
         using FinDivider     = uint8_t;   // 4 bits
         using FrefDivider    = uint16_t;  // 10 bits
         using IDrive         = uint8_t;   // 5 bits
-        using ManufacturerID = uint16_t;  // 16 bits
-        using DeviceID       = uint16_t;  // 16 bits
+        using ManufacturerId = uint16_t;  // 16 bits
+        using DeviceId       = uint16_t;  // 16 bits
 
         static constexpr uint16_t       skMinRCount                           = 9U;  // > 8
         static constexpr uint16_t       skMinSettleCount                      = 4U;  // > 3
@@ -439,9 +439,9 @@ namespace valle::app
         static constexpr float          skMaxFrefMhzSingleChannel             = 35.0F;
         static constexpr float          skMaxFrefMhzMultiChannelInternalClock = 55.0F;
         static constexpr float          skMaxFrefMhzMultiChannelExternalClock = 40.0F;
-        static constexpr IDrive         skMaxIDrive                           = 0x1FU;  // 5 bits, 31
-        static constexpr ManufacturerID skManufacturerID                      = 0x5449;
-        static constexpr DeviceID       skDeviceID                            = 0x3055;
+        static constexpr IDrive         skMaxIdrive                           = 0x1FU;  // 5 bits, 31
+        static constexpr ManufacturerId skManufacturerId                      = 0x5449;
+        static constexpr DeviceId       skDeviceId                            = 0x3055;
 
         static constexpr uint8_t skClockDividersRegReservedValue = 0;
         static constexpr uint8_t skErrorConfigRegReserved1Value  = 0;
@@ -453,7 +453,7 @@ namespace valle::app
         static constexpr uint8_t skDriveCurrentRegReservedValue  = 0;
 
         // From Section 8.1.5, table 42
-        static constexpr std::array<uint16_t, 32> skIDriveTableUA = {
+        static constexpr std::array<uint16_t, 32> skIdriveTableUA = {
             16,  18,  20,  23,  28,  32,  40,  46,  52,  59,  72,  82,  95,   110,  127,  146,
             169, 195, 212, 244, 297, 342, 424, 489, 551, 635, 763, 880, 1017, 1173, 1355, 1563};
 
@@ -577,18 +577,18 @@ namespace valle::app
     // ==============================================================================
     // I2C Interface
     // ==============================================================================
-    enum class LDC161XSensorModuleI2CInterfaceCallbackStatus : uint8_t
+    enum class LDC161XSensorModuleI2cInterfaceCallbackStatus : uint8_t
     {
         kComplete,
         kAborted,
         kError
     };
 
-    using LDC161XSensorModuleI2CInterfaceCallback =
-        delegate::Delegate<void, LDC161XSensorModuleI2CInterfaceCallbackStatus>;
+    using LDC161XSensorModuleI2cInterfaceCallback =
+        delegate::Delegate<void, LDC161XSensorModuleI2cInterfaceCallbackStatus>;
 
     template <typename TDerived, typename TConfig>
-    class LDC161XSensorModuleI2CInterfaceX
+    class LDC161XSensorModuleI2cInterfaceX
     {
     public:
         using ConfigT = TConfig;
@@ -598,10 +598,10 @@ namespace valle::app
             return static_cast<TDerived*>(this)->init_impl(config);
         }
 
-        void set_async_callback(LDC161XSensorModuleI2CInterfaceCallback&& callback)
+        void set_async_callback(LDC161XSensorModuleI2cInterfaceCallback&& callback)
         {
             static_cast<TDerived*>(this)->set_async_callback_impl(
-                std::forward<LDC161XSensorModuleI2CInterfaceCallback>(callback));
+                std::forward<LDC161XSensorModuleI2cInterfaceCallback>(callback));
         }
 
         [[nodiscard]] bool transaction_in_progress() const
@@ -754,18 +754,18 @@ namespace valle::app
     };
 
     // DRIVE CURRENT CONFIGURATION
-    struct LDC161XIDriveCurrent
+    struct LDC161XIdriveCurrent
     {
         LDC161XTraits::IDrive value = 0;
 
-        [[nodiscard]] static constexpr LDC161XIDriveCurrent from_raw(const LDC161XTraits::IDrive raw_value)
+        [[nodiscard]] static constexpr LDC161XIdriveCurrent from_raw(const LDC161XTraits::IDrive raw_value)
         {
-            return LDC161XIDriveCurrent{
-                .value = static_cast<LDC161XTraits::IDrive>(raw_value & LDC161XTraits::skMaxIDrive)};  // 5 bits
+            return LDC161XIdriveCurrent{
+                .value = static_cast<LDC161XTraits::IDrive>(raw_value & LDC161XTraits::skMaxIdrive)};  // 5 bits
         }
 
         // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-        [[nodiscard]] static constexpr LDC161XIDriveCurrent from_coil_rp(const float coil_rp_kohm,
+        [[nodiscard]] static constexpr LDC161XIdriveCurrent from_coil_rp(const float coil_rp_kohm,
                                                                          const float target_v = 1.5F)
         {
             // Equation 12: I_drive = (pi * Vp) / (4 * Rp)
@@ -775,16 +775,16 @@ namespace valle::app
             // Find the first current in the table that is EQUAL to or GREATER than
             // our target. This ensures we have enough current to maintain oscillation.
             const auto lower_bound_it = std::lower_bound(
-                LDC161XTraits::skIDriveTableUA.begin(), LDC161XTraits::skIDriveTableUA.end(), target_i_ua);
+                LDC161XTraits::skIdriveTableUA.begin(), LDC161XTraits::skIdriveTableUA.end(), target_i_ua);
 
-            if (lower_bound_it == LDC161XTraits::skIDriveTableUA.end())
+            if (lower_bound_it == LDC161XTraits::skIdriveTableUA.end())
             {
-                return LDC161XIDriveCurrent::from_raw(
-                    LDC161XTraits::skMaxIDrive);  // Calculated current exceeds standard IDRIVE range
+                return LDC161XIdriveCurrent::from_raw(
+                    LDC161XTraits::skMaxIdrive);  // Calculated current exceeds standard IDRIVE range
             }
 
-            return LDC161XIDriveCurrent::from_raw(
-                static_cast<uint8_t>(std::distance(LDC161XTraits::skIDriveTableUA.begin(), lower_bound_it)));
+            return LDC161XIdriveCurrent::from_raw(
+                static_cast<uint8_t>(std::distance(LDC161XTraits::skIdriveTableUA.begin(), lower_bound_it)));
         }
     };
 
@@ -813,7 +813,7 @@ namespace valle::app
     struct LDC161XChannelConfig
     {
         LDC161XCoilConfig    coil_config{};
-        LDC161XIDriveCurrent drive_current{};  // Used if RP Override is enabled
+        LDC161XIdriveCurrent drive_current{};  // Used if RP Override is enabled
         LDC161XOffsetConfig  offset_config{};
     };
 
@@ -888,13 +888,13 @@ namespace valle::app
     // ---------------------------------------------------------------------------
     // CONFIG
     // ---------------------------------------------------------------------------
-    template <typename TI2CConfig, uint8_t tkNumChannels>
+    template <typename TI2cConfig, uint8_t tkNumChannels>
         requires(CLDC161XValidNumChannels<tkNumChannels>)
     struct LDC161XSensorModuleConfigX
     {
         static constexpr uint8_t skNumChannels = tkNumChannels;
 
-        TI2CConfig                         i2c_config{};
+        TI2cConfig                         i2c_config{};
         LDC161XSensorConfig<tkNumChannels> sensor_config{};
     };
 
@@ -1009,15 +1009,15 @@ namespace valle::app
     // MODULE DRIVER
     // ---------------------------------------------------------------------------
 
-    template <typename TI2CInterface, uint8_t tkNumChannels>
+    template <typename TI2cInterface, uint8_t tkNumChannels>
         requires(CLDC161XValidNumChannels<tkNumChannels>)
     class LDC161XSensorModuleX
     {
     public:
-        using I2CInterfaceT                    = TI2CInterface;
+        using I2cInterfaceT                    = TI2cInterface;
         static constexpr uint8_t skNumChannels = tkNumChannels;
 
-        using ConfigT       = LDC161XSensorModuleConfigX<typename I2CInterfaceT::ConfigT, tkNumChannels>;
+        using ConfigT       = LDC161XSensorModuleConfigX<typename I2cInterfaceT::ConfigT, tkNumChannels>;
         using SensorConfigT = LDC161XSensorConfig<tkNumChannels>;
         static constexpr system::TimeoutMillis skDefaultTimeout = system::TimeoutMillis(50);
 
@@ -1035,8 +1035,8 @@ namespace valle::app
         using ReadCallbackResultT = LDC161XReadCallbackResult<tkNumChannels>;
         using ReadCallbackT       = LDC161XReadCallback<tkNumChannels>;
 
-        using InjectDevices = typename GetInjectDevices<I2CInterfaceT>::type;
-        using DependDevices = typename GetAdditionalDependDevices<I2CInterfaceT>::type;
+        using InjectDevices = typename GetInjectDevices<I2cInterfaceT>::type;
+        using DependDevices = typename GetAdditionalDependDevices<I2cInterfaceT>::type;
 
     private:
         // ---------------------------------------------------------------------
@@ -1142,7 +1142,7 @@ namespace valle::app
         // ---------------------------------------------------------------------
         // MEMBERS
         // ---------------------------------------------------------------------
-        I2CInterfaceT                                        m_i2c{};
+        I2cInterfaceT                                        m_i2c{};
         std::array<LinearConverter<uint32_t>, tkNumChannels> m_ch_freq_converters{};
         ReadCallbackT                                        m_read_callback{};
         std::optional<AsyncChainReadContext>                 m_async_context{};
@@ -1162,7 +1162,7 @@ namespace valle::app
                 return false;
             }
 
-            m_i2c.set_async_callback([this](const LDC161XSensorModuleI2CInterfaceCallbackStatus status)
+            m_i2c.set_async_callback([this](const LDC161XSensorModuleI2cInterfaceCallbackStatus status)
                                      { this->async_transaction_callback(status); });
 
             const auto raw_config = get_raw_config(config.sensor_config);
@@ -1217,14 +1217,14 @@ namespace valle::app
                 return std::nullopt;  // Avoid starting a new read if a transaction is already in progress
             }
 
-            const auto manufacturer_id = m_i2c.register_read_blocking(LDC161XReg::kReadManufacturerID, timeout_ms);
+            const auto manufacturer_id = m_i2c.register_read_blocking(LDC161XReg::kReadManufacturerId, timeout_ms);
             if (!manufacturer_id.has_value())
             {
                 return std::nullopt;
             }
 
-            return LDC161XManufacturerIDReg(std::move(manufacturer_id.value()))
-                .at<LDC161XManufacturerIDRegFields::kManufacturerID>();
+            return LDC161XManufacturerIdReg(std::move(manufacturer_id.value()))
+                .at<LDC161XManufacturerIdRegFields::kManufacturerId>();
         }
 
         [[nodiscard]] bool verify_manufacturer_id(const system::TimeoutMillis timeout_ms = skDefaultTimeout)
@@ -1235,7 +1235,7 @@ namespace valle::app
             }
 
             auto manufacturer_id = read_manufacturer_id(timeout_ms);
-            return manufacturer_id.has_value() && manufacturer_id.value() == LDC161XTraits::skManufacturerID;
+            return manufacturer_id.has_value() && manufacturer_id.value() == LDC161XTraits::skManufacturerId;
         }
 
         [[nodiscard]] std::optional<uint16_t> read_device_id(const system::TimeoutMillis timeout_ms = skDefaultTimeout)
@@ -1245,12 +1245,12 @@ namespace valle::app
                 return std::nullopt;  // Avoid starting a new read if a transaction is already in progress
             }
 
-            const auto device_id = m_i2c.register_read_blocking(LDC161XReg::kReadDeviceID, timeout_ms);
+            const auto device_id = m_i2c.register_read_blocking(LDC161XReg::kReadDeviceId, timeout_ms);
             if (!device_id.has_value())
             {
                 return std::nullopt;
             }
-            return LDC161XDeviceIDReg(std::move(device_id.value())).at<LDC161XDeviceIDRegFields::kDeviceID>();
+            return LDC161XDeviceIdReg(std::move(device_id.value())).at<LDC161XDeviceIdRegFields::kDeviceId>();
         }
 
         [[nodiscard]] bool verify_device_id(const system::TimeoutMillis timeout_ms = skDefaultTimeout)
@@ -1261,7 +1261,7 @@ namespace valle::app
             }
 
             auto device_id = read_device_id(timeout_ms);
-            return device_id.has_value() && device_id.value() == LDC161XTraits::skDeviceID;
+            return device_id.has_value() && device_id.value() == LDC161XTraits::skDeviceId;
         }
 
         [[nodiscard]] bool verify_device_connected(const system::TimeoutMillis timeout_ms = skDefaultTimeout)
@@ -1357,7 +1357,7 @@ namespace valle::app
             requires(CLDC161XValidChannel<tkChannel, tkNumChannels>)
         [[nodiscard]] bool configure_channel(const LDC161XChannelConfigRaw& chan_config)
         {
-            // Write CLOCK DIVIDER
+            // Write CLOCK DIVIdER
             if (!write_register_and_verify_blocking(LDC161XTraits::skChannelClockDividerReg<tkChannel>,
                                                     chan_config.clock_divider.serialize(),
                                                     skDefaultTimeout))
@@ -1654,7 +1654,7 @@ namespace valle::app
             return read_auto_calibrate_drive_current_impl<LDC161XChannel::kChannel0>(timeout_ms);
         }
 
-        [[nodiscard]] I2CInterfaceT& get_i2c()
+        [[nodiscard]] I2cInterfaceT& get_i2c()
         {
             return m_i2c;
         }
@@ -1758,7 +1758,7 @@ namespace valle::app
             }
 
             return LDC161XDriveCurrentReg(std::move(drive_reg_opt.value()))
-                .at<LDC161XDriveCurrentRegFields::kInitIDrive>();
+                .at<LDC161XDriveCurrentRegFields::kInitIdrive>();
         }
 
         // ------------------------------------------------------------------------------
@@ -1935,7 +1935,7 @@ namespace valle::app
             }
         }
 
-        void async_transaction_callback(const LDC161XSensorModuleI2CInterfaceCallbackStatus status)
+        void async_transaction_callback(const LDC161XSensorModuleI2cInterfaceCallbackStatus status)
         {
             if (!m_read_callback)
             {
@@ -1950,8 +1950,8 @@ namespace valle::app
             }
             AsyncChainReadContext& context = *m_async_context;  // We know context is valid if we're in the callback
 
-            if (status == LDC161XSensorModuleI2CInterfaceCallbackStatus::kAborted ||
-                status == LDC161XSensorModuleI2CInterfaceCallbackStatus::kError)
+            if (status == LDC161XSensorModuleI2cInterfaceCallbackStatus::kAborted ||
+                status == LDC161XSensorModuleI2cInterfaceCallbackStatus::kError)
             {
                 on_async_result_fail();
                 return;
@@ -2074,7 +2074,7 @@ namespace valle::app
                 const LDC161XChannelConfig& channel_config = config.channels[i];
                 LDC161XChannelConfigRaw&    raw_config     = results[i];
 
-                // --- CLOCK DIVIDERS ---
+                // --- CLOCK DIVIdERS ---
                 const float fsensor_mhz = calculate_fsensor_mhz(channel_config.coil_config);
 
                 // Determine the maximum allowable fref
@@ -2131,7 +2131,7 @@ namespace valle::app
                 raw_config.offset.at<LDC161XOffsetRegFields::kOffset>() = offset;
 
                 // --- IDRIVE ---
-                raw_config.idrive.at<LDC161XDriveCurrentRegFields::kIDrive>() = channel_config.drive_current.value;
+                raw_config.idrive.at<LDC161XDriveCurrentRegFields::kIdrive>() = channel_config.drive_current.value;
                 raw_config.idrive.at<LDC161XDriveCurrentRegFields::kReserved>() =
                     LDC161XTraits::skDriveCurrentRegReservedValue;
             }

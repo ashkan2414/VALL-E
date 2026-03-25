@@ -6,16 +6,16 @@
 namespace valle::platform
 {
 
-    enum class I2CControllerID : uint8_t
+    enum class I2cPeripheralId : uint8_t
     {
-        kI2C1 = 1,
-        kI2C2 = 2,
-        kI2C3 = 3,
-        kI2C4 = 4,
+        kI2c1 = 1,
+        kI2c2 = 2,
+        kI2c3 = 3,
+        kI2c4 = 4,
     };
 
     template <bool tkIs10BitAddress>
-    struct I2CSlaveAddress
+    struct I2cSlaveAddress
     {
         using ValueT                      = std::conditional_t<tkIs10BitAddress, uint16_t, uint8_t>;
         static constexpr bool   skIs10Bit = tkIs10BitAddress;
@@ -23,9 +23,9 @@ namespace valle::platform
 
         ValueT address = 0U;
 
-        explicit constexpr I2CSlaveAddress() = default;
+        explicit constexpr I2cSlaveAddress() = default;
 
-        explicit constexpr I2CSlaveAddress(const ValueT addr) : address(addr & skMask)
+        explicit constexpr I2cSlaveAddress(const ValueT addr) : address(addr & skMask)
         {
         }
 
@@ -36,9 +36,9 @@ namespace valle::platform
         }
     };
 
-    using I2C7BitSlaveAddress    = I2CSlaveAddress<false>;
-    using I2C10BitSlaveAddress   = I2CSlaveAddress<true>;
-    using I2CSlaveAddressVariant = std::variant<I2C7BitSlaveAddress, I2C10BitSlaveAddress>;
-    using I2CDMATransferContext  = I2CSlaveAddressVariant;
+    using I2c7BitSlaveAddress    = I2cSlaveAddress<false>;
+    using I2c10BitSlaveAddress   = I2cSlaveAddress<true>;
+    using I2cSlaveAddressVariant = std::variant<I2c7BitSlaveAddress, I2c10BitSlaveAddress>;
+    using I2cDmaTransferContext  = I2cSlaveAddressVariant;
 
 }  // namespace valle::platform

@@ -10,17 +10,17 @@
 namespace valle::app
 {
     // TIM for Quadrature CrankEncoder
-    constexpr auto kCrankEncoderTIMControllerID = platform::TIMControllerID::kTim2;
-    struct CrankEncoderTIMControllerCTConfig : public platform::TIMControllerCTDefaultConfig
+    constexpr auto kCrankEncoderTimPeripheralId = platform::TimPeripheralId::kTim2;
+    struct CrankEncoderTimControllerCTConfig : public platform::TimControllerCTDefaultConfig
     {
-        using Ch1PinT = platform::GPIOPinA15Device;
-        using Ch2PinT = platform::GPIOPinB3Device;
+        using Ch1PinT = platform::GpioPinA15Device;
+        using Ch2PinT = platform::GpioPinB3Device;
     };
 
 }  // namespace valle::app
 
-VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTIMControllerID,
-                                        valle::app::CrankEncoderTIMControllerCTConfig{});
+VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTimPeripheralId,
+                                        valle::app::CrankEncoderTimControllerCTConfig{});
 
 namespace valle
 {
@@ -29,16 +29,16 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using AMT10xTIMControllerT = platform::TIMControllerDevice<kCrankEncoderTIMControllerID>;
-        using AMT10xTIMEncoderModuleT =
-            platform::app::AMT10xTIMEncoderModule<AMT10xTIMControllerT, platform::GPIOPinB5Device, AMT10xPPR::k2048>;
-        using AMT10xTIMEncoderModuleConfigT = typename AMT10xTIMEncoderModuleT::ConfigT;
+        using AMT10xTimControllerT = platform::TimControllerDevice<kCrankEncoderTimPeripheralId>;
+        using AMT10xTimEncoderModuleT =
+            platform::app::AMT10xTimEncoderModule<AMT10xTimControllerT, platform::GpioPinB5Device, AMT10xPPR::k2048>;
+        using AMT10xTimEncoderModuleConfigT = typename AMT10xTimEncoderModuleT::ConfigT;
 
-        using CrankEncoderModuleT       = platform::app::AMT10xCrankEncoderModuleX<AMT10xTIMEncoderModuleT>;
+        using CrankEncoderModuleT       = platform::app::AMT10xCrankEncoderModuleX<AMT10xTimEncoderModuleT>;
         using CrankEncoderModuleConfigT = typename CrankEncoderModuleT::ConfigT;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, CrankEncoderModuleT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UartLoggerT, CrankEncoderModuleT>;
 
         // ============================================================================
         // Root Driver
@@ -60,7 +60,7 @@ namespace valle
 
             RootDriver                 root;
             platform::CoreSystemDriver core;
-            UARTLoggerT                uart_logger;
+            UartLoggerT                uart_logger;
             CrankEncoderModuleT        crank_encoder;
         };
 

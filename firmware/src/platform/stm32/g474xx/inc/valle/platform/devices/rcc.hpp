@@ -22,7 +22,7 @@ namespace valle::platform
      * @brief Aggregated read-only information device for the entire RCC system.
      */
     template <typename T = void>
-    class RCCInfoDevice
+    class RccInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -30,33 +30,33 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InjectDevices = TypeList<HSIOscillatorInfoDevice<>,
-                                       HSEOscillatorInfoDevice<>,
-                                       HSI48OscillatorInfoDevice<>,
-                                       LSIOscillatorInfoDevice<>,
-                                       LSEOscillatorInfoDevice<>,
-                                       PLLInfoDevice<>,
-                                       SCTInfoDevice<>>;
+        using InjectDevices = TypeList<HsiOscillatorInfoDevice<>,
+                                       HseOscillatorInfoDevice<>,
+                                       Hsi48OscillatorInfoDevice<>,
+                                       LsiOscillatorInfoDevice<>,
+                                       LseOscillatorInfoDevice<>,
+                                       PllInfoDevice<>,
+                                       SctInfoDevice<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<HSIOscillatorInfoDevice<>>   m_hsi_info;
-        [[no_unique_address]] DeviceRef<HSEOscillatorInfoDevice<>>   m_hse_info;
-        [[no_unique_address]] DeviceRef<HSI48OscillatorInfoDevice<>> m_hsi48_info;
-        [[no_unique_address]] DeviceRef<LSIOscillatorInfoDevice<>>   m_lsi_info;
-        [[no_unique_address]] DeviceRef<LSEOscillatorInfoDevice<>>   m_lse_info;
-        [[no_unique_address]] DeviceRef<PLLInfoDevice<>>             m_pll_info;
-        [[no_unique_address]] DeviceRef<SCTInfoDevice<>>             m_sct_info;
+        [[no_unique_address]] DeviceRef<HsiOscillatorInfoDevice<>>   m_hsi_info;
+        [[no_unique_address]] DeviceRef<HseOscillatorInfoDevice<>>   m_hse_info;
+        [[no_unique_address]] DeviceRef<Hsi48OscillatorInfoDevice<>> m_hsi48_info;
+        [[no_unique_address]] DeviceRef<LsiOscillatorInfoDevice<>>   m_lsi_info;
+        [[no_unique_address]] DeviceRef<LseOscillatorInfoDevice<>>   m_lse_info;
+        [[no_unique_address]] DeviceRef<PllInfoDevice<>>             m_pll_info;
+        [[no_unique_address]] DeviceRef<SctInfoDevice<>>             m_sct_info;
 
     public:
-        RCCInfoDevice() = delete;
+        RccInfoDevice() = delete;
 
-        RCCInfoDevice(DeviceRef<HSIOscillatorInfoDevice<>>&&   hsi,
-                      DeviceRef<HSEOscillatorInfoDevice<>>&&   hse,
-                      DeviceRef<HSI48OscillatorInfoDevice<>>&& hsi48,
-                      DeviceRef<LSIOscillatorInfoDevice<>>&&   lsi,
-                      DeviceRef<LSEOscillatorInfoDevice<>>&&   lse,
-                      DeviceRef<PLLInfoDevice<>>&&             pll,
-                      DeviceRef<SCTInfoDevice<>>&&             sct)
+        RccInfoDevice(DeviceRef<HsiOscillatorInfoDevice<>>&&   hsi,
+                      DeviceRef<HseOscillatorInfoDevice<>>&&   hse,
+                      DeviceRef<Hsi48OscillatorInfoDevice<>>&& hsi48,
+                      DeviceRef<LsiOscillatorInfoDevice<>>&&   lsi,
+                      DeviceRef<LseOscillatorInfoDevice<>>&&   lse,
+                      DeviceRef<PllInfoDevice<>>&&             pll,
+                      DeviceRef<SctInfoDevice<>>&&             sct)
             : m_hsi_info(std::move(hsi))
             , m_hse_info(std::move(hse))
             , m_hsi48_info(std::move(hsi48))
@@ -123,7 +123,7 @@ namespace valle::platform
         {
             return m_pll_info->is_ready();
         }
-        [[nodiscard]] PLLSource get_pll_source() const
+        [[nodiscard]] PllSource get_pll_source() const
         {
             return m_pll_info->get_source();
         }
@@ -150,15 +150,15 @@ namespace valle::platform
         // ---------------------------------------------------------------------
         // PRESCALERS
         // ---------------------------------------------------------------------
-        [[nodiscard]] SCTAHBPrescaler get_ahb_prescaler() const
+        [[nodiscard]] SctAHBPrescaler get_ahb_prescaler() const
         {
             return m_sct_info->get_ahb_prescaler();
         }
-        [[nodiscard]] SCTAPB1Prescaler get_apb1_prescaler() const
+        [[nodiscard]] SctAPB1Prescaler get_apb1_prescaler() const
         {
             return m_sct_info->get_apb1_prescaler();
         }
-        [[nodiscard]] SCTAPB2Prescaler get_apb2_prescaler() const
+        [[nodiscard]] SctAPB2Prescaler get_apb2_prescaler() const
         {
             return m_sct_info->get_apb2_prescaler();
         }
@@ -166,7 +166,7 @@ namespace valle::platform
         // ---------------------------------------------------------------------
         // SYSTEM CLOCK TREE (SCT)
         // ---------------------------------------------------------------------
-        [[nodiscard]] SCTSourceStatus get_sysclk_source() const
+        [[nodiscard]] SctSourceStatus get_sysclk_source() const
         {
             return m_sct_info->get_source_status();
         }
@@ -214,101 +214,101 @@ namespace valle::platform
         // ---------------------------------------------------------------------
         // PERIPHERAL CLOCK SOURCES
         // ---------------------------------------------------------------------
-        [[nodiscard]] SCTUSART1ClockSource get_usart1_source() const
+        [[nodiscard]] SctUSART1ClockSource get_usart1_source() const
         {
             return m_sct_info->get_usart1_source();
         }
 
-        [[nodiscard]] SCTUSART2ClockSource get_usart2_source() const
+        [[nodiscard]] SctUSART2ClockSource get_usart2_source() const
         {
             return m_sct_info->get_usart2_source();
         }
 
-        [[nodiscard]] SCTUSART3ClockSource get_usart3_source() const
+        [[nodiscard]] SctUSART3ClockSource get_usart3_source() const
         {
             return m_sct_info->get_usart3_source();
         }
 
 #if defined(UART4)
-        [[nodiscard]] SCTUART4ClockSource get_uart4_source() const
+        [[nodiscard]] SctUart4ClockSource get_uart4_source() const
         {
             return m_sct_info->get_uart4_source();
         }
 
-        [[nodiscard]] SCTUART5ClockSource get_uart5_source() const
+        [[nodiscard]] SctUart5ClockSource get_uart5_source() const
         {
             return m_sct_info->get_uart5_source();
         }
 #endif
 
-        [[nodiscard]] SCTLPUART1ClockSource get_lpuart1_source() const
+        [[nodiscard]] SctLPUart1ClockSource get_lpuart1_source() const
         {
             return m_sct_info->get_lpuart1_source();
         }
 
-        [[nodiscard]] SCTI2C1ClockSource get_i2c1_source() const
+        [[nodiscard]] SctI2c1ClockSource get_i2c1_source() const
         {
             return m_sct_info->get_i2c1_source();
         }
 
-        [[nodiscard]] SCTI2C2ClockSource get_i2c2_source() const
+        [[nodiscard]] SctI2c2ClockSource get_i2c2_source() const
         {
             return m_sct_info->get_i2c2_source();
         }
 
-        [[nodiscard]] SCTI2C3ClockSource get_i2c3_source() const
+        [[nodiscard]] SctI2c3ClockSource get_i2c3_source() const
         {
             return m_sct_info->get_i2c3_source();
         }
 
-        [[nodiscard]] SCTI2C4ClockSource get_i2c4_source() const
+        [[nodiscard]] SctI2c4ClockSource get_i2c4_source() const
         {
             return m_sct_info->get_i2c4_source();
         }
 
-        [[nodiscard]] SCTLPTIM1ClockSource get_lptim1_source() const
+        [[nodiscard]] SctLPTim1ClockSource get_lptim1_source() const
         {
             return m_sct_info->get_lptim1_source();
         }
 
-        [[nodiscard]] SCTSAI1ClockSource get_sai1_source() const
+        [[nodiscard]] SctSAI1ClockSource get_sai1_source() const
         {
             return m_sct_info->get_sai1_source();
         }
 
-        [[nodiscard]] SCTI2SClockSource get_i2s_source() const
+        [[nodiscard]] SctI2SClockSource get_i2s_source() const
         {
             return m_sct_info->get_i2s_source();
         }
 
 #if defined(FDCAN1)
-        [[nodiscard]] SCTFDCANClockSource get_fdcan_source() const
+        [[nodiscard]] SctFDCANClockSource get_fdcan_source() const
         {
             return m_sct_info->get_fdcan_source();
         }
 #endif /* FDCAN1 */
 
-        [[nodiscard]] SCTRNGClockSource get_rng_source() const
+        [[nodiscard]] SctRNGClockSource get_rng_source() const
         {
             return m_sct_info->get_rng_source();
         }
 
-        [[nodiscard]] SCTUSBClockSource get_usb_source() const
+        [[nodiscard]] SctUSBClockSource get_usb_source() const
         {
             return m_sct_info->get_usb_source();
         }
 
-        [[nodiscard]] SCTADC12ClockSource get_adc12_source() const
+        [[nodiscard]] SctAdc12ClockSource get_adc12_source() const
         {
             return m_sct_info->get_adc12_source();
         }
 
-        [[nodiscard]] SCTADC345ClockSource get_adc345_source() const
+        [[nodiscard]] SctAdc345ClockSource get_adc345_source() const
         {
             return m_sct_info->get_adc345_source();
         }
 
-        [[nodiscard]] SCTQUADSPIClockSource get_quadspi_source() const
+        [[nodiscard]] SctQuadSpiClockSource get_quadspi_source() const
         {
             return m_sct_info->get_quadspi_source();
         }
@@ -317,13 +317,13 @@ namespace valle::platform
         {
             switch (get_usart1_source())
             {
-                case SCTUSART1ClockSource::kPclk2:
+                case SctUSART1ClockSource::kPclk2:
                     return get_pclk2_freq_hz();
-                case SCTUSART1ClockSource::kSysclk:
+                case SctUSART1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUSART1ClockSource::kHSI:
+                case SctUSART1ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUSART1ClockSource::kLSE:
+                case SctUSART1ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -334,13 +334,13 @@ namespace valle::platform
         {
             switch (get_usart2_source())
             {
-                case SCTUSART2ClockSource::kPclk1:
+                case SctUSART2ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUSART2ClockSource::kSysclk:
+                case SctUSART2ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUSART2ClockSource::kHSI:
+                case SctUSART2ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUSART2ClockSource::kLSE:
+                case SctUSART2ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -351,13 +351,13 @@ namespace valle::platform
         {
             switch (get_usart3_source())
             {
-                case SCTUSART3ClockSource::kPclk1:
+                case SctUSART3ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUSART3ClockSource::kSysclk:
+                case SctUSART3ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUSART3ClockSource::kHSI:
+                case SctUSART3ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUSART3ClockSource::kLSE:
+                case SctUSART3ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -368,13 +368,13 @@ namespace valle::platform
         {
             switch (get_uart4_source())
             {
-                case SCTUART4ClockSource::kPclk1:
+                case SctUart4ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUART4ClockSource::kSysclk:
+                case SctUart4ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUART4ClockSource::kHSI:
+                case SctUart4ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUART4ClockSource::kLSE:
+                case SctUart4ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -385,13 +385,13 @@ namespace valle::platform
         {
             switch (get_uart5_source())
             {
-                case SCTUART5ClockSource::kPclk1:
+                case SctUart5ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUART5ClockSource::kSysclk:
+                case SctUart5ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUART5ClockSource::kHSI:
+                case SctUart5ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUART5ClockSource::kLSE:
+                case SctUart5ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -402,13 +402,13 @@ namespace valle::platform
         {
             switch (get_lpuart1_source())
             {
-                case SCTLPUART1ClockSource::kPclk1:
+                case SctLPUart1ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTLPUART1ClockSource::kSysclk:
+                case SctLPUart1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTLPUART1ClockSource::kHSI:
+                case SctLPUart1ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTLPUART1ClockSource::kLSE:
+                case SctLPUart1ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -419,11 +419,11 @@ namespace valle::platform
         {
             switch (get_i2c1_source())
             {
-                case SCTI2C1ClockSource::kPclk1:
+                case SctI2c1ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C1ClockSource::kSysclk:
+                case SctI2c1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C1ClockSource::kHSI:
+                case SctI2c1ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -434,11 +434,11 @@ namespace valle::platform
         {
             switch (get_i2c2_source())
             {
-                case SCTI2C2ClockSource::kPclk1:
+                case SctI2c2ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C2ClockSource::kSysclk:
+                case SctI2c2ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C2ClockSource::kHSI:
+                case SctI2c2ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -449,11 +449,11 @@ namespace valle::platform
         {
             switch (get_i2c3_source())
             {
-                case SCTI2C3ClockSource::kPclk1:
+                case SctI2c3ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C3ClockSource::kSysclk:
+                case SctI2c3ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C3ClockSource::kHSI:
+                case SctI2c3ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -464,11 +464,11 @@ namespace valle::platform
         {
             switch (get_i2c4_source())
             {
-                case SCTI2C4ClockSource::kPclk1:
+                case SctI2c4ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C4ClockSource::kSysclk:
+                case SctI2c4ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C4ClockSource::kHSI:
+                case SctI2c4ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -479,13 +479,13 @@ namespace valle::platform
         {
             switch (get_lptim1_source())
             {
-                case SCTLPTIM1ClockSource::kPclk1:
+                case SctLPTim1ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTLPTIM1ClockSource::kLSI:
+                case SctLPTim1ClockSource::kLSI:
                     return get_lsi_freq_hz();
-                case SCTLPTIM1ClockSource::kHSI:
+                case SctLPTim1ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTLPTIM1ClockSource::kLSE:
+                case SctLPTim1ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -496,13 +496,13 @@ namespace valle::platform
         {
             switch (get_sai1_source())
             {
-                case SCTSAI1ClockSource::kSysclk:
+                case SctSAI1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTSAI1ClockSource::kPLLQ:
+                case SctSAI1ClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
-                case SCTSAI1ClockSource::kPIN:
+                case SctSAI1ClockSource::kPIN:
                     return std::nullopt;
-                case SCTSAI1ClockSource::kHSI:
+                case SctSAI1ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -513,13 +513,13 @@ namespace valle::platform
         {
             switch (get_i2s_source())
             {
-                case SCTI2SClockSource::kSysclk:
+                case SctI2SClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2SClockSource::kPLLQ:
+                case SctI2SClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
-                case SCTI2SClockSource::kPIN:
+                case SctI2SClockSource::kPIN:
                     return std::nullopt;
-                case SCTI2SClockSource::kHSI:
+                case SctI2SClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -530,11 +530,11 @@ namespace valle::platform
         {
             switch (get_fdcan_source())
             {
-                case SCTFDCANClockSource::kHSE:
+                case SctFDCANClockSource::kHSE:
                     return get_hse_freq_hz();
-                case SCTFDCANClockSource::kPLLQ:
+                case SctFDCANClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
-                case SCTFDCANClockSource::kPclk1:
+                case SctFDCANClockSource::kPclk1:
                     return get_pclk1_freq_hz();
             }
 
@@ -545,9 +545,9 @@ namespace valle::platform
         {
             switch (get_rng_source())
             {
-                case SCTRNGClockSource::kHSI48:
+                case SctRNGClockSource::kHsi48:
                     return get_hsi48_freq_hz();
-                case SCTRNGClockSource::kPLLQ:
+                case SctRNGClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
             }
 
@@ -558,9 +558,9 @@ namespace valle::platform
         {
             switch (get_usb_source())
             {
-                case SCTUSBClockSource::kHSI48:
+                case SctUSBClockSource::kHsi48:
                     return get_hsi48_freq_hz();
-                case SCTUSBClockSource::kPLLQ:
+                case SctUSBClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
             }
 
@@ -571,11 +571,11 @@ namespace valle::platform
         {
             switch (get_adc12_source())
             {
-                case SCTADC12ClockSource::kNone:
+                case SctAdc12ClockSource::kNone:
                     return get_hclk_freq_hz();
-                case SCTADC12ClockSource::kPLLP:
+                case SctAdc12ClockSource::kPllOutputP:
                     return get_pll_p_output_freq_hz();
-                case SCTADC12ClockSource::kSysclk:
+                case SctAdc12ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
             }
 
@@ -586,11 +586,11 @@ namespace valle::platform
         {
             switch (get_adc345_source())
             {
-                case SCTADC345ClockSource::kNone:
+                case SctAdc345ClockSource::kNone:
                     return get_hclk_freq_hz();
-                case SCTADC345ClockSource::kPLLP:
+                case SctAdc345ClockSource::kPllOutputP:
                     return get_pll_p_output_freq_hz();
-                case SCTADC345ClockSource::kSysclk:
+                case SctAdc345ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
             }
 
@@ -601,11 +601,11 @@ namespace valle::platform
         {
             switch (get_quadspi_source())
             {
-                case SCTQUADSPIClockSource::kSysclk:
+                case SctQuadSpiClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTQUADSPIClockSource::kHSI:
+                case SctQuadSpiClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTQUADSPIClockSource::kPLLQ:
+                case SctQuadSpiClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
             }
 
@@ -623,20 +623,20 @@ namespace valle::platform
     /**
      * @brief Configuration for the RCC device.
      */
-    struct RCCConfig
+    struct RccConfig
     {
         // Oscillators
-        HSIOscillatorConfig   hsi{};
-        HSEOscillatorConfig   hse{};
-        HSI48OscillatorConfig hsi48{};
-        LSIOscillatorConfig   lsi{};
-        LSEOscillatorConfig   lse{};
+        HsiOscillatorConfig   hsi{};
+        HseOscillatorConfig   hse{};
+        Hsi48OscillatorConfig hsi48{};
+        LsiOscillatorConfig   lsi{};
+        LseOscillatorConfig   lse{};
 
         // PLL
-        PLLConfig pll{};
+        PllConfig pll{};
 
         // System clock tree
-        SCTConfig sct{};
+        SctConfig sct{};
 
         [[nodiscard]] constexpr std::optional<std::string_view> validate(
             const PowerVoltageRangeMode voltage_range) const
@@ -648,7 +648,7 @@ namespace valle::platform
 
             switch (sct.sysclk_source)
             {
-                case SCTSYSCLKSource::kHSI:
+                case SctSYSCLKSource::kHSI:
                 {
                     if (!hsi.enabled)
                     {
@@ -657,7 +657,7 @@ namespace valle::platform
 
                     break;
                 }
-                case SCTSYSCLKSource::kHSE:
+                case SctSYSCLKSource::kHSE:
                 {
                     if (!hse.enabled)
                     {
@@ -666,7 +666,7 @@ namespace valle::platform
 
                     break;
                 }
-                case SCTSYSCLKSource::kPLL:
+                case SctSYSCLKSource::kPLL:
                 {
                     if (!pll.enabled)
                     {
@@ -724,10 +724,10 @@ namespace valle::platform
         {
             switch (pll.source)
             {
-                case PLLSource::kHSI:
+                case PllSource::kHSI:
                     return get_hsi_freq_hz();
 
-                case PLLSource::kHSE:
+                case PllSource::kHSE:
                     return get_hse_freq_hz();
 
                 default:
@@ -768,13 +768,13 @@ namespace valle::platform
         {
             switch (sct.sysclk_source)
             {
-                case SCTSYSCLKSource::kHSI:
+                case SctSYSCLKSource::kHSI:
                     return get_hsi_freq_hz();
 
-                case SCTSYSCLKSource::kHSE:
+                case SctSYSCLKSource::kHSE:
                     return get_hse_freq_hz();
 
-                case SCTSYSCLKSource::kPLL:
+                case SctSYSCLKSource::kPLL:
                     return get_pll_r_output_freq_hz();
             }
 
@@ -824,21 +824,21 @@ namespace valle::platform
         {
             switch (sct.mco_source)
             {
-                case SCTMCOClockSource::kNoClock:
+                case SctMCOClockSource::kNoClock:
                     return 0U;
-                case SCTMCOClockSource::kHSI:
+                case SctMCOClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTMCOClockSource::kHSE:
+                case SctMCOClockSource::kHSE:
                     return get_hse_freq_hz();
-                case SCTMCOClockSource::kHSI48:
+                case SctMCOClockSource::kHsi48:
                     return get_hsi48_freq_hz();
-                case SCTMCOClockSource::kLSI:
+                case SctMCOClockSource::kLSI:
                     return get_lsi_freq_hz();
-                case SCTMCOClockSource::kLSE:
+                case SctMCOClockSource::kLSE:
                     return get_lse_freq_hz();
-                case SCTMCOClockSource::kPLL:
+                case SctMCOClockSource::kPLL:
                     return get_pll_r_output_freq_hz();
-                case SCTMCOClockSource::kSysclk:
+                case SctMCOClockSource::kSysclk:
                     return get_sysclk_freq_hz();
             }
 
@@ -854,13 +854,13 @@ namespace valle::platform
         {
             switch (sct.usart1_source)
             {
-                case SCTUSART1ClockSource::kPclk2:
+                case SctUSART1ClockSource::kPclk2:
                     return get_pclk2_freq_hz();
-                case SCTUSART1ClockSource::kSysclk:
+                case SctUSART1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUSART1ClockSource::kHSI:
+                case SctUSART1ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUSART1ClockSource::kLSE:
+                case SctUSART1ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -871,13 +871,13 @@ namespace valle::platform
         {
             switch (sct.usart2_source)
             {
-                case SCTUSART2ClockSource::kPclk1:
+                case SctUSART2ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUSART2ClockSource::kSysclk:
+                case SctUSART2ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUSART2ClockSource::kHSI:
+                case SctUSART2ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUSART2ClockSource::kLSE:
+                case SctUSART2ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -888,13 +888,13 @@ namespace valle::platform
         {
             switch (sct.usart3_source)
             {
-                case SCTUSART3ClockSource::kPclk1:
+                case SctUSART3ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUSART3ClockSource::kSysclk:
+                case SctUSART3ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUSART3ClockSource::kHSI:
+                case SctUSART3ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUSART3ClockSource::kLSE:
+                case SctUSART3ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -905,13 +905,13 @@ namespace valle::platform
         {
             switch (sct.uart4_source)
             {
-                case SCTUART4ClockSource::kPclk1:
+                case SctUart4ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUART4ClockSource::kSysclk:
+                case SctUart4ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUART4ClockSource::kHSI:
+                case SctUart4ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUART4ClockSource::kLSE:
+                case SctUart4ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -922,13 +922,13 @@ namespace valle::platform
         {
             switch (sct.uart5_source)
             {
-                case SCTUART5ClockSource::kPclk1:
+                case SctUart5ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTUART5ClockSource::kSysclk:
+                case SctUart5ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTUART5ClockSource::kHSI:
+                case SctUart5ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTUART5ClockSource::kLSE:
+                case SctUart5ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -939,13 +939,13 @@ namespace valle::platform
         {
             switch (sct.lpuart1_source)
             {
-                case SCTLPUART1ClockSource::kPclk1:
+                case SctLPUart1ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTLPUART1ClockSource::kSysclk:
+                case SctLPUart1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTLPUART1ClockSource::kHSI:
+                case SctLPUart1ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTLPUART1ClockSource::kLSE:
+                case SctLPUart1ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -956,11 +956,11 @@ namespace valle::platform
         {
             switch (sct.i2c1_source)
             {
-                case SCTI2C1ClockSource::kPclk1:
+                case SctI2c1ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C1ClockSource::kSysclk:
+                case SctI2c1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C1ClockSource::kHSI:
+                case SctI2c1ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -971,11 +971,11 @@ namespace valle::platform
         {
             switch (sct.i2c2_source)
             {
-                case SCTI2C2ClockSource::kPclk1:
+                case SctI2c2ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C2ClockSource::kSysclk:
+                case SctI2c2ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C2ClockSource::kHSI:
+                case SctI2c2ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -986,11 +986,11 @@ namespace valle::platform
         {
             switch (sct.i2c3_source)
             {
-                case SCTI2C3ClockSource::kPclk1:
+                case SctI2c3ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C3ClockSource::kSysclk:
+                case SctI2c3ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C3ClockSource::kHSI:
+                case SctI2c3ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -1001,11 +1001,11 @@ namespace valle::platform
         {
             switch (sct.i2c4_source)
             {
-                case SCTI2C4ClockSource::kPclk1:
+                case SctI2c4ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTI2C4ClockSource::kSysclk:
+                case SctI2c4ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2C4ClockSource::kHSI:
+                case SctI2c4ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -1016,13 +1016,13 @@ namespace valle::platform
         {
             switch (sct.lptim1_source)
             {
-                case SCTLPTIM1ClockSource::kPclk1:
+                case SctLPTim1ClockSource::kPclk1:
                     return get_pclk1_freq_hz();
-                case SCTLPTIM1ClockSource::kLSI:
+                case SctLPTim1ClockSource::kLSI:
                     return get_lsi_freq_hz();
-                case SCTLPTIM1ClockSource::kHSI:
+                case SctLPTim1ClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTLPTIM1ClockSource::kLSE:
+                case SctLPTim1ClockSource::kLSE:
                     return get_lse_freq_hz();
             }
 
@@ -1033,13 +1033,13 @@ namespace valle::platform
         {
             switch (sct.sai1_source)
             {
-                case SCTSAI1ClockSource::kSysclk:
+                case SctSAI1ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTSAI1ClockSource::kPLLQ:
+                case SctSAI1ClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
-                case SCTSAI1ClockSource::kPIN:
+                case SctSAI1ClockSource::kPIN:
                     return std::nullopt;
-                case SCTSAI1ClockSource::kHSI:
+                case SctSAI1ClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -1050,13 +1050,13 @@ namespace valle::platform
         {
             switch (sct.i2s_source)
             {
-                case SCTI2SClockSource::kSysclk:
+                case SctI2SClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTI2SClockSource::kPLLQ:
+                case SctI2SClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
-                case SCTI2SClockSource::kPIN:
+                case SctI2SClockSource::kPIN:
                     return std::nullopt;
-                case SCTI2SClockSource::kHSI:
+                case SctI2SClockSource::kHSI:
                     return get_hsi_freq_hz();
             }
 
@@ -1067,11 +1067,11 @@ namespace valle::platform
         {
             switch (sct.fdcan_source)
             {
-                case SCTFDCANClockSource::kHSE:
+                case SctFDCANClockSource::kHSE:
                     return get_hse_freq_hz();
-                case SCTFDCANClockSource::kPLLQ:
+                case SctFDCANClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
-                case SCTFDCANClockSource::kPclk1:
+                case SctFDCANClockSource::kPclk1:
                     return get_pclk1_freq_hz();
             }
 
@@ -1082,9 +1082,9 @@ namespace valle::platform
         {
             switch (sct.rng_source)
             {
-                case SCTRNGClockSource::kHSI48:
+                case SctRNGClockSource::kHsi48:
                     return get_hsi48_freq_hz();
-                case SCTRNGClockSource::kPLLQ:
+                case SctRNGClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
             }
 
@@ -1095,9 +1095,9 @@ namespace valle::platform
         {
             switch (sct.usb_source)
             {
-                case SCTUSBClockSource::kHSI48:
+                case SctUSBClockSource::kHsi48:
                     return get_hsi48_freq_hz();
-                case SCTUSBClockSource::kPLLQ:
+                case SctUSBClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
             }
 
@@ -1108,11 +1108,11 @@ namespace valle::platform
         {
             switch (sct.adc12_source)
             {
-                case SCTADC12ClockSource::kNone:
+                case SctAdc12ClockSource::kNone:
                     return get_hclk_freq_hz();
-                case SCTADC12ClockSource::kPLLP:
+                case SctAdc12ClockSource::kPllOutputP:
                     return get_pll_p_output_freq_hz();
-                case SCTADC12ClockSource::kSysclk:
+                case SctAdc12ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
             }
 
@@ -1123,11 +1123,11 @@ namespace valle::platform
         {
             switch (sct.adc345_source)
             {
-                case SCTADC345ClockSource::kNone:
+                case SctAdc345ClockSource::kNone:
                     return get_hclk_freq_hz();
-                case SCTADC345ClockSource::kPLLP:
+                case SctAdc345ClockSource::kPllOutputP:
                     return get_pll_p_output_freq_hz();
-                case SCTADC345ClockSource::kSysclk:
+                case SctAdc345ClockSource::kSysclk:
                     return get_sysclk_freq_hz();
             }
 
@@ -1138,11 +1138,11 @@ namespace valle::platform
         {
             switch (sct.quadspi_source)
             {
-                case SCTQUADSPIClockSource::kSysclk:
+                case SctQuadSpiClockSource::kSysclk:
                     return get_sysclk_freq_hz();
-                case SCTQUADSPIClockSource::kHSI:
+                case SctQuadSpiClockSource::kHSI:
                     return get_hsi_freq_hz();
-                case SCTQUADSPIClockSource::kPLLQ:
+                case SctQuadSpiClockSource::kPllOutputQ:
                     return get_pll_q_output_freq_hz();
             }
 
@@ -1158,40 +1158,40 @@ namespace valle::platform
      * @brief Reset and Clock Control device.
      */
     template <typename T = void>
-    class RCCDevice
+    class RccDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InjectDevices = TypeList<HSIOscillatorDevice<>,
-                                       HSEOscillatorDevice<>,
-                                       HSI48OscillatorDevice<>,
-                                       LSIOscillatorDevice<>,
-                                       LSEOscillatorDevice<>,
-                                       PLLDevice<>,
-                                       SCTDevice<>>;
+        using InjectDevices = TypeList<HsiOscillatorDevice<>,
+                                       HseOscillatorDevice<>,
+                                       Hsi48OscillatorDevice<>,
+                                       LsiOscillatorDevice<>,
+                                       LseOscillatorDevice<>,
+                                       PllDevice<>,
+                                       SctDevice<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<HSIOscillatorDevice<>>   m_hsi;
-        [[no_unique_address]] DeviceRef<HSEOscillatorDevice<>>   m_hse;
-        [[no_unique_address]] DeviceRef<HSI48OscillatorDevice<>> m_hsi48;
-        [[no_unique_address]] DeviceRef<LSIOscillatorDevice<>>   m_lsi;
-        [[no_unique_address]] DeviceRef<LSEOscillatorDevice<>>   m_lse;
-        [[no_unique_address]] DeviceRef<PLLDevice<>>             m_pll;
-        [[no_unique_address]] DeviceRef<SCTDevice<>>             m_sct;
+        [[no_unique_address]] DeviceRef<HsiOscillatorDevice<>>   m_hsi;
+        [[no_unique_address]] DeviceRef<HseOscillatorDevice<>>   m_hse;
+        [[no_unique_address]] DeviceRef<Hsi48OscillatorDevice<>> m_hsi48;
+        [[no_unique_address]] DeviceRef<LsiOscillatorDevice<>>   m_lsi;
+        [[no_unique_address]] DeviceRef<LseOscillatorDevice<>>   m_lse;
+        [[no_unique_address]] DeviceRef<PllDevice<>>             m_pll;
+        [[no_unique_address]] DeviceRef<SctDevice<>>             m_sct;
 
     public:
-        RCCDevice() = delete;
+        RccDevice() = delete;
 
-        RCCDevice(DeviceRef<HSIOscillatorDevice<>>&&   hsi,
-                  DeviceRef<HSEOscillatorDevice<>>&&   hse,
-                  DeviceRef<HSI48OscillatorDevice<>>&& hsi48,
-                  DeviceRef<LSIOscillatorDevice<>>&&   lsi,
-                  DeviceRef<LSEOscillatorDevice<>>&&   lse,
-                  DeviceRef<PLLDevice<>>&&             pll,
-                  DeviceRef<SCTDevice<>>&&             sct)
+        RccDevice(DeviceRef<HsiOscillatorDevice<>>&&   hsi,
+                  DeviceRef<HseOscillatorDevice<>>&&   hse,
+                  DeviceRef<Hsi48OscillatorDevice<>>&& hsi48,
+                  DeviceRef<LsiOscillatorDevice<>>&&   lsi,
+                  DeviceRef<LseOscillatorDevice<>>&&   lse,
+                  DeviceRef<PllDevice<>>&&             pll,
+                  DeviceRef<SctDevice<>>&&             sct)
             : m_hsi(std::move(hsi))
             , m_hse(std::move(hse))
             , m_hsi48(std::move(hsi48))
@@ -1211,7 +1211,7 @@ namespace valle::platform
          * @param config RCC configuration.
          * @return true if the source switch completed successfully.
          */
-        [[nodiscard]] inline bool init(const RCCConfig& config)
+        [[nodiscard]] inline bool init(const RccConfig& config)
         {
             if (!m_hsi->init(config.hsi))
             {

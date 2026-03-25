@@ -4,10 +4,10 @@ namespace valle::platform
 {
 
     template <typename T>
-    concept CUnboundISRRouter = requires { typename T::UnboundIsrHandlerTag; };
+    concept CUnboundIsrRouter = requires { typename T::UnboundIsrHandlerTag; };
 
     template <typename T>
-    concept CBoundISRRouter = !CUnboundISRRouter<T>;
+    concept CBoundIsrRouter = !CUnboundIsrRouter<T>;
 
     template <bool tkAck = true>
     struct ISRRouterConfig
@@ -16,12 +16,12 @@ namespace valle::platform
     };
 
     template <typename T>
-    concept CISRRouterHasConfig = requires { typename T::skConfig; };
+    concept CIsrRouterHasConfig = requires { typename T::skConfig; };
 
     template <typename T>
-    static constexpr auto kISRRouterConfig = []
+    static constexpr auto kIsrRouterConfig = []
     {
-        if constexpr (CISRRouterHasConfig<T>)
+        if constexpr (CIsrRouterHasConfig<T>)
         {
             return T::skConfig;
         }
@@ -32,6 +32,6 @@ namespace valle::platform
     }();
 
     template <typename T>
-    static constexpr bool kISRRouterConfigAck = kISRRouterConfig<T>.skAck;
+    static constexpr bool kIsrRouterConfigAck = kIsrRouterConfig<T>.skAck;
 
 }  // namespace valle::platform

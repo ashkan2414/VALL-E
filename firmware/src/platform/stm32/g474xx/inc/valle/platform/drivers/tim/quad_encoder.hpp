@@ -4,10 +4,10 @@
 
 namespace valle::platform
 {
-    struct TIMQuadEncoderConfig
+    struct TimQuadEncoderConfig
     {
-        GPIOAlternateFunctionConfig gpio_config{};     // GPIO config for encoder pins
-        TIMControllerEncoderConfig  encoder_config{};  // TIM Encoder mode config (input capture settings)
+        GpioAlternateFunctionConfig gpio_config{};     // GPIO config for encoder pins
+        TimControllerEncoderConfig  encoder_config{};  // TIM Encoder mode config (input capture settings)
     };
 
     /**
@@ -15,33 +15,33 @@ namespace valle::platform
      * from an encoder.
      */
     template <typename TControllerDevice>
-    class TIMQuadEncoderDriver
+    class TimQuadEncoderDriver
     {
     public:
         using ControllerT                               = TControllerDevice;
-        static constexpr TIMControllerID skControllerID = ControllerT::skControllerID;
+        static constexpr TimPeripheralId skPeripheralId = ControllerT::skPeripheralId;
 
         using TraitsT       = typename ControllerT::TraitsT;
-        using InterfaceT    = TIMControllerInterface<skControllerID>;
+        using InterfaceT    = TimControllerInterface<skPeripheralId>;
         using CounterValueT = typename TraitsT::CounterValueT;
 
         using InjectDevices = TypeList<ControllerT>;
 
-        static_assert(ControllerT::skHasCh1Pin, "TIMQuadEncoderDriver requires CH1 pin");
-        static_assert(ControllerT::skHasCh2Pin, "TIMQuadEncoderDriver requires CH2 pin");
+        static_assert(ControllerT::skHasCh1Pin, "TimQuadEncoderDriver requires CH1 pin");
+        static_assert(ControllerT::skHasCh2Pin, "TimQuadEncoderDriver requires CH2 pin");
 
     private:
         DeviceRef<ControllerT> m_controller;
 
     public:
-        TIMQuadEncoderDriver() = delete;
+        TimQuadEncoderDriver() = delete;
 
         template <typename... TArgs>
-        explicit TIMQuadEncoderDriver(DeviceRef<ControllerT>&& controller) : m_controller(std::move(controller))
+        explicit TimQuadEncoderDriver(DeviceRef<ControllerT>&& controller) : m_controller(std::move(controller))
         {
         }
 
-        [[nodiscard]] bool init(const TIMQuadEncoderConfig& config)
+        [[nodiscard]] bool init(const TimQuadEncoderConfig& config)
         {
             if (!m_controller->init())
             {
@@ -75,7 +75,7 @@ namespace valle::platform
 
         /**
          * @brief Returns raw counter value.
-         * Note: On TIM2/TIM5 this is 32-bit. Others 16-bit.
+         * Note: On Tim2/Tim5 this is 32-bit. Others 16-bit.
          */
         [[nodiscard]] CounterValueT get_count() const
         {

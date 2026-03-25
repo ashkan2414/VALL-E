@@ -15,7 +15,7 @@ namespace valle::platform
     // PLL INFO DEVICE
     // =========================================================================
     template <typename T = void>
-    class PLLInfoDevice
+    class PllInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -23,20 +23,20 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InterfaceT = PLLInterface;
+        using InterfaceT = PllInterface;
 
         using DependDevices = TypeList<>;
-        using InjectDevices = TypeList<HSEOscillatorInfoDevice<>, HSIOscillatorInfoDevice<>>;
+        using InjectDevices = TypeList<HseOscillatorInfoDevice<>, HsiOscillatorInfoDevice<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<HSEOscillatorInfoDevice<>> m_hse_info_device;
-        [[no_unique_address]] DeviceRef<HSIOscillatorInfoDevice<>> m_hsi_info_device;
+        [[no_unique_address]] DeviceRef<HseOscillatorInfoDevice<>> m_hse_info_device;
+        [[no_unique_address]] DeviceRef<HsiOscillatorInfoDevice<>> m_hsi_info_device;
 
     public:
-        PLLInfoDevice() = delete;
+        PllInfoDevice() = delete;
 
-        PLLInfoDevice(DeviceRef<HSEOscillatorInfoDevice<>>&& hse_info_device,
-                      DeviceRef<HSIOscillatorInfoDevice<>>&& hsi_info_device)
+        PllInfoDevice(DeviceRef<HseOscillatorInfoDevice<>>&& hse_info_device,
+                      DeviceRef<HsiOscillatorInfoDevice<>>&& hsi_info_device)
             : m_hse_info_device(std::move(hse_info_device)), m_hsi_info_device(std::move(hsi_info_device))
         {
         }
@@ -46,12 +46,12 @@ namespace valle::platform
             return InterfaceT::is_ready();
         }
 
-        [[nodiscard]] PLLSource get_source() const
+        [[nodiscard]] PllSource get_source() const
         {
             return InterfaceT::get_source();
         }
 
-        [[nodiscard]] PLLMDivider get_m_divider() const
+        [[nodiscard]] PllMDivider get_m_divider() const
         {
             return InterfaceT::get_m_divider();
         }
@@ -61,17 +61,17 @@ namespace valle::platform
             return InterfaceT::get_n_multiplier();
         }
 
-        [[nodiscard]] PLLPDivider get_p_divider() const
+        [[nodiscard]] PllPDivider get_p_divider() const
         {
             return InterfaceT::get_p_divider();
         }
 
-        [[nodiscard]] PLLQDivider get_q_divider() const
+        [[nodiscard]] PllQDivider get_q_divider() const
         {
             return InterfaceT::get_q_divider();
         }
 
-        [[nodiscard]] PLLRDivider get_r_divider() const
+        [[nodiscard]] PllRDivider get_r_divider() const
         {
             return InterfaceT::get_r_divider();
         }
@@ -91,14 +91,14 @@ namespace valle::platform
             return InterfaceT::is_r_output_enabled();
         }
 
-        [[nodiscard]] constexpr uint32_t get_source_freq_hz_for_source(const PLLSource source) const
+        [[nodiscard]] constexpr uint32_t get_source_freq_hz_for_source(const PllSource source) const
         {
             switch (source)
             {
-                case PLLSource::kHSI:
+                case PllSource::kHSI:
                     return m_hsi_info_device->get_frequency_hz();
 
-                case PLLSource::kHSE:
+                case PllSource::kHSE:
                     return m_hse_info_device->get_frequency_hz();
 
                 default:
@@ -144,15 +144,15 @@ namespace valle::platform
      * - P/Q/R dividers are optional because not every PLL output must be enabled.
      * - At least one output should generally be configured if the PLL is being used.
      */
-    struct PLLConfig
+    struct PllConfig
     {
         bool        enabled          = true;
-        PLLSource   source           = PLLSource::kHSI;
-        PLLMDivider m_divider        = PLLMDivider::kDiv4;
+        PllSource   source           = PllSource::kHSI;
+        PllMDivider m_divider        = PllMDivider::kDiv4;
         uint32_t    n_multiplier     = 85;
-        PLLRDivider r_divider        = PLLRDivider::kDiv2;
-        PLLPDivider p_divider        = PLLPDivider::kDiv2;
-        PLLQDivider q_divider        = PLLQDivider::kDiv2;
+        PllRDivider r_divider        = PllRDivider::kDiv2;
+        PllPDivider p_divider        = PllPDivider::kDiv2;
+        PllQDivider q_divider        = PllQDivider::kDiv2;
         bool        r_output_enabled = false;
         bool        p_output_enabled = false;
         bool        q_output_enabled = false;
@@ -168,7 +168,7 @@ namespace valle::platform
                 return std::nullopt;
             }
 
-            return PLLInterface::validate_config(
+            return PllInterface::validate_config(
                 source_hz, voltage_range, m_divider, n_multiplier, r_divider, p_divider, q_divider);
         }
 
@@ -176,7 +176,7 @@ namespace valle::platform
         {
             if (enabled)
             {
-                return PLLInterface::calculate_input_freq_hz(source_hz, m_divider);
+                return PllInterface::calculate_input_freq_hz(source_hz, m_divider);
             }
             return 0U;
         }
@@ -185,7 +185,7 @@ namespace valle::platform
         {
             if (enabled)
             {
-                return PLLInterface::calculate_vco_freq_hz(source_hz, m_divider, n_multiplier);
+                return PllInterface::calculate_vco_freq_hz(source_hz, m_divider, n_multiplier);
             }
 
             return 0U;
@@ -195,7 +195,7 @@ namespace valle::platform
         {
             if (enabled && r_output_enabled)
             {
-                return PLLInterface::calculate_r_output_freq_hz(vco_hz, r_divider);
+                return PllInterface::calculate_r_output_freq_hz(vco_hz, r_divider);
             }
 
             return 0U;
@@ -205,7 +205,7 @@ namespace valle::platform
         {
             if (enabled && p_output_enabled)
             {
-                return PLLInterface::calculate_p_output_freq_hz(vco_hz, p_divider);
+                return PllInterface::calculate_p_output_freq_hz(vco_hz, p_divider);
             }
 
             return 0U;
@@ -215,7 +215,7 @@ namespace valle::platform
         {
             if (enabled && q_output_enabled)
             {
-                return PLLInterface::calculate_q_output_freq_hz(vco_hz, q_divider);
+                return PllInterface::calculate_q_output_freq_hz(vco_hz, q_divider);
             }
 
             return 0U;
@@ -230,26 +230,26 @@ namespace valle::platform
      * @brief Main PLL device.
      */
     template <typename T = void>
-    class PLLDevice
+    class PllDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = PLLInterface;
+        using InterfaceT = PllInterface;
 
         using DependDevices = TypeList<PowerDevice<>>;
-        using InjectDevices = TypeList<PLLInfoDevice<>, PowerInfoDevice<>>;
+        using InjectDevices = TypeList<PllInfoDevice<>, PowerInfoDevice<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<PLLInfoDevice<>>   m_info;
+        [[no_unique_address]] DeviceRef<PllInfoDevice<>>   m_info;
         [[no_unique_address]] DeviceRef<PowerInfoDevice<>> m_power_info;
 
     public:
-        PLLDevice() = delete;
+        PllDevice() = delete;
 
-        PLLDevice(DeviceRef<PLLInfoDevice<>>&& info, DeviceRef<PowerInfoDevice<>>&& power_info)
+        PllDevice(DeviceRef<PllInfoDevice<>>&& info, DeviceRef<PowerInfoDevice<>>&& power_info)
             : m_info(std::move(info)), m_power_info(std::move(power_info))
         {
         }
@@ -270,13 +270,13 @@ namespace valle::platform
          * @param config PLL configuration.
          * @return true if initialization succeeded, false if the PLL failed to lock.
          */
-        [[nodiscard]] inline bool init(const PLLConfig& config)
+        [[nodiscard]] inline bool init(const PllConfig& config)
         {
             const auto error = config.validate(m_info->get_source_freq_hz_for_source(config.source),
                                                m_power_info->get_voltage_range_mode());
             expect(!error.has_value(), error.value_or("Unknown PLL configuration error"));
 
-            const bool pll_used_as_sysclk = SCTInterface::get_source_status() == SCTSourceStatus::kPLL;
+            const bool pll_used_as_sysclk = SctInterface::get_source_status() == SctSourceStatus::kPLL;
             expect(!pll_used_as_sysclk, "Cannot reconfigure or disable PLL while it is used as SYSCLK");
 
             // Hardware requires PLL reconfiguration to happen only while disabled.

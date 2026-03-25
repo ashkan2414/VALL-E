@@ -208,13 +208,13 @@ namespace valle::platform
         // GPIO PULL CONFIG
         // ---------------------------------------------------------------------
         // NOLINENEXTLINE(bugprone-easily-swappable-parameters)
-        [[nodiscard]] static bool is_gpio_pull_up_enabled(const PowerGPIOPort gpio, const PowerGPIOBit gpio_bit)
+        [[nodiscard]] static bool is_gpio_pull_up_enabled(const PowerGpioPort gpio, const PowerGpioBit gpio_bit)
         {
             return InterfaceT::gpio_pull_is_pull_up_enabled(gpio, gpio_bit);
         }
 
         // NOLINENEXTLINE(bugprone-easily-swappable-parameters)
-        [[nodiscard]] static bool is_gpio_pull_down_enabled(const PowerGPIOPort gpio, const PowerGPIOBit gpio_bit)
+        [[nodiscard]] static bool is_gpio_pull_down_enabled(const PowerGpioPort gpio, const PowerGpioBit gpio_bit)
         {
             return InterfaceT::gpio_pull_is_pull_down_enabled(gpio, gpio_bit);
         }

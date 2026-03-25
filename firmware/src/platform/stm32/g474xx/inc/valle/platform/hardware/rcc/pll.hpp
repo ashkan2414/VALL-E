@@ -14,14 +14,14 @@ namespace valle::platform
     // ENUMERATIONS
     // ============================================================================
 
-    enum class PLLSource
+    enum class PllSource
     {
         kNone = LL_RCC_PLLSOURCE_NONE,
         kHSI  = LL_RCC_PLLSOURCE_HSI,
         kHSE  = LL_RCC_PLLSOURCE_HSE
     };
 
-    enum class PLLMDivider : uint32_t
+    enum class PllMDivider : uint32_t
     {
         kDiv1  = LL_RCC_PLLM_DIV_1,
         kDiv2  = LL_RCC_PLLM_DIV_2,
@@ -41,7 +41,7 @@ namespace valle::platform
         kDiv16 = LL_RCC_PLLM_DIV_16
     };
 
-    enum class PLLPDivider : uint32_t
+    enum class PllPDivider : uint32_t
     {
         kDiv2  = LL_RCC_PLLP_DIV_2,
         kDiv3  = LL_RCC_PLLP_DIV_3,
@@ -75,7 +75,7 @@ namespace valle::platform
         kDiv31 = LL_RCC_PLLP_DIV_31,
     };
 
-    enum class PLLQDivider : uint32_t
+    enum class PllQDivider : uint32_t
     {
         kDiv2 = LL_RCC_PLLQ_DIV_2,
         kDiv4 = LL_RCC_PLLQ_DIV_4,
@@ -83,7 +83,7 @@ namespace valle::platform
         kDiv8 = LL_RCC_PLLQ_DIV_8
     };
 
-    enum class PLLRDivider : uint32_t
+    enum class PllRDivider : uint32_t
     {
         kDiv2 = LL_RCC_PLLR_DIV_2,
         kDiv4 = LL_RCC_PLLR_DIV_4,
@@ -95,7 +95,7 @@ namespace valle::platform
     // INTERFACE
     // ============================================================================
 
-    struct PLLFrequencyLimits
+    struct PllFrequencyLimits
     {
         uint32_t min_input_hz  = 0U;
         uint32_t max_input_hz  = 0U;
@@ -105,7 +105,7 @@ namespace valle::platform
         uint32_t max_output_hz = 0U;
     };
 
-    struct PLLInterface
+    struct PllInterface
     {
         static constexpr uint32_t skDefaultEnableTimeoutCount  = 1'000'000U;
         static constexpr uint32_t skDefaultDisableTimeoutCount = 1'000'000U;
@@ -113,21 +113,21 @@ namespace valle::platform
         static constexpr uint32_t skMinNMultiplier = 8;
         static constexpr uint32_t skMaxNMultiplier = 127;
 
-        static constexpr PLLFrequencyLimits skRange1BoostFrequencyLimits = {.min_input_hz  = 2'660'000,
+        static constexpr PllFrequencyLimits skRange1BoostFrequencyLimits = {.min_input_hz  = 2'660'000,
                                                                             .max_input_hz  = 8'000'000,
                                                                             .min_vco_hz    = 96'000'000,
                                                                             .max_vco_hz    = 344'000'000,
                                                                             .min_output_hz = 8'000'000,
                                                                             .max_output_hz = 170'000'000};
 
-        static constexpr PLLFrequencyLimits skRange1NormalFrequencyLimits = {.min_input_hz  = 2'660'000,
+        static constexpr PllFrequencyLimits skRange1NormalFrequencyLimits = {.min_input_hz  = 2'660'000,
                                                                              .max_input_hz  = 8'000'000,
                                                                              .min_vco_hz    = 96'000'000,
                                                                              .max_vco_hz    = 344'000'000,
                                                                              .min_output_hz = 8'000'000,
                                                                              .max_output_hz = 150'000'000};
 
-        static constexpr PLLFrequencyLimits skPLLRange2FrequencyLimits = {.min_input_hz  = 2'660'000,
+        static constexpr PllFrequencyLimits skPllRange2FrequencyLimits = {.min_input_hz  = 2'660'000,
                                                                           .max_input_hz  = 8'000'000,
                                                                           .min_vco_hz    = 96'000'000,
                                                                           .max_vco_hz    = 128'000'000,
@@ -152,22 +152,22 @@ namespace valle::platform
             return LL_RCC_PLL_IsReady() == 1;
         }
 
-        static void set_source(const PLLSource source)
+        static void set_source(const PllSource source)
         {
             LL_RCC_PLL_SetMainSource(static_cast<uint32_t>(source));
         }
 
-        [[nodiscard]] static PLLSource get_source()
+        [[nodiscard]] static PllSource get_source()
         {
-            return static_cast<PLLSource>(LL_RCC_PLL_GetMainSource());
+            return static_cast<PllSource>(LL_RCC_PLL_GetMainSource());
         }
 
-        static void config_domains(const PLLSource                  source,
-                                   const PLLMDivider                m_divider,
+        static void config_domains(const PllSource                  source,
+                                   const PllMDivider                m_divider,
                                    const uint32_t                   n_multiplier,
-                                   const std::optional<PLLRDivider> r_divider,
-                                   const std::optional<PLLPDivider> p_divider,
-                                   const std::optional<PLLQDivider> q_divider)
+                                   const std::optional<PllRDivider> r_divider,
+                                   const std::optional<PllPDivider> p_divider,
+                                   const std::optional<PllQDivider> q_divider)
         {
             expect(n_multiplier >= skMinNMultiplier && n_multiplier <= skMaxNMultiplier,
                    "PLL N multiplier must be between 8 and 127");
@@ -200,9 +200,9 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] static PLLMDivider get_m_divider()
+        [[nodiscard]] static PllMDivider get_m_divider()
         {
-            return static_cast<PLLMDivider>(LL_RCC_PLL_GetDivider());
+            return static_cast<PllMDivider>(LL_RCC_PLL_GetDivider());
         }
 
         [[nodiscard]] static uint32_t get_n_multiplier()
@@ -210,19 +210,19 @@ namespace valle::platform
             return LL_RCC_PLL_GetN();
         }
 
-        [[nodiscard]] static PLLPDivider get_p_divider()
+        [[nodiscard]] static PllPDivider get_p_divider()
         {
-            return static_cast<PLLPDivider>(LL_RCC_PLL_GetP());
+            return static_cast<PllPDivider>(LL_RCC_PLL_GetP());
         }
 
-        [[nodiscard]] static PLLQDivider get_q_divider()
+        [[nodiscard]] static PllQDivider get_q_divider()
         {
-            return static_cast<PLLQDivider>(LL_RCC_PLL_GetQ());
+            return static_cast<PllQDivider>(LL_RCC_PLL_GetQ());
         }
 
-        [[nodiscard]] static PLLRDivider get_r_divider()
+        [[nodiscard]] static PllRDivider get_r_divider()
         {
-            return static_cast<PLLRDivider>(LL_RCC_PLL_GetR());
+            return static_cast<PllRDivider>(LL_RCC_PLL_GetR());
         }
 
         static void enable_p_output()
@@ -273,42 +273,42 @@ namespace valle::platform
         // ---------------------------------------------------------------------
         // Enum to Value Helpers
         // ---------------------------------------------------------------------
-        [[nodiscard]] static constexpr uint32_t get_m_divider_factor(const PLLMDivider divider)
+        [[nodiscard]] static constexpr uint32_t get_m_divider_factor(const PllMDivider divider)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (divider)
             {
-                case PLLMDivider::kDiv1:
+                case PllMDivider::kDiv1:
                     return 1;
-                case PLLMDivider::kDiv2:
+                case PllMDivider::kDiv2:
                     return 2;
-                case PLLMDivider::kDiv3:
+                case PllMDivider::kDiv3:
                     return 3;
-                case PLLMDivider::kDiv4:
+                case PllMDivider::kDiv4:
                     return 4;
-                case PLLMDivider::kDiv5:
+                case PllMDivider::kDiv5:
                     return 5;
-                case PLLMDivider::kDiv6:
+                case PllMDivider::kDiv6:
                     return 6;
-                case PLLMDivider::kDiv7:
+                case PllMDivider::kDiv7:
                     return 7;
-                case PLLMDivider::kDiv8:
+                case PllMDivider::kDiv8:
                     return 8;
-                case PLLMDivider::kDiv9:
+                case PllMDivider::kDiv9:
                     return 9;
-                case PLLMDivider::kDiv10:
+                case PllMDivider::kDiv10:
                     return 10;
-                case PLLMDivider::kDiv11:
+                case PllMDivider::kDiv11:
                     return 11;
-                case PLLMDivider::kDiv12:
+                case PllMDivider::kDiv12:
                     return 12;
-                case PLLMDivider::kDiv13:
+                case PllMDivider::kDiv13:
                     return 13;
-                case PLLMDivider::kDiv14:
+                case PllMDivider::kDiv14:
                     return 14;
-                case PLLMDivider::kDiv15:
+                case PllMDivider::kDiv15:
                     return 15;
-                case PLLMDivider::kDiv16:
+                case PllMDivider::kDiv16:
                     return 16;
                 default:
                     return 0;
@@ -316,18 +316,18 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        [[nodiscard]] static constexpr uint32_t get_r_divider_factor(const PLLRDivider divider)
+        [[nodiscard]] static constexpr uint32_t get_r_divider_factor(const PllRDivider divider)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (divider)
             {
-                case PLLRDivider::kDiv2:
+                case PllRDivider::kDiv2:
                     return 2;
-                case PLLRDivider::kDiv4:
+                case PllRDivider::kDiv4:
                     return 4;
-                case PLLRDivider::kDiv6:
+                case PllRDivider::kDiv6:
                     return 6;
-                case PLLRDivider::kDiv8:
+                case PllRDivider::kDiv8:
                     return 8;
                 default:
                     return 0;
@@ -336,70 +336,70 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        [[nodiscard]] static constexpr uint32_t get_p_divider_factor(const PLLPDivider divider)
+        [[nodiscard]] static constexpr uint32_t get_p_divider_factor(const PllPDivider divider)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (divider)
             {
-                case PLLPDivider::kDiv2:
+                case PllPDivider::kDiv2:
                     return 2;
-                case PLLPDivider::kDiv3:
+                case PllPDivider::kDiv3:
                     return 3;
-                case PLLPDivider::kDiv4:
+                case PllPDivider::kDiv4:
                     return 4;
-                case PLLPDivider::kDiv5:
+                case PllPDivider::kDiv5:
                     return 5;
-                case PLLPDivider::kDiv6:
+                case PllPDivider::kDiv6:
                     return 6;
-                case PLLPDivider::kDiv7:
+                case PllPDivider::kDiv7:
                     return 7;
-                case PLLPDivider::kDiv8:
+                case PllPDivider::kDiv8:
                     return 8;
-                case PLLPDivider::kDiv9:
+                case PllPDivider::kDiv9:
                     return 9;
-                case PLLPDivider::kDiv10:
+                case PllPDivider::kDiv10:
                     return 10;
-                case PLLPDivider::kDiv11:
+                case PllPDivider::kDiv11:
                     return 11;
-                case PLLPDivider::kDiv12:
+                case PllPDivider::kDiv12:
                     return 12;
-                case PLLPDivider::kDiv13:
+                case PllPDivider::kDiv13:
                     return 13;
-                case PLLPDivider::kDiv14:
+                case PllPDivider::kDiv14:
                     return 14;
-                case PLLPDivider::kDiv15:
+                case PllPDivider::kDiv15:
                     return 15;
-                case PLLPDivider::kDiv16:
+                case PllPDivider::kDiv16:
                     return 16;
-                case PLLPDivider::kDiv17:
+                case PllPDivider::kDiv17:
                     return 17;
-                case PLLPDivider::kDiv18:
+                case PllPDivider::kDiv18:
                     return 18;
-                case PLLPDivider::kDiv19:
+                case PllPDivider::kDiv19:
                     return 19;
-                case PLLPDivider::kDiv20:
+                case PllPDivider::kDiv20:
                     return 20;
-                case PLLPDivider::kDiv21:
+                case PllPDivider::kDiv21:
                     return 21;
-                case PLLPDivider::kDiv22:
+                case PllPDivider::kDiv22:
                     return 22;
-                case PLLPDivider::kDiv23:
+                case PllPDivider::kDiv23:
                     return 23;
-                case PLLPDivider::kDiv24:
+                case PllPDivider::kDiv24:
                     return 24;
-                case PLLPDivider::kDiv25:
+                case PllPDivider::kDiv25:
                     return 25;
-                case PLLPDivider::kDiv26:
+                case PllPDivider::kDiv26:
                     return 26;
-                case PLLPDivider::kDiv27:
+                case PllPDivider::kDiv27:
                     return 27;
-                case PLLPDivider::kDiv28:
+                case PllPDivider::kDiv28:
                     return 28;
-                case PLLPDivider::kDiv29:
+                case PllPDivider::kDiv29:
                     return 29;
-                case PLLPDivider::kDiv30:
+                case PllPDivider::kDiv30:
                     return 30;
-                case PLLPDivider::kDiv31:
+                case PllPDivider::kDiv31:
                     return 31;
                 default:
                     return 0;
@@ -407,18 +407,18 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        [[nodiscard]] static constexpr uint32_t get_q_divider_factor(const PLLQDivider divider)
+        [[nodiscard]] static constexpr uint32_t get_q_divider_factor(const PllQDivider divider)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (divider)
             {
-                case PLLQDivider::kDiv2:
+                case PllQDivider::kDiv2:
                     return 2;
-                case PLLQDivider::kDiv4:
+                case PllQDivider::kDiv4:
                     return 4;
-                case PLLQDivider::kDiv6:
+                case PllQDivider::kDiv6:
                     return 6;
-                case PLLQDivider::kDiv8:
+                case PllQDivider::kDiv8:
                     return 8;
                 default:
                     return 0;
@@ -435,9 +435,9 @@ namespace valle::platform
                 case PowerVoltageRangeMode::kRange1Normal:
                     return skRange1NormalFrequencyLimits;
                 case PowerVoltageRangeMode::kRange2:
-                    return skPLLRange2FrequencyLimits;
+                    return skPllRange2FrequencyLimits;
                 default:
-                    return PLLFrequencyLimits{};
+                    return PllFrequencyLimits{};
             }
         }
 
@@ -446,14 +446,14 @@ namespace valle::platform
         // ---------------------------------------------------------------------
 
         [[nodiscard]] static constexpr uint32_t calculate_input_freq_hz(const uint32_t    source_hz,
-                                                                        const PLLMDivider m_divider)
+                                                                        const PllMDivider m_divider)
         {
             const uint32_t m_factor = get_m_divider_factor(m_divider);
             return (m_factor == 0) ? 0 : (source_hz / m_factor);
         }
 
         [[nodiscard]] static constexpr uint32_t calculate_vco_freq_hz(const uint32_t    source_hz,
-                                                                      const PLLMDivider m_divider,
+                                                                      const PllMDivider m_divider,
                                                                       const uint32_t    n_multiplier)
         {
             const uint32_t m_factor = get_m_divider_factor(m_divider);
@@ -461,19 +461,19 @@ namespace valle::platform
         }
 
         [[nodiscard]] static constexpr uint32_t calculate_r_output_freq_hz(const uint32_t    vco_hz,
-                                                                           const PLLRDivider r_divider)
+                                                                           const PllRDivider r_divider)
         {
             return vco_hz / get_r_divider_factor(r_divider);
         }
 
         [[nodiscard]] static constexpr uint32_t calculate_p_output_freq_hz(const uint32_t    vco_hz,
-                                                                           const PLLPDivider p_divider)
+                                                                           const PllPDivider p_divider)
         {
             return vco_hz / get_p_divider_factor(p_divider);
         }
 
         [[nodiscard]] static constexpr uint32_t calculate_q_output_freq_hz(const uint32_t    vco_hz,
-                                                                           const PLLQDivider q_divider)
+                                                                           const PllQDivider q_divider)
         {
             return vco_hz / get_q_divider_factor(q_divider);
         }
@@ -483,11 +483,11 @@ namespace valle::platform
         // ---------------------------------------------------------------------
         static constexpr std::optional<std::string_view> validate_config(const uint32_t                   source_hz,
                                                                          const PowerVoltageRangeMode      voltage_range,
-                                                                         const PLLMDivider                m_divider,
+                                                                         const PllMDivider                m_divider,
                                                                          const uint32_t                   n_multiplier,
-                                                                         const std::optional<PLLRDivider> r_divider,
-                                                                         const std::optional<PLLPDivider> p_divider,
-                                                                         const std::optional<PLLQDivider> q_divider)
+                                                                         const std::optional<PllRDivider> r_divider,
+                                                                         const std::optional<PllPDivider> p_divider,
+                                                                         const std::optional<PllQDivider> q_divider)
         {
             if (source_hz == 0)
             {

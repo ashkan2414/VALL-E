@@ -6,10 +6,10 @@
 namespace valle::platform
 {
     // =========================================================================
-    // HSI48 Oscillator INFO DEVICE
+    // Hsi48 Oscillator INFO DEVICE
     // =========================================================================
     template <typename T = void>
-    class HSI48OscillatorInfoDevice
+    class Hsi48OscillatorInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -17,7 +17,7 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InterfaceT = HSI48OscillatorInterface;
+        using InterfaceT = Hsi48OscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
@@ -33,19 +33,19 @@ namespace valle::platform
     };
 
     // =========================================================================
-    // HSI48 Oscillator DEVICE
+    // Hsi48 Oscillator DEVICE
     // =========================================================================
 
     // -----------------------------------------------------------------------------
     // CONFIGURATION
     // -----------------------------------------------------------------------------
-    struct HSI48OscillatorConfig
+    struct Hsi48OscillatorConfig
     {
         bool enabled = true;
 
         [[nodiscard]] constexpr uint32_t get_frequency_hz() const
         {
-            return enabled ? HSI48OscillatorInterface::skFrequencyHz : 0U;
+            return enabled ? Hsi48OscillatorInterface::skFrequencyHz : 0U;
         }
     };
 
@@ -53,25 +53,25 @@ namespace valle::platform
     // DEVICE
     // -----------------------------------------------------------------------------
     template <typename T = void>
-    class HSI48OscillatorDevice
+    class Hsi48OscillatorDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = HSI48OscillatorInterface;
+        using InterfaceT = Hsi48OscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
-        [[nodiscard]] bool init(const HSI48OscillatorConfig& config)
+        [[nodiscard]] bool init(const Hsi48OscillatorConfig& config)
         {
             if (config.enabled)
             {
                 InterfaceT::enable();
 
                 expect(wait_for_ready(InterfaceT::skDefaultEnableTimeoutCount),
-                       "HSI48 failed to become ready within timeout");
+                       "Hsi48 failed to become ready within timeout");
 
                 return true;
             }
@@ -79,7 +79,7 @@ namespace valle::platform
             InterfaceT::disable();
 
             expect(wait_for_not_ready(InterfaceT::skDefaultDisableTimeoutCount),
-                   "HSI48 failed to disable within timeout");
+                   "Hsi48 failed to disable within timeout");
 
             return true;
         }

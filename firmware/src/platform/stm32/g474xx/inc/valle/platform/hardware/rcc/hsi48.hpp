@@ -7,9 +7,9 @@ namespace valle::platform
     // =============================================================================
     // INTERFACE
     // =============================================================================
-    struct HSI48OscillatorInterface
+    struct Hsi48OscillatorInterface
     {
-        static constexpr uint32_t skFrequencyHz                = HSI48_VALUE;
+        static constexpr uint32_t skFrequencyHz                = Hsi48_VALUE;
         static constexpr uint32_t skDefaultEnableTimeoutCount  = 100'000U;
         static constexpr uint32_t skDefaultDisableTimeoutCount = 100'000U;
 

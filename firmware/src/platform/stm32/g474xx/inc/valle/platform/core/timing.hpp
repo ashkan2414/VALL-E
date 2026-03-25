@@ -54,7 +54,7 @@ namespace valle::platform
 
         static void init()
         {
-            expect(RCCInterface::get_hclk_freq_hz() == kPlatformTimingConfig.core_clock_freq_hz,
+            expect(RccInterface::get_hclk_freq_hz() == kPlatformTimingConfig.core_clock_freq_hz,
                    "CycleClock requires HCLK to be equal to core clock frequency");
 
             CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;

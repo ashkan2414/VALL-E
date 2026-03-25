@@ -12,7 +12,7 @@ namespace valle::platform::app
     };
     constexpr auto kGroveLDC161XChannelConfig = valle::app::LDC161XChannelConfig{
         .coil_config   = kGroveLDC161XCoilConfig,
-        .drive_current = valle::app::LDC161XIDriveCurrent::from_coil_rp(kGroveLDC161XCoilConfig.rp_kohm),
+        .drive_current = valle::app::LDC161XIdriveCurrent::from_coil_rp(kGroveLDC161XCoilConfig.rp_kohm),
         .offset_config = valle::app::LDC161XOffsetConfigFrequency{.offset_mhz = 2.5F},
     };
 

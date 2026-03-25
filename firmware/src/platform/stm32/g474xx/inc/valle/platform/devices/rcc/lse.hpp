@@ -10,7 +10,7 @@ namespace valle::platform
     // LSE Oscillator INFO DEVICE
     // =========================================================================
     template <typename T = void>
-    class LSEOscillatorInfoDevice
+    class LseOscillatorInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -18,7 +18,7 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InterfaceT = LSEOscillatorInterface;
+        using InterfaceT = LseOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
@@ -27,7 +27,7 @@ namespace valle::platform
             return InterfaceT::is_ready();
         }
 
-        [[nodiscard]] LSEOscillatorDriveCapability get_drive_capability() const
+        [[nodiscard]] LseOscillatorDriveCapability get_drive_capability() const
         {
             return InterfaceT::get_drive_capability();
         }
@@ -45,15 +45,15 @@ namespace valle::platform
     // --------------------------------------------------------------------------------
     // CONFIGURATION
     // --------------------------------------------------------------------------------
-    struct LSEOscillatorConfig
+    struct LseOscillatorConfig
     {
         bool                         enabled = true;
-        LSEOscillatorMode            mode    = LSEOscillatorMode::kCrystal;
-        LSEOscillatorDriveCapability drive   = LSEOscillatorDriveCapability::kLow;
+        LseOscillatorMode            mode    = LseOscillatorMode::kCrystal;
+        LseOscillatorDriveCapability drive   = LseOscillatorDriveCapability::kLow;
 
         [[nodiscard]] constexpr uint32_t get_frequency_hz() const
         {
-            return enabled ? LSEOscillatorInterface::skFrequencyHz : 0U;
+            return enabled ? LseOscillatorInterface::skFrequencyHz : 0U;
         }
     };
 
@@ -61,19 +61,19 @@ namespace valle::platform
     // DEVICE
     // --------------------------------------------------------------------------------
     template <typename T = void>
-    class LSEOscillatorDevice
+    class LseOscillatorDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = LSEOscillatorInterface;
+        using InterfaceT = LseOscillatorInterface;
 
         using DependDevices = TypeList<PowerDevice<>>;
         using InjectDevices = TypeList<>;
 
-        [[nodiscard]] bool init(const LSEOscillatorConfig& config)
+        [[nodiscard]] bool init(const LseOscillatorConfig& config)
         {
             // LL_PWR_EnableBkUpAccess() must be called before enabling LSE, otherwise LSE won't start.
             // This is a quirk of the STM32G4 hardware.
@@ -88,7 +88,7 @@ namespace valle::platform
 
                 // Set initial drive capability to high to ensure reliable startup,
                 // then reduce it to the desired level after the oscillator is stable.
-                InterfaceT::set_drive_capability(LSEOscillatorDriveCapability::kHigh);
+                InterfaceT::set_drive_capability(LseOscillatorDriveCapability::kHigh);
                 InterfaceT::enable(config.mode);
 
                 expect(wait_for_ready(InterfaceT::skDefaultEnableTimeoutCount),

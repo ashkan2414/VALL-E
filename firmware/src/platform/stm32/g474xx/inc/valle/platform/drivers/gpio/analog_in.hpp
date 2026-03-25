@@ -4,7 +4,7 @@
 
 namespace valle::platform
 {
-    struct GPIOAnalogInConfig
+    struct GpioAnalogInConfig
     {
     };
 
@@ -13,7 +13,7 @@ namespace valle::platform
      * Used for ADC, DAC, OpAmp, Comparator, or Low Power disconnect.
      */
     template <typename TGpioPin>
-    class GPIOAnalogInDriver
+    class GpioAnalogInDriver
     {
     public:
         using InjectDevices = TypeList<TGpioPin>;
@@ -22,32 +22,32 @@ namespace valle::platform
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
 
     public:
-        GPIOAnalogInDriver() = delete;
+        GpioAnalogInDriver() = delete;
 
-        GPIOAnalogInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
+        GpioAnalogInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
         {
         }
 
-        [[nodiscard]] bool init(const GPIOAnalogInConfig& config)
+        [[nodiscard]] bool init(const GpioAnalogInConfig& config)
         {
             (void)config;
-            return m_pin.get().init(GPIOPinConfig{.mode      = GPIO_MODE_ANALOG,
-                                                  .pull      = GPIOPullMode::kNoPull,
-                                                  .speed     = GPIOSpeedMode::kLow,
-                                                  .alternate = GPIOAlternativeFunction::kAF0});
+            return m_pin.get().init(GpioPinConfig{.mode      = Gpio_MODE_ANALOG,
+                                                  .pull      = GpioPullMode::kNoPull,
+                                                  .speed     = GpioSpeedMode::kLow,
+                                                  .alternate = GpioAlternativeFunction::kAF0});
         }
     };
 
     namespace detail
     {
         template <typename TPin>
-        struct ConditionalGPIOAnalogInDriver
+        struct ConditionalGpioAnalogInDriver
         {
-            using type = GPIOAnalogInDriver<TPin>;
+            using type = GpioAnalogInDriver<TPin>;
         };
 
         template <>
-        struct ConditionalGPIOAnalogInDriver<GPIONullPinDevice>
+        struct ConditionalGpioAnalogInDriver<GpioNullPinDevice>
         {
             using type = std::monostate;
         };
@@ -55,6 +55,6 @@ namespace valle::platform
     }  // namespace detail
 
     template <typename TPin>
-    using ConditionalGPIOAnalogInDriverT = typename detail::ConditionalGPIOAnalogInDriver<TPin>::type;
+    using ConditionalGpioAnalogInDriverT = typename detail::ConditionalGpioAnalogInDriver<TPin>::type;
 
 }  // namespace valle::platform

@@ -10,7 +10,7 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class I2CTransferEndMode : uint32_t
+    enum class I2cTransferEndMode : uint32_t
     {
         kReload              = LL_I2C_MODE_RELOAD,
         kAutoEnd             = LL_I2C_MODE_AUTOEND,
@@ -22,7 +22,7 @@ namespace valle::platform
         kSMBusSoftEndWithPec = LL_I2C_MODE_SMBUS_SOFTEND_WITH_PEC
     };
 
-    enum class I2CTransferRequest : uint32_t
+    enum class I2cTransferRequest : uint32_t
     {
         kNoStart = 0,
         kStart,
@@ -33,51 +33,51 @@ namespace valle::platform
     // HARDWARE TRAITS
     // ============================================================================
 
-    template <I2CControllerID tkID>
-    struct I2CControllerTraits;
+    template <I2cPeripheralId tkPeripheralId>
+    struct I2cControllerTraits;
 
     template <>
-    struct I2CControllerTraits<I2CControllerID::kI2C1>
+    struct I2cControllerTraits<I2cPeripheralId::kI2c1>
     {
-        static inline I2C_TypeDef* const skInstance        = I2C1;
+        static inline I2c_TypeDef* const skInstance        = I2c1;
         static constexpr uint32_t        skClock           = LL_APB1_GRP1_PERIPH_I2C1;
-        static constexpr DMAMuxRequestID skDMAMuxRequestTx = DMAMuxRequestID::kI2C1Tx;
-        static constexpr DMAMuxRequestID skDMAMuxRequestRx = DMAMuxRequestID::kI2C1Rx;
-        static constexpr IRQn_Type       skEventIRQn       = I2C1_EV_IRQn;
-        static constexpr IRQn_Type       skErrorIRQn       = I2C1_ER_IRQn;
+        static constexpr DmaMuxRequestId skDmaMuxRequestTx = DmaMuxRequestId::kI2c1Tx;
+        static constexpr DmaMuxRequestId skDmaMuxRequestRx = DmaMuxRequestId::kI2c1Rx;
+        static constexpr IRQn_Type       skEventIRQn       = I2c1_EV_IRQn;
+        static constexpr IRQn_Type       skErrorIRQn       = I2c1_ER_IRQn;
     };
 
     template <>
-    struct I2CControllerTraits<I2CControllerID::kI2C2>
+    struct I2cControllerTraits<I2cPeripheralId::kI2c2>
     {
-        static inline I2C_TypeDef* const skInstance        = I2C2;
+        static inline I2c_TypeDef* const skInstance        = I2c2;
         static constexpr uint32_t        skClock           = LL_APB1_GRP1_PERIPH_I2C2;
-        static constexpr DMAMuxRequestID skDMAMuxRequestTx = DMAMuxRequestID::kI2C2Tx;
-        static constexpr DMAMuxRequestID skDMAMuxRequestRx = DMAMuxRequestID::kI2C2Rx;
-        static constexpr IRQn_Type       skEventIRQn       = I2C2_EV_IRQn;
-        static constexpr IRQn_Type       skErrorIRQn       = I2C2_ER_IRQn;
+        static constexpr DmaMuxRequestId skDmaMuxRequestTx = DmaMuxRequestId::kI2c2Tx;
+        static constexpr DmaMuxRequestId skDmaMuxRequestRx = DmaMuxRequestId::kI2c2Rx;
+        static constexpr IRQn_Type       skEventIRQn       = I2c2_EV_IRQn;
+        static constexpr IRQn_Type       skErrorIRQn       = I2c2_ER_IRQn;
     };
 
     template <>
-    struct I2CControllerTraits<I2CControllerID::kI2C3>
+    struct I2cControllerTraits<I2cPeripheralId::kI2c3>
     {
-        static inline I2C_TypeDef* const skInstance        = I2C3;
+        static inline I2c_TypeDef* const skInstance        = I2c3;
         static constexpr uint32_t        skClock           = LL_APB1_GRP1_PERIPH_I2C3;
-        static constexpr DMAMuxRequestID skDMAMuxRequestTx = DMAMuxRequestID::kI2C3Tx;
-        static constexpr DMAMuxRequestID skDMAMuxRequestRx = DMAMuxRequestID::kI2C3Rx;
-        static constexpr IRQn_Type       skEventIRQn       = I2C3_EV_IRQn;
-        static constexpr IRQn_Type       skErrorIRQn       = I2C3_ER_IRQn;
+        static constexpr DmaMuxRequestId skDmaMuxRequestTx = DmaMuxRequestId::kI2c3Tx;
+        static constexpr DmaMuxRequestId skDmaMuxRequestRx = DmaMuxRequestId::kI2c3Rx;
+        static constexpr IRQn_Type       skEventIRQn       = I2c3_EV_IRQn;
+        static constexpr IRQn_Type       skErrorIRQn       = I2c3_ER_IRQn;
     };
 
     template <>
-    struct I2CControllerTraits<I2CControllerID::kI2C4>
+    struct I2cControllerTraits<I2cPeripheralId::kI2c4>
     {
-        static inline I2C_TypeDef* const skInstance        = I2C4;
+        static inline I2c_TypeDef* const skInstance        = I2c4;
         static constexpr uint32_t        skClock           = LL_APB1_GRP2_PERIPH_I2C4;
-        static constexpr DMAMuxRequestID skDMAMuxRequestTx = DMAMuxRequestID::kI2C4Tx;
-        static constexpr DMAMuxRequestID skDMAMuxRequestRx = DMAMuxRequestID::kI2C4Rx;
-        static constexpr IRQn_Type       skEventIRQn       = I2C4_EV_IRQn;
-        static constexpr IRQn_Type       skErrorIRQn       = I2C4_ER_IRQn;
+        static constexpr DmaMuxRequestId skDmaMuxRequestTx = DmaMuxRequestId::kI2c4Tx;
+        static constexpr DmaMuxRequestId skDmaMuxRequestRx = DmaMuxRequestId::kI2c4Rx;
+        static constexpr IRQn_Type       skEventIRQn       = I2c4_EV_IRQn;
+        static constexpr IRQn_Type       skErrorIRQn       = I2c4_ER_IRQn;
     };
 
 }  // namespace valle::platform

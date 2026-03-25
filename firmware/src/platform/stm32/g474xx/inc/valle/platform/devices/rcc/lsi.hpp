@@ -8,13 +8,13 @@ namespace valle::platform
     // =============================================================================
     // CONFIGURATION
     // =============================================================================
-    struct LSIOscillatorConfig
+    struct LsiOscillatorConfig
     {
         bool enabled = true;
 
         [[nodiscard]] constexpr uint32_t get_frequency_hz() const
         {
-            return enabled ? LSIOscillatorInterface::skFrequencyHz : 0U;
+            return enabled ? LsiOscillatorInterface::skFrequencyHz : 0U;
         }
     };
 
@@ -22,7 +22,7 @@ namespace valle::platform
     // LSI Oscillator INFO DEVICE
     // =========================================================================
     template <typename T = void>
-    class LSIOscillatorInfoDevice
+    class LsiOscillatorInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -30,7 +30,7 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InterfaceT = LSIOscillatorInterface;
+        using InterfaceT = LsiOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
@@ -49,18 +49,18 @@ namespace valle::platform
     // DEVICE
     // =============================================================================
     template <typename T = void>
-    class LSIOscillatorDevice
+    class LsiOscillatorDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = LSIOscillatorInterface;
+        using InterfaceT = LsiOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
-        [[nodiscard]] inline bool init(const LSIOscillatorConfig& config)
+        [[nodiscard]] inline bool init(const LsiOscillatorConfig& config)
         {
             if (config.enabled)
             {

@@ -13,7 +13,7 @@ namespace valle::platform
     struct CoreSystemConfig
     {
         PowerConfig power_config{};
-        RCCConfig   rcc_config{};
+        RccConfig   rcc_config{};
 
         [[nodiscard]] constexpr std::optional<std::string_view> validate() const
         {
@@ -24,16 +24,16 @@ namespace valle::platform
     class CoreSystemDriver
     {
     public:
-        using InjectDevices = TypeList<PowerDevice<>, RCCDevice<>>;
+        using InjectDevices = TypeList<PowerDevice<>, RccDevice<>>;
 
     private:
         [[no_unique_address]] DeviceRef<PowerDevice<>> m_power_device;
-        [[no_unique_address]] DeviceRef<RCCDevice<>>   m_rcc_device;
+        [[no_unique_address]] DeviceRef<RccDevice<>>   m_rcc_device;
 
     public:
         CoreSystemDriver() = delete;
 
-        CoreSystemDriver(DeviceRef<PowerDevice<>>&& power_device, DeviceRef<RCCDevice<>>&& rcc_device)
+        CoreSystemDriver(DeviceRef<PowerDevice<>>&& power_device, DeviceRef<RccDevice<>>&& rcc_device)
             : m_power_device(std::move(power_device)), m_rcc_device(std::move(rcc_device))
         {
         }

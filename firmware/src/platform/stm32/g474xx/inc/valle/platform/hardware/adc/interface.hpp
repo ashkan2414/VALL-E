@@ -15,7 +15,7 @@ namespace valle::platform
     // ENUMERATIONS
     // ============================================================================
 
-    enum class ADCResolution : uint32_t
+    enum class AdcResolution : uint32_t
     {
         k12Bit = LL_ADC_RESOLUTION_12B,
         k10Bit = LL_ADC_RESOLUTION_10B,
@@ -23,44 +23,44 @@ namespace valle::platform
         k6Bit  = LL_ADC_RESOLUTION_6B,
     };
 
-    enum class ADCDataAlignment : uint32_t
+    enum class AdcDataAlignment : uint32_t
     {
         kRight = LL_ADC_DATA_ALIGN_RIGHT,
         kLeft  = LL_ADC_DATA_ALIGN_LEFT,
     };
 
-    enum class ADCLowPowerMode : uint32_t
+    enum class AdcLowPowerMode : uint32_t
     {
         kNone     = LL_ADC_LP_MODE_NONE,  /// No low power
         kAutoWait = LL_ADC_LP_AUTOWAIT,   /// Auto wait between conversions
     };
 
-    enum class ADCCommonSamplingTime : uint32_t
+    enum class AdcCommonSamplingTime : uint32_t
     {
-        kDefault                   = LL_ADC_SAMPLINGTIME_COMMON_DEFAULT,
-        k3P5CyclesReplace2P5Cycles = LL_ADC_SAMPLINGTIME_COMMON_3C5_REPL_2C5,
+        kDefault                   = LL_ADC_SAMPLINGTimE_COMMON_DEFAULT,
+        k3P5CyclesReplace2P5Cycles = LL_ADC_SAMPLINGTimE_COMMON_3C5_REPL_2C5,
     };
 
-    enum class ADCInjectGroupQueueMode : uint32_t
+    enum class AdcInjectGroupQueueMode : uint32_t
     {
         kDisable             = LL_ADC_INJ_QUEUE_DISABLE,
         k2ContextsLastActive = LL_ADC_INJ_QUEUE_2CONTEXTS_LAST_ACTIVE,
         k2ContextsEndEmpty   = LL_ADC_INJ_QUEUE_2CONTEXTS_END_EMPTY
     };
 
-    enum class ADCInjectGroupTriggerMode : uint32_t
+    enum class AdcInjectGroupTriggerMode : uint32_t
     {
         kIndependent      = LL_ADC_INJ_TRIG_INDEPENDENT,
         kFromRegularGroup = LL_ADC_INJ_TRIG_FROM_GRP_REGULAR
     };
 
-    enum class ADCInjectGroupSequencerDiscontinuityMode : uint32_t
+    enum class AdcInjectGroupSequencerDiscontinuityMode : uint32_t
     {
         kDisable = LL_ADC_INJ_SEQ_DISCONT_DISABLE,
         k1Rank   = LL_ADC_INJ_SEQ_DISCONT_1RANK
     };
 
-    enum class ADCInjectGroupTriggerSource : uint32_t
+    enum class AdcInjectGroupTriggerSource : uint32_t
     {
         kSoftware      = LL_ADC_INJ_TRIG_SOFTWARE,
         kExtTim1TRGO   = LL_ADC_INJ_TRIG_EXT_TIM1_TRGO,
@@ -103,14 +103,14 @@ namespace valle::platform
         kExtLptimOut   = LL_ADC_INJ_TRIG_EXT_LPTIM_OUT,
     };
 
-    enum class ADCInjectGroupTriggerEdge : uint32_t
+    enum class AdcInjectGroupTriggerEdge : uint32_t
     {
         kRising        = LL_ADC_INJ_TRIG_EXT_RISING,
         kFalling       = LL_ADC_INJ_TRIG_EXT_FALLING,
         kRisingFalling = LL_ADC_INJ_TRIG_EXT_RISINGFALLING
     };
 
-    enum class ADCRegularGroupTriggerSource : uint32_t
+    enum class AdcRegularGroupTriggerSource : uint32_t
     {
         kSoftware      = LL_ADC_REG_TRIG_SOFTWARE,
         kExtTim1TRGO   = LL_ADC_REG_TRIG_EXT_TIM1_TRGO,
@@ -154,39 +154,39 @@ namespace valle::platform
         kExtLptimOut   = LL_ADC_REG_TRIG_EXT_LPTIM_OUT,
     };
 
-    enum class ADCRegularGroupTriggerEdge : uint32_t
+    enum class AdcRegularGroupTriggerEdge : uint32_t
     {
         kRising        = LL_ADC_REG_TRIG_EXT_RISING,
         kFalling       = LL_ADC_REG_TRIG_EXT_FALLING,
         kRisingFalling = LL_ADC_REG_TRIG_EXT_RISINGFALLING
     };
 
-    enum class ADCRegularGroupDMATransfer : uint32_t
+    enum class AdcRegularGroupDmaTransfer : uint32_t
     {
         kNone      = LL_ADC_REG_DMA_TRANSFER_NONE,
         kUnlimited = LL_ADC_REG_DMA_TRANSFER_UNLIMITED,
         kLimited   = LL_ADC_REG_DMA_TRANSFER_LIMITED
     };
 
-    enum class ADCRegularGroupOverrunBehavior : uint32_t
+    enum class AdcRegularGroupOverrunBehavior : uint32_t
     {
         kPreserve  = LL_ADC_REG_OVR_DATA_PRESERVED,
         kOverwrite = LL_ADC_REG_OVR_DATA_OVERWRITTEN,
     };
 
-    enum class ADCRegularGroupConversionMode : uint32_t
+    enum class AdcRegularGroupConversionMode : uint32_t
     {
         kSingleShot = LL_ADC_REG_CONV_SINGLE,
         kContinuous = LL_ADC_REG_CONV_CONTINUOUS
     };
 
-    enum class ADCRegularGroupOversamplingMode : uint32_t
+    enum class AdcRegularGroupOversamplingMode : uint32_t
     {
         kDiscontinuous = LL_ADC_OVS_REG_DISCONT,
         kContinuous    = LL_ADC_OVS_REG_CONT
     };
 
-    enum class ADCOversamplingRatio : uint32_t
+    enum class AdcOversamplingRatio : uint32_t
     {
         k2x   = LL_ADC_OVS_RATIO_2,
         k4x   = LL_ADC_OVS_RATIO_4,
@@ -198,7 +198,7 @@ namespace valle::platform
         k256x = LL_ADC_OVS_RATIO_256
     };
 
-    enum class ADCOversamplingShift : uint32_t
+    enum class AdcOversamplingShift : uint32_t
     {
         kNone   = LL_ADC_OVS_SHIFT_NONE,
         kDiv2   = LL_ADC_OVS_SHIFT_RIGHT_1,
@@ -211,7 +211,7 @@ namespace valle::platform
         kDiv256 = LL_ADC_OVS_SHIFT_RIGHT_8
     };
 
-    enum class ADCOversamplingScope : uint32_t
+    enum class AdcOversamplingScope : uint32_t
     {
         kDisable              = LL_ADC_OVS_DISABLE,
         kRegularContinued     = LL_ADC_OVS_GRP_REGULAR_CONTINUED,
@@ -220,31 +220,31 @@ namespace valle::platform
         kInjectRegularResumed = LL_ADC_OVS_GRP_INJ_REG_RESUMED
     };
 
-    enum class ADCChannelGroup
+    enum class AdcChannelGroup
     {
         kRegular,
         kInject
     };
 
-    enum class ADCChannelSampleTime
+    enum class AdcChannelSampleTime
     {
-        k2Cycles5   = LL_ADC_SAMPLINGTIME_2CYCLES_5,    /// 2.5 ADC clock cycles
-        k6Cycles5   = LL_ADC_SAMPLINGTIME_6CYCLES_5,    /// 6.5 ADC clock cycles
-        k12Cycles5  = LL_ADC_SAMPLINGTIME_12CYCLES_5,   /// 12.5 ADC clock cycles
-        k24Cycles5  = LL_ADC_SAMPLINGTIME_24CYCLES_5,   /// 24.5 ADC clock cycles
-        k47Cycles5  = LL_ADC_SAMPLINGTIME_47CYCLES_5,   /// 47.5 ADC clock cycles
-        k92Cycles5  = LL_ADC_SAMPLINGTIME_92CYCLES_5,   /// 92.5 ADC clock cycles
-        k247Cycles5 = LL_ADC_SAMPLINGTIME_247CYCLES_5,  /// 247.5 ADC clock cycles
-        k640Cycles5 = LL_ADC_SAMPLINGTIME_640CYCLES_5   /// 640.5 ADC clock cycles
+        k2Cycles5   = LL_ADC_SAMPLINGTimE_2CYCLES_5,    /// 2.5 ADC clock cycles
+        k6Cycles5   = LL_ADC_SAMPLINGTimE_6CYCLES_5,    /// 6.5 ADC clock cycles
+        k12Cycles5  = LL_ADC_SAMPLINGTimE_12CYCLES_5,   /// 12.5 ADC clock cycles
+        k24Cycles5  = LL_ADC_SAMPLINGTimE_24CYCLES_5,   /// 24.5 ADC clock cycles
+        k47Cycles5  = LL_ADC_SAMPLINGTimE_47CYCLES_5,   /// 47.5 ADC clock cycles
+        k92Cycles5  = LL_ADC_SAMPLINGTimE_92CYCLES_5,   /// 92.5 ADC clock cycles
+        k247Cycles5 = LL_ADC_SAMPLINGTimE_247CYCLES_5,  /// 247.5 ADC clock cycles
+        k640Cycles5 = LL_ADC_SAMPLINGTimE_640CYCLES_5   /// 640.5 ADC clock cycles
     };
 
-    enum class ADCChannelInputMode
+    enum class AdcChannelInputMode
     {
         kSingleEnded  = LL_ADC_SINGLE_ENDED,       /// Single Ended Input
         kDifferential = LL_ADC_DIFFERENTIAL_ENDED  /// Differential Input
     };
 
-    enum class ADCChannelOffsetIdx
+    enum class AdcChannelOffsetIdx
     {
         kOffset1 = LL_ADC_OFFSET_1,  /// Offset 1
         kOffset2 = LL_ADC_OFFSET_2,  /// Offset 2
@@ -255,133 +255,133 @@ namespace valle::platform
     // ============================================================================
     // HARDWARE TRAITS
     // ============================================================================
-    template <ADCControllerID tkControllerID>
-    struct ADCControllerTraits;
+    template <AdcPeripheralId tkPeripheralId>
+    struct AdcControllerTraits;
 
     template <>
-    struct ADCControllerTraits<ADCControllerID::kADC1>
+    struct AdcControllerTraits<AdcPeripheralId::kAdc1>
     {
-        using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC12>;
+        using ClockTraitsT = AdcCommonTraits<AdcCommonId::kAdc12>;
 
-        static inline ADC_TypeDef* const        skInstance      = ADC1;
-        static constexpr IRQn_Type              skIRQn          = ADC1_2_IRQn;
-        static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC1;
-        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC12;
+        static inline Adc_TypeDef* const        skInstance      = Adc1;
+        static constexpr IRQn_Type              skIRQn          = Adc1_2_IRQn;
+        static inline constexpr DmaMuxRequestId skDmaMuxRequest = DmaMuxRequestId::kAdc1;
+        static constexpr AdcCommonId            skCommonId      = AdcCommonId::kAdc12;
     };
     template <>
-    struct ADCControllerTraits<ADCControllerID::kADC2>
+    struct AdcControllerTraits<AdcPeripheralId::kAdc2>
     {
-        using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC12>;
+        using ClockTraitsT = AdcCommonTraits<AdcCommonId::kAdc12>;
 
-        static inline ADC_TypeDef* const        skInstance      = ADC2;
-        static constexpr IRQn_Type              skIRQn          = ADC1_2_IRQn;
-        static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC2;
-        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC12;
-    };
-
-    template <>
-    struct ADCControllerTraits<ADCControllerID::kADC3>
-    {
-        using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC345>;
-
-        static inline ADC_TypeDef* const        skInstance      = ADC3;
-        static constexpr IRQn_Type              skIRQn          = ADC3_IRQn;
-        static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC3;
-        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC345;
+        static inline Adc_TypeDef* const        skInstance      = Adc2;
+        static constexpr IRQn_Type              skIRQn          = Adc1_2_IRQn;
+        static inline constexpr DmaMuxRequestId skDmaMuxRequest = DmaMuxRequestId::kAdc2;
+        static constexpr AdcCommonId            skCommonId      = AdcCommonId::kAdc12;
     };
 
     template <>
-    struct ADCControllerTraits<ADCControllerID::kADC4>
+    struct AdcControllerTraits<AdcPeripheralId::kAdc3>
     {
-        using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC345>;
+        using ClockTraitsT = AdcCommonTraits<AdcCommonId::kAdc345>;
 
-        static inline ADC_TypeDef* const        skInstance      = ADC4;
-        static constexpr IRQn_Type              skIRQn          = ADC4_IRQn;
-        static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC4;
-        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC345;
+        static inline Adc_TypeDef* const        skInstance      = Adc3;
+        static constexpr IRQn_Type              skIRQn          = Adc3_IRQn;
+        static inline constexpr DmaMuxRequestId skDmaMuxRequest = DmaMuxRequestId::kAdc3;
+        static constexpr AdcCommonId            skCommonId      = AdcCommonId::kAdc345;
     };
 
     template <>
-    struct ADCControllerTraits<ADCControllerID::kADC5>
+    struct AdcControllerTraits<AdcPeripheralId::kAdc4>
     {
-        using ClockTraitsT = ADCCommonTraits<ADCCommonID::kADC345>;
+        using ClockTraitsT = AdcCommonTraits<AdcCommonId::kAdc345>;
 
-        static inline ADC_TypeDef* const        skInstance      = ADC5;
-        static constexpr IRQn_Type              skIRQn          = ADC5_IRQn;
-        static inline constexpr DMAMuxRequestID skDMAMuxRequest = DMAMuxRequestID::kADC5;
-        static constexpr ADCCommonID            skCommonID      = ADCCommonID::kADC345;
+        static inline Adc_TypeDef* const        skInstance      = Adc4;
+        static constexpr IRQn_Type              skIRQn          = Adc4_IRQn;
+        static inline constexpr DmaMuxRequestId skDmaMuxRequest = DmaMuxRequestId::kAdc4;
+        static constexpr AdcCommonId            skCommonId      = AdcCommonId::kAdc345;
+    };
+
+    template <>
+    struct AdcControllerTraits<AdcPeripheralId::kAdc5>
+    {
+        using ClockTraitsT = AdcCommonTraits<AdcCommonId::kAdc345>;
+
+        static inline Adc_TypeDef* const        skInstance      = Adc5;
+        static constexpr IRQn_Type              skIRQn          = Adc5_IRQn;
+        static inline constexpr DmaMuxRequestId skDmaMuxRequest = DmaMuxRequestId::kAdc5;
+        static constexpr AdcCommonId            skCommonId      = AdcCommonId::kAdc345;
     };
 
     // -------------------------------------------------------------------------
     // Channel Traits
     // -------------------------------------------------------------------------
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-    struct ADCChannelTraits
+    template <AdcPeripheralId tkPeripheralId, AdcChannelId tkChannelId>
+    struct AdcChannelTraits
     {
     private:
         [[nodiscard]] static consteval uint32_t get_ll_channel_id()
         {
-            switch (tkChannelID)
+            switch (tkChannelId)
             {
-                case ADCChannelID::kChannel0:
+                case AdcChannelId::kChannel0:
                     return LL_ADC_CHANNEL_0;
-                case ADCChannelID::kChannel1:
+                case AdcChannelId::kChannel1:
                     return LL_ADC_CHANNEL_1;
-                case ADCChannelID::kChannel2:
+                case AdcChannelId::kChannel2:
                     return LL_ADC_CHANNEL_2;
-                case ADCChannelID::kChannel3:
+                case AdcChannelId::kChannel3:
                     return LL_ADC_CHANNEL_3;
-                case ADCChannelID::kChannel4:
+                case AdcChannelId::kChannel4:
                     return LL_ADC_CHANNEL_4;
-                case ADCChannelID::kChannel5:
+                case AdcChannelId::kChannel5:
                     return LL_ADC_CHANNEL_5;
-                case ADCChannelID::kChannel6:
+                case AdcChannelId::kChannel6:
                     return LL_ADC_CHANNEL_6;
-                case ADCChannelID::kChannel7:
+                case AdcChannelId::kChannel7:
                     return LL_ADC_CHANNEL_7;
-                case ADCChannelID::kChannel8:
+                case AdcChannelId::kChannel8:
                     return LL_ADC_CHANNEL_8;
-                case ADCChannelID::kChannel9:
+                case AdcChannelId::kChannel9:
                     return LL_ADC_CHANNEL_9;
-                case ADCChannelID::kChannel10:
+                case AdcChannelId::kChannel10:
                     return LL_ADC_CHANNEL_10;
-                case ADCChannelID::kChannel11:
+                case AdcChannelId::kChannel11:
                     return LL_ADC_CHANNEL_11;
-                case ADCChannelID::kChannel12:
+                case AdcChannelId::kChannel12:
                     return LL_ADC_CHANNEL_12;
-                case ADCChannelID::kChannel13:
+                case AdcChannelId::kChannel13:
                     return LL_ADC_CHANNEL_13;
-                case ADCChannelID::kChannel14:
+                case AdcChannelId::kChannel14:
                     return LL_ADC_CHANNEL_14;
-                case ADCChannelID::kChannel15:
+                case AdcChannelId::kChannel15:
                     return LL_ADC_CHANNEL_15;
-                case ADCChannelID::kChannel16:
+                case AdcChannelId::kChannel16:
                     return LL_ADC_CHANNEL_16;
-                case ADCChannelID::kChannel17:
+                case AdcChannelId::kChannel17:
                     return LL_ADC_CHANNEL_17;
-                case ADCChannelID::kChannel18:
+                case AdcChannelId::kChannel18:
                     return LL_ADC_CHANNEL_18;
-                case ADCChannelID::kChannelVRefInt:
+                case AdcChannelId::kChannelVRefInt:
                     return LL_ADC_CHANNEL_VREFINT;
-                case ADCChannelID::kChannelTempSensorADC1:
+                case AdcChannelId::kChannelTempSensorAdc1:
                     return LL_ADC_CHANNEL_TEMPSENSOR_ADC1;
-                case ADCChannelID::kChannelTempSensorADC5:
+                case AdcChannelId::kChannelTempSensorAdc5:
                     return LL_ADC_CHANNEL_TEMPSENSOR_ADC5;
-                case ADCChannelID::kChannelVBat:
+                case AdcChannelId::kChannelVBat:
                     return LL_ADC_CHANNEL_VBAT;
-                case ADCChannelID::kChannelVOPAmp1:
+                case AdcChannelId::kChannelVOPAmp1:
                     return LL_ADC_CHANNEL_VOPAMP1;
-                case ADCChannelID::kChannelVOPAmp2:
+                case AdcChannelId::kChannelVOPAmp2:
                     return LL_ADC_CHANNEL_VOPAMP2;
-                case ADCChannelID::kChannelVOPAmp3ADC2:
+                case AdcChannelId::kChannelVOPAmp3Adc2:
                     return LL_ADC_CHANNEL_VOPAMP3_ADC2;
-                case ADCChannelID::kChannelVOPAmp3ADC3:
+                case AdcChannelId::kChannelVOPAmp3Adc3:
                     return LL_ADC_CHANNEL_VOPAMP3_ADC3;
-                case ADCChannelID::kChannelVOPAmp4:
+                case AdcChannelId::kChannelVOPAmp4:
                     return LL_ADC_CHANNEL_VOPAMP4;
-                case ADCChannelID::kChannelVOPAmp5:
+                case AdcChannelId::kChannelVOPAmp5:
                     return LL_ADC_CHANNEL_VOPAMP5;
-                case ADCChannelID::kChannelVOPAmp6:
+                case AdcChannelId::kChannelVOPAmp6:
                     return LL_ADC_CHANNEL_VOPAMP6;
                 default:
                     return 0;
@@ -389,17 +389,17 @@ namespace valle::platform
         }
 
     public:
-        static constexpr ADCControllerID skControllerID = tkControllerID;
-        static constexpr ADCChannelID    skChannelID    = tkChannelID;
-        static constexpr uint32_t        skChannelIdx   = static_cast<uint32_t>(tkChannelID);
-        static constexpr uint32_t        skLLChannelID  = get_ll_channel_id();
+        static constexpr AdcPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr AdcChannelId    skChannelId    = tkChannelId;
+        static constexpr uint32_t        skChannelIdx   = static_cast<uint32_t>(tkChannelId);
+        static constexpr uint32_t        skLLChannelId  = get_ll_channel_id();
     };
 
     // ============================================================================
     // RANK TRAITS
     // ============================================================================
 
-    struct ADCInjectGroupTraits
+    struct AdcInjectGroupTraits
     {
         static constexpr std::array<uint32_t, 4> skRankIdxToRankReg = {
             LL_ADC_INJ_RANK_1, LL_ADC_INJ_RANK_2, LL_ADC_INJ_RANK_3, LL_ADC_INJ_RANK_4};
@@ -438,30 +438,30 @@ namespace valle::platform
             }
         }
 
-        static constexpr uint32_t rank_to_rank_reg(ADCInjectChannelRank rank)
+        static constexpr uint32_t rank_to_rank_reg(AdcInjectChannelRank rank)
         {
             return skRankIdxToRankReg[static_cast<uint8_t>(rank) - 1];
         }
 
-        static constexpr ADCInjectChannelRank rank_reg_to_rank(const uint32_t rank_reg)
+        static constexpr AdcInjectChannelRank rank_reg_to_rank(const uint32_t rank_reg)
         {
             switch (rank_reg)
             {
                 case LL_ADC_INJ_RANK_1:
-                    return ADCInjectChannelRank::kRank1;
+                    return AdcInjectChannelRank::kRank1;
                 case LL_ADC_INJ_RANK_2:
-                    return ADCInjectChannelRank::kRank2;
+                    return AdcInjectChannelRank::kRank2;
                 case LL_ADC_INJ_RANK_3:
-                    return ADCInjectChannelRank::kRank3;
+                    return AdcInjectChannelRank::kRank3;
                 case LL_ADC_INJ_RANK_4:
-                    return ADCInjectChannelRank::kRank4;
+                    return AdcInjectChannelRank::kRank4;
                 default:
-                    return ADCInjectChannelRank::kRank1;
+                    return AdcInjectChannelRank::kRank1;
             }
         }
     };
 
-    struct ADCRegularGroupTraits
+    struct AdcRegularGroupTraits
     {
         static constexpr std::array<uint32_t, 16> skRankIdxToRankReg = {LL_ADC_REG_RANK_1,
                                                                         LL_ADC_REG_RANK_2,
@@ -566,109 +566,109 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        static constexpr uint32_t rank_to_rank_reg(ADCRegularChannelRank rank)
+        static constexpr uint32_t rank_to_rank_reg(AdcRegularChannelRank rank)
         {
             return skRankIdxToRankReg[static_cast<uint8_t>(rank) - 1];
         }
 
-        static constexpr ADCRegularChannelRank rank_reg_to_rank(uint32_t rank)
+        static constexpr AdcRegularChannelRank rank_reg_to_rank(uint32_t rank)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (rank)
             {
                 case LL_ADC_REG_RANK_1:
-                    return ADCRegularChannelRank::kRank1;
+                    return AdcRegularChannelRank::kRank1;
                 case LL_ADC_REG_RANK_2:
-                    return ADCRegularChannelRank::kRank2;
+                    return AdcRegularChannelRank::kRank2;
                 case LL_ADC_REG_RANK_3:
-                    return ADCRegularChannelRank::kRank3;
+                    return AdcRegularChannelRank::kRank3;
                 case LL_ADC_REG_RANK_4:
-                    return ADCRegularChannelRank::kRank4;
+                    return AdcRegularChannelRank::kRank4;
                 case LL_ADC_REG_RANK_5:
-                    return ADCRegularChannelRank::kRank5;
+                    return AdcRegularChannelRank::kRank5;
                 case LL_ADC_REG_RANK_6:
-                    return ADCRegularChannelRank::kRank6;
+                    return AdcRegularChannelRank::kRank6;
                 case LL_ADC_REG_RANK_7:
-                    return ADCRegularChannelRank::kRank7;
+                    return AdcRegularChannelRank::kRank7;
                 case LL_ADC_REG_RANK_8:
-                    return ADCRegularChannelRank::kRank8;
+                    return AdcRegularChannelRank::kRank8;
                 case LL_ADC_REG_RANK_9:
-                    return ADCRegularChannelRank::kRank9;
+                    return AdcRegularChannelRank::kRank9;
                 case LL_ADC_REG_RANK_10:
-                    return ADCRegularChannelRank::kRank10;
+                    return AdcRegularChannelRank::kRank10;
                 case LL_ADC_REG_RANK_11:
-                    return ADCRegularChannelRank::kRank11;
+                    return AdcRegularChannelRank::kRank11;
                 case LL_ADC_REG_RANK_12:
-                    return ADCRegularChannelRank::kRank12;
+                    return AdcRegularChannelRank::kRank12;
                 case LL_ADC_REG_RANK_13:
-                    return ADCRegularChannelRank::kRank13;
+                    return AdcRegularChannelRank::kRank13;
                 case LL_ADC_REG_RANK_14:
-                    return ADCRegularChannelRank::kRank14;
+                    return AdcRegularChannelRank::kRank14;
                 case LL_ADC_REG_RANK_15:
-                    return ADCRegularChannelRank::kRank15;
+                    return AdcRegularChannelRank::kRank15;
                 case LL_ADC_REG_RANK_16:
-                    return ADCRegularChannelRank::kRank16;
+                    return AdcRegularChannelRank::kRank16;
                 default:
-                    return ADCRegularChannelRank::kRank1;
+                    return AdcRegularChannelRank::kRank1;
             }
 
             // NOLINTEND(readability-magic-numbers)
         }
     };
 
-    template <ADCInjectChannelRank tkRank>
-    struct ADCInjectRankTraits
+    template <AdcInjectChannelRank tkRank>
+    struct AdcInjectRankTraits
     {
-        static constexpr ADCInjectChannelRank skRank = tkRank;
-        static constexpr uint32_t             skReg  = ADCInjectGroupTraits::rank_to_rank_reg(tkRank);
+        static constexpr AdcInjectChannelRank skRank = tkRank;
+        static constexpr uint32_t             skReg  = AdcInjectGroupTraits::rank_to_rank_reg(tkRank);
     };
 
-    template <ADCRegularChannelRank tkRank>
-    struct ADCRegularRankTraits
+    template <AdcRegularChannelRank tkRank>
+    struct AdcRegularRankTraits
     {
-        static constexpr ADCRegularChannelRank skRank = tkRank;
-        static constexpr uint32_t              skReg  = ADCRegularGroupTraits::rank_to_rank_reg(tkRank);
+        static constexpr AdcRegularChannelRank skRank = tkRank;
+        static constexpr uint32_t              skReg  = AdcRegularGroupTraits::rank_to_rank_reg(tkRank);
     };
 
     // ============================================================================
     // INTERFACE
     // ============================================================================
-    using ADCValue = uint16_t;
+    using AdcValue = uint16_t;
 
-    struct ADCRootInterface
+    struct AdcRootInterface
     {
         static constexpr uint32_t calculate_async_clock_freq_hz(const uint32_t                     async_clock_freq_hz,
-                                                                const ADCCommonAsyncClockPrescaler prescaler)
+                                                                const AdcCommonAsyncClockPrescaler prescaler)
         {
-            return ADCCommonRootInterface::calculate_async_clock_freq_hz(async_clock_freq_hz, prescaler);
+            return AdcCommonRootInterface::calculate_async_clock_freq_hz(async_clock_freq_hz, prescaler);
         }
 
         static constexpr uint32_t calculate_sync_clock_freq_hz(const uint32_t                    sync_clock_freq_hz,
-                                                               const ADCCommonSyncClockPrescaler prescaler)
+                                                               const AdcCommonSyncClockPrescaler prescaler)
         {
-            return ADCCommonRootInterface::calculate_sync_clock_freq_hz(sync_clock_freq_hz, prescaler);
+            return AdcCommonRootInterface::calculate_sync_clock_freq_hz(sync_clock_freq_hz, prescaler);
         }
 
-        static constexpr float get_channel_sample_time_cycles(const ADCChannelSampleTime sample_time)
+        static constexpr float get_channel_sample_time_cycles(const AdcChannelSampleTime sample_time)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (sample_time)
             {
-                case ADCChannelSampleTime::k2Cycles5:
+                case AdcChannelSampleTime::k2Cycles5:
                     return 2.5F;
-                case ADCChannelSampleTime::k6Cycles5:
+                case AdcChannelSampleTime::k6Cycles5:
                     return 6.5F;
-                case ADCChannelSampleTime::k12Cycles5:
+                case AdcChannelSampleTime::k12Cycles5:
                     return 12.5F;
-                case ADCChannelSampleTime::k24Cycles5:
+                case AdcChannelSampleTime::k24Cycles5:
                     return 24.5F;
-                case ADCChannelSampleTime::k47Cycles5:
+                case AdcChannelSampleTime::k47Cycles5:
                     return 47.5F;
-                case ADCChannelSampleTime::k92Cycles5:
+                case AdcChannelSampleTime::k92Cycles5:
                     return 92.5F;
-                case ADCChannelSampleTime::k247Cycles5:
+                case AdcChannelSampleTime::k247Cycles5:
                     return 247.5F;
-                case ADCChannelSampleTime::k640Cycles5:
+                case AdcChannelSampleTime::k640Cycles5:
                     return 640.5F;
                 default:
                     return 0.0F;
@@ -676,26 +676,26 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        static constexpr uint32_t get_oversampling_ratio_factor(const ADCOversamplingRatio oversampling_ratio)
+        static constexpr uint32_t get_oversampling_ratio_factor(const AdcOversamplingRatio oversampling_ratio)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (oversampling_ratio)
             {
-                case ADCOversamplingRatio::k2x:
+                case AdcOversamplingRatio::k2x:
                     return 2;
-                case ADCOversamplingRatio::k4x:
+                case AdcOversamplingRatio::k4x:
                     return 4;
-                case ADCOversamplingRatio::k8x:
+                case AdcOversamplingRatio::k8x:
                     return 8;
-                case ADCOversamplingRatio::k16x:
+                case AdcOversamplingRatio::k16x:
                     return 16;
-                case ADCOversamplingRatio::k32x:
+                case AdcOversamplingRatio::k32x:
                     return 32;
-                case ADCOversamplingRatio::k64x:
+                case AdcOversamplingRatio::k64x:
                     return 64;
-                case ADCOversamplingRatio::k128x:
+                case AdcOversamplingRatio::k128x:
                     return 128;
-                case ADCOversamplingRatio::k256x:
+                case AdcOversamplingRatio::k256x:
                     return 256;
                 default:
                     return 1;
@@ -705,8 +705,8 @@ namespace valle::platform
 
         static constexpr DurationSecondsF calculate_channel_sample_time(
             const uint32_t                            clock_freq_hz,
-            const ADCChannelSampleTime                sample_time,
-            const std::optional<ADCOversamplingRatio> oversampling_ratio)
+            const AdcChannelSampleTime                sample_time,
+            const std::optional<AdcOversamplingRatio> oversampling_ratio)
         {
             const float    cycles = get_channel_sample_time_cycles(sample_time);
             const uint32_t oversampling_factor =
@@ -717,10 +717,10 @@ namespace valle::platform
         }
     };
 
-    template <ADCControllerID tkControllerID>
-    struct ADCControllerInterface
+    template <AdcPeripheralId tkPeripheralId>
+    struct AdcControllerInterface
     {
-        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+        using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
 
         // ----------------------------------------------------------------------------
         // CORE
@@ -773,17 +773,17 @@ namespace valle::platform
         // -----------------------------------------------------------------------------
         // CONFIGURATION
         // -----------------------------------------------------------------------------
-        static void set_resolution(const ADCResolution resolution)
+        static void set_resolution(const AdcResolution resolution)
         {
             LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(resolution));
         }
 
-        static void set_data_alignment(const ADCDataAlignment data_alignment)
+        static void set_data_alignment(const AdcDataAlignment data_alignment)
         {
             LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, static_cast<uint32_t>(data_alignment));
         }
 
-        static void set_low_power_mode(const ADCLowPowerMode low_power_mode)
+        static void set_low_power_mode(const AdcLowPowerMode low_power_mode)
         {
             LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(low_power_mode));
         }
@@ -793,27 +793,27 @@ namespace valle::platform
             LL_ADC_SetGainCompensation(ControllerTraitsT::skInstance, static_cast<uint32_t>(gain_compensation));
         }
 
-        static void set_common_sample_time(const ADCCommonSamplingTime sampling_time)
+        static void set_common_sample_time(const AdcCommonSamplingTime sampling_time)
         {
             LL_ADC_SetSamplingTimeCommonConfig(ControllerTraitsT::skInstance, static_cast<uint32_t>(sampling_time));
         }
 
-        static void set_oversampling_scope(const ADCOversamplingScope scope)
+        static void set_oversampling_scope(const AdcOversamplingScope scope)
         {
             LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, static_cast<uint32_t>(scope));
         }
 
-        [[nodiscard]] static ADCOversamplingScope get_oversampling_scope()
+        [[nodiscard]] static AdcOversamplingScope get_oversampling_scope()
         {
-            return static_cast<ADCOversamplingScope>(LL_ADC_GetOverSamplingScope(ControllerTraitsT::skInstance));
+            return static_cast<AdcOversamplingScope>(LL_ADC_GetOverSamplingScope(ControllerTraitsT::skInstance));
         }
 
         [[nodiscard]] static bool inject_group_oversampling_enabled()
         {
             switch (get_oversampling_scope())
             {
-                case ADCOversamplingScope::kInject:
-                case ADCOversamplingScope::kInjectRegularResumed:
+                case AdcOversamplingScope::kInject:
+                case AdcOversamplingScope::kInjectRegularResumed:
                     return true;
                 default:
                     return false;
@@ -824,16 +824,16 @@ namespace valle::platform
         {
             switch (get_oversampling_scope())
             {
-                case ADCOversamplingScope::kRegularContinued:
-                case ADCOversamplingScope::kRegularResumed:
-                case ADCOversamplingScope::kInjectRegularResumed:
+                case AdcOversamplingScope::kRegularContinued:
+                case AdcOversamplingScope::kRegularResumed:
+                case AdcOversamplingScope::kInjectRegularResumed:
                     return true;
                 default:
                     return false;
             }
         }
 
-        static void set_oversampling_ratio_shift(const ADCOversamplingRatio ratio, const ADCOversamplingShift shift)
+        static void set_oversampling_ratio_shift(const AdcOversamplingRatio ratio, const AdcOversamplingShift shift)
         {
             LL_ADC_ConfigOverSamplingRatioShift(
                 ControllerTraitsT::skInstance, static_cast<uint32_t>(ratio), static_cast<uint32_t>(shift));
@@ -993,41 +993,41 @@ namespace valle::platform
         }
     };
 
-    template <ADCControllerID tkControllerID>
-    struct ADCInjectGroupInterface
+    template <AdcPeripheralId tkPeripheralId>
+    struct AdcInjectGroupInterface
     {
-        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+        using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
 
-        static void set_queue_mode(const ADCInjectGroupQueueMode queue_mode)
+        static void set_queue_mode(const AdcInjectGroupQueueMode queue_mode)
         {
             LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(queue_mode));
         }
 
-        static void set_trigger_mode(const ADCInjectGroupTriggerMode trigger_mode)
+        static void set_trigger_mode(const AdcInjectGroupTriggerMode trigger_mode)
         {
             LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_mode));
         }
 
-        static void set_sequencer_discontinuity_mode(const ADCInjectGroupSequencerDiscontinuityMode discontinuity_mode)
+        static void set_sequencer_discontinuity_mode(const AdcInjectGroupSequencerDiscontinuityMode discontinuity_mode)
         {
             LL_ADC_INJ_SetSequencerDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(discontinuity_mode));
         }
 
-        static void set_trigger_source(const ADCInjectGroupTriggerSource trigger_source)
+        static void set_trigger_source(const AdcInjectGroupTriggerSource trigger_source)
         {
             LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
         }
 
-        static void set_trigger_edge(const ADCInjectGroupTriggerEdge trigger_edge)
+        static void set_trigger_edge(const AdcInjectGroupTriggerEdge trigger_edge)
         {
             LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
         }
 
-        static void config_trigger(const ADCInjectGroupTriggerSource trigger_source,
-                                   const ADCInjectGroupTriggerEdge   trigger_edge)
+        static void config_trigger(const AdcInjectGroupTriggerSource trigger_source,
+                                   const AdcInjectGroupTriggerEdge   trigger_edge)
         {
             set_trigger_source(trigger_source);
-            if (trigger_source != ADCInjectGroupTriggerSource::kSoftware)
+            if (trigger_source != AdcInjectGroupTriggerSource::kSoftware)
             {
                 set_trigger_edge(trigger_edge);
             }
@@ -1037,67 +1037,67 @@ namespace valle::platform
         static void set_sequencer_length(const uint32_t inj_count)
         {
             LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
-                                          ADCInjectGroupTraits::count_to_sequence_length(inj_count));
+                                          AdcInjectGroupTraits::count_to_sequence_length(inj_count));
         }
 
         [[nodiscard]] static uint32_t get_sequencer_length()
         {
-            return ADCInjectGroupTraits::sequence_length_to_count(
+            return AdcInjectGroupTraits::sequence_length_to_count(
                 LL_ADC_INJ_GetSequencerLength(ControllerTraitsT::skInstance));
         }
 
-        template <ADCChannelID tkChannelID>
-        static void set_sequencer_ranks(const ADCInjectChannelRank rank)
+        template <AdcChannelId tkChannelId>
+        static void set_sequencer_ranks(const AdcInjectChannelRank rank)
         {
-            using ChannelTraitsT = ADCChannelTraits<tkControllerID, tkChannelID>;
+            using ChannelTraitsT = AdcChannelTraits<tkPeripheralId, tkChannelId>;
             LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                         ADCInjectGroupTraits::rank_to_rank_reg(rank),
-                                         ChannelTraitsT::skLLChannelID);
+                                         AdcInjectGroupTraits::rank_to_rank_reg(rank),
+                                         ChannelTraitsT::skLLChannelId);
         }
 
-        [[nodiscard]] static uint32_t read(const ADCInjectChannelRank rank)
+        [[nodiscard]] static uint32_t read(const AdcInjectChannelRank rank)
         {
             return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
-                                                   ADCInjectGroupTraits::rank_to_rank_reg(rank));
+                                                   AdcInjectGroupTraits::rank_to_rank_reg(rank));
         }
     };
 
-    template <ADCControllerID tkControllerID>
-    struct ADCRegularGroupInterface
+    template <AdcPeripheralId tkPeripheralId>
+    struct AdcRegularGroupInterface
     {
-        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
+        using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
 
-        static void set_oversampling_mode(const ADCRegularGroupOversamplingMode oversampling_mode)
+        static void set_oversampling_mode(const AdcRegularGroupOversamplingMode oversampling_mode)
         {
             LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(oversampling_mode));
         }
 
-        static void set_trigger_source(const ADCRegularGroupTriggerSource trigger_source)
+        static void set_trigger_source(const AdcRegularGroupTriggerSource trigger_source)
         {
             LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
         }
 
-        static void set_trigger_edge(const ADCRegularGroupTriggerEdge trigger_edge)
+        static void set_trigger_edge(const AdcRegularGroupTriggerEdge trigger_edge)
         {
             LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
         }
 
-        static void config_trigger(const ADCRegularGroupTriggerSource trigger_source,
-                                   const ADCRegularGroupTriggerEdge   trigger_edge)
+        static void config_trigger(const AdcRegularGroupTriggerSource trigger_source,
+                                   const AdcRegularGroupTriggerEdge   trigger_edge)
         {
             set_trigger_source(trigger_source);
-            if (trigger_source != ADCRegularGroupTriggerSource::kSoftware)
+            if (trigger_source != AdcRegularGroupTriggerSource::kSoftware)
             {
                 set_trigger_edge(trigger_edge);
             }
         }
 
-        static void set_overrun_behavior(const ADCRegularGroupOverrunBehavior overrun_behavior)
+        static void set_overrun_behavior(const AdcRegularGroupOverrunBehavior overrun_behavior)
         {
             LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, static_cast<uint32_t>(overrun_behavior));
         }
 
-        static void set_conversion_mode(const ADCRegularGroupConversionMode conversion_mode)
+        static void set_conversion_mode(const AdcRegularGroupConversionMode conversion_mode)
         {
             LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(conversion_mode));
         }
@@ -1106,56 +1106,56 @@ namespace valle::platform
         static void set_sequencer_length(const uint32_t reg_count)
         {
             LL_ADC_REG_SetSequencerLength(ControllerTraitsT::skInstance,
-                                          ADCRegularGroupTraits::count_to_sequence_length(reg_count));
+                                          AdcRegularGroupTraits::count_to_sequence_length(reg_count));
         }
 
         [[nodiscard]] static uint32_t get_sequencer_length()
         {
-            return ADCRegularGroupTraits::sequence_length_to_count(
+            return AdcRegularGroupTraits::sequence_length_to_count(
                 LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
         }
 
-        template <ADCChannelID tkChannelID>
-        static void set_sequencer_ranks(const ADCRegularChannelRank rank)
+        template <AdcChannelId tkChannelId>
+        static void set_sequencer_ranks(const AdcRegularChannelRank rank)
         {
-            using ChannelTraitsT = ADCChannelTraits<tkControllerID, tkChannelID>;
+            using ChannelTraitsT = AdcChannelTraits<tkPeripheralId, tkChannelId>;
             LL_ADC_REG_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                         ADCRegularGroupTraits::rank_to_rank_reg(rank),
-                                         ChannelTraitsT::skLLChannelID);
+                                         AdcRegularGroupTraits::rank_to_rank_reg(rank),
+                                         ChannelTraitsT::skLLChannelId);
         }
 
-        static void set_dma_transfer(const ADCRegularGroupDMATransfer dma_transfer)
+        static void set_dma_transfer(const AdcRegularGroupDmaTransfer dma_transfer)
         {
-            LL_ADC_REG_SetDMATransfer(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_transfer));
+            LL_ADC_REG_SetDmaTransfer(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_transfer));
         }
     };
 
-    template <ADCControllerID tkControllerID, ADCChannelID tkChannelID>
-    struct ADCChannelInterface
+    template <AdcPeripheralId tkPeripheralId, AdcChannelId tkChannelId>
+    struct AdcChannelInterface
     {
-        static constexpr ADCControllerID skControllerID = tkControllerID;
-        static constexpr ADCChannelID    skChannelID    = tkChannelID;
+        static constexpr AdcPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr AdcChannelId    skChannelId    = tkChannelId;
 
-        using ControllerTraitsT = ADCControllerTraits<tkControllerID>;
-        using ChannelTraitsT    = ADCChannelTraits<tkControllerID, tkChannelID>;
+        using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
+        using ChannelTraitsT    = AdcChannelTraits<tkPeripheralId, tkChannelId>;
 
-        static void set_sampling_time(const ADCChannelSampleTime sample_time)
+        static void set_sampling_time(const AdcChannelSampleTime sample_time)
         {
             LL_ADC_SetChannelSamplingTime(
-                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelID, static_cast<uint32_t>(sample_time));
+                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(sample_time));
         }
 
-        static void set_input_mode(const ADCChannelInputMode input_mode)
+        static void set_input_mode(const AdcChannelInputMode input_mode)
         {
             LL_ADC_SetChannelSingleDiff(
-                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelID, static_cast<uint32_t>(input_mode));
+                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(input_mode));
         }
 
-        static void config_offset(const ADCChannelOffsetIdx offset_idx, const uint32_t offset_value)
+        static void config_offset(const AdcChannelOffsetIdx offset_idx, const uint32_t offset_value)
         {
             LL_ADC_SetOffset(ControllerTraitsT::skInstance,
                              static_cast<uint32_t>(offset_idx),
-                             ChannelTraitsT::skLLChannelID,
+                             ChannelTraitsT::skLLChannelId,
                              offset_value);
         }
     };

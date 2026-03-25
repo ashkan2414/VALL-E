@@ -10,14 +10,14 @@ namespace valle::platform
     // ============================================================================
     // INTERRUPT TRAITS
     // ============================================================================
-    template <GPIOPortID tkPortID, GPIOPinID tkPinID>
+    template <GpioPortId tkPortId, GpioPinId tkPinId>
 
-    struct GPIOPinInterruptTraits
+    struct GpioPinInterruptTraits
     {
-        static constexpr IRQn_Type skIRQn = GPIOPinTraits<tkPortID, tkPinID>::skIRQn;
+        static constexpr IRQn_Type skIRQn = GpioPinTraits<tkPortId, tkPinId>::skIRQn;
 
-        using PortTraitsT = GPIOPortTraits<tkPortID>;
-        using PinTraitsT  = GPIOPinTraits<tkPortID, tkPinID>;
+        using PortTraitsT = GpioPortTraits<tkPortId>;
+        using PinTraitsT  = GpioPinTraits<tkPortId, tkPinId>;
 
         static inline bool is_exti_source()
         {
@@ -65,27 +65,27 @@ namespace valle::platform
     /**
      * @brief Configuration for GPIO Interrupts.
      */
-    struct GPIOPinInterruptConfig
+    struct GpioPinInterruptConfig
     {
         uint32_t priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
     };
 
-    template <GPIOPortID tkPortID, GPIOPinID tkPinID>
+    template <GpioPortId tkPortId, GpioPinId tkPinId>
 
-    struct GPIOPinInterruptController
+    struct GpioPinInterruptController
     {
     public:
-        static constexpr GPIOPortID skPortID = tkPortID;
-        static constexpr GPIOPinID  skPinID  = tkPinID;
+        static constexpr GpioPortId skPortId = tkPortId;
+        static constexpr GpioPinId  skPinId  = tkPinId;
 
-        using PinTraitsT       = GPIOPinTraits<tkPortID, tkPinID>;
-        using InterruptTraitsT = GPIOPinInterruptTraits<tkPortID, tkPinID>;
+        using PinTraitsT       = GpioPinTraits<tkPortId, tkPinId>;
+        using InterruptTraitsT = GpioPinInterruptTraits<tkPortId, tkPinId>;
 
         /**
          * @brief Enable interrupts for this GPIO pin.
          * @param config Configuration for GPIO Interrupts.
          */
-        static void enable_interrupts(const GPIOPinInterruptConfig& config)
+        static void enable_interrupts(const GpioPinInterruptConfig& config)
         {
             InterruptTraitsT::ack();
             InterruptTraitsT::enable();
@@ -135,7 +135,7 @@ namespace valle::platform
      * @tparam tkInterruptType EXTI interrupt type (e.g., EXTIInterruptType::k15_10).
      */
     template <EXTIInterruptType tkInterruptType>
-    struct GPIOEXTIGlobalISRRouter
+    struct GpioEXTIGlobalIsrRouter
     {
         using UnboundIsrHandlerTag = void;
 
@@ -154,12 +154,12 @@ namespace valle::platform
      * Specialize this template to handle specific GPIO EXTI interrupts
      * for a given port and pin.
      *
-     * @tparam tkPortID GPIO Port ID (e.g., GPIOPortID::kPortA)
-     * @tparam tkPinID  GPIO Pin ID (0-15)
+     * @tparam tkPortId GPIO Port ID (e.g., GpioPortId::kPortA)
+     * @tparam tkPinId  GPIO Pin ID (0-15)
      */
-    template <GPIOPortID tkPortID, GPIOPinID tkPinID>
+    template <GpioPortId tkPortId, GpioPinId tkPinId>
 
-    struct GPIOPinISRRouter
+    struct GpioPinIsrRouter
     {
         using UnboundIsrHandlerTag = void;
         static void handle()

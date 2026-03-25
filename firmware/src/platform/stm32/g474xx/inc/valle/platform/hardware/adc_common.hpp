@@ -6,16 +6,16 @@
 
 namespace valle::platform
 {
-    enum class ADCCommonID : uint32_t
+    enum class AdcCommonId : uint32_t
     {
-        kADC12,
-        kADC345
+        kAdc12,
+        kAdc345
     };
 
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class ADCCommonAsyncClockPrescaler
+    enum class AdcCommonAsyncClockPrescaler
     {
         kDiv1   = LL_ADC_CLOCK_ASYNC_DIV1,
         kDiv2   = LL_ADC_CLOCK_ASYNC_DIV2,
@@ -31,7 +31,7 @@ namespace valle::platform
         kDiv256 = LL_ADC_CLOCK_ASYNC_DIV256,
     };
 
-    enum class ADCCommonSyncClockPrescaler
+    enum class AdcCommonSyncClockPrescaler
     {
         kDiv1 = LL_ADC_CLOCK_SYNC_PCLK_DIV1,
         kDiv2 = LL_ADC_CLOCK_SYNC_PCLK_DIV2,
@@ -41,13 +41,13 @@ namespace valle::platform
     // ============================================================================
     // HARDWARE TRAITS
     // ============================================================================
-    template <ADCCommonID tkCommonID>
-    struct ADCCommonTraits;
+    template <AdcCommonId tkCommonId>
+    struct AdcCommonTraits;
 
     template <>
-    struct ADCCommonTraits<ADCCommonID::kADC12>
+    struct AdcCommonTraits<AdcCommonId::kAdc12>
     {
-        static inline ADC_Common_TypeDef* const skInstance = ADC12_COMMON;
+        static inline Adc_Common_TypeDef* const skInstance = Adc12_COMMON;
 
         static void enable_clock()
         {
@@ -56,9 +56,9 @@ namespace valle::platform
     };
 
     template <>
-    struct ADCCommonTraits<ADCCommonID::kADC345>
+    struct AdcCommonTraits<AdcCommonId::kAdc345>
     {
-        static inline ADC_Common_TypeDef* const skInstance = ADC345_COMMON;
+        static inline Adc_Common_TypeDef* const skInstance = Adc345_COMMON;
 
         static void enable_clock()
         {
@@ -70,38 +70,38 @@ namespace valle::platform
     // INTERFACE
     // ============================================================================
 
-    struct ADCCommonRootInterface
+    struct AdcCommonRootInterface
     {
         static constexpr uint32_t skMaxClockFreqHz = 60'000'000U;  // 60MHz
 
-        static constexpr uint32_t get_prescaler_factor(const ADCCommonAsyncClockPrescaler prescaler)
+        static constexpr uint32_t get_prescaler_factor(const AdcCommonAsyncClockPrescaler prescaler)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (prescaler)
             {
-                case ADCCommonAsyncClockPrescaler::kDiv1:
+                case AdcCommonAsyncClockPrescaler::kDiv1:
                     return 1;
-                case ADCCommonAsyncClockPrescaler::kDiv2:
+                case AdcCommonAsyncClockPrescaler::kDiv2:
                     return 2;
-                case ADCCommonAsyncClockPrescaler::kDiv4:
+                case AdcCommonAsyncClockPrescaler::kDiv4:
                     return 4;
-                case ADCCommonAsyncClockPrescaler::kDiv6:
+                case AdcCommonAsyncClockPrescaler::kDiv6:
                     return 6;
-                case ADCCommonAsyncClockPrescaler::kDiv8:
+                case AdcCommonAsyncClockPrescaler::kDiv8:
                     return 8;
-                case ADCCommonAsyncClockPrescaler::kDiv10:
+                case AdcCommonAsyncClockPrescaler::kDiv10:
                     return 10;
-                case ADCCommonAsyncClockPrescaler::kDiv12:
+                case AdcCommonAsyncClockPrescaler::kDiv12:
                     return 12;
-                case ADCCommonAsyncClockPrescaler::kDiv16:
+                case AdcCommonAsyncClockPrescaler::kDiv16:
                     return 16;
-                case ADCCommonAsyncClockPrescaler::kDiv32:
+                case AdcCommonAsyncClockPrescaler::kDiv32:
                     return 32;
-                case ADCCommonAsyncClockPrescaler::kDiv64:
+                case AdcCommonAsyncClockPrescaler::kDiv64:
                     return 64;
-                case ADCCommonAsyncClockPrescaler::kDiv128:
+                case AdcCommonAsyncClockPrescaler::kDiv128:
                     return 128;
-                case ADCCommonAsyncClockPrescaler::kDiv256:
+                case AdcCommonAsyncClockPrescaler::kDiv256:
                     return 256;
                 default:
                     return 1;
@@ -109,16 +109,16 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        static constexpr uint32_t get_prescaler_factor(const ADCCommonSyncClockPrescaler prescaler)
+        static constexpr uint32_t get_prescaler_factor(const AdcCommonSyncClockPrescaler prescaler)
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (prescaler)
             {
-                case ADCCommonSyncClockPrescaler::kDiv1:
+                case AdcCommonSyncClockPrescaler::kDiv1:
                     return 1;
-                case ADCCommonSyncClockPrescaler::kDiv2:
+                case AdcCommonSyncClockPrescaler::kDiv2:
                     return 2;
-                case ADCCommonSyncClockPrescaler::kDiv4:
+                case AdcCommonSyncClockPrescaler::kDiv4:
                     return 4;
                 default:
                     return 1;
@@ -127,13 +127,13 @@ namespace valle::platform
         }
 
         static constexpr uint32_t calculate_async_clock_freq_hz(const uint32_t                     async_clock_freq_hz,
-                                                                const ADCCommonAsyncClockPrescaler prescaler)
+                                                                const AdcCommonAsyncClockPrescaler prescaler)
         {
             return async_clock_freq_hz / get_prescaler_factor(prescaler);
         }
 
         static constexpr uint32_t calculate_sync_clock_freq_hz(const uint32_t                    sync_clock_freq_hz,
-                                                               const ADCCommonSyncClockPrescaler prescaler)
+                                                               const AdcCommonSyncClockPrescaler prescaler)
         {
             return sync_clock_freq_hz / get_prescaler_factor(prescaler);
         }

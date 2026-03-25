@@ -12,12 +12,12 @@ namespace valle
 
         app::init();
 
-        if constexpr (app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)
+        if constexpr (app::kTestAdcUseInject)  // NOLINT(bugprone-branch-clone)
         {
-            app::g_drivers.root.adc1().enable_interrupts(platform::ADCInterruptConfig{
+            app::g_drivers.root.adc1().enable_interrupts(platform::AdcInterruptConfig{
                 .priority = 5,
                 .interrupts =
-                    platform::ADCInterruptMask{
+                    platform::AdcInterruptMask{
                         .inj_eos = true,
                     },
             });
@@ -33,7 +33,7 @@ namespace valle
             system::TimingContext::delay_ms(100);
 
             // Software trigger for Regular group
-            if constexpr (!app::kTestADCUseInject)  // NOLINT(bugprone-branch-clone)
+            if constexpr (!app::kTestAdcUseInject)  // NOLINT(bugprone-branch-clone)
             {
                 app::g_drivers.root.adc1().trigger_regular();
             }

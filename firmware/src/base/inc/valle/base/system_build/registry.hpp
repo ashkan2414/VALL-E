@@ -34,7 +34,7 @@ namespace valle
         struct DirectDeps
         {
             // Flatten all direct dependencies of current items into one giant list
-            //    (e.g., [ADC1, ADC1, ADC1, GPIOA, GPIOB, ADC1...])
+            //    (e.g., [Adc1, Adc1, Adc1, GpioA, GpioB, Adc1...])
             //    We use a wrapper to unpack the list into Concat.
             template <typename L>
             struct FlattenHelper;
@@ -142,7 +142,7 @@ namespace valle
                 "\n\n[VALLE ERROR] Hardware Dependency Graph Resolution Failed!\n"
                 "This usually means:\n"
                 "1. You have a circular dependency.\n"
-                "2. You are missing a base hardware device (e.g., ADCRootDevice) in your DeviceList.\n"
+                "2. You are missing a base hardware device (e.g., AdcRootDevice) in your DeviceList.\n"
                 "Check the 'ERROR_CIRCULAR_...' type in the compiler output to see which devices are stuck.\n");
             // This line forces the compiler to "print" the pending list if resolution fails
             using _DebugHook = std::conditional_t<!std::is_void_v<ReadyT>,

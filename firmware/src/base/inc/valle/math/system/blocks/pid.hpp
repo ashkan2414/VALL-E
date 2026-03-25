@@ -10,10 +10,10 @@
 namespace valle
 {
     template <typename T>
-    class PIDSystem : public ISystemBlock<PIDSystem<T>, T>
+    class PIdSystem : public ISystemBlock<PIdSystem<T>, T>
     {
         // Prevent truncation bugs by ensuring T is floating-point
-        static_assert(std::is_floating_point_v<T>, "PIDSystem requires a floating-point type");
+        static_assert(std::is_floating_point_v<T>, "PIdSystem requires a floating-point type");
 
     private:
         // Core Parameters
@@ -26,7 +26,7 @@ namespace valle
         T m_output_min{std::numeric_limits<T>::lowest()};
         T m_output_max{std::numeric_limits<T>::max()};
 
-        // Advanced Limits (Inspired by MiniPID)
+        // Advanced Limits (Inspired by MiniPId)
         T m_max_i_output{0};      // Max contribution of I-term (0 = disabled)
         T m_output_ramp_rate{0};  // Max output change per second (0 = disabled)
         T m_output_filter{0};     // Smoothing: 0.0 (off) to ~0.99 (heavy filtering)
@@ -38,10 +38,10 @@ namespace valle
         bool m_first_update{true};
 
     public:
-        constexpr PIDSystem() = default;
+        constexpr PIdSystem() = default;
 
         // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-        constexpr PIDSystem(T                        pid_kp,
+        constexpr PIdSystem(T                        pid_kp,
                             T                        pid_ki,
                             T                        pid_kd,
                             std::chrono::duration<T> sample_time,
@@ -68,7 +68,7 @@ namespace valle
             m_ts = sample_time;
         }
 
-        // New: Allows configuration of advanced MiniPID features
+        // New: Allows configuration of advanced MiniPId features
         constexpr void set_advanced_limits(T max_i_output = T{0}, T output_ramp_rate = T{0}, T output_filter = T{0})
         {
             m_max_i_output     = std::max(T{0}, max_i_output);

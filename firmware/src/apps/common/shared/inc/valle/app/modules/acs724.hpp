@@ -11,7 +11,7 @@ namespace valle::app
     // ADC Interface
     // =============================================================================
     template <typename TDerived, typename TConfig>
-    class ACS724ModuleADCChannelInterfaceX
+    class ACS724ModuleAdcChannelInterfaceX
     {
     public:
         using ConfigT = TConfig;
@@ -151,35 +151,35 @@ namespace valle::app
     // Module Drivers
     // -----------------------------------------------------------------------------
 
-    template <typename TADCChannelInterfaceConfig>
+    template <typename TAdcChannelInterfaceConfig>
     struct ACS724ModuleConfigX
     {
-        TADCChannelInterfaceConfig channel_config{};  /// ADC Channel Configuration
+        TAdcChannelInterfaceConfig channel_config{};  /// ADC Channel Configuration
         LinearConverterConfig      calibration{};     /// Final calibration config (scale and offset)
     };
 
     /**
      * @brief ACS724 Current Sensor Driver.
      *
-     * @tparam TADCChannel ADC Channel Device type.
+     * @tparam TAdcChannel ADC Channel Device type.
      * @tparam tkModel   ACS724 Model type.
      */
-    template <typename TADCChannelInterface, ACS724Model tkModel>
+    template <typename TAdcChannelInterface, ACS724Model tkModel>
     class ACS724ModuleX
     {
     public:
-        using ADCChannelInterfaceT           = TADCChannelInterface;
+        using AdcChannelInterfaceT           = TAdcChannelInterface;
         static constexpr ACS724Model skModel = tkModel;
 
-        using ConfigT = ACS724ModuleConfigX<typename ADCChannelInterfaceT::ConfigT>;
+        using ConfigT = ACS724ModuleConfigX<typename AdcChannelInterfaceT::ConfigT>;
 
-        using InjectDevices = typename GetInjectDevices<ADCChannelInterfaceT>::type;
-        using DependDevices = typename GetAdditionalDependDevices<ADCChannelInterfaceT>::type;
+        using InjectDevices = typename GetInjectDevices<AdcChannelInterfaceT>::type;
+        using DependDevices = typename GetAdditionalDependDevices<AdcChannelInterfaceT>::type;
 
         using ModelTraits = ACS724Traits<tkModel>;
 
     private:
-        ADCChannelInterfaceT   m_adc;  /// ADC Channel Interface driver
+        AdcChannelInterfaceT   m_adc;  /// ADC Channel Interface driver
         LinearConverter<float> m_calibrator{};
 
     public:
@@ -216,7 +216,7 @@ namespace valle::app
             return m_calibrator.convert(m_adc.read_amps());
         }
 
-        [[nodiscard]] ADCChannelInterfaceT& get_adc()
+        [[nodiscard]] AdcChannelInterfaceT& get_adc()
         {
             return m_adc;
         }

@@ -7,7 +7,7 @@ namespace valle::platform
     // =============================================================================
     // ENUMERATIONS
     // =============================================================================
-    enum class LSCOClockSource : uint32_t
+    enum class LscoClockSource : uint32_t
     {
         kLSI = LL_RCC_LSCO_CLKSOURCE_LSI,
         kLSE = LL_RCC_LSCO_CLKSOURCE_LSE
@@ -16,9 +16,9 @@ namespace valle::platform
     // =============================================================================
     // INTERFACE
     // =============================================================================
-    struct LSCOInterface
+    struct LscoInterface
     {
-        static void set_source(const LSCOClockSource source)
+        static void set_source(const LscoClockSource source)
         {
             LL_RCC_LSCO_SetSource(static_cast<uint32_t>(source));
         }

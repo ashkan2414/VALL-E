@@ -102,7 +102,7 @@ namespace valle::platform
         kPin5 = LL_PWR_WAKEUP_PIN5
     };
 
-    enum class PowerGPIOPort : uint32_t
+    enum class PowerGpioPort : uint32_t
     {
         kPortA = 0,
         kPortB,
@@ -113,7 +113,7 @@ namespace valle::platform
         kPortG
     };
 
-    enum class PowerGPIOBit : uint32_t
+    enum class PowerGpioBit : uint32_t
     {
         kBit0  = LL_PWR_GPIO_BIT_0,
         kBit1  = LL_PWR_GPIO_BIT_1,
@@ -143,7 +143,7 @@ namespace valle::platform
     {
         static constexpr uint32_t skDefaultVoltageScalingTimeoutCount = 1'000'000U;
 
-        static inline const uint32_t skLLGPIOPortIDMap[7] = {
+        static inline const uint32_t skLLGpioPortIdMap[7] = {
             LL_PWR_GPIO_A, LL_PWR_GPIO_B, LL_PWR_GPIO_C, LL_PWR_GPIO_D, LL_PWR_GPIO_E, LL_PWR_GPIO_F, LL_PWR_GPIO_G};
 
         // =========================================================================
@@ -679,39 +679,39 @@ namespace valle::platform
         // =========================================================================
         // GPIO PULL CONFIG IN STANDBY / SHUTDOWN
         // =========================================================================
-        static void gpio_pull_enable_pull_up(const PowerGPIOPort gpio, const PowerGPIOBit gpio_number)
+        static void gpio_pull_enable_pull_up(const PowerGpioPort gpio, const PowerGpioBit gpio_number)
         {
-            LL_PWR_EnableGPIOPullUp(skLLGPIOPortIDMap[static_cast<uint32_t>(gpio)], static_cast<uint32_t>(gpio_number));
+            LL_PWR_EnableGpioPullUp(skLLGpioPortIdMap[static_cast<uint32_t>(gpio)], static_cast<uint32_t>(gpio_number));
         }
 
-        static void gpio_pull_disable_pull_up(const PowerGPIOPort gpio, const PowerGPIOBit gpio_number)
+        static void gpio_pull_disable_pull_up(const PowerGpioPort gpio, const PowerGpioBit gpio_number)
         {
-            LL_PWR_DisableGPIOPullUp(skLLGPIOPortIDMap[static_cast<uint32_t>(gpio)],
+            LL_PWR_DisableGpioPullUp(skLLGpioPortIdMap[static_cast<uint32_t>(gpio)],
                                      static_cast<uint32_t>(gpio_number));
         }
 
-        [[nodiscard]] static bool gpio_pull_is_pull_up_enabled(const PowerGPIOPort gpio, const PowerGPIOBit gpio_number)
+        [[nodiscard]] static bool gpio_pull_is_pull_up_enabled(const PowerGpioPort gpio, const PowerGpioBit gpio_number)
         {
-            return LL_PWR_IsEnabledGPIOPullUp(skLLGPIOPortIDMap[static_cast<uint32_t>(gpio)],
+            return LL_PWR_IsEnabledGpioPullUp(skLLGpioPortIdMap[static_cast<uint32_t>(gpio)],
                                               static_cast<uint32_t>(gpio_number)) == 1U;
         }
 
-        static void gpio_pull_enable_pull_down(const PowerGPIOPort gpio, const PowerGPIOBit gpio_number)
+        static void gpio_pull_enable_pull_down(const PowerGpioPort gpio, const PowerGpioBit gpio_number)
         {
-            LL_PWR_EnableGPIOPullDown(skLLGPIOPortIDMap[static_cast<uint32_t>(gpio)],
+            LL_PWR_EnableGpioPullDown(skLLGpioPortIdMap[static_cast<uint32_t>(gpio)],
                                       static_cast<uint32_t>(gpio_number));
         }
 
-        static void gpio_pull_disable_pull_down(const PowerGPIOPort gpio, const PowerGPIOBit gpio_number)
+        static void gpio_pull_disable_pull_down(const PowerGpioPort gpio, const PowerGpioBit gpio_number)
         {
-            LL_PWR_DisableGPIOPullDown(skLLGPIOPortIDMap[static_cast<uint32_t>(gpio)],
+            LL_PWR_DisableGpioPullDown(skLLGpioPortIdMap[static_cast<uint32_t>(gpio)],
                                        static_cast<uint32_t>(gpio_number));
         }
 
-        [[nodiscard]] static bool gpio_pull_is_pull_down_enabled(const PowerGPIOPort gpio,
-                                                                 const PowerGPIOBit  gpio_number)
+        [[nodiscard]] static bool gpio_pull_is_pull_down_enabled(const PowerGpioPort gpio,
+                                                                 const PowerGpioBit  gpio_number)
         {
-            return LL_PWR_IsEnabledGPIOPullDown(skLLGPIOPortIDMap[static_cast<uint32_t>(gpio)],
+            return LL_PWR_IsEnabledGpioPullDown(skLLGpioPortIdMap[static_cast<uint32_t>(gpio)],
                                                 static_cast<uint32_t>(gpio_number)) == 1U;
         }
     };

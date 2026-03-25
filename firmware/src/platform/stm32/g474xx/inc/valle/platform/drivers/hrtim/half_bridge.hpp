@@ -6,30 +6,30 @@
 
 namespace valle::platform
 {
-    struct HRTIMHalfBridgeOutputConfig
+    struct HrtimHalfBridgeOutputConfig
     {
-        HRTIMTimerOutputPolarity   polarity    = HRTIMTimerOutputPolarity::kPositive;
-        HRTIMTimerOutputIdleMode   idle_mode   = HRTIMTimerOutputIdleMode::kBurst;
-        HRTIMTimerOutputIdleLevel  idle_level  = HRTIMTimerOutputIdleLevel::kInactive;
-        HRTIMTimerOutputFaultState fault_state = HRTIMTimerOutputFaultState::kInactive;
-        HRTIMTimerOutputGPIOConfig gpio_config{};
+        HrtimTimerOutputPolarity   polarity    = HrtimTimerOutputPolarity::kPositive;
+        HrtimTimerOutputIdleMode   idle_mode   = HrtimTimerOutputIdleMode::kBurst;
+        HrtimTimerOutputIdleLevel  idle_level  = HrtimTimerOutputIdleLevel::kInactive;
+        HrtimTimerOutputFaultState fault_state = HrtimTimerOutputFaultState::kInactive;
+        HrtimTimerOutputGpioConfig gpio_config{};
     };
 
-    struct HRTIMHalfBridgeDriverConfig
+    struct HrtimHalfBridgeDriverConfig
     {
         // --- Basic Timing ---
         uint64_t               freq_hz       = 50000;  // PWM Frequency in Hz
         uint8_t                repetition    = 0;      // Repetition value for interrupt generation
-        HRTIMTimerRolloverMode rollover_mode = HRTIMTimerRolloverMode::kPeriodReset;
+        HrtimTimerRolloverMode rollover_mode = HrtimTimerRolloverMode::kPeriodReset;
 
-        HRTIMTimerInterruptConfig interrupt_config{};
+        HrtimTimerInterruptConfig interrupt_config{};
 
         // Outputs
-        HRTIMHalfBridgeOutputConfig output_config{};
+        HrtimHalfBridgeOutputConfig output_config{};
 
         // Deadtime (Shoot-through protection)
-        std::optional<HRTIMTimerDeadTimeConfig> deadtime_config =
-            HRTIMTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F};
+        std::optional<HrtimTimerDeadTimeConfig> deadtime_config =
+            HrtimTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F};
 
         // --- Safety & Hardware Limits ---
         float min_duty = 0.0F;
@@ -47,7 +47,7 @@ namespace valle::platform
 
         // --- Advanced Features (not commonly used) ---
         // Set this to match adc trigger if using ADC sync for better timing accuracy.
-        HRTIMTimerCompareUnit compare_unit = HRTIMTimerCompareUnit::kCompare1;
+        HrtimTimerCompareUnit compare_unit = HrtimTimerCompareUnit::kCompare1;
 
         [[nodiscard]] constexpr uint64_t get_int_freq_hz() const
         {
@@ -55,33 +55,33 @@ namespace valle::platform
         }
     };
 
-    template <typename THRTIMTimerDevice>
-    class HRTIMHalfBridgeDriver
+    template <typename THrtimTimerDevice>
+    class HrtimHalfBridgeDriver
     {
     public:
-        using InjectDevices     = TypeList<THRTIMTimerDevice>;
-        using HRTIMTimerT       = THRTIMTimerDevice;
-        using ControllerTraitsT = HRTIMTimerT::ControllerTraitsT;
-        using TimerTraitsT      = HRTIMTimerT::TimerTraitsT;
-        using InterfaceT        = HRTIMTimerT::InterfaceT;
+        using InjectDevices     = TypeList<THrtimTimerDevice>;
+        using HrtimTimerT       = THrtimTimerDevice;
+        using ControllerTraitsT = HrtimTimerT::ControllerTraitsT;
+        using TimerTraitsT      = HrtimTimerT::TimerTraitsT;
+        using InterfaceT        = HrtimTimerT::InterfaceT;
 
-        static constexpr size_t skIndex = HRTIMTimerT::skIndex;
+        static constexpr size_t skIndex = HrtimTimerT::skIndex;
 
-        static constexpr auto skControllerID = HRTIMTimerT::skControllerID;
-        static constexpr auto skTimerID      = HRTIMTimerT::skTimerID;
+        static constexpr auto skPeripheralId = HrtimTimerT::skPeripheralId;
+        static constexpr auto skTimerId      = HrtimTimerT::skTimerId;
 
-        static_assert(HRTIMTimerT::skHasOutput1Pin && HRTIMTimerT::skHasOutput2Pin,
-                      "HRTIMHalfBridgeDriver requires a timer both GPIO outputs for complementary control.");
+        static_assert(HrtimTimerT::skHasOutput1Pin && HrtimTimerT::skHasOutput2Pin,
+                      "HrtimHalfBridgeDriver requires a timer both GPIO outputs for complementary control.");
 
     private:
-        [[no_unique_address]] DeviceRef<HRTIMTimerT> m_timer;
-        HRTIMTimerCompareUnit                        m_compare_unit = HRTIMTimerCompareUnit::kCompare1;
+        [[no_unique_address]] DeviceRef<HrtimTimerT> m_timer;
+        HrtimTimerCompareUnit                        m_compare_unit = HrtimTimerCompareUnit::kCompare1;
         float                                        m_min_duty     = 0.0F;
         float                                        m_max_duty     = 1.0F;
 
     public:
-        HRTIMHalfBridgeDriver() = delete;
-        explicit HRTIMHalfBridgeDriver(DeviceRef<HRTIMTimerT>&& device) : m_timer(std::move(device))
+        HrtimHalfBridgeDriver() = delete;
+        explicit HrtimHalfBridgeDriver(DeviceRef<HrtimTimerT>&& device) : m_timer(std::move(device))
         {
         }
 
@@ -94,7 +94,7 @@ namespace valle::platform
          *
          * @param config  Configuration parameters.
          */
-        [[nodiscard]] bool init(const HRTIMHalfBridgeDriverConfig& config)
+        [[nodiscard]] bool init(const HrtimHalfBridgeDriverConfig& config)
         {
             if (!m_timer->init())
             {
@@ -104,8 +104,8 @@ namespace valle::platform
             if (config.min_duty > config.max_duty)
             {
                 VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM invalid duty cycle limits: min_duty {} > max_duty {}",
-                                static_cast<int>(skControllerID),
-                                enum_name(skTimerID),
+                                static_cast<int>(skPeripheralId),
+                                enum_name(skTimerId),
                                 config.min_duty,
                                 config.max_duty);
                 return false;
@@ -114,8 +114,8 @@ namespace valle::platform
             if (config.max_duty > 1.0F)
             {
                 VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM max_duty {} is above 100%!",
-                                static_cast<int>(skControllerID),
-                                enum_name(skTimerID),
+                                static_cast<int>(skPeripheralId),
+                                enum_name(skTimerId),
                                 config.max_duty);
                 return false;
             }
@@ -123,8 +123,8 @@ namespace valle::platform
             if (config.min_duty < 0.0F)
             {
                 VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM min_duty {} is below 0%!",
-                                static_cast<int>(skControllerID),
-                                enum_name(skTimerID),
+                                static_cast<int>(skPeripheralId),
+                                enum_name(skTimerId),
                                 config.min_duty);
                 return false;
             }
@@ -141,8 +141,8 @@ namespace valle::platform
             {
                 VALLE_LOG_ERROR(
                     "HRTIM{} Timer {} Half-bridge PWM target frequency {} Hz is too low. Must be above {} Hz.",
-                    static_cast<int>(skControllerID),
-                    enum_name(skTimerID),
+                    static_cast<int>(skPeripheralId),
+                    enum_name(skTimerId),
                     config.freq_hz,
                     min_freq_hz);
 
@@ -154,15 +154,15 @@ namespace valle::platform
             {
                 VALLE_LOG_ERROR(
                     "HRTIM{} Timer {} Half-bridge PWM target frequency {} Hz is too high. Must be below {} Hz.",
-                    static_cast<int>(skControllerID),
-                    enum_name(skTimerID),
+                    static_cast<int>(skPeripheralId),
+                    enum_name(skTimerId),
                     config.freq_hz,
                     max_freq_hz);
 
                 return false;
             }
 
-            const HRTIMTimerPrescaler prescaler =
+            const HrtimTimerPrescaler prescaler =
                 InterfaceT::calculate_timer_prescaler_for_freq(f_hrtim_hz, config.freq_hz);
 
             const uint64_t h_hrck_hz    = InterfaceT::calculate_hrck_freq_hz(f_hrtim_hz, prescaler);
@@ -178,20 +178,20 @@ namespace valle::platform
 
             // Configure Compare Unit (Duty Cycle), initialize to 50%
             InterfaceT::set_compare(m_compare_unit, period_ticks / 2);
-            HRTIMTimerCountingMode      counting_mode        = HRTIMTimerCountingMode::kUp;
-            HRTIMTimerOutputSetSource   output1_set_source   = HRTIMTimerOutputSetSource::kNone;
-            HRTIMTimerOutputResetSource output1_reset_source = HRTIMTimerOutputResetSource::kNone;
-            HRTIMTimerOutputSetSource   output2_set_source   = HRTIMTimerOutputSetSource::kNone;
-            HRTIMTimerOutputResetSource output2_reset_source = HRTIMTimerOutputResetSource::kNone;
+            HrtimTimerCountingMode      counting_mode        = HrtimTimerCountingMode::kUp;
+            HrtimTimerOutputSetSource   output1_set_source   = HrtimTimerOutputSetSource::kNone;
+            HrtimTimerOutputResetSource output1_reset_source = HrtimTimerOutputResetSource::kNone;
+            HrtimTimerOutputSetSource   output2_set_source   = HrtimTimerOutputSetSource::kNone;
+            HrtimTimerOutputResetSource output2_reset_source = HrtimTimerOutputResetSource::kNone;
 
-            const HRTIMTimerOutputSetSource compare_unit_set_source =
+            const HrtimTimerOutputSetSource compare_unit_set_source =
                 InterfaceT::set_source_for_compare_unit(config.compare_unit);
-            const HRTIMTimerOutputResetSource compare_unit_reset_source =
+            const HrtimTimerOutputResetSource compare_unit_reset_source =
                 InterfaceT::reset_source_for_compare_unit(config.compare_unit);
 
             if (config.center_aligned)
             {
-                counting_mode = HRTIMTimerCountingMode::kUpDown;
+                counting_mode = HrtimTimerCountingMode::kUpDown;
 
                 // Center-aligned PWM: Use CMP1 as both Set and Reset source.
                 // In Up-Down counting mode (RM0440 §28.3.6), the hardware automatically
@@ -200,7 +200,7 @@ namespace valle::platform
                 //   Down-count CMP1 match: SET wins (Reset becomes Set)   → output HIGH
                 // This produces a symmetric center-aligned pulse with duty = CMP1/PER,
                 // giving a linear 0–100% duty range with compare = duty * period.
-                output1_set_source   = HRTIMTimerOutputSetSource::kNone;
+                output1_set_source   = HrtimTimerOutputSetSource::kNone;
                 output1_reset_source = compare_unit_reset_source;
 
                 // Complementary output automatically handled by hardware with deadtime insertion
@@ -210,15 +210,15 @@ namespace valle::platform
                     // to generate complementary waveforms.
                     // TODO: verify with oscilloscope that this works as expected without deadtime.
                     output2_set_source   = compare_unit_set_source;
-                    output2_reset_source = HRTIMTimerOutputResetSource::kNone;
+                    output2_reset_source = HrtimTimerOutputResetSource::kNone;
                 }
             }
             else
             {
-                counting_mode = HRTIMTimerCountingMode::kUp;
+                counting_mode = HrtimTimerCountingMode::kUp;
 
                 // Logic: HIGH at Period Start, LOW at Compare Match
-                output1_set_source   = HRTIMTimerOutputSetSource::kTimerPeriod;
+                output1_set_source   = HrtimTimerOutputSetSource::kTimerPeriod;
                 output1_reset_source = compare_unit_reset_source;
 
                 // Complementary output automatically handled by hardware with deadtime insertion
@@ -226,14 +226,14 @@ namespace valle::platform
                 {
                     // Logic: HIGH at Compare Match, LOW at Period Start
                     output2_set_source   = compare_unit_set_source;
-                    output2_reset_source = HRTIMTimerOutputResetSource::kTimerPeriod;
+                    output2_reset_source = HrtimTimerOutputResetSource::kTimerPeriod;
                 }
             }
 
             // Configure Timer Time Base
-            if (!m_timer->init_counter(HRTIMTimerCounterConfig{
+            if (!m_timer->init_counter(HrtimTimerCounterConfig{
                     .prescaler     = prescaler,
-                    .counter_mode  = HRTIMTimerCounterMode::kContinuous,
+                    .counter_mode  = HrtimTimerCounterMode::kContinuous,
                     .counting_mode = counting_mode,
                     .rollover_mode = config.rollover_mode,
                     .period        = period_ticks,
@@ -244,7 +244,7 @@ namespace valle::platform
             }
 
             if (!m_timer->init_output1(
-                    HRTIMTimerVirtualOutputConfig{
+                    HrtimTimerVirtualOutputConfig{
                         .set_source   = output1_set_source,
                         .reset_source = output1_reset_source,
                         .polarity     = config.output_config.polarity,
@@ -258,7 +258,7 @@ namespace valle::platform
             }
 
             if (!m_timer->init_output2(
-                    HRTIMTimerVirtualOutputConfig{
+                    HrtimTimerVirtualOutputConfig{
                         .set_source   = output2_set_source,
                         .reset_source = output2_reset_source,
                         .polarity     = config.output_config.polarity,
@@ -295,7 +295,7 @@ namespace valle::platform
          * @brief Initializes an ADC trigger for the timer. This allows the timer to trigger ADC conversions at specific
          * points in the PWM cycle, which is critical for synchronized sampling in motor control applications.
          *
-         * @tparam tkTriggerID The ID of the ADC trigger to configure (e.g., kTrig1, kTrig2, etc.). Each timer has
+         * @tparam tkTriggerId The ID of the ADC trigger to configure (e.g., kTrig1, kTrig2, etc.). Each timer has
          * multiple trigger outputs that can be independently configured.
          * @param config The configuration for the ADC trigger, including the source event (e.g., timer period, compare
          * match, etc.) and the rollover mode (when the trigger should occur in up-down counting).
@@ -305,8 +305,8 @@ namespace valle::platform
          * mode. For example, certain trigger sources may not be valid in center-aligned mode, and the function should
          * validate this before applying the configuration.
          */
-        template <HRTIMTimerADCTriggerID tkTriggerID>
-        [[nodiscard]] inline bool init_adc_trigger(const HRTIMTimerADCTriggerConfig<skTimerID, tkTriggerID>& config)
+        template <HrtimTimerAdcTriggerId tkTriggerId>
+        [[nodiscard]] inline bool init_adc_trigger(const HrtimTimerAdcTriggerConfig<skTimerId, tkTriggerId>& config)
         {
             return m_timer->init_adc_trigger(config);
         }
@@ -333,7 +333,7 @@ namespace valle::platform
 
         void set_repetition_counter(uint8_t repetition)
         {
-            LL_HRTIM_TIM_SetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skLLID, repetition);
+            LL_HRTIM_TIM_SetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skLLId, repetition);
         }
 
         // ------------------------------------------------------------------------
@@ -358,11 +358,11 @@ namespace valle::platform
         }
     };
 
-    using HRTIM1TimerAHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerADevice>;
-    using HRTIM1TimerBHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerBDevice>;
-    using HRTIM1TimerCHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerCDevice>;
-    using HRTIM1TimerDHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerDDevice>;
-    using HRTIM1TimerEHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerEDevice>;
-    using HRTIM1TimerFHalfBridgeDriver = HRTIMHalfBridgeDriver<HRTIM1TimerFDevice>;
+    using Hrtim1TimerAHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerADevice>;
+    using Hrtim1TimerBHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerBDevice>;
+    using Hrtim1TimerCHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerCDevice>;
+    using Hrtim1TimerDHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerDDevice>;
+    using Hrtim1TimerEHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerEDevice>;
+    using Hrtim1TimerFHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerFDevice>;
 
 }  // namespace valle::platform

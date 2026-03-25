@@ -4,8 +4,8 @@
 
 namespace valle::platform
 {
-    enum class DMAMuxControllerID : uint8_t
+    enum class DmaMuxPeripheralId : uint8_t
     {
-        kDMAMux1 = 1,
+        kDmaMux1 = 1,
     };
 }  // namespace valle::platform

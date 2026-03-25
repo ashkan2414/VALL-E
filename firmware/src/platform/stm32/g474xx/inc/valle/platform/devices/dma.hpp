@@ -10,18 +10,18 @@ namespace valle::platform
     // ============================================================================
     // DMA CONTROLLER (SHARED)
     // ============================================================================
-    template <DMAControllerID tkControllerID>
-    class DMAControllerDevice
+    template <DmaPeripheralId tkPeripheralId>
+    class DmaControllerDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        static constexpr DMAControllerID skControllerID = tkControllerID;
+        static constexpr DmaPeripheralId skPeripheralId = tkPeripheralId;
 
-        using ControllerTraitsT    = DMAControllerTraits<tkControllerID>;
-        using MuxControllerDeviceT = DMAMuxControllerDevice<ControllerTraitsT::skMuxControllerID>;
+        using ControllerTraitsT    = DmaControllerTraits<tkPeripheralId>;
+        using MuxControllerDeviceT = DmaMuxControllerDevice<ControllerTraitsT::skMuxId>;
         using DependDevices        = TypeList<MuxControllerDeviceT>;
 
         static inline bool init()
@@ -32,8 +32,8 @@ namespace valle::platform
         }
     };
 
-    using DMA1ControllerDevice = DMAControllerDevice<DMAControllerID::kDMA1>;
-    using DMA2ControllerDevice = DMAControllerDevice<DMAControllerID::kDMA2>;
+    using Dma1ControllerDevice = DmaControllerDevice<DmaPeripheralId::kDma1>;
+    using Dma2ControllerDevice = DmaControllerDevice<DmaPeripheralId::kDma2>;
 
     // ============================================================================
     // DMA CHANNEL (UNIQUE)
@@ -46,7 +46,7 @@ namespace valle::platform
     /**
      * @brief Data Width for DMA Transfers.
      */
-    enum class DMADataWidth : uint32_t
+    enum class DmaDataWidth : uint32_t
     {
         kByte,
         kHalfWord,
@@ -56,42 +56,42 @@ namespace valle::platform
     /**
      * @brief Configuration for a specific DMA Channel Transfer.
      */
-    struct DMAChannelConfig
+    struct DmaChannelConfig
     {
-        DMADirection direction         = DMADirection::kPeriphToMem;
-        DMAPriority  priority          = DMAPriority::kLow;
-        DMAMode      mode              = DMAMode::kNormal;
-        DMADataWidth periph_data_width = DMADataWidth::kByte;
-        DMADataWidth memory_data_width = DMADataWidth::kByte;
+        DmaDirection direction         = DmaDirection::kPeriphToMem;
+        DmaPriority  priority          = DmaPriority::kLow;
+        DmaMode      mode              = DmaMode::kNormal;
+        DmaDataWidth periph_data_width = DmaDataWidth::kByte;
+        DmaDataWidth memory_data_width = DmaDataWidth::kByte;
 
         // Increment settings
         bool inc_periph = false;  // Typically FALSE for ADC/SPI
         bool inc_memory = true;   // Typically TRUE for Buffers
 
-        // DMAMUX Request ID (The "Wire" connection)
-        DMAMuxRequestID request_id = DMAMuxRequestID::kMem2Mem;
+        // DmaMUX Request ID (The "Wire" connection)
+        DmaMuxRequestId request_id = DmaMuxRequestId::kMem2Mem;
     };
 
     // ----------------------------------------------------------------------------
     // DEVICE CLASS
     // ----------------------------------------------------------------------------
 
-    template <DMAControllerID tkControllerID, DMAChannelID tkChannelID>
-    class DMAChannelDevice
+    template <DmaPeripheralId tkPeripheralId, DmaChannelId tkChannelId>
+    class DmaChannelDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        static constexpr DMAControllerID skControllerID = tkControllerID;
-        static constexpr DMAChannelID    skChannelID    = tkChannelID;
+        static constexpr DmaPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr DmaChannelId    skChannelId    = tkChannelId;
 
-        using ControllerT          = DMAControllerDevice<skControllerID>;
-        using ControllerTraitsT    = DMAControllerTraits<skControllerID>;
-        using ChannelTraitsT       = DMAChannelTraits<skControllerID, skChannelID>;
+        using ControllerT          = DmaControllerDevice<skPeripheralId>;
+        using ControllerTraitsT    = DmaControllerTraits<skPeripheralId>;
+        using ChannelTraitsT       = DmaChannelTraits<skPeripheralId, skChannelId>;
         using MuxControllerDeviceT = typename ControllerT::MuxControllerDeviceT;
-        using InterruptControllerT = DMAChannelInterruptController<skControllerID, skChannelID>;
+        using InterruptControllerT = DmaChannelInterruptController<skPeripheralId, skChannelId>;
 
         using DependDevices = TypeList<ControllerT>;
         using InjectDevices = TypeList<MuxControllerDeviceT>;
@@ -100,19 +100,19 @@ namespace valle::platform
         [[no_unique_address]] DeviceRef<MuxControllerDeviceT> m_dmamux;
 
     public:
-        explicit DMAChannelDevice(DeviceRef<MuxControllerDeviceT>&& dmamux) : m_dmamux(std::move(dmamux))
+        explicit DmaChannelDevice(DeviceRef<MuxControllerDeviceT>&& dmamux) : m_dmamux(std::move(dmamux))
         {
         }
 
         /**
-         * @brief Initialize the DMA Channel and route the DMAMUX.
+         * @brief Initialize the DMA Channel and route the DmaMUX.
          */
-        [[nodiscard]] bool init(const DMAChannelConfig& config)
+        [[nodiscard]] bool init(const DmaChannelConfig& config)
         {
             // Configure Transfer Parameters
             LL_DMA_ConfigTransfer(
                 ControllerTraitsT::skInstance,
-                ChannelTraitsT::skChannelLLID,
+                ChannelTraitsT::skChannelLLId,
                 static_cast<uint32_t>(config.direction) | static_cast<uint32_t>(config.priority) |
                     static_cast<uint32_t>(config.mode) |
                     static_cast<uint32_t>(map_data_width<true>(config.periph_data_width)) |   // Peripheral Width
@@ -120,9 +120,9 @@ namespace valle::platform
                     (config.inc_periph ? LL_DMA_PERIPH_INCREMENT : LL_DMA_PERIPH_NOINCREMENT) |
                     (config.inc_memory ? LL_DMA_MEMORY_INCREMENT : LL_DMA_MEMORY_NOINCREMENT));
 
-            // Configure Routing (DMAMUX)
-            // This is what connects "ADC1" to "DMA1 Channel 1"
-            m_dmamux->route_request(ChannelTraitsT::skMuxChannelID, config.request_id);
+            // Configure Routing (DmaMUX)
+            // This is what connects "Adc1" to "Dma1 Channel 1"
+            m_dmamux->route_request(ChannelTraitsT::skMuxChannelId, config.request_id);
             return true;
         }
 
@@ -143,7 +143,7 @@ namespace valle::platform
             expect(dst_addr != 0, "Destination address must not be null");
 
             const uint32_t direction =
-                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
             start_impl(src_addr, dst_addr, direction, length);
         }
 
@@ -159,7 +159,7 @@ namespace valle::platform
             expect(mem_addr != 0, "Memory address must not be null");
 
             const uint32_t direction =
-                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
             expect(direction == LL_DMA_DIRECTION_PERIPH_TO_MEMORY, "DMA not configured for PeriphToMem");
 
             start_impl(periph_addr, mem_addr, direction, length);
@@ -177,7 +177,7 @@ namespace valle::platform
             expect(periph_addr != 0, "Peripheral address must not be null");
 
             const uint32_t direction =
-                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+                LL_DMA_GetDataTransferDirection(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
             expect(direction == LL_DMA_DIRECTION_MEMORY_TO_PERIPH, "DMA not configured for MemToPeriph");
 
             start_impl(mem_addr, periph_addr, direction, length);
@@ -185,41 +185,41 @@ namespace valle::platform
 
         static void stop()
         {
-            LL_DMA_DisableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+            LL_DMA_DisableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
 
             // Wait for disable to complete (typically 1-2 AHB cycles)
-            while (LL_DMA_IsEnabledChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID));
+            while (LL_DMA_IsEnabledChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId));
 
             // Now safe to clear all flags
-            if constexpr (tkChannelID == DMAChannelID::kChannel1)
+            if constexpr (tkChannelId == DmaChannelId::kChannel1)
             {
                 LL_DMA_ClearFlag_GI1(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel2)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel2)
             {
                 LL_DMA_ClearFlag_GI2(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel3)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel3)
             {
                 LL_DMA_ClearFlag_GI3(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel4)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel4)
             {
                 LL_DMA_ClearFlag_GI4(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel5)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel5)
             {
                 LL_DMA_ClearFlag_GI5(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel6)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel6)
             {
                 LL_DMA_ClearFlag_GI6(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel7)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel7)
             {
                 LL_DMA_ClearFlag_GI7(ControllerTraitsT::skInstance);
             }
-            else if constexpr (tkChannelID == DMAChannelID::kChannel8)
+            else if constexpr (tkChannelId == DmaChannelId::kChannel8)
             {
                 LL_DMA_ClearFlag_GI8(ControllerTraitsT::skInstance);
             }
@@ -229,7 +229,7 @@ namespace valle::platform
             }
         }
 
-        static void reconfigure(const DMAChannelConfig& config)
+        static void reconfigure(const DmaChannelConfig& config)
         {
             // TODO: Handle reconfiguration while transfer is ongoing?
             init(config);
@@ -239,7 +239,7 @@ namespace valle::platform
          * @brief Enable interrupts for this channel.
          * @param config Configuration for DMA Interrupts.
          */
-        static void enable_interrupts(const DMAChannelInterruptConfig& config)
+        static void enable_interrupts(const DmaChannelInterruptConfig& config)
         {
             InterruptControllerT::enable_interrupts(config);
         }
@@ -254,43 +254,43 @@ namespace valle::platform
 
     private:
         /**
-         * @brief Map generic DMADataWidth to Peripheral or Memory specific width.
+         * @brief Map generic DmaDataWidth to Peripheral or Memory specific width.
          *
          * @tparam tkForPeripheral true to map for peripheral, false for memory
-         * @param width Generic DMADataWidth
+         * @param width Generic DmaDataWidth
          * @return Mapped width enum
          */
         template <bool tkForPeripheral>
-        static auto map_data_width(const DMADataWidth width)
+        static auto map_data_width(const DmaDataWidth width)
         {
             if constexpr (tkForPeripheral)
             {
                 switch (width)
                 {
-                    case DMADataWidth::kByte:
-                        return DMAPeripheralDataWidth::kByte;
-                    case DMADataWidth::kHalfWord:
-                        return DMAPeripheralDataWidth::kHalfWord;
-                    case DMADataWidth::kWord:
-                        return DMAPeripheralDataWidth::kWord;
+                    case DmaDataWidth::kByte:
+                        return DmaPeripheralDataWidth::kByte;
+                    case DmaDataWidth::kHalfWord:
+                        return DmaPeripheralDataWidth::kHalfWord;
+                    case DmaDataWidth::kWord:
+                        return DmaPeripheralDataWidth::kWord;
                     default:
                         panic("Invalid DMA Data Width");
-                        return DMAPeripheralDataWidth::kByte;
+                        return DmaPeripheralDataWidth::kByte;
                 }
             }
             else
             {
                 switch (width)
                 {
-                    case DMADataWidth::kByte:
-                        return DMAMemoryDataWidth::kByte;
-                    case DMADataWidth::kHalfWord:
-                        return DMAMemoryDataWidth::kHalfWord;
-                    case DMADataWidth::kWord:
-                        return DMAMemoryDataWidth::kWord;
+                    case DmaDataWidth::kByte:
+                        return DmaMemoryDataWidth::kByte;
+                    case DmaDataWidth::kHalfWord:
+                        return DmaMemoryDataWidth::kHalfWord;
+                    case DmaDataWidth::kWord:
+                        return DmaMemoryDataWidth::kWord;
                     default:
                         panic("Invalid DMA Data Width");
-                        return DMAMemoryDataWidth::kByte;
+                        return DmaMemoryDataWidth::kByte;
                 }
             }
         }
@@ -310,16 +310,16 @@ namespace valle::platform
         {
             stop();
             LL_DMA_ConfigAddresses(
-                ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, src_addr, dst_addr, direction);
-            LL_DMA_SetDataLength(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID, length);
-            LL_DMA_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLID);
+                ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId, src_addr, dst_addr, direction);
+            LL_DMA_SetDataLength(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId, length);
+            LL_DMA_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
         }
     };
 
     template <typename T>
-    concept CDMAChannelDevice = std::is_base_of_v<DMAChannelDevice<T::skControllerID, T::skChannelID>, T>;
+    concept CDmaChannelDevice = std::is_base_of_v<DmaChannelDevice<T::skPeripheralId, T::skChannelId>, T>;
 
-    class DMANullChannelDevice
+    class DmaNullChannelDevice
     {
     public:
         struct Descriptor : public NullDeviceDescriptor
@@ -328,28 +328,28 @@ namespace valle::platform
     };
 
     template <typename T>
-    concept CNullDMAChannel = std::is_same_v<T, DMANullChannelDevice>;
+    concept CNullDmaChannel = std::is_same_v<T, DmaNullChannelDevice>;
 
     // ----------------------------------------------------------------------------
     // DEVICE ALIASES
     // ----------------------------------------------------------------------------
 
-    using DMA1Channel1Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel1>;
-    using DMA1Channel2Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel2>;
-    using DMA1Channel3Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel3>;
-    using DMA1Channel4Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel4>;
-    using DMA1Channel5Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel5>;
-    using DMA1Channel6Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel6>;
-    using DMA1Channel7Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel7>;
-    using DMA1Channel8Device = DMAChannelDevice<DMAControllerID::kDMA1, DMAChannelID::kChannel8>;
+    using Dma1Channel1Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel1>;
+    using Dma1Channel2Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel2>;
+    using Dma1Channel3Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel3>;
+    using Dma1Channel4Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel4>;
+    using Dma1Channel5Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel5>;
+    using Dma1Channel6Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel6>;
+    using Dma1Channel7Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel7>;
+    using Dma1Channel8Device = DmaChannelDevice<DmaPeripheralId::kDma1, DmaChannelId::kChannel8>;
 
-    using DMA2Channel1Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel1>;
-    using DMA2Channel2Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel2>;
-    using DMA2Channel3Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel3>;
-    using DMA2Channel4Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel4>;
-    using DMA2Channel5Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel5>;
-    using DMA2Channel6Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel6>;
-    using DMA2Channel7Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel7>;
-    using DMA2Channel8Device = DMAChannelDevice<DMAControllerID::kDMA2, DMAChannelID::kChannel8>;
+    using Dma2Channel1Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel1>;
+    using Dma2Channel2Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel2>;
+    using Dma2Channel3Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel3>;
+    using Dma2Channel4Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel4>;
+    using Dma2Channel5Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel5>;
+    using Dma2Channel6Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel6>;
+    using Dma2Channel7Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel7>;
+    using Dma2Channel8Device = DmaChannelDevice<DmaPeripheralId::kDma2, DmaChannelId::kChannel8>;
 
 }  // namespace valle::platform

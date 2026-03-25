@@ -549,7 +549,7 @@ namespace valle
     template <typename T, template <typename...> class TTemplate>
     concept CIsInstantiationOfTypes = IsInstantiationOfTypes<TTemplate, T>::value;
 
-    // Template taking Values (Non-Type Template Parameters) (e.g. ADCPinMap<0, 1>)
+    // Template taking Values (Non-Type Template Parameters) (e.g. AdcPinMap<0, 1>)
     template <template <auto...> class TTemplate, typename T>
     struct IsInstantiationOfValues : std::false_type
     {

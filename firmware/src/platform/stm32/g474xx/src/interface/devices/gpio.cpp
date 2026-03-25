@@ -9,18 +9,18 @@ namespace valle::platform
     /**
      * @brief Check if any granular ISR handler is bound for a specific EXTI line across all ports.
      *
-     * @tparam tkPinID EXTI Line / Pin ID.
+     * @tparam tkPinId EXTI Line / Pin ID.
      */
-    template <GPIOPinID tkPinID>
+    template <GpioPinId tkPinId>
     [[nodiscard]] consteval static inline bool exti_pin_has_granular_handler()
     {
-        return CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortA, tkPinID>> ||
-               CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortB, tkPinID>> ||
-               CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortC, tkPinID>> ||
-               CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortD, tkPinID>> ||
-               CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortE, tkPinID>> ||
-               CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortF, tkPinID>> ||
-               CBoundISRRouter<GPIOPinISRRouter<GPIOPortID::kPortG, tkPinID>>;
+        return CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortA, tkPinId>> ||
+               CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortB, tkPinId>> ||
+               CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortC, tkPinId>> ||
+               CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortD, tkPinId>> ||
+               CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortE, tkPinId>> ||
+               CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortF, tkPinId>> ||
+               CBoundIsrRouter<GpioPinIsrRouter<GpioPortId::kPortG, tkPinId>>;
     }
 
     /**
@@ -33,40 +33,40 @@ namespace valle::platform
     {
         if constexpr (tkInterruptType == EXTIInterruptType::k0)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin0>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin0>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k1)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin1>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin1>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k2)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin2>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin2>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k3)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin3>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin3>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k4)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin4>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin4>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k9_5)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin5>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin6>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin7>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin8>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin9>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin5>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin6>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin7>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin8>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin9>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k15_10)
         {
-            return exti_pin_has_granular_handler<GPIOPinID::kPin10>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin11>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin12>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin13>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin14>() ||
-                   exti_pin_has_granular_handler<GPIOPinID::kPin15>();
+            return exti_pin_has_granular_handler<GpioPinId::kPin10>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin11>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin12>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin13>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin14>() ||
+                   exti_pin_has_granular_handler<GpioPinId::kPin15>();
         }
         else
         {
@@ -80,27 +80,27 @@ namespace valle::platform
      * Checks if a specific EXTI line is pending at the hardware level. If it is,
      * it dynamically routes to the active port's granular handler.
      *
-     * @tparam tkPinID GPIO Pin/EXTI Line ID (0-15)
+     * @tparam tkPinId GPIO Pin/EXTI Line ID (0-15)
      */
-    template <GPIOPinID tkPinID>
+    template <GpioPinId tkPinId>
     static inline void exti_line_handler()
     {
         // The EXTI pending flag and line mask only depend on the pin ID, not the port.
         // We can safely use Port A's traits to check if this line fired at all.
-        using PinTraitsT = GPIOPinTraits<GPIOPortID::kPortA, tkPinID>;
+        using PinTraitsT = GpioPinTraits<GpioPortId::kPortA, tkPinId>;
 
         if (LL_EXTI_IsActiveFlag_0_31(PinTraitsT::skLLEXTILine) != 0)
         {
             bool handled = false;
 
-#define CHECK_PORT_HANDLER(tkPortID)                                    \
-    if constexpr (CBoundISRRouter<GPIOPinISRRouter<tkPortID, tkPinID>>) \
+#define CHECK_PORT_HANDLER(tkPortId)                                    \
+    if constexpr (CBoundIsrRouter<GpioPinIsrRouter<tkPortId, tkPinId>>) \
     {                                                                   \
-        using TraitsT = GPIOPinInterruptTraits<tkPortID, tkPinID>;      \
-        using RouterT = GPIOPinISRRouter<tkPortID, tkPinID>;            \
+        using TraitsT = GpioPinInterruptTraits<tkPortId, tkPinId>;      \
+        using RouterT = GpioPinIsrRouter<tkPortId, tkPinId>;            \
         if (TraitsT::is_pending())                                      \
         {                                                               \
-            if constexpr (kISRRouterConfigAck<RouterT>)                 \
+            if constexpr (kIsrRouterConfigAck<RouterT>)                 \
             {                                                           \
                 TraitsT::ack();                                         \
             }                                                           \
@@ -109,13 +109,13 @@ namespace valle::platform
         }                                                               \
     }
 
-            CHECK_PORT_HANDLER(GPIOPortID::kPortA);
-            CHECK_PORT_HANDLER(GPIOPortID::kPortB);
-            CHECK_PORT_HANDLER(GPIOPortID::kPortC);
-            CHECK_PORT_HANDLER(GPIOPortID::kPortD);
-            CHECK_PORT_HANDLER(GPIOPortID::kPortE);
-            CHECK_PORT_HANDLER(GPIOPortID::kPortF);
-            CHECK_PORT_HANDLER(GPIOPortID::kPortG);
+            CHECK_PORT_HANDLER(GpioPortId::kPortA);
+            CHECK_PORT_HANDLER(GpioPortId::kPortB);
+            CHECK_PORT_HANDLER(GpioPortId::kPortC);
+            CHECK_PORT_HANDLER(GpioPortId::kPortD);
+            CHECK_PORT_HANDLER(GpioPortId::kPortE);
+            CHECK_PORT_HANDLER(GpioPortId::kPortF);
+            CHECK_PORT_HANDLER(GpioPortId::kPortG);
 
 #undef CHECK_PORT_HANDLER
 
@@ -137,8 +137,8 @@ namespace valle::platform
     template <EXTIInterruptType tkInterruptType>
     static inline void exti_irq_handler()
     {
-        using GlobalRouterT               = GPIOEXTIGlobalISRRouter<tkInterruptType>;
-        constexpr bool kHasGlobalRouter   = CBoundISRRouter<GlobalRouterT>;
+        using GlobalRouterT               = GpioEXTIGlobalIsrRouter<tkInterruptType>;
+        constexpr bool kHasGlobalRouter   = CBoundIsrRouter<GlobalRouterT>;
         constexpr bool kHasGranularRouter = exti_has_any_granular_isr_handler<tkInterruptType>();
 
         static_assert(!(kHasGlobalRouter && kHasGranularRouter),
@@ -153,40 +153,40 @@ namespace valle::platform
         // Route to the appropriate line demultiplexers based on the shared IRQ Group
         if constexpr (tkInterruptType == EXTIInterruptType::k0)
         {
-            exti_line_handler<GPIOPinID::kPin0>();
+            exti_line_handler<GpioPinId::kPin0>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k1)
         {
-            exti_line_handler<GPIOPinID::kPin1>();
+            exti_line_handler<GpioPinId::kPin1>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k2)
         {
-            exti_line_handler<GPIOPinID::kPin2>();
+            exti_line_handler<GpioPinId::kPin2>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k3)
         {
-            exti_line_handler<GPIOPinID::kPin3>();
+            exti_line_handler<GpioPinId::kPin3>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k4)
         {
-            exti_line_handler<GPIOPinID::kPin4>();
+            exti_line_handler<GpioPinId::kPin4>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k9_5)
         {
-            exti_line_handler<GPIOPinID::kPin5>();
-            exti_line_handler<GPIOPinID::kPin6>();
-            exti_line_handler<GPIOPinID::kPin7>();
-            exti_line_handler<GPIOPinID::kPin8>();
-            exti_line_handler<GPIOPinID::kPin9>();
+            exti_line_handler<GpioPinId::kPin5>();
+            exti_line_handler<GpioPinId::kPin6>();
+            exti_line_handler<GpioPinId::kPin7>();
+            exti_line_handler<GpioPinId::kPin8>();
+            exti_line_handler<GpioPinId::kPin9>();
         }
         else if constexpr (tkInterruptType == EXTIInterruptType::k15_10)
         {
-            exti_line_handler<GPIOPinID::kPin10>();
-            exti_line_handler<GPIOPinID::kPin11>();
-            exti_line_handler<GPIOPinID::kPin12>();
-            exti_line_handler<GPIOPinID::kPin13>();
-            exti_line_handler<GPIOPinID::kPin14>();
-            exti_line_handler<GPIOPinID::kPin15>();
+            exti_line_handler<GpioPinId::kPin10>();
+            exti_line_handler<GpioPinId::kPin11>();
+            exti_line_handler<GpioPinId::kPin12>();
+            exti_line_handler<GpioPinId::kPin13>();
+            exti_line_handler<GpioPinId::kPin14>();
+            exti_line_handler<GpioPinId::kPin15>();
         }
     }
 

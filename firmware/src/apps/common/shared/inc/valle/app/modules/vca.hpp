@@ -79,7 +79,7 @@ namespace valle::app
         constexpr static T skMinOutput = static_cast<T>(-1.0);
         constexpr static T skMaxOutput = static_cast<T>(1.0);
 
-        PIDSystem<ValueT> system{};
+        PIdSystem<ValueT> system{};
 
     public:
         VCACurrentController() = default;
@@ -188,11 +188,11 @@ namespace valle::app
      * @brief VCA Controller Module (Voice Coil Actuator) Configuration Structure
      *
      */
-    template <typename TPWMConfig, typename TControllerConfig>
+    template <typename TPwmConfig, typename TControllerConfig>
     struct VCAControllerModuleConfigX
     {
         // Half-Bridge Driver Configuration
-        TPWMConfig half_bridge_config{};
+        TPwmConfig half_bridge_config{};
 
         /// Controller Configuration (e.g., max current, control loop sample time, etc.)
         TControllerConfig controller_config{};
@@ -201,7 +201,7 @@ namespace valle::app
     /**
      * @brief VCA Controller Module (Voice Coil Actuator) Controller Class
      *
-     * @tparam THRTIMTimerDevice Hardware Device class for HRTIM control.
+     * @tparam THrtimTimerDevice Hardware Device class for HRTIM control.
      * @tparam skMode  Control mode (open-loop duty or closed-loop current).
      */
     template <typename THalfBridgeInterface, typename TController>

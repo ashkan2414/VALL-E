@@ -7,13 +7,13 @@ namespace valle::platform
     // =============================================================================
     // ENUMERATIONS
     // =============================================================================
-    enum class LSEOscillatorMode
+    enum class LseOscillatorMode
     {
         kCrystal,
         kBypass
     };
 
-    enum class LSEOscillatorDriveCapability : uint32_t
+    enum class LseOscillatorDriveCapability : uint32_t
     {
         kLow        = LL_RCC_LSEDRIVE_LOW,
         kMediumLow  = LL_RCC_LSEDRIVE_MEDIUMLOW,
@@ -24,22 +24,22 @@ namespace valle::platform
     // =============================================================================
     // INTERFACE
     // =============================================================================
-    struct LSEOscillatorInterface
+    struct LseOscillatorInterface
     {
-        static constexpr uint32_t skFrequencyHz                = LSE_VALUE;
+        static constexpr uint32_t skFrequencyHz                = Lse_VALUE;
         static constexpr uint32_t skDefaultEnableTimeoutCount  = 500'000'000U;
         static constexpr uint32_t skDefaultDisableTimeoutCount = 500'000'000U;
 
-        static void enable(const LSEOscillatorMode mode = LSEOscillatorMode::kCrystal)
+        static void enable(const LseOscillatorMode mode = LseOscillatorMode::kCrystal)
         {
             switch (mode)
             {
-                case LSEOscillatorMode::kCrystal:
+                case LseOscillatorMode::kCrystal:
                     LL_RCC_LSE_DisableBypass();
                     LL_RCC_LSE_Enable();
                     break;
 
-                case LSEOscillatorMode::kBypass:
+                case LseOscillatorMode::kBypass:
                     LL_RCC_LSE_EnableBypass();
                     LL_RCC_LSE_Enable();
                     break;
@@ -57,14 +57,14 @@ namespace valle::platform
             return LL_RCC_LSE_IsReady() == 1;
         }
 
-        static void set_drive_capability(const LSEOscillatorDriveCapability drive)
+        static void set_drive_capability(const LseOscillatorDriveCapability drive)
         {
             LL_RCC_LSE_SetDriveCapability(static_cast<uint32_t>(drive));
         }
 
-        [[nodiscard]] static LSEOscillatorDriveCapability get_drive_capability()
+        [[nodiscard]] static LseOscillatorDriveCapability get_drive_capability()
         {
-            return static_cast<LSEOscillatorDriveCapability>(LL_RCC_LSE_GetDriveCapability());
+            return static_cast<LseOscillatorDriveCapability>(LL_RCC_LSE_GetDriveCapability());
         }
 
         static void enable_css()

@@ -3,7 +3,7 @@
 namespace valle::platform
 {
     template <>
-    struct GPIOPinISRRouter<valle::app::PositionSensorINTBPinT::skPortID, valle::app::PositionSensorINTBPinT::skPinID>
+    struct GpioPinIsrRouter<valle::app::PositionSensorINTBPinT::skPortId, valle::app::PositionSensorINTBPinT::skPinId>
     {
         static void handle()
         {

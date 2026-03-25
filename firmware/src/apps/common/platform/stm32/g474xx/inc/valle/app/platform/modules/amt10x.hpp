@@ -6,47 +6,47 @@
 
 namespace valle::platform::app
 {
-    using AMT10xModuleTIMEncoderInterfaceConfig = TIMQuadEncoderConfig;
+    using AMT10xModuleTimEncoderInterfaceConfig = TimQuadEncoderConfig;
 
     /**
      * @brief Platform implementation of AMT10x encoder interface using STM32 Timer Encoder Mode.
      *
-     * @tparam TControllerDevice The Timer controller device (e.g. TIM1, TIM2, etc.).
+     * @tparam TControllerDevice The Timer controller device (e.g. Tim1, Tim2, etc.).
      * @tparam tkPPR The PPR setting for the encoder.
      */
-    template <typename TControllerDevice, typename TIndexGPIOPinDevice, valle::app::AMT10xPPR tkPPR>
-    class AMT10xModuleTIMEncoderInterface
+    template <typename TControllerDevice, typename TIndexGpioPinDevice, valle::app::AMT10xPPR tkPPR>
+    class AMT10xModuleTimEncoderInterface
         : public valle::app::AMT10xModuleEncoderInterfaceX<
-              AMT10xModuleTIMEncoderInterface<TControllerDevice, TIndexGPIOPinDevice, tkPPR>,
-              TIMQuadEncoderConfig>
+              AMT10xModuleTimEncoderInterface<TControllerDevice, TIndexGpioPinDevice, tkPPR>,
+              TimQuadEncoderConfig>
     {
     public:
         using ControllerT         = TControllerDevice;
-        using IndexGPIOPinDeviceT = TIndexGPIOPinDevice;
+        using IndexGpioPinDeviceT = TIndexGpioPinDevice;
 
-        using EncoderDriverT            = TIMQuadEncoderDriver<ControllerT>;
-        using IndexGPIODigitalInDriverT = GPIODigitalInDriver<IndexGPIOPinDeviceT>;
-        using ConfigT                   = TIMQuadEncoderConfig;
+        using EncoderDriverT            = TimQuadEncoderDriver<ControllerT>;
+        using IndexGpioDigitalInDriverT = GpioDigitalInDriver<IndexGpioPinDeviceT>;
+        using ConfigT                   = TimQuadEncoderConfig;
         using CounterValueT             = typename EncoderDriverT::CounterValueT;
 
-        using InjectDevices = TypeList<ControllerT, IndexGPIOPinDeviceT>;
+        using InjectDevices = TypeList<ControllerT, IndexGpioPinDeviceT>;
 
     private:
         EncoderDriverT            m_driver{};
-        IndexGPIODigitalInDriverT m_index_pin{};
+        IndexGpioDigitalInDriverT m_index_pin{};
         uint32_t                  m_counts_per_pulse{4};
 
     public:
-        explicit AMT10xModuleTIMEncoderInterface(DeviceRef<ControllerT>&&         controller,
-                                                 DeviceRef<IndexGPIOPinDeviceT>&& index_pin)
+        explicit AMT10xModuleTimEncoderInterface(DeviceRef<ControllerT>&&         controller,
+                                                 DeviceRef<IndexGpioPinDeviceT>&& index_pin)
             : m_driver(std::move(controller)), m_index_pin(std::move(index_pin))
         {
         }
 
         [[nodiscard]] bool init_impl(const ConfigT& config)
         {
-            if (!m_index_pin.init(GPIODigitalInConfig{
-                    .pull      = GPIOPullMode::kNoPull,
+            if (!m_index_pin.init(GpioDigitalInConfig{
+                    .pull      = GpioPullMode::kNoPull,
                     .interrupt = std::nullopt,
                     .inverted  = false,
                 }))
@@ -56,21 +56,21 @@ namespace valle::platform::app
 
             switch (config.encoder_config.mode)
             {
-                case TIMControllerEncoderMode::kX4TimerInput12:
+                case TimControllerEncoderMode::kX4TimerInput12:
                     m_counts_per_pulse = 4;
                     break;
 
-                case TIMControllerEncoderMode::kX2TimerInput1:
-                case TIMControllerEncoderMode::kX2TimerInput2:
-                case TIMControllerEncoderMode::kClockPlusDirectionX2:
-                case TIMControllerEncoderMode::kDirectionalClockX2:
+                case TimControllerEncoderMode::kX2TimerInput1:
+                case TimControllerEncoderMode::kX2TimerInput2:
+                case TimControllerEncoderMode::kClockPlusDirectionX2:
+                case TimControllerEncoderMode::kDirectionalClockX2:
                     m_counts_per_pulse = 2;
                     break;
 
-                case TIMControllerEncoderMode::kX1TimerInput1:
-                case TIMControllerEncoderMode::kX1TimerInput2:
-                case TIMControllerEncoderMode::kClockPlusDirectionX1:
-                case TIMControllerEncoderMode::kDirectionalClockX1TimerInput12:
+                case TimControllerEncoderMode::kX1TimerInput1:
+                case TimControllerEncoderMode::kX1TimerInput2:
+                case TimControllerEncoderMode::kClockPlusDirectionX1:
+                case TimControllerEncoderMode::kDirectionalClockX1TimerInput12:
                     m_counts_per_pulse = 1;
                     break;
 
@@ -123,11 +123,11 @@ namespace valle::platform::app
         }
     };
 
-    using AMT10xTIMEncoderModuleConfig = valle::app::AMT10xModuleConfigX<AMT10xModuleTIMEncoderInterfaceConfig>;
+    using AMT10xTimEncoderModuleConfig = valle::app::AMT10xModuleConfigX<AMT10xModuleTimEncoderInterfaceConfig>;
 
-    template <typename TControllerDevice, typename TIndexGPIOPinDevice, valle::app::AMT10xPPR tkPPR>
-    using AMT10xTIMEncoderModule =
-        valle::app::AMT10xModuleX<AMT10xModuleTIMEncoderInterface<TControllerDevice, TIndexGPIOPinDevice, tkPPR>,
+    template <typename TControllerDevice, typename TIndexGpioPinDevice, valle::app::AMT10xPPR tkPPR>
+    using AMT10xTimEncoderModule =
+        valle::app::AMT10xModuleX<AMT10xModuleTimEncoderInterface<TControllerDevice, TIndexGpioPinDevice, tkPPR>,
                                   tkPPR>;
 
 }  // namespace valle::platform::app

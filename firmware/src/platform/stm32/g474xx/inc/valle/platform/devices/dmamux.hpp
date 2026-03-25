@@ -7,19 +7,19 @@
 namespace valle::platform
 {
     // ============================================================================
-    // DMAMux CONTROLLER (SHARED)
+    // DmaMux CONTROLLER (SHARED)
     // ============================================================================
-    template <DMAMuxControllerID tkControllerID>
-    class DMAMuxControllerDevice
+    template <DmaMuxPeripheralId tkPeripheralId>
+    class DmaMuxControllerDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        static constexpr DMAMuxControllerID skControllerID = tkControllerID;
+        static constexpr DmaMuxPeripheralId skPeripheralId = tkPeripheralId;
 
-        using ControllerTraitsT = DMAMuxControllerTraits<tkControllerID>;
+        using ControllerTraitsT = DmaMuxControllerTraits<tkPeripheralId>;
 
         static inline bool init()
         {
@@ -27,10 +27,10 @@ namespace valle::platform
             return true;
         }
 
-        static inline void route_request(const DMAMuxChannel tkChannelID, const DMAMuxRequestID tkRequestID)
+        static inline void route_request(const DmaMuxChannel tkChannelId, const DmaMuxRequestId tkRequestId)
         {
-            LL_DMAMUX_SetRequestID(
-                ControllerTraitsT::skInstance, static_cast<uint32_t>(tkChannelID), static_cast<uint32_t>(tkRequestID));
+            LL_DMAMUX_SetRequestId(
+                ControllerTraitsT::skInstance, static_cast<uint32_t>(tkChannelId), static_cast<uint32_t>(tkRequestId));
         }
     };
 
@@ -38,6 +38,6 @@ namespace valle::platform
     // DEVICE ALIASES
     // ----------------------------------------------------------------------------
 
-    using DMAMux1ControllerDevice = DMAMuxControllerDevice<DMAMuxControllerID::kDMAMux1>;
+    using DmaMux1ControllerDevice = DmaMuxControllerDevice<DmaMuxPeripheralId::kDmaMux1>;
 
 }  // namespace valle::platform

@@ -11,7 +11,7 @@ namespace valle::platform
     // HSE OSCILLATOR INFO DEVICE
     // =============================================================================
     template <typename T = void>
-    class HSEOscillatorInfoDevice
+    class HseOscillatorInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -19,7 +19,7 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InterfaceT = HSEOscillatorInterface;
+        using InterfaceT = HseOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
@@ -41,14 +41,14 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     // CONFIGURATION
     // -----------------------------------------------------------------------------
-    struct HSEOscillatorConfig
+    struct HseOscillatorConfig
     {
         bool              enabled = true;
-        HSEOscillatorMode mode    = HSEOscillatorMode::kCrystal;
+        HseOscillatorMode mode    = HseOscillatorMode::kCrystal;
 
         [[nodiscard]] constexpr uint32_t get_frequency_hz() const
         {
-            return enabled ? HSEOscillatorInterface::skFrequencyHz : 0U;
+            return enabled ? HseOscillatorInterface::skFrequencyHz : 0U;
         }
     };
 
@@ -56,18 +56,18 @@ namespace valle::platform
     // DEVICE
     // -----------------------------------------------------------------------------
     template <typename T = void>
-    class HSEOscillatorDevice
+    class HseOscillatorDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = HSEOscillatorInterface;
+        using InterfaceT = HseOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
-        [[nodiscard]] inline bool init(const HSEOscillatorConfig& config)
+        [[nodiscard]] inline bool init(const HseOscillatorConfig& config)
         {
             if (config.enabled)
             {
@@ -79,12 +79,12 @@ namespace valle::platform
                 return true;
             }
 
-            const auto sysclk_status = SCTInterface::get_source_status();
-            const auto pll_source    = PLLInterface::get_source();
+            const auto sysclk_status = SctInterface::get_source_status();
+            const auto pll_source    = PllInterface::get_source();
 
-            const bool hse_used_as_sysclk = (sysclk_status == SCTSourceStatus::kHSE);
+            const bool hse_used_as_sysclk = (sysclk_status == SctSourceStatus::kHSE);
             const bool hse_used_by_pll_sysclk =
-                (sysclk_status == SCTSourceStatus::kPLL) && (pll_source == PLLSource::kHSE);
+                (sysclk_status == SctSourceStatus::kPLL) && (pll_source == PllSource::kHSE);
 
             expect(!(hse_used_as_sysclk || hse_used_by_pll_sysclk),
                    "Cannot disable HSE while it is used by SYSCLK or active PLL system clock path");

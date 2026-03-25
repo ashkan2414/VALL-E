@@ -7,7 +7,7 @@ namespace valle::platform
     // =============================================================================
     // ENUMERATIONS
     // =============================================================================
-    enum class HSEOscillatorMode
+    enum class HseOscillatorMode
     {
         kCrystal,
         kBypass
@@ -16,22 +16,22 @@ namespace valle::platform
     // =============================================================================
     // INTERFACE
     // =============================================================================
-    struct HSEOscillatorInterface
+    struct HseOscillatorInterface
     {
-        static constexpr uint32_t skFrequencyHz                = HSE_VALUE;
+        static constexpr uint32_t skFrequencyHz                = Hse_VALUE;
         static constexpr uint32_t skDefaultEnableTimeoutCount  = 5'000'000U;
         static constexpr uint32_t skDefaultDisableTimeoutCount = 5'000'000U;
 
-        static void enable(const HSEOscillatorMode mode = HSEOscillatorMode::kCrystal)
+        static void enable(const HseOscillatorMode mode = HseOscillatorMode::kCrystal)
         {
             switch (mode)
             {
-                case HSEOscillatorMode::kCrystal:
+                case HseOscillatorMode::kCrystal:
                     LL_RCC_HSE_DisableBypass();
                     LL_RCC_HSE_Enable();
                     break;
 
-                case HSEOscillatorMode::kBypass:
+                case HseOscillatorMode::kBypass:
                     LL_RCC_HSE_EnableBypass();
                     LL_RCC_HSE_Enable();
                     break;

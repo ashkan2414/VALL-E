@@ -12,7 +12,7 @@ namespace valle::platform
     // HSI OSCILLATOR INFO DEVICE
     // =========================================================================
     template <typename T = void>
-    class HSIOscillatorInfoDevice
+    class HsiOscillatorInfoDevice
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -20,7 +20,7 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InterfaceT = HSIOscillatorInterface;
+        using InterfaceT = HsiOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
@@ -47,16 +47,16 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     // CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    static constexpr auto kDefaultHSICalibrationTrim = HSIOscillatorInterface::skDefaultCalibrationTrim;
+    static constexpr auto kDefaultHsiCalibrationTrim = HsiOscillatorInterface::skDefaultCalibrationTrim;
 
-    struct HSIOscillatorConfig
+    struct HsiOscillatorConfig
     {
         bool     enabled  = true;
-        uint32_t trimming = kDefaultHSICalibrationTrim;
+        uint32_t trimming = kDefaultHsiCalibrationTrim;
 
         [[nodiscard]] constexpr uint32_t get_frequency_hz() const
         {
-            return enabled ? HSIOscillatorInterface::skFrequencyHz : 0U;
+            return enabled ? HsiOscillatorInterface::skFrequencyHz : 0U;
         }
     };
 
@@ -64,14 +64,14 @@ namespace valle::platform
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
     template <typename T = void>
-    class HSIOscillatorDevice
+    class HsiOscillatorDevice
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = HSIOscillatorInterface;
+        using InterfaceT = HsiOscillatorInterface;
 
         using InjectDevices = TypeList<>;
 
@@ -80,7 +80,7 @@ namespace valle::platform
          * @brief Initialize HSI with given configuration.
          * @param config HSI configuration.
          */
-        [[nodiscard]] inline bool init(const HSIOscillatorConfig& config)
+        [[nodiscard]] inline bool init(const HsiOscillatorConfig& config)
         {
             if (config.enabled)
             {
@@ -94,12 +94,12 @@ namespace valle::platform
                 return true;
             }
 
-            const auto sysclk_status = SCTInterface::get_source_status();
-            const auto pll_source    = PLLInterface::get_source();
+            const auto sysclk_status = SctInterface::get_source_status();
+            const auto pll_source    = PllInterface::get_source();
 
-            const bool hsi_used_as_sysclk = (sysclk_status == SCTSourceStatus::kHSI);
+            const bool hsi_used_as_sysclk = (sysclk_status == SctSourceStatus::kHSI);
             const bool hsi_used_by_pll_sysclk =
-                (sysclk_status == SCTSourceStatus::kPLL) && (pll_source == PLLSource::kHSI);
+                (sysclk_status == SctSourceStatus::kPLL) && (pll_source == PllSource::kHSI);
 
             expect(!(hsi_used_as_sysclk || hsi_used_by_pll_sysclk),
                    "Cannot disable HSI while it is used by SYSCLK or active PLL system clock path");

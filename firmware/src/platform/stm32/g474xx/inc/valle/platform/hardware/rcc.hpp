@@ -10,7 +10,7 @@
 
 namespace valle::platform
 {
-    struct RCCInterface
+    struct RccInterface
     {
         // =====================================================================
         // OSCILLATOR FREQUENCIES
@@ -18,23 +18,23 @@ namespace valle::platform
 
         [[nodiscard]] static constexpr uint32_t get_hsi_freq_hz()
         {
-            return HSIOscillatorInterface::skFrequencyHz;
+            return HsiOscillatorInterface::skFrequencyHz;
         }
         [[nodiscard]] static constexpr uint32_t get_hse_freq_hz()
         {
-            return HSEOscillatorInterface::skFrequencyHz;
+            return HseOscillatorInterface::skFrequencyHz;
         }
         [[nodiscard]] static constexpr uint32_t get_hsi48_freq_hz()
         {
-            return HSI48OscillatorInterface::skFrequencyHz;
+            return Hsi48OscillatorInterface::skFrequencyHz;
         }
         [[nodiscard]] static constexpr uint32_t get_lsi_freq_hz()
         {
-            return LSIOscillatorInterface::skFrequencyHz;
+            return LsiOscillatorInterface::skFrequencyHz;
         }
         [[nodiscard]] static constexpr uint32_t get_lse_freq_hz()
         {
-            return LSEOscillatorInterface::skFrequencyHz;
+            return LseOscillatorInterface::skFrequencyHz;
         }
 
         // =====================================================================
@@ -43,11 +43,11 @@ namespace valle::platform
 
         [[nodiscard]] static uint32_t get_pll_source_freq_hz()
         {
-            switch (PLLInterface::get_source())
+            switch (PllInterface::get_source())
             {
-                case PLLSource::kHSI:
+                case PllSource::kHSI:
                     return get_hsi_freq_hz();
-                case PLLSource::kHSE:
+                case PllSource::kHSE:
                     return get_hse_freq_hz();
                 default:
                     return 0U;
@@ -56,26 +56,26 @@ namespace valle::platform
 
         [[nodiscard]] static uint32_t get_pll_vco_freq_hz()
         {
-            return PLLInterface::calculate_vco_freq_hz(
-                get_pll_source_freq_hz(), PLLInterface::get_m_divider(), PLLInterface::get_n_multiplier());
+            return PllInterface::calculate_vco_freq_hz(
+                get_pll_source_freq_hz(), PllInterface::get_m_divider(), PllInterface::get_n_multiplier());
         }
 
         [[nodiscard]] static uint32_t get_pll_r_freq_hz()
         {
-            if (!PLLInterface::is_r_output_enabled()) return 0U;
-            return PLLInterface::calculate_r_output_freq_hz(get_pll_vco_freq_hz(), PLLInterface::get_r_divider());
+            if (!PllInterface::is_r_output_enabled()) return 0U;
+            return PllInterface::calculate_r_output_freq_hz(get_pll_vco_freq_hz(), PllInterface::get_r_divider());
         }
 
         [[nodiscard]] static uint32_t get_pll_p_freq_hz()
         {
-            if (!PLLInterface::is_p_output_enabled()) return 0U;
-            return PLLInterface::calculate_p_output_freq_hz(get_pll_vco_freq_hz(), PLLInterface::get_p_divider());
+            if (!PllInterface::is_p_output_enabled()) return 0U;
+            return PllInterface::calculate_p_output_freq_hz(get_pll_vco_freq_hz(), PllInterface::get_p_divider());
         }
 
         [[nodiscard]] static uint32_t get_pll_q_freq_hz()
         {
-            if (!PLLInterface::is_q_output_enabled()) return 0U;
-            return PLLInterface::calculate_q_output_freq_hz(get_pll_vco_freq_hz(), PLLInterface::get_q_divider());
+            if (!PllInterface::is_q_output_enabled()) return 0U;
+            return PllInterface::calculate_q_output_freq_hz(get_pll_vco_freq_hz(), PllInterface::get_q_divider());
         }
 
         // =====================================================================
@@ -84,13 +84,13 @@ namespace valle::platform
 
         [[nodiscard]] static uint32_t get_sysclk_freq_hz()
         {
-            switch (SCTInterface::get_source_status())
+            switch (SctInterface::get_source_status())
             {
-                case SCTSourceStatus::kHSI:
+                case SctSourceStatus::kHSI:
                     return get_hsi_freq_hz();
-                case SCTSourceStatus::kHSE:
+                case SctSourceStatus::kHSE:
                     return get_hse_freq_hz();
-                case SCTSourceStatus::kPLL:
+                case SctSourceStatus::kPLL:
                     return get_pll_r_freq_hz();
                 default:
                     return 0U;
@@ -99,17 +99,17 @@ namespace valle::platform
 
         [[nodiscard]] static uint32_t get_hclk_freq_hz()
         {
-            return SCTInterface::calculate_hclk_freq_hz(get_sysclk_freq_hz(), SCTInterface::get_ahb_prescaler());
+            return SctInterface::calculate_hclk_freq_hz(get_sysclk_freq_hz(), SctInterface::get_ahb_prescaler());
         }
 
         [[nodiscard]] static uint32_t get_pclk1_freq_hz()
         {
-            return SCTInterface::calculate_pclk1_freq_hz(get_hclk_freq_hz(), SCTInterface::get_apb1_prescaler());
+            return SctInterface::calculate_pclk1_freq_hz(get_hclk_freq_hz(), SctInterface::get_apb1_prescaler());
         }
 
         [[nodiscard]] static uint32_t get_pclk2_freq_hz()
         {
-            return SCTInterface::calculate_pclk2_freq_hz(get_hclk_freq_hz(), SCTInterface::get_apb2_prescaler());
+            return SctInterface::calculate_pclk2_freq_hz(get_hclk_freq_hz(), SctInterface::get_apb2_prescaler());
         }
     };
 }  // namespace valle::platform

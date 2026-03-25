@@ -6,16 +6,16 @@
 namespace valle::platform
 {
 
-    enum class ADCControllerID : uint8_t
+    enum class AdcPeripheralId : uint8_t
     {
-        kADC1 = 1,
-        kADC2 = 2,
-        kADC3 = 3,
-        kADC4 = 4,
-        kADC5 = 5,
+        kAdc1 = 1,
+        kAdc2 = 2,
+        kAdc3 = 3,
+        kAdc4 = 4,
+        kAdc5 = 5,
     };
 
-    enum class ADCChannelID : uint32_t
+    enum class AdcChannelId : uint32_t
     {
         kChannel0 = 0,
         kChannel1,
@@ -37,19 +37,19 @@ namespace valle::platform
         kChannel17,
         kChannel18,
         kChannelVRefInt,
-        kChannelTempSensorADC1,
-        kChannelTempSensorADC5,
+        kChannelTempSensorAdc1,
+        kChannelTempSensorAdc5,
         kChannelVBat,
         kChannelVOPAmp1,
         kChannelVOPAmp2,
-        kChannelVOPAmp3ADC2,
-        kChannelVOPAmp3ADC3,
+        kChannelVOPAmp3Adc2,
+        kChannelVOPAmp3Adc3,
         kChannelVOPAmp4,
         kChannelVOPAmp5,
         kChannelVOPAmp6,
     };
 
-    enum class ADCInjectChannelRank : uint8_t
+    enum class AdcInjectChannelRank : uint8_t
     {
         kRank1 = 1,
         kRank2,
@@ -57,7 +57,7 @@ namespace valle::platform
         kRank4,
     };
 
-    enum class ADCRegularChannelRank : uint8_t
+    enum class AdcRegularChannelRank : uint8_t
     {
         kRank1 = 1,
         kRank2,
@@ -77,70 +77,70 @@ namespace valle::platform
         kRank16,
     };
 
-    static constexpr size_t kNumADCChannels    = magic_enum::enum_count<ADCChannelID>();
-    static constexpr size_t kADCMaxRegChannels = 16;
-    static constexpr size_t kADCMaxInjChannels = 4;
+    static constexpr size_t kNumAdcChannels    = magic_enum::enum_count<AdcChannelId>();
+    static constexpr size_t kAdcMaxRegChannels = 16;
+    static constexpr size_t kAdcMaxInjChannels = 4;
 
-    [[nodiscard]] constexpr uint8_t get_adc_controller_number(const ADCControllerID controller_id)
+    [[nodiscard]] constexpr uint8_t get_adc_controller_number(const AdcPeripheralId controller_id)
     {
         return static_cast<uint8_t>(controller_id);
     }
 
-    template <ADCControllerID tkControllerID>
-    static constexpr uint8_t kADCControllerNumber = get_adc_controller_number(tkControllerID);
+    template <AdcPeripheralId tkPeripheralId>
+    static constexpr uint8_t kAdcControllerNumber = get_adc_controller_number(tkPeripheralId);
 
-    [[nodiscard]] constexpr std::optional<uint8_t> get_adc_channel_number(const ADCChannelID channel_id)
+    [[nodiscard]] constexpr std::optional<uint8_t> get_adc_channel_number(const AdcChannelId channel_id)
     {
         switch (channel_id)
         {
-            case ADCChannelID::kChannel0:
-            case ADCChannelID::kChannel1:
-            case ADCChannelID::kChannel2:
-            case ADCChannelID::kChannel3:
-            case ADCChannelID::kChannel4:
-            case ADCChannelID::kChannel5:
-            case ADCChannelID::kChannel6:
-            case ADCChannelID::kChannel7:
-            case ADCChannelID::kChannel8:
-            case ADCChannelID::kChannel9:
-            case ADCChannelID::kChannel10:
-            case ADCChannelID::kChannel11:
-            case ADCChannelID::kChannel12:
-            case ADCChannelID::kChannel13:
-            case ADCChannelID::kChannel14:
-            case ADCChannelID::kChannel15:
-            case ADCChannelID::kChannel16:
-            case ADCChannelID::kChannel17:
-            case ADCChannelID::kChannel18:
+            case AdcChannelId::kChannel0:
+            case AdcChannelId::kChannel1:
+            case AdcChannelId::kChannel2:
+            case AdcChannelId::kChannel3:
+            case AdcChannelId::kChannel4:
+            case AdcChannelId::kChannel5:
+            case AdcChannelId::kChannel6:
+            case AdcChannelId::kChannel7:
+            case AdcChannelId::kChannel8:
+            case AdcChannelId::kChannel9:
+            case AdcChannelId::kChannel10:
+            case AdcChannelId::kChannel11:
+            case AdcChannelId::kChannel12:
+            case AdcChannelId::kChannel13:
+            case AdcChannelId::kChannel14:
+            case AdcChannelId::kChannel15:
+            case AdcChannelId::kChannel16:
+            case AdcChannelId::kChannel17:
+            case AdcChannelId::kChannel18:
                 return static_cast<uint8_t>(static_cast<uint32_t>(channel_id) & 0xFF);
             default:
                 return std::nullopt;  // Invalid channel number
         }
     }
 
-    template <ADCChannelID tkChannelID>
-    static constexpr uint8_t kADCChannelNumber = []()
+    template <AdcChannelId tkChannelId>
+    static constexpr uint8_t kAdcChannelNumber = []()
     {
-        constexpr auto channel_number = get_adc_channel_number(tkChannelID);
+        constexpr auto channel_number = get_adc_channel_number(tkChannelId);
         static_assert(channel_number.has_value(),
                       "Invalid ADC channel ID: does not correspond to a valid channel number");
         return channel_number.value();
     }();
 
-    [[nodiscard]] constexpr uint8_t get_inject_channel_rank_number(const ADCInjectChannelRank rank)
+    [[nodiscard]] constexpr uint8_t get_inject_channel_rank_number(const AdcInjectChannelRank rank)
     {
         return static_cast<uint8_t>(rank);
     }
 
-    template <ADCInjectChannelRank tkRank>
-    static constexpr uint8_t kADCInjectChannelRankNumber = get_inject_channel_rank_number(tkRank);
+    template <AdcInjectChannelRank tkRank>
+    static constexpr uint8_t kAdcInjectChannelRankNumber = get_inject_channel_rank_number(tkRank);
 
-    [[nodiscard]] constexpr uint8_t get_regular_channel_rank_number(const ADCRegularChannelRank rank)
+    [[nodiscard]] constexpr uint8_t get_regular_channel_rank_number(const AdcRegularChannelRank rank)
     {
         return static_cast<uint8_t>(rank);
     }
 
-    template <ADCRegularChannelRank tkRank>
-    static constexpr uint8_t kADCRegularChannelRankNumber = get_regular_channel_rank_number(tkRank);
+    template <AdcRegularChannelRank tkRank>
+    static constexpr uint8_t kAdcRegularChannelRankNumber = get_regular_channel_rank_number(tkRank);
 
 }  // namespace valle::platform

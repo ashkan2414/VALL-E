@@ -11,7 +11,7 @@ namespace valle::platform
     }
 
     template <>
-    struct ADCISRRouter<valle::app::TestADCChannelT::skControllerID, ADCInterruptType::kInjectEndOfSequence>
+    struct AdcIsrRouter<valle::app::TestAdcChannelT::skPeripheralId, AdcInterruptType::kInjectEndOfSequence>
     {
         static void handle()
         {
@@ -20,9 +20,9 @@ namespace valle::platform
     };
 
     template <>
-    struct DMAISRRouter<valle::app::TestADCDMAChannelT::skControllerID,
-                        valle::app::TestADCDMAChannelT::skChannelID,
-                        DMAChannelInterruptType::kTransferComplete>
+    struct DmaIsrRouter<valle::app::TestAdcDmaChannelT::skPeripheralId,
+                        valle::app::TestAdcDmaChannelT::skChannelId,
+                        DmaChannelInterruptType::kTransferComplete>
     {
         static void handle()
         {

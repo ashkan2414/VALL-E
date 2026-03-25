@@ -5,119 +5,119 @@
 
 namespace valle::platform
 {
-    constexpr HRTIMTimerADCTriggerID adc_trigger_to_hrtim_trigger(ADCInjectGroupTriggerSource trigger)
+    constexpr HrtimTimerAdcTriggerId adc_trigger_to_hrtim_trigger(AdcInjectGroupTriggerSource trigger)
     {
         switch (trigger)
         {
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG1:
-                return HRTIMTimerADCTriggerID::kTrig1;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG2:
-                return HRTIMTimerADCTriggerID::kTrig2;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG3:
-                return HRTIMTimerADCTriggerID::kTrig3;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG4:
-                return HRTIMTimerADCTriggerID::kTrig4;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG5:
-                return HRTIMTimerADCTriggerID::kTrig5;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG6:
-                return HRTIMTimerADCTriggerID::kTrig6;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG7:
-                return HRTIMTimerADCTriggerID::kTrig7;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG8:
-                return HRTIMTimerADCTriggerID::kTrig8;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG9:
-                return HRTIMTimerADCTriggerID::kTrig9;
-            case ADCInjectGroupTriggerSource::kExtHrtimTRG10:
-                return HRTIMTimerADCTriggerID::kTrig10;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG1:
+                return HrtimTimerAdcTriggerId::kTrig1;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG2:
+                return HrtimTimerAdcTriggerId::kTrig2;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG3:
+                return HrtimTimerAdcTriggerId::kTrig3;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG4:
+                return HrtimTimerAdcTriggerId::kTrig4;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG5:
+                return HrtimTimerAdcTriggerId::kTrig5;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG6:
+                return HrtimTimerAdcTriggerId::kTrig6;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG7:
+                return HrtimTimerAdcTriggerId::kTrig7;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG8:
+                return HrtimTimerAdcTriggerId::kTrig8;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG9:
+                return HrtimTimerAdcTriggerId::kTrig9;
+            case AdcInjectGroupTriggerSource::kExtHrtimTRG10:
+                return HrtimTimerAdcTriggerId::kTrig10;
             default:
-                return HRTIMTimerADCTriggerID::kTrig1;  // Default to kTrig1 for unsupported triggers
+                return HrtimTimerAdcTriggerId::kTrig1;  // Default to kTrig1 for unsupported triggers
         }
     }
 
-    constexpr HRTIMTimerADCTriggerID adc_trigger_to_hrtim_trigger(ADCRegularGroupTriggerSource trigger)
+    constexpr HrtimTimerAdcTriggerId adc_trigger_to_hrtim_trigger(AdcRegularGroupTriggerSource trigger)
     {
         switch (trigger)
         {
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG1:
-                return HRTIMTimerADCTriggerID::kTrig1;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG2:
-                return HRTIMTimerADCTriggerID::kTrig2;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG3:
-                return HRTIMTimerADCTriggerID::kTrig3;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG4:
-                return HRTIMTimerADCTriggerID::kTrig4;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG5:
-                return HRTIMTimerADCTriggerID::kTrig5;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG6:
-                return HRTIMTimerADCTriggerID::kTrig6;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG7:
-                return HRTIMTimerADCTriggerID::kTrig7;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG8:
-                return HRTIMTimerADCTriggerID::kTrig8;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG9:
-                return HRTIMTimerADCTriggerID::kTrig9;
-            case ADCRegularGroupTriggerSource::kExtHrtimTRG10:
-                return HRTIMTimerADCTriggerID::kTrig10;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG1:
+                return HrtimTimerAdcTriggerId::kTrig1;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG2:
+                return HrtimTimerAdcTriggerId::kTrig2;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG3:
+                return HrtimTimerAdcTriggerId::kTrig3;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG4:
+                return HrtimTimerAdcTriggerId::kTrig4;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG5:
+                return HrtimTimerAdcTriggerId::kTrig5;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG6:
+                return HrtimTimerAdcTriggerId::kTrig6;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG7:
+                return HrtimTimerAdcTriggerId::kTrig7;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG8:
+                return HrtimTimerAdcTriggerId::kTrig8;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG9:
+                return HrtimTimerAdcTriggerId::kTrig9;
+            case AdcRegularGroupTriggerSource::kExtHrtimTRG10:
+                return HrtimTimerAdcTriggerId::kTrig10;
             default:
-                return HRTIMTimerADCTriggerID::kTrig1;  // Default to kTrig1 for unsupported triggers
+                return HrtimTimerAdcTriggerId::kTrig1;  // Default to kTrig1 for unsupported triggers
         }
     }
 
-    constexpr ADCInjectGroupTriggerSource hrtim_trigger_to_adc_inject_trigger(HRTIMTimerADCTriggerID trigger)
+    constexpr AdcInjectGroupTriggerSource hrtim_trigger_to_adc_inject_trigger(HrtimTimerAdcTriggerId trigger)
     {
         switch (trigger)
         {
-            case HRTIMTimerADCTriggerID::kTrig1:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG1;
-            case HRTIMTimerADCTriggerID::kTrig2:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG2;
-            case HRTIMTimerADCTriggerID::kTrig3:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG3;
-            case HRTIMTimerADCTriggerID::kTrig4:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG4;
-            case HRTIMTimerADCTriggerID::kTrig5:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG5;
-            case HRTIMTimerADCTriggerID::kTrig6:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG6;
-            case HRTIMTimerADCTriggerID::kTrig7:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG7;
-            case HRTIMTimerADCTriggerID::kTrig8:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG8;
-            case HRTIMTimerADCTriggerID::kTrig9:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG9;
-            case HRTIMTimerADCTriggerID::kTrig10:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG10;
+            case HrtimTimerAdcTriggerId::kTrig1:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG1;
+            case HrtimTimerAdcTriggerId::kTrig2:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG2;
+            case HrtimTimerAdcTriggerId::kTrig3:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG3;
+            case HrtimTimerAdcTriggerId::kTrig4:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG4;
+            case HrtimTimerAdcTriggerId::kTrig5:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG5;
+            case HrtimTimerAdcTriggerId::kTrig6:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG6;
+            case HrtimTimerAdcTriggerId::kTrig7:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG7;
+            case HrtimTimerAdcTriggerId::kTrig8:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG8;
+            case HrtimTimerAdcTriggerId::kTrig9:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG9;
+            case HrtimTimerAdcTriggerId::kTrig10:
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG10;
             default:
-                return ADCInjectGroupTriggerSource::kExtHrtimTRG1;  // Default to kExtHrtimTRG1 for unsupported triggers
+                return AdcInjectGroupTriggerSource::kExtHrtimTRG1;  // Default to kExtHrtimTRG1 for unsupported triggers
         }
     }
 
-    constexpr ADCRegularGroupTriggerSource hrtim_trigger_to_adc_regular_trigger(HRTIMTimerADCTriggerID trigger)
+    constexpr AdcRegularGroupTriggerSource hrtim_trigger_to_adc_regular_trigger(HrtimTimerAdcTriggerId trigger)
     {
         switch (trigger)
         {
-            case HRTIMTimerADCTriggerID::kTrig1:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG1;
-            case HRTIMTimerADCTriggerID::kTrig2:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG2;
-            case HRTIMTimerADCTriggerID::kTrig3:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG3;
-            case HRTIMTimerADCTriggerID::kTrig4:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG4;
-            case HRTIMTimerADCTriggerID::kTrig5:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG5;
-            case HRTIMTimerADCTriggerID::kTrig6:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG6;
-            case HRTIMTimerADCTriggerID::kTrig7:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG7;
-            case HRTIMTimerADCTriggerID::kTrig8:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG8;
-            case HRTIMTimerADCTriggerID::kTrig9:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG9;
-            case HRTIMTimerADCTriggerID::kTrig10:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG10;
+            case HrtimTimerAdcTriggerId::kTrig1:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG1;
+            case HrtimTimerAdcTriggerId::kTrig2:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG2;
+            case HrtimTimerAdcTriggerId::kTrig3:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG3;
+            case HrtimTimerAdcTriggerId::kTrig4:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG4;
+            case HrtimTimerAdcTriggerId::kTrig5:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG5;
+            case HrtimTimerAdcTriggerId::kTrig6:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG6;
+            case HrtimTimerAdcTriggerId::kTrig7:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG7;
+            case HrtimTimerAdcTriggerId::kTrig8:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG8;
+            case HrtimTimerAdcTriggerId::kTrig9:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG9;
+            case HrtimTimerAdcTriggerId::kTrig10:
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG10;
             default:
-                return ADCRegularGroupTriggerSource::kExtHrtimTRG1;  // Default to kExtHrtimTRG1 for unsupported
+                return AdcRegularGroupTriggerSource::kExtHrtimTRG1;  // Default to kExtHrtimTRG1 for unsupported
                                                                      // triggers
         }
     }

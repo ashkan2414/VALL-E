@@ -13,7 +13,7 @@ namespace valle::app
         return std::move(builder)
             .template install<RootDriver>()
             .template install<platform::CoreSystemDriver>()
-            .template install<UARTLoggerT>()
+            .template install<UartLoggerT>()
             .template install<PositionSensorModuleT>()
             .yield();
     }
@@ -26,25 +26,25 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::DMAMux1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMAMux1 Controller Device"); },
-            [](platform::DMA1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize DMA1 Controller Device"); },
-            [](platform::GPIOPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::GPIOPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
-            [](platform::I2C1CommandBufferDevice<>& dev)
+            [](platform::DmaMux1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
+            [](platform::Dma1ControllerDevice& dev)
+            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GpioPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
+            [](platform::I2c1CommandBufferDevice<>& dev)
             {
-                expect(dev.init(platform::I2CCommandBufferDeviceConfig{
+                expect(dev.init(platform::I2cCommandBufferDeviceConfig{
                            .controller_config =
-                               platform::I2CControllerConfig{
+                               platform::I2cControllerConfig{
                                    .timing_reg = 0x40621236,  // 400kHz @ 170MHz APB1 clock (values from STM32CubeMX)
                                    .enable_analog_filter = true,
-                                   .dma_priority         = platform::DMAPriority::kHigh,
+                                   .dma_priority         = platform::DmaPriority::kHigh,
                                },
                            .event_int_priority = 5,
                            .error_int_priority = 5,
                        }),
-                       "Failed to initialize I2C1 Command Buffer Device");
+                       "Failed to initialize I2c1 Command Buffer Device");
             },
         }  // namespace valle
         );
@@ -56,14 +56,14 @@ namespace valle::app
      */
     static void init_drivers()
     {
-        expect(g_drivers.uart_logger.init(platform::UARTControllerConfig{
-                   .baud_rate         = platform::UARTBaudRate::kBaud230400,
-                   .word_length       = platform::UARTWordLength::kBits8,
-                   .stop_bits         = platform::UARTStopBits::kBits1,
-                   .parity            = platform::UARTParity::kNone,
-                   .transfer_mode     = platform::UARTTransferMode::kTxRx,
-                   .hw_flow_ctrl      = platform::UARTHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DMAPriority::kHigh,
+        expect(g_drivers.uart_logger.init(platform::UartControllerConfig{
+                   .baud_rate         = platform::UartBaudRate::kBaud230400,
+                   .word_length       = platform::UartWordLength::kBits8,
+                   .stop_bits         = platform::UartStopBits::kBits1,
+                   .parity            = platform::UartParity::kNone,
+                   .transfer_mode     = platform::UartTransferMode::kTxRx,
+                   .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
+                   .dma_priority      = platform::DmaPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),

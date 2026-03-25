@@ -10,21 +10,21 @@
 namespace valle::app
 {
     // Position Sensor I2C Controller Config
-    constexpr platform::I2CControllerID kPositionSensorI2CID             = platform::I2CControllerID::kI2C1;
-    constexpr uint16_t                  kPositionSensorI2CAddress        = 0x2B;
-    constexpr bool                      kPositionSensorI2CAddressIs10Bit = false;
+    constexpr platform::I2cPeripheralId kPositionSensorI2cId             = platform::I2cPeripheralId::kI2c1;
+    constexpr uint16_t                  kPositionSensorI2cAddress        = 0x2B;
+    constexpr bool                      kPositionSensorI2cAddressIs10Bit = false;
 
-    struct PositionSensorI2CControllerCTConfig : public platform::I2CControllerCTDefaultConfig
+    struct PositionSensorI2cControllerCTConfig : public platform::I2cControllerCTDefaultConfig
     {
-        using DMAChannelRxT = platform::DMA1Channel3Device;
-        using DMAChannelTxT = platform::DMA1Channel4Device;
-        using SCLPinT       = platform::GPIOPinB8Device;
-        using SDAPinT       = platform::GPIOPinB9Device;
+        using DmaChannelRxT = platform::Dma1Channel3Device;
+        using DmaChannelTxT = platform::Dma1Channel4Device;
+        using SCLPinT       = platform::GpioPinB8Device;
+        using SDAPinT       = platform::GpioPinB9Device;
     };
 }  // namespace valle::app
 
-VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2CID,
-                                      valle::app::PositionSensorI2CControllerCTConfig{});
+VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(valle::app::kPositionSensorI2cId,
+                                      valle::app::PositionSensorI2cControllerCTConfig{});
 
 namespace valle
 {
@@ -33,16 +33,16 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using PositionSensorI2CControllerT  = platform::I2CCommandBufferDevice<kPositionSensorI2CID>;
-        using PositionSensorI2CSlaveDeviceT = platform::I2CCommandBufferSlaveDevice<kPositionSensorI2CID,
-                                                                                    kPositionSensorI2CAddress,
-                                                                                    kPositionSensorI2CAddressIs10Bit>;
-        using PositionSensorModuleT         = platform::app::LDC161XSensorModule<PositionSensorI2CSlaveDeviceT, 2>;
+        using PositionSensorI2cControllerT  = platform::I2cCommandBufferDevice<kPositionSensorI2cId>;
+        using PositionSensorI2cSlaveDeviceT = platform::I2cCommandBufferSlaveDevice<kPositionSensorI2cId,
+                                                                                    kPositionSensorI2cAddress,
+                                                                                    kPositionSensorI2cAddressIs10Bit>;
+        using PositionSensorModuleT         = platform::app::LDC161XSensorModule<PositionSensorI2cSlaveDeviceT, 2>;
         using PositionSensorModuleConfigT   = typename PositionSensorModuleT::ConfigT;
         using PositionSensorConfigT         = typename PositionSensorModuleT::SensorConfigT;
 
         // Declare Main Driver List
-        using MainDriversT = TypeList<platform::CoreSystemDriver, UARTLoggerT, PositionSensorModuleT>;
+        using MainDriversT = TypeList<platform::CoreSystemDriver, UartLoggerT, PositionSensorModuleT>;
 
         // ============================================================================
         // Root Driver
@@ -53,7 +53,7 @@ namespace valle
             using BaseT = PackedDriverBase<RootDevicesT>;
             using BaseT::BaseT;
 
-            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2C1CommandBufferDevice<>);
+            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2c1CommandBufferDevice<>);
         };
 
         // ============================================================================
@@ -66,7 +66,7 @@ namespace valle
 
             RootDriver                 root;
             platform::CoreSystemDriver core;
-            UARTLoggerT                uart_logger;
+            UartLoggerT                uart_logger;
             PositionSensorModuleT      position_sensor;
         };
 
