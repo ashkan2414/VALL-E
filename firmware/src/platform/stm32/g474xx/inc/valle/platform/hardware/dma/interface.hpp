@@ -69,7 +69,7 @@ namespace valle::platform
         static inline Dma_TypeDef* const skInstance = Dma1;
         static constexpr uint32_t        skClock    = LL_AHB1_GRP1_PERIPH_DMA1;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             LL_AHB1_GRP1_EnableClock(skClock);
         }
@@ -83,7 +83,7 @@ namespace valle::platform
         static inline Dma_TypeDef* const skInstance = Dma2;
         static constexpr uint32_t        skClock    = LL_AHB1_GRP1_PERIPH_DMA2;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             LL_AHB1_GRP1_EnableClock(skClock);
         }
@@ -123,7 +123,7 @@ namespace valle::platform
         }
 
         // Helper to get Channel Instance
-        static Dma_Channel_TypeDef* get_channel_instance()
+        Dma_Channel_TypeDef* get_channel_instance() const
         {
             if constexpr (tkPeripheralId == DmaPeripheralId::kDma1)  // NOLINT(bugprone-branch-clone)
             {
@@ -149,7 +149,7 @@ namespace valle::platform
             }
         }
 
-        static consteval uint32_t get_ll_channel_id()
+        consteval uint32_t get_ll_channel_id() const
         {
             // NOLINTBEGIN(readability-magic-numbers)
             if constexpr (skChannelIdx == 1)
@@ -186,7 +186,7 @@ namespace valle::platform
             }
         }
 
-        static consteval DmaMuxChannel get_mux_channel_id()
+        consteval DmaMuxChannel get_mux_channel_id() const
         {
             // NOLINTBEGIN(readability-magic-numbers)
             if constexpr (tkPeripheralId == DmaPeripheralId::kDma1)

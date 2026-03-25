@@ -161,7 +161,7 @@ namespace valle::platform
         static inline DmaMUX_Channel_TypeDef* const skInstance = DmaMUX1;
         static constexpr uint32_t                   skClock    = LL_AHB1_GRP1_PERIPH_DMAMUX1;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             LL_AHB1_GRP1_EnableClock(skClock);
         }

@@ -319,7 +319,7 @@ namespace valle::platform
     struct AdcChannelTraits
     {
     private:
-        [[nodiscard]] static consteval uint32_t get_ll_channel_id()
+        [[nodiscard]] consteval uint32_t get_ll_channel_id() const
         {
             switch (tkChannelId)
             {
@@ -404,7 +404,7 @@ namespace valle::platform
         static constexpr std::array<uint32_t, 4> skRankIdxToRankReg = {
             LL_ADC_INJ_RANK_1, LL_ADC_INJ_RANK_2, LL_ADC_INJ_RANK_3, LL_ADC_INJ_RANK_4};
 
-        static uint32_t count_to_sequence_length(uint32_t count)
+        uint32_t count_to_sequence_length(uint32_t count) const
         {
             switch (count)
             {
@@ -725,47 +725,47 @@ namespace valle::platform
         // ----------------------------------------------------------------------------
         // CORE
         // ----------------------------------------------------------------------------
-        static void disable()
+        void disable() const
         {
             LL_ADC_Disable(ControllerTraitsT::skInstance);
         }
 
-        static void enable()
+        void enable() const
         {
             LL_ADC_Enable(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] static bool is_enabled()
+        [[nodiscard]] bool is_enabled() const
         {
             return LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        [[nodiscard]] static bool deep_power_down_enabled()
+        [[nodiscard]] bool deep_power_down_enabled() const
         {
             return LL_ADC_IsDeepPowerDownEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        static void disable_deep_power_down()
+        void disable_deep_power_down() const
         {
             LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] static bool internal_regulator_enabled()
+        [[nodiscard]] bool internal_regulator_enabled() const
         {
             return LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        static void enable_internal_regulator()
+        void enable_internal_regulator() const
         {
             LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] static bool is_calibration_ongoing()
+        [[nodiscard]] bool is_calibration_ongoing() const
         {
             return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) != 0;
         }
 
-        static void start_calibration()
+        void start_calibration() const
         {
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
         }
@@ -773,42 +773,42 @@ namespace valle::platform
         // -----------------------------------------------------------------------------
         // CONFIGURATION
         // -----------------------------------------------------------------------------
-        static void set_resolution(const AdcResolution resolution)
+        void set_resolution(const AdcResolution resolution) const
         {
             LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(resolution));
         }
 
-        static void set_data_alignment(const AdcDataAlignment data_alignment)
+        void set_data_alignment(const AdcDataAlignment data_alignment) const
         {
             LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, static_cast<uint32_t>(data_alignment));
         }
 
-        static void set_low_power_mode(const AdcLowPowerMode low_power_mode)
+        void set_low_power_mode(const AdcLowPowerMode low_power_mode) const
         {
             LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(low_power_mode));
         }
 
-        static void set_gain_compensation(const uint16_t gain_compensation)
+        void set_gain_compensation(const uint16_t gain_compensation) const
         {
             LL_ADC_SetGainCompensation(ControllerTraitsT::skInstance, static_cast<uint32_t>(gain_compensation));
         }
 
-        static void set_common_sample_time(const AdcCommonSamplingTime sampling_time)
+        void set_common_sample_time(const AdcCommonSamplingTime sampling_time) const
         {
             LL_ADC_SetSamplingTimeCommonConfig(ControllerTraitsT::skInstance, static_cast<uint32_t>(sampling_time));
         }
 
-        static void set_oversampling_scope(const AdcOversamplingScope scope)
+        void set_oversampling_scope(const AdcOversamplingScope scope) const
         {
             LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, static_cast<uint32_t>(scope));
         }
 
-        [[nodiscard]] static AdcOversamplingScope get_oversampling_scope()
+        [[nodiscard]] AdcOversamplingScope get_oversampling_scope() const
         {
             return static_cast<AdcOversamplingScope>(LL_ADC_GetOverSamplingScope(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] static bool inject_group_oversampling_enabled()
+        [[nodiscard]] bool inject_group_oversampling_enabled() const
         {
             switch (get_oversampling_scope())
             {
@@ -820,7 +820,7 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] static bool regular_group_oversampling_enabled()
+        [[nodiscard]] bool regular_group_oversampling_enabled() const
         {
             switch (get_oversampling_scope())
             {
@@ -833,7 +833,7 @@ namespace valle::platform
             }
         }
 
-        static void set_oversampling_ratio_shift(const AdcOversamplingRatio ratio, const AdcOversamplingShift shift)
+        void set_oversampling_ratio_shift(const AdcOversamplingRatio ratio, const AdcOversamplingShift shift) const
         {
             LL_ADC_ConfigOverSamplingRatioShift(
                 ControllerTraitsT::skInstance, static_cast<uint32_t>(ratio), static_cast<uint32_t>(shift));
@@ -847,12 +847,12 @@ namespace valle::platform
          * If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
          * If Trigger is Software: ADC converts immediately.
          */
-        static void start_inject()
+        void start_inject() const
         {
             LL_ADC_INJ_StartConversion(ControllerTraitsT::skInstance);
         }
 
-        static void stop_inject()
+        void stop_inject() const
         {
             LL_ADC_INJ_StopConversion(ControllerTraitsT::skInstance);
         }
@@ -862,12 +862,12 @@ namespace valle::platform
          * If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
          * If Trigger is Software: ADC converts immediately.
          */
-        static void start_regular()
+        void start_regular() const
         {
             LL_ADC_REG_StartConversion(ControllerTraitsT::skInstance);
         }
 
-        static void stop_regular()
+        void stop_regular() const
         {
             LL_ADC_REG_StopConversion(ControllerTraitsT::skInstance);
         }
@@ -875,7 +875,7 @@ namespace valle::platform
         // ----------------------------------------------------------------------------
         // RESOLUTION INFO
         // ----------------------------------------------------------------------------
-        [[nodiscard]] static uint8_t get_resolution_bits()
+        [[nodiscard]] uint8_t get_resolution_bits() const
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (LL_ADC_GetResolution(ControllerTraitsT::skInstance))
@@ -894,13 +894,13 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        [[nodiscard]] static uint32_t get_resolution_range()
+        [[nodiscard]] uint32_t get_resolution_range() const
         {
             const uint8_t res_bits = get_resolution_bits();
             return (1UL << res_bits) - 1UL;
         }
 
-        [[nodiscard]] static uint8_t get_oversampling_ratio_factor()
+        [[nodiscard]] uint8_t get_oversampling_ratio_factor() const
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (LL_ADC_GetOverSamplingRatio(ControllerTraitsT::skInstance))
@@ -927,7 +927,7 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        [[nodiscard]] static uint8_t get_oversampling_shift_bits()
+        [[nodiscard]] uint8_t get_oversampling_shift_bits() const
         {
             // NOLINTBEGIN(readability-magic-numbers)
             switch (LL_ADC_GetOverSamplingShift(ControllerTraitsT::skInstance))
@@ -956,7 +956,7 @@ namespace valle::platform
             // NOLINTEND(readability-magic-numbers)
         }
 
-        [[nodiscard]] static uint32_t get_effective_resolution_range()
+        [[nodiscard]] uint32_t get_effective_resolution_range() const
         {
             // Max value of a single ADC conversion
             const uint32_t max_single_sample = get_resolution_range();
@@ -972,7 +972,7 @@ namespace valle::platform
             return std::min(effective_max, static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()));
         }
 
-        [[nodiscard]] static uint32_t get_inject_group_effective_resolution_range()
+        [[nodiscard]] uint32_t get_inject_group_effective_resolution_range() const
         {
             if (inject_group_oversampling_enabled())
             {
@@ -982,7 +982,7 @@ namespace valle::platform
             return get_resolution_range();
         }
 
-        [[nodiscard]] static uint32_t get_regular_group_effective_resolution_range()
+        [[nodiscard]] uint32_t get_regular_group_effective_resolution_range() const
         {
             if (regular_group_oversampling_enabled())
             {
@@ -998,27 +998,27 @@ namespace valle::platform
     {
         using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
 
-        static void set_queue_mode(const AdcInjectGroupQueueMode queue_mode)
+        void set_queue_mode(const AdcInjectGroupQueueMode queue_mode) const
         {
             LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(queue_mode));
         }
 
-        static void set_trigger_mode(const AdcInjectGroupTriggerMode trigger_mode)
+        void set_trigger_mode(const AdcInjectGroupTriggerMode trigger_mode) const
         {
             LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_mode));
         }
 
-        static void set_sequencer_discontinuity_mode(const AdcInjectGroupSequencerDiscontinuityMode discontinuity_mode)
+        void set_sequencer_discontinuity_mode(const AdcInjectGroupSequencerDiscontinuityMode discontinuity_mode) const
         {
             LL_ADC_INJ_SetSequencerDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(discontinuity_mode));
         }
 
-        static void set_trigger_source(const AdcInjectGroupTriggerSource trigger_source)
+        void set_trigger_source(const AdcInjectGroupTriggerSource trigger_source) const
         {
             LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
         }
 
-        static void set_trigger_edge(const AdcInjectGroupTriggerEdge trigger_edge)
+        void set_trigger_edge(const AdcInjectGroupTriggerEdge trigger_edge) const
         {
             LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
         }
@@ -1034,20 +1034,20 @@ namespace valle::platform
         }
 
         // Sequence Config
-        static void set_sequencer_length(const uint32_t inj_count)
+        void set_sequencer_length(const uint32_t inj_count) const
         {
             LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
                                           AdcInjectGroupTraits::count_to_sequence_length(inj_count));
         }
 
-        [[nodiscard]] static uint32_t get_sequencer_length()
+        [[nodiscard]] uint32_t get_sequencer_length() const
         {
             return AdcInjectGroupTraits::sequence_length_to_count(
                 LL_ADC_INJ_GetSequencerLength(ControllerTraitsT::skInstance));
         }
 
         template <AdcChannelId tkChannelId>
-        static void set_sequencer_ranks(const AdcInjectChannelRank rank)
+        void set_sequencer_ranks(const AdcInjectChannelRank rank) const
         {
             using ChannelTraitsT = AdcChannelTraits<tkPeripheralId, tkChannelId>;
             LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
@@ -1055,7 +1055,7 @@ namespace valle::platform
                                          ChannelTraitsT::skLLChannelId);
         }
 
-        [[nodiscard]] static uint32_t read(const AdcInjectChannelRank rank)
+        [[nodiscard]] uint32_t read(const AdcInjectChannelRank rank) const
         {
             return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
                                                    AdcInjectGroupTraits::rank_to_rank_reg(rank));
@@ -1067,17 +1067,17 @@ namespace valle::platform
     {
         using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
 
-        static void set_oversampling_mode(const AdcRegularGroupOversamplingMode oversampling_mode)
+        void set_oversampling_mode(const AdcRegularGroupOversamplingMode oversampling_mode) const
         {
             LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(oversampling_mode));
         }
 
-        static void set_trigger_source(const AdcRegularGroupTriggerSource trigger_source)
+        void set_trigger_source(const AdcRegularGroupTriggerSource trigger_source) const
         {
             LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
         }
 
-        static void set_trigger_edge(const AdcRegularGroupTriggerEdge trigger_edge)
+        void set_trigger_edge(const AdcRegularGroupTriggerEdge trigger_edge) const
         {
             LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
         }
@@ -1092,31 +1092,31 @@ namespace valle::platform
             }
         }
 
-        static void set_overrun_behavior(const AdcRegularGroupOverrunBehavior overrun_behavior)
+        void set_overrun_behavior(const AdcRegularGroupOverrunBehavior overrun_behavior) const
         {
             LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, static_cast<uint32_t>(overrun_behavior));
         }
 
-        static void set_conversion_mode(const AdcRegularGroupConversionMode conversion_mode)
+        void set_conversion_mode(const AdcRegularGroupConversionMode conversion_mode) const
         {
             LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(conversion_mode));
         }
 
         // Sequence Config
-        static void set_sequencer_length(const uint32_t reg_count)
+        void set_sequencer_length(const uint32_t reg_count) const
         {
             LL_ADC_REG_SetSequencerLength(ControllerTraitsT::skInstance,
                                           AdcRegularGroupTraits::count_to_sequence_length(reg_count));
         }
 
-        [[nodiscard]] static uint32_t get_sequencer_length()
+        [[nodiscard]] uint32_t get_sequencer_length() const
         {
             return AdcRegularGroupTraits::sequence_length_to_count(
                 LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
         }
 
         template <AdcChannelId tkChannelId>
-        static void set_sequencer_ranks(const AdcRegularChannelRank rank)
+        void set_sequencer_ranks(const AdcRegularChannelRank rank) const
         {
             using ChannelTraitsT = AdcChannelTraits<tkPeripheralId, tkChannelId>;
             LL_ADC_REG_SetSequencerRanks(ControllerTraitsT::skInstance,
@@ -1124,7 +1124,7 @@ namespace valle::platform
                                          ChannelTraitsT::skLLChannelId);
         }
 
-        static void set_dma_transfer(const AdcRegularGroupDmaTransfer dma_transfer)
+        void set_dma_transfer(const AdcRegularGroupDmaTransfer dma_transfer) const
         {
             LL_ADC_REG_SetDmaTransfer(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_transfer));
         }
@@ -1139,19 +1139,19 @@ namespace valle::platform
         using ControllerTraitsT = AdcControllerTraits<tkPeripheralId>;
         using ChannelTraitsT    = AdcChannelTraits<tkPeripheralId, tkChannelId>;
 
-        static void set_sampling_time(const AdcChannelSampleTime sample_time)
+        void set_sampling_time(const AdcChannelSampleTime sample_time) const
         {
             LL_ADC_SetChannelSamplingTime(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(sample_time));
         }
 
-        static void set_input_mode(const AdcChannelInputMode input_mode)
+        void set_input_mode(const AdcChannelInputMode input_mode) const
         {
             LL_ADC_SetChannelSingleDiff(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(input_mode));
         }
 
-        static void config_offset(const AdcChannelOffsetIdx offset_idx, const uint32_t offset_value)
+        void config_offset(const AdcChannelOffsetIdx offset_idx, const uint32_t offset_value) const
         {
             LL_ADC_SetOffset(ControllerTraitsT::skInstance,
                              static_cast<uint32_t>(offset_idx),

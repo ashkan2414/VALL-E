@@ -909,7 +909,7 @@ namespace valle::platform
     {
         static inline Hrtim_TypeDef* const skInstance = Hrtim1;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_HRTim1);
         }
@@ -1126,13 +1126,13 @@ namespace valle::platform
         // -------------------------------------------------------------------------
         // TimING
         // -------------------------------------------------------------------------
-        [[nodiscard]] static HrtimTimerPrescaler get_timer_prescaler()
+        [[nodiscard]] HrtimTimerPrescaler get_timer_prescaler() const
         {
             return static_cast<HrtimTimerPrescaler>(
                 LL_HRTIM_TIM_GetPrescaler(ControllerTraitsT::skInstance, TimerTraitsT::skLLId));
         }
 
-        [[nodiscard]] static uint8_t timer_prescaler_to_prescaler_num(HrtimTimerPrescaler prescaler)
+        [[nodiscard]] uint8_t timer_prescaler_to_prescaler_num(HrtimTimerPrescaler prescaler) const
         {
             // NOLINTBEGIN(readability-magic-numbers)
             static_assert(static_cast<uint32_t>(HrtimTimerPrescaler::kMul32) == 0,
@@ -1180,12 +1180,12 @@ namespace valle::platform
             return static_cast<HrtimTimerPrescaler>(prescaler_num);
         }
 
-        [[nodiscard]] static uint32_t get_period_ticks()
+        [[nodiscard]] uint32_t get_period_ticks() const
         {
             return LL_HRTIM_TIM_GetPeriod(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
 
-        [[nodiscard]] static uint32_t get_repetition()
+        [[nodiscard]] uint32_t get_repetition() const
         {
             return LL_HRTIM_TIM_GetRepetition(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
@@ -1198,7 +1198,7 @@ namespace valle::platform
                    (1 << prescaler_num);
         }
 
-        [[nodiscard]] static uint64_t get_hrck_freq_hz(const uint32_t f_hrtim_hz)
+        [[nodiscard]] uint64_t get_hrck_freq_hz(const uint32_t f_hrtim_hz) const
         {
             return calculate_hrck_freq_hz(f_hrtim_hz, get_timer_prescaler());
         }
@@ -1210,7 +1210,7 @@ namespace valle::platform
             return f_hrck_hz / (period_ticks + 1);
         }
 
-        [[nodiscard]] static uint64_t get_timer_freq_hz(const uint32_t f_hrtim_hz)
+        [[nodiscard]] uint64_t get_timer_freq_hz(const uint32_t f_hrtim_hz) const
         {
             return calculate_timer_freq_hz(get_hrck_freq_hz(f_hrtim_hz), get_period_ticks());
         }
@@ -1222,7 +1222,7 @@ namespace valle::platform
             return f_timer_hz / (repetition + 1);
         }
 
-        [[nodiscard]] static uint64_t get_int_freq_hz(const uint32_t f_hrtim_hz)
+        [[nodiscard]] uint64_t get_int_freq_hz(const uint32_t f_hrtim_hz) const
         {
             return calculate_int_freq_hz(get_timer_freq_hz(f_hrtim_hz), get_repetition());
         }
@@ -1411,12 +1411,12 @@ namespace valle::platform
         // ---------------------------------------------------------------------------
         // COUNTERS
         // ---------------------------------------------------------------------------
-        static void enable_counter()
+        void enable_counter() const
         {
             LL_HRTIM_TIM_CounterEnable(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
 
-        static void disable_counter()
+        void disable_counter() const
         {
             LL_HRTIM_TIM_CounterDisable(ControllerTraitsT::skInstance, TimerTraitsT::skLLId);
         }
@@ -1424,32 +1424,32 @@ namespace valle::platform
         // ----------------------------------------------------------------------------
         // OUTPUTS
         // ----------------------------------------------------------------------------
-        static void enable_output1()
+        void enable_output1() const
         {
             LL_HRTIM_TIM_EnableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1);
         }
 
-        static void disable_output1()
+        void disable_output1() const
         {
             LL_HRTIM_TIM_DisableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1);
         }
 
-        static void enable_output2()
+        void enable_output2() const
         {
             LL_HRTIM_TIM_EnableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput2);
         }
 
-        static void disable_output2()
+        void disable_output2() const
         {
             LL_HRTIM_TIM_DisableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput2);
         }
 
-        static void enable_outputs()
+        void enable_outputs() const
         {
             LL_HRTIM_EnableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1 | TimerTraitsT::skOutput2);
         }
 
-        static void disable_outputs()
+        void disable_outputs() const
         {
             LL_HRTIM_DisableOutput(ControllerTraitsT::skInstance, TimerTraitsT::skOutput1 | TimerTraitsT::skOutput2);
         }

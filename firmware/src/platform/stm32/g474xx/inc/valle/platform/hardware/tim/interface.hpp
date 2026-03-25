@@ -321,7 +321,7 @@ namespace valle::platform
     {                                                                     \
         using CounterValueT                         = counter_type;       \
         static inline TIM_TypeDef* const skInstance = TIM##num;           \
-        static inline void               enable_clock()                   \
+        inline void                      enable_clock() const             \
         {                                                                 \
             LL_##bus##_GRP1_EnableClock(LL_##bus##_GRP1_PERIPH_TIM##num); \
         }                                                                 \
@@ -408,66 +408,66 @@ namespace valle::platform
         // COUNTER CONTROL
         // ---------------------------------------------------------------------
 
-        static void enable_counter()
+        void enable_counter() const
         {
             LL_TIM_EnableCounter(ControllerTraitsT::skInstance);
         }
-        static void disable_counter()
+        void disable_counter() const
         {
             LL_TIM_DisableCounter(ControllerTraitsT::skInstance);
         }
-        static CounterValueT get_counter()
+        CounterValueT get_counter() const
         {
             return LL_TIM_GetCounter(ControllerTraitsT::skInstance);
         }
-        static void set_counter(const CounterValueT val)
+        void set_counter(const CounterValueT val) const
         {
             LL_TIM_SetCounter(ControllerTraitsT::skInstance, val);
         }
-        static void set_prescaler(const uint32_t val)
+        void set_prescaler(const uint32_t val) const
         {
             LL_TIM_SetPrescaler(ControllerTraitsT::skInstance, val);
         }
-        static void set_auto_reload(const uint32_t val)
+        void set_auto_reload(const uint32_t val) const
         {
             LL_TIM_SetAutoReload(ControllerTraitsT::skInstance, val);
         }
-        static void set_counter_mode(const TimControllerCounterMode mode)
+        void set_counter_mode(const TimControllerCounterMode mode) const
         {
             LL_TIM_SetCounterMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(mode));
         }
 
-        static void set_one_pulse_mode(const TimControllerOnePulseMode mode)
+        void set_one_pulse_mode(const TimControllerOnePulseMode mode) const
         {
             LL_TIM_SetOnePulseMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(mode));
         }
 
-        static void set_update_source(const TimControllerUpdateSource source)
+        void set_update_source(const TimControllerUpdateSource source) const
         {
             LL_TIM_SetUpdateSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(source));
         }
 
-        static void enable_uiev_event()
+        void enable_uiev_event() const
         {
             LL_TIM_EnableUpdateEvent(ControllerTraitsT::skInstance);
         }
 
-        static void disable_uiev_event()
+        void disable_uiev_event() const
         {
             LL_TIM_DisableUpdateEvent(ControllerTraitsT::skInstance);
         }
 
-        static void enable_arr_preload()
+        void enable_arr_preload() const
         {
             LL_TIM_EnableARRPreload(ControllerTraitsT::skInstance);
         }
 
-        static void disable_arr_preload()
+        void disable_arr_preload() const
         {
             LL_TIM_DisableARRPreload(ControllerTraitsT::skInstance);
         }
 
-        static void set_repetition_counter(const uint32_t val)
+        void set_repetition_counter(const uint32_t val) const
         {
             LL_TIM_SetRepetitionCounter(ControllerTraitsT::skInstance, val);
         }
@@ -476,12 +476,12 @@ namespace valle::platform
         // HALL SENSOR / XOR CONTROL
         // ---------------------------------------------------------------------
 
-        static void enable_xor_combination()
+        void enable_xor_combination() const
         {
             LL_TIM_IC_EnableXORCombination(ControllerTraitsT::skInstance);
         }
 
-        static void disable_xor_combination()
+        void disable_xor_combination() const
         {
             LL_TIM_IC_DisableXORCombination(ControllerTraitsT::skInstance);
         }
@@ -504,7 +504,7 @@ namespace valle::platform
         }
 #endif
 
-        static void set_encoder_mode(const TimControllerEncoderMode mode)
+        void set_encoder_mode(const TimControllerEncoderMode mode) const
         {
             LL_TIM_SetEncoderMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(mode));
         }
@@ -513,22 +513,22 @@ namespace valle::platform
         // MASTER / SLAVE CONTROL
         // ---------------------------------------------------------------------
 
-        static void set_slave_mode(const TimControllerSlaveMode mode)
+        void set_slave_mode(const TimControllerSlaveMode mode) const
         {
             LL_TIM_SetSlaveMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(mode));
         }
 
-        static void set_trigger_source(const TimControllerTriggerSource source)
+        void set_trigger_source(const TimControllerTriggerSource source) const
         {
             LL_TIM_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(source));
         }
 
-        static void set_trgo_source(const TimControllerTriggerOutputSource source)
+        void set_trgo_source(const TimControllerTriggerOutputSource source) const
         {
             LL_TIM_SetTriggerOutput(ControllerTraitsT::skInstance, static_cast<uint32_t>(source));
         }
 
-        static void set_trgo2_source(const TimControllerTriggerOutput2Source source)
+        void set_trgo2_source(const TimControllerTriggerOutput2Source source) const
         {
             LL_TIM_SetTriggerOutput2(ControllerTraitsT::skInstance, static_cast<uint32_t>(source));
         }
@@ -537,7 +537,7 @@ namespace valle::platform
         // EVENT GENERATION
         // ---------------------------------------------------------------------
 
-        static void generate_update()
+        void generate_update() const
         {
             LL_TIM_GenerateEvent_UPDATE(ControllerTraitsT::skInstance);
         }
@@ -546,7 +546,7 @@ namespace valle::platform
         // DMA BURST CONTROL
         // ---------------------------------------------------------------------
 
-        static void config_dma_burst(const TimControllerDmaBurstBase base, const TimControllerDmaBurstLength len)
+        void config_dma_burst(const TimControllerDmaBurstBase base, const TimControllerDmaBurstLength len) const
         {
             LL_TIM_ConfigDmaBurst(
                 ControllerTraitsT::skInstance, static_cast<uint32_t>(base), static_cast<uint32_t>(len));
@@ -556,32 +556,32 @@ namespace valle::platform
         // BDTR / BREAK CONTROL
         // ---------------------------------------------------------------------
 
-        static void enable_main_output()
+        void enable_main_output() const
         {
             LL_TIM_EnableAllOutputs(ControllerTraitsT::skInstance);
         }
 
-        static void disable_main_output()
+        void disable_main_output() const
         {
             LL_TIM_DisableAllOutputs(ControllerTraitsT::skInstance);
         }
 
-        static void set_deadtime(const uint32_t val)
+        void set_deadtime(const uint32_t val) const
         {
             LL_TIM_OC_SetDeadTime(ControllerTraitsT::skInstance, val);
         }
 
-        static void enable_asymmetric_deadtime()
+        void enable_asymmetric_deadtime() const
         {
             LL_TIM_OC_EnableAsymmetricalDeadTime(ControllerTraitsT::skInstance);
         }
 
-        static void disable_asymmetric_deadtime()
+        void disable_asymmetric_deadtime() const
         {
             LL_TIM_OC_DisableAsymmetricalDeadTime(ControllerTraitsT::skInstance);
         }
 
-        static void set_falling_deadtime(const uint32_t val)
+        void set_falling_deadtime(const uint32_t val) const
         {
             LL_TIM_OC_SetFallingDeadTime(ControllerTraitsT::skInstance, val);
         }
@@ -590,64 +590,64 @@ namespace valle::platform
         // BREAK CONTROL
         // ---------------------------------------------------------------------
 
-        static void enable_break()
+        void enable_break() const
         {
             LL_TIM_EnableBRK(ControllerTraitsT::skInstance);
         }
 
-        static void disable_break()
+        void disable_break() const
         {
             LL_TIM_DisableBRK(ControllerTraitsT::skInstance);
         }
 
-        static void enable_break2()
+        void enable_break2() const
         {
             LL_TIM_EnableBRK2(ControllerTraitsT::skInstance);
         }
 
-        static void disable_break2()
+        void disable_break2() const
         {
             LL_TIM_DisableBRK2(ControllerTraitsT::skInstance);
         }
 
-        static void set_break_polarity(const TimControllerBreakPolarity pol)
+        void set_break_polarity(const TimControllerBreakPolarity pol) const
         {
             LL_TIM_ConfigBRK(ControllerTraitsT::skInstance, static_cast<uint32_t>(pol));
         }
 
-        static void set_break2_polarity(const TimControllerBreakPolarity pol)
+        void set_break2_polarity(const TimControllerBreakPolarity pol) const
         {
             LL_TIM_ConfigBRK2(ControllerTraitsT::skInstance, static_cast<uint32_t>(pol));
         }
 
-        static void set_break_filter(const uint32_t filter)
+        void set_break_filter(const uint32_t filter) const
         {
             LL_TIM_SetBreakFilter(ControllerTraitsT::skInstance, filter);
         }
 
-        static void set_break2_filter(const uint32_t filter)
+        void set_break2_filter(const uint32_t filter) const
         {
             LL_TIM_SetBreak2Filter(ControllerTraitsT::skInstance, filter);
         }
 
-        static void enable_break_source(const TimControllerBreakInput input, const TimControllerBreakSource source)
+        void enable_break_source(const TimControllerBreakInput input, const TimControllerBreakSource source) const
         {
             LL_TIM_EnableBreakInputSource(
                 ControllerTraitsT::skInstance, static_cast<uint32_t>(input), static_cast<uint32_t>(source));
         }
 
-        static void disable_break_source(const TimControllerBreakInput input, const TimControllerBreakSource source)
+        void disable_break_source(const TimControllerBreakInput input, const TimControllerBreakSource source) const
         {
             LL_TIM_DisableBreakInputSource(
                 ControllerTraitsT::skInstance, static_cast<uint32_t>(input), static_cast<uint32_t>(source));
         }
 
-        static void disarm_break()
+        void disarm_break() const
         {
             LL_TIM_DisarmBRK(ControllerTraitsT::skInstance);
         }
 
-        static void rearm_break()
+        void rearm_break() const
         {
             LL_TIM_ReArmBRK(ControllerTraitsT::skInstance);
         }
@@ -688,21 +688,21 @@ namespace valle::platform
         // CHANNEL ENABLE
         // ---------------------------------------------------------------------
 
-        static void enable()
+        void enable() const
         {
             LL_TIM_CC_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
-        static void disable()
+        void disable() const
         {
             LL_TIM_CC_DisableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void enable_complementary()
+        void enable_complementary() const
         {
             LL_TIM_CC_EnableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skLLComplementaryChannelId);
         }
 
-        static void disable_complementary()
+        void disable_complementary() const
         {
             LL_TIM_CC_DisableChannel(ControllerTraitsT::skInstance, ChannelTraitsT::skLLComplementaryChannelId);
         }
@@ -711,7 +711,7 @@ namespace valle::platform
         // OUTPUT COMPARE / PWM
         // ---------------------------------------------------------------------
 
-        static void set_compare(const uint32_t val)
+        void set_compare(const uint32_t val) const
         {
             switch (tkChannel)
             {
@@ -738,40 +738,40 @@ namespace valle::platform
             }
         }
 
-        static uint32_t get_compare()
+        uint32_t get_compare() const
         {
             return get_capture();  // Alias
         }
 
-        static void set_mode(const TimChannelOutputCaptureMode mode)
+        void set_mode(const TimChannelOutputCaptureMode mode) const
         {
             LL_TIM_OC_SetMode(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(mode));
         }
 
-        static void set_polarity(const TimChannelOutputCapturePolarity pol)
+        void set_polarity(const TimChannelOutputCapturePolarity pol) const
         {
             LL_TIM_OC_SetPolarity(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(pol));
         }
 
-        static void set_idle_state(const TimChannelOutputCaptureIdleState state)
+        void set_idle_state(const TimChannelOutputCaptureIdleState state) const
         {
             LL_TIM_OC_SetIdleState(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(state));
         }
 
-        static void enable_output_capture_preload()
+        void enable_output_capture_preload() const
         {
             LL_TIM_OC_EnablePreload(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void disable_output_capture_preload()
+        void disable_output_capture_preload() const
         {
             LL_TIM_OC_DisablePreload(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void set_output_capture_preload(const bool enable)
+        void set_output_capture_preload(const bool enable) const
         {
             if (enable)
             {
@@ -783,17 +783,17 @@ namespace valle::platform
             }
         }
 
-        static void enable_output_capture_fast_mode()
+        void enable_output_capture_fast_mode() const
         {
             LL_TIM_OC_EnableFast(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void disable_output_capture_fast_mode()
+        void disable_output_capture_fast_mode() const
         {
             LL_TIM_OC_DisableFast(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void set_output_capture_fast_mode(const bool enable)
+        void set_output_capture_fast_mode(const bool enable) const
         {
             if (enable)
             {
@@ -805,17 +805,17 @@ namespace valle::platform
             }
         }
 
-        static void enable_output_capture_clear()
+        void enable_output_capture_clear() const
         {
             LL_TIM_OC_EnableClear(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void disable_output_capture_clear()
+        void disable_output_capture_clear() const
         {
             LL_TIM_OC_DisableClear(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId);
         }
 
-        static void set_output_capture_clear(const bool enable)
+        void set_output_capture_clear(const bool enable) const
         {
             if (enable)
             {
@@ -827,13 +827,13 @@ namespace valle::platform
             }
         }
 
-        static void set_complementary_output_capture_polarity(const TimChannelOutputCapturePolarity pol)
+        void set_complementary_output_capture_polarity(const TimChannelOutputCapturePolarity pol) const
         {
             LL_TIM_OC_SetPolarity(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLComplementaryChannelId, static_cast<uint32_t>(pol));
         }
 
-        static void set_complementary_output_capture_idle_state(const TimChannelOutputCaptureIdleState state)
+        void set_complementary_output_capture_idle_state(const TimChannelOutputCaptureIdleState state) const
         {
             LL_TIM_OC_SetIdleState(ControllerTraitsT::skInstance,
                                    ChannelTraitsT::skLLComplementaryChannelId,
@@ -864,25 +864,25 @@ namespace valle::platform
         // INPUT CAPTURE
         // ---------------------------------------------------------------------
 
-        static void set_input_capture_active_input(const TimChannelInputCaptureActiveInput input)
+        void set_input_capture_active_input(const TimChannelInputCaptureActiveInput input) const
         {
             LL_TIM_IC_SetActiveInput(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(input));
         }
 
-        static void set_input_capture_prescaler(const TimChannelInputCapturePrescaler psc)
+        void set_input_capture_prescaler(const TimChannelInputCapturePrescaler psc) const
         {
             LL_TIM_IC_SetPrescaler(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(psc));
         }
 
-        static void set_input_capture_filter(const TimChannelInputCaptureFilter filter)
+        void set_input_capture_filter(const TimChannelInputCaptureFilter filter) const
         {
             LL_TIM_IC_SetFilter(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(filter));
         }
 
-        static void set_input_capture_polarity(const TimChannelInputCapturePolarity polarity)
+        void set_input_capture_polarity(const TimChannelInputCapturePolarity polarity) const
         {
             LL_TIM_IC_SetPolarity(
                 ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(polarity));
@@ -904,7 +904,7 @@ namespace valle::platform
         }
 #endif
 
-        static uint32_t get_capture()
+        uint32_t get_capture() const
         {
             switch (tkChannel)
             {

@@ -89,7 +89,7 @@ namespace valle::platform
         static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortA;
         static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin10;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             __HAL_RCC_USART1_CLK_ENABLE();
         }
@@ -107,7 +107,7 @@ namespace valle::platform
         static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortA;
         static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin3;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             __HAL_RCC_USART2_CLK_ENABLE();
         }
@@ -125,7 +125,7 @@ namespace valle::platform
         static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortB;
         static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin11;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             __HAL_RCC_USART3_CLK_ENABLE();
         }
@@ -143,7 +143,7 @@ namespace valle::platform
         static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortC;
         static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin11;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             __HAL_RCC_UART4_CLK_ENABLE();
         }
@@ -161,7 +161,7 @@ namespace valle::platform
         static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortD;
         static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin2;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             __HAL_RCC_UART5_CLK_ENABLE();
         }
@@ -179,7 +179,7 @@ namespace valle::platform
         static constexpr GpioPortId        skDefaultGpioRxPort = GpioPortId::kPortA;
         static constexpr GpioPinId         skDefaultGpioRxPin  = GpioPinId::kPin3;
 
-        static inline void enable_clock()
+        inline void enable_clock() const
         {
             __HAL_RCC_LPUART1_CLK_ENABLE();
         }

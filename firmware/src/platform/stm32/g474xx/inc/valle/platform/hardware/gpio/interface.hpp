@@ -88,7 +88,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioA;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTA;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOA_CLK_ENABLE();
         }
@@ -100,7 +100,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioB;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTB;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOB_CLK_ENABLE();
         }
@@ -111,7 +111,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioC;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTC;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOC_CLK_ENABLE();
         }
@@ -122,7 +122,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioD;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTD;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOD_CLK_ENABLE();
         }
@@ -133,7 +133,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioE;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTE;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOE_CLK_ENABLE();
         }
@@ -144,7 +144,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioF;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTF;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOF_CLK_ENABLE();
         }
@@ -155,7 +155,7 @@ namespace valle::platform
         static inline Gpio_TypeDef* const skInstance         = GpioG;
         static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTG;
 
-        static void enable_clock()
+        void enable_clock() const
         {
             __HAL_RCC_GPIOG_CLK_ENABLE();
         }
@@ -171,7 +171,7 @@ namespace valle::platform
     private:
         static constexpr uint8_t skPinIdx = static_cast<uint8_t>(tkPinId);
 
-        static consteval IRQn_Type get_irq_n()
+        consteval IRQn_Type get_irq_n() const
         {
             if constexpr (skPinIdx == 0)
             {
@@ -203,7 +203,7 @@ namespace valle::platform
             }
         }
 
-        static consteval uint32_t get_ll_exti_line()
+        consteval uint32_t get_ll_exti_line() const
         {
             if constexpr (skPinIdx == 0)
             {
@@ -271,7 +271,7 @@ namespace valle::platform
             }
         }
 
-        static consteval uint32_t get_ll_syscfg_exti_line()
+        consteval uint32_t get_ll_syscfg_exti_line() const
         {
             if constexpr (skPinIdx == 0)
             {
