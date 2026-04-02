@@ -50,7 +50,7 @@ namespace valle::platform
         void NMI_Handler(void)  // NOLINT(readability-identifier-naming)
         {
             FaultHandler<FaultInterruptSourceInfo>::handle(FaultInterruptSourceInfo{
-                .fault_type = FaultInterruptType::kNMI,
+                .fault_type = FaultInterruptSource::kNMI,
             });
         }
 
@@ -60,7 +60,7 @@ namespace valle::platform
         void HardFault_Handler(void)  // NOLINT(readability-identifier-naming)
         {
             FaultHandler<FaultInterruptSourceInfo>::handle(FaultInterruptSourceInfo{
-                .fault_type = FaultInterruptType::kHardFault,
+                .fault_type = FaultInterruptSource::kHardFault,
             });
         }
 
@@ -70,7 +70,7 @@ namespace valle::platform
         void MemManage_Handler(void)  // NOLINT(readability-identifier-naming)
         {
             FaultHandler<FaultInterruptSourceInfo>::handle(FaultInterruptSourceInfo{
-                .fault_type = FaultInterruptType::kMemManageFault,
+                .fault_type = FaultInterruptSource::kMemManageFault,
             });
         }
 
@@ -80,7 +80,7 @@ namespace valle::platform
         void BusFault_Handler(void)  // NOLINT(readability-identifier-naming)
         {
             FaultHandler<FaultInterruptSourceInfo>::handle(FaultInterruptSourceInfo{
-                .fault_type = FaultInterruptType::kBusFault,
+                .fault_type = FaultInterruptSource::kBusFault,
             });
         }
 
@@ -90,7 +90,7 @@ namespace valle::platform
         void UsageFault_Handler(void)  // NOLINT(readability-identifier-naming)
         {
             FaultHandler<FaultInterruptSourceInfo>::handle(FaultInterruptSourceInfo{
-                .fault_type = FaultInterruptType::kUsageFault,
+                .fault_type = FaultInterruptSource::kUsageFault,
             });
         }
     }

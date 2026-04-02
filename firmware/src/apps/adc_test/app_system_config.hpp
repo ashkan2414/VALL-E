@@ -10,11 +10,11 @@
 namespace valle::app
 {
     // ADC Channel
-    constexpr platform::AdcPeripheralId kTestAdcPeripheralId = platform::AdcPeripheralId::kAdc1;
+    constexpr platform::AdcControllerId kTestAdcControllerId = platform::AdcControllerId::kAdc1;
     constexpr platform::AdcChannelId    kTestAdcChannelId    = platform::AdcChannelId::kChannel1;
     constexpr bool                      kTestAdcUseInject    = false;
 
-    using TestAdcDmaChannelT = platform::Dma1Channel2Device;
+    using TestAdcDmaChannelT = platform::Dma1Channel2;
     struct AdcControllerCTConfig : public platform::AdcControllerCTDefaultConfig
     {
         using DmaChannelT = TestAdcDmaChannelT;
@@ -23,7 +23,7 @@ namespace valle::app
 }  // namespace valle::app
 
 // Bind compile-time configurations
-VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(valle::app::kTestAdcPeripheralId, valle::app::AdcControllerCTConfig{});
+VALLE_DEFINE_ADC_CONTROLLER_CT_CONFIG(valle::app::kTestAdcControllerId, valle::app::AdcControllerCTConfig{});
 
 namespace valle
 {
@@ -35,8 +35,8 @@ namespace valle
         // ============================================================================
         using TestAdcChannelT =
             std::conditional_t<kTestAdcUseInject,
-                               platform::AdcInjectChannelRank1Device<kTestAdcPeripheralId, kTestAdcChannelId>,
-                               platform::AdcRegularChannelRank1Device<kTestAdcPeripheralId, kTestAdcChannelId>>;
+                               platform::AdcInjectChannelRank1<kTestAdcControllerId, kTestAdcChannelId>,
+                               platform::AdcRegularChannelRank1<kTestAdcControllerId, kTestAdcChannelId>>;
         using TestAdcConverterT = platform::AdcVoltageConverter<IdentityConverter<float>>;
         using TestAdcDriverT    = platform::AdcAnalogSensorDriver<TestAdcChannelT, TestAdcConverterT>;
 
@@ -52,7 +52,7 @@ namespace valle
             using BaseT = PackedDriverBase<RootDevicesT>;
             using BaseT::BaseT;
 
-            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(adc1, platform::Adc1ControllerDevice);
+            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(adc1, platform::Adc1Controller);
         };
 
         // ============================================================================

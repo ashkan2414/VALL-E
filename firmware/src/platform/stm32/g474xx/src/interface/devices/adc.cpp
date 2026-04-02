@@ -11,76 +11,77 @@ namespace valle::platform
     /**
      * @brief Check if any granular ISR handler is bound for this ADC.
      *
-     * @tparam tkPeripheralId ADC Peripheral ID.
+     * @tparam tkControllerId ADC Controller ID.
      */
-    template <AdcPeripheralId tkPeripheralId>
+    template <AdcControllerId tkControllerId>
     [[nodiscard]] consteval static inline bool adc_has_any_granular_isr_handler()
     {
-        constexpr auto values = magic_enum::enum_values<AdcInterruptType>();
+        constexpr auto values = magic_enum::enum_values<AdcInterruptSource>();
 
         return [values]<std::size_t... Is>(std::index_sequence<Is...>)
         {
-            return (CBoundIsrRouter<AdcIsrRouter<tkPeripheralId, values[Is]>> || ...);
+            return (CBoundIsrRouter<AdcIsrRouter<tkControllerId, values[Is]>> || ...);
         }(std::make_index_sequence<values.size()>{});
     }
 
     /**
      * @brief ADC Interrupt Handler Router
      *
-     * @tparam tkPeripheralId ADC Index (1-5)
+     * @tparam tkControllerId ADC Index (1-5)
      */
-    template <AdcPeripheralId tkPeripheralId>
+    template <AdcControllerId tkControllerId>
     static inline void adc_irq_handler()
     {
-        using GlobalRouterT               = AdcGlobalIsrRouter<tkPeripheralId>;
-        constexpr bool kHasGlobalRouter   = CBoundIsrRouter<GlobalRouterT>;
-        constexpr bool kHasGranularRouter = adc_has_any_granular_isr_handler<tkPeripheralId>();
-        static_assert(!(kHasGlobalRouter && kHasGranularRouter), "VALLE CONFLICT: Global and Granular ISRs detected.");
+        using IrqRouterT                   = AdcIrqRouter<tkControllerId>;
+        constexpr bool has_irq_handler     = CBoundIsrRouter<IrqRouterT>;
+        constexpr bool has_source_handlers = adc_has_any_granular_isr_handler<tkControllerId>();
+        static_assert(!(has_irq_handler && has_source_handlers),
+                      "VALLE CONFLICT: IRQ and Source ISR handlers detected.");
 
-        if constexpr (kHasGlobalRouter)
+        if constexpr (has_irq_handler)
         {
-            GlobalRouterT::handle();
+            IrqRouterT::handle();
             return;
         }
 
-#define HANDLE_ADC_INT(tkIntType)                                      \
-    {                                                                  \
-        using RouterT = AdcIsrRouter<tkPeripheralId, (tkIntType)>;     \
-        using TraitsT = AdcInterruptTraits<tkPeripheralId, tkIntType>; \
-        if constexpr (CBoundIsrRouter<RouterT>)                        \
-        {                                                              \
-            if (TraitsT::is_pending())                                 \
-            {                                                          \
-                if constexpr (kIsrRouterConfigAck<RouterT>)            \
-                {                                                      \
-                    TraitsT::ack();                                    \
-                }                                                      \
-                RouterT::handle();                                     \
-            }                                                          \
-        }                                                              \
-        else                                                           \
-        {                                                              \
-            if constexpr (TraitsT::skShouldClear)                      \
-            {                                                          \
-                if (TraitsT::is_pending())                             \
-                {                                                      \
-                    TraitsT::ack();                                    \
-                }                                                      \
-            }                                                          \
-        }                                                              \
+#define HANDLE_ADC_INT(tkIntSource)                                                         \
+    {                                                                                       \
+        using RouterT = AdcIsrRouter<tkControllerId, (tkIntSource)>;                        \
+        using TraitsT = AdcControllerInterruptSourceInterface<tkControllerId, tkIntSource>; \
+        if constexpr (CBoundIsrRouter<RouterT>)                                             \
+        {                                                                                   \
+            if (TraitsT::is_pending())                                                      \
+            {                                                                               \
+                if constexpr (kIsrRouterConfigAck<RouterT>)                                 \
+                {                                                                           \
+                    TraitsT::clear();                                                       \
+                }                                                                           \
+                RouterT::handle();                                                          \
+            }                                                                               \
+        }                                                                                   \
+        else                                                                                \
+        {                                                                                   \
+            if constexpr (TraitsT::skShouldClear)                                           \
+            {                                                                               \
+                if (TraitsT::is_pending())                                                  \
+                {                                                                           \
+                    TraitsT::clear();                                                       \
+                }                                                                           \
+            }                                                                               \
+        }                                                                                   \
     }
 
-        HANDLE_ADC_INT(AdcInterruptType::kReady);
-        HANDLE_ADC_INT(AdcInterruptType::kRegularEndOfConversion);
-        HANDLE_ADC_INT(AdcInterruptType::kRegularEndOfSequence);
-        HANDLE_ADC_INT(AdcInterruptType::kRegularEndOfSampling);
-        HANDLE_ADC_INT(AdcInterruptType::kInjectEndOfConversion);
-        HANDLE_ADC_INT(AdcInterruptType::kInjectEndOfSequence);
-        HANDLE_ADC_INT(AdcInterruptType::kInjectContextQueueOverflow);
-        HANDLE_ADC_INT(AdcInterruptType::kOverrun);
-        HANDLE_ADC_INT(AdcInterruptType::kAnalogWatchdog1);
-        HANDLE_ADC_INT(AdcInterruptType::kAnalogWatchdog2);
-        HANDLE_ADC_INT(AdcInterruptType::kAnalogWatchdog3);
+        HANDLE_ADC_INT(AdcInterruptSource::kReady);
+        HANDLE_ADC_INT(AdcInterruptSource::kRegularEndOfConversion);
+        HANDLE_ADC_INT(AdcInterruptSource::kRegularEndOfSequence);
+        HANDLE_ADC_INT(AdcInterruptSource::kRegularEndOfSampling);
+        HANDLE_ADC_INT(AdcInterruptSource::kInjectEndOfConversion);
+        HANDLE_ADC_INT(AdcInterruptSource::kInjectEndOfSequence);
+        HANDLE_ADC_INT(AdcInterruptSource::kInjectContextQueueOverflow);
+        HANDLE_ADC_INT(AdcInterruptSource::kOverrun);
+        HANDLE_ADC_INT(AdcInterruptSource::kAnalogWatchdog1);
+        HANDLE_ADC_INT(AdcInterruptSource::kAnalogWatchdog2);
+        HANDLE_ADC_INT(AdcInterruptSource::kAnalogWatchdog3);
 #undef HANDLE_ADC_INT
     }
 
@@ -95,23 +96,23 @@ namespace valle::platform
             // We must check BOTH devices because they share the line.
             // The adc_irq_handler() function does a quick register check,
             // so it's cheap to call even if the ADC isn't active.
-            adc_irq_handler<AdcPeripheralId::kAdc1>();
-            adc_irq_handler<AdcPeripheralId::kAdc2>();
+            adc_irq_handler<AdcControllerId::kAdc1>();
+            adc_irq_handler<AdcControllerId::kAdc2>();
         }
 
         void ADC3_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            adc_irq_handler<AdcPeripheralId::kAdc3>();
+            adc_irq_handler<AdcControllerId::kAdc3>();
         }
 
         void ADC4_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            adc_irq_handler<AdcPeripheralId::kAdc4>();
+            adc_irq_handler<AdcControllerId::kAdc4>();
         }
 
         void ADC5_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            adc_irq_handler<AdcPeripheralId::kAdc5>();
+            adc_irq_handler<AdcControllerId::kAdc5>();
         }
     }
 }  // namespace valle::platform

@@ -19,7 +19,7 @@ namespace valle::platform
         uint32_t         line{};
     };
 
-    enum class FaultInterruptType
+    enum class FaultInterruptSource
     {
         kHardFault,
         kMemManageFault,
@@ -30,7 +30,7 @@ namespace valle::platform
 
     struct FaultInterruptSourceInfo
     {
-        FaultInterruptType fault_type;
+        FaultInterruptSource fault_type;
     };
 
     using FaultSources = TypeList<PanicSourceInfo, ExitSourceInfo, AssertSourceInfo, FaultInterruptSourceInfo>;

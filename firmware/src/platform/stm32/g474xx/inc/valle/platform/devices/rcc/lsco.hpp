@@ -17,29 +17,36 @@ namespace valle::platform
     // =============================================================================
     // DEVICE
     // =============================================================================
-    class LscoDevice
+    template <typename T = void>
+    class Lsco
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = LscoInterface;
+        using HdiT          = LscoHdi<T>;
+        using InjectDevices = TypeList<HdiT>;
 
-        using DependDevices = TypeList<>;
-        using InjectDevices = TypeList<>;
+    private:
+        [[no_unique_address]] DeviceRef<HdiT> m_hw;
+
+    public:
+        explicit Lsco(DeviceRef<HdiT>&& hardware_key) : m_hw(std::move(hardware_key))
+        {
+        }
 
         [[nodiscard]] inline bool init(const LscoConfig& config)
         {
-            InterfaceT::set_source(config.source);
+            m_hw->set_source(config.source);
 
             if (config.enabled)
             {
-                InterfaceT::enable();
+                m_hw->enable();
             }
             else
             {
-                InterfaceT::disable();
+                m_hw->disable();
             }
 
             return true;

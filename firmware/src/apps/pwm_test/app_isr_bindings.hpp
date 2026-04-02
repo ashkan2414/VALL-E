@@ -3,9 +3,9 @@
 namespace valle::platform
 {
     template <>
-    struct HrtimTimerIsrRouter<valle::app::HrtimTimerDeviceT::skPeripheralId,
+    struct HrtimTimerIsrRouter<valle::app::HrtimTimerDeviceT::skControllerId,
                                valle::app::HrtimTimerDeviceT::skTimerId,
-                               HrtimTimerInterruptType::kRepetition>
+                               HrtimTimerInterruptSource::kRepetition>
     {
         static void handle()
         {

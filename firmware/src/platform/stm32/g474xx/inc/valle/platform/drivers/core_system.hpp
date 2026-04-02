@@ -24,16 +24,16 @@ namespace valle::platform
     class CoreSystemDriver
     {
     public:
-        using InjectDevices = TypeList<PowerDevice<>, RccDevice<>>;
+        using InjectDevices = TypeList<Power<>, Rcc<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<PowerDevice<>> m_power_device;
-        [[no_unique_address]] DeviceRef<RccDevice<>>   m_rcc_device;
+        [[no_unique_address]] DeviceRef<Power<>> m_power_device;
+        [[no_unique_address]] DeviceRef<Rcc<>>   m_rcc_device;
 
     public:
         CoreSystemDriver() = delete;
 
-        CoreSystemDriver(DeviceRef<PowerDevice<>>&& power_device, DeviceRef<RccDevice<>>&& rcc_device)
+        CoreSystemDriver(DeviceRef<Power<>>&& power_device, DeviceRef<Rcc<>>&& rcc_device)
             : m_power_device(std::move(power_device)), m_rcc_device(std::move(rcc_device))
         {
         }

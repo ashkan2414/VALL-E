@@ -201,7 +201,7 @@ namespace valle::app
     /**
      * @brief VCA Controller Module (Voice Coil Actuator) Controller Class
      *
-     * @tparam THrtimTimerDevice Hardware Device class for HRTIM control.
+     * @tparam THrtimTimer Hardware Device class for HRTIM control.
      * @tparam skMode  Control mode (open-loop duty or closed-loop current).
      */
     template <typename THalfBridgeInterface, typename TController>

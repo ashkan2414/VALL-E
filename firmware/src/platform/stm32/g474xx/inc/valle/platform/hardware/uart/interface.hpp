@@ -74,11 +74,11 @@ namespace valle::platform
     // ===========================================================================
     // HARDWARE TRAITS
     // ===========================================================================
-    template <UartPeripheralId tkPeripheralId>
+    template <UartControllerId tkControllerId>
     struct UartControllerTraits;
 
     template <>
-    struct UartControllerTraits<UartPeripheralId::kUSART1>
+    struct UartControllerTraits<UartControllerId::kUSART1>
     {
         static inline USART_TypeDef* const skInstance          = USART1;
         static constexpr IRQn_Type         skIRQn              = USART1_IRQn;
@@ -96,7 +96,7 @@ namespace valle::platform
     };
 
     template <>
-    struct UartControllerTraits<UartPeripheralId::kUSART2>
+    struct UartControllerTraits<UartControllerId::kUSART2>
     {
         static inline USART_TypeDef* const skInstance          = USART2;
         static constexpr IRQn_Type         skIRQn              = USART2_IRQn;
@@ -114,7 +114,7 @@ namespace valle::platform
     };
 
     template <>
-    struct UartControllerTraits<UartPeripheralId::kUSART3>
+    struct UartControllerTraits<UartControllerId::kUSART3>
     {
         static inline USART_TypeDef* const skInstance          = USART3;
         static constexpr IRQn_Type         skIRQn              = USART3_IRQn;
@@ -132,7 +132,7 @@ namespace valle::platform
     };
 
     template <>
-    struct UartControllerTraits<UartPeripheralId::kUart4>
+    struct UartControllerTraits<UartControllerId::kUart4>
     {
         static inline USART_TypeDef* const skInstance          = UART4;
         static constexpr IRQn_Type         skIRQn              = UART4_IRQn;
@@ -150,7 +150,7 @@ namespace valle::platform
     };
 
     template <>
-    struct UartControllerTraits<UartPeripheralId::kUart5>
+    struct UartControllerTraits<UartControllerId::kUart5>
     {
         static inline USART_TypeDef* const skInstance          = UART5;
         static constexpr IRQn_Type         skIRQn              = UART5_IRQn;
@@ -168,7 +168,7 @@ namespace valle::platform
     };
 
     template <>
-    struct UartControllerTraits<UartPeripheralId::kLPUart1>
+    struct UartControllerTraits<UartControllerId::kLPUart1>
     {
         static inline USART_TypeDef* const skInstance          = LPUART1;
         static constexpr IRQn_Type         skIRQn              = LPUART1_IRQn;

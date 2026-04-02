@@ -6,11 +6,11 @@
 namespace valle::platform
 {
 
-    template <typename TUartControllerDevice>
+    template <typename TUartController>
     class UartLogger
     {
     public:
-        using ControllerT   = TUartControllerDevice;
+        using ControllerT   = TUartController;
         using InjectDevices = TypeList<ControllerT>;
 
     private:
@@ -63,34 +63,33 @@ namespace valle::platform
     }
 
 // Put these in app_isr_bindings.hpp to bind your instance
-#define VALLE_BIND_UART_LOGGER_DMA_ISR_ROUTER(instance)                                            \
-    namespace valle::platform                                                                      \
-    {                                                                                              \
-        static_assert(std::remove_cvref_t<decltype((instance))>::ControllerT::skHasDmaTx,          \
-                      "Instance does not have DMA TX capability");                                 \
-        template <>                                                                                \
-        struct DmaGlobalIsrRouter<                                                                 \
-            std::remove_cvref_t<decltype((instance))>::ControllerT::DmaChannelTxT::skPeripheralId, \
-            std::remove_cvref_t<decltype((instance))>::ControllerT::DmaChannelTxT::skChannelId>    \
-        {                                                                                          \
-            static void handle()                                                                   \
-            {                                                                                      \
-                (instance).handle_dma_irq();                                                       \
-            }                                                                                      \
-        };                                                                                         \
+#define VALLE_BIND_UART_LOGGER_DMA_ISR_ROUTER(instance)                                                            \
+    namespace valle::platform                                                                                      \
+    {                                                                                                              \
+        static_assert(std::remove_cvref_t<decltype((instance))>::ControllerT::skHasDmaTx,                          \
+                      "Instance does not have DMA TX capability");                                                 \
+        template <>                                                                                                \
+        struct DmaIrqRouter<std::remove_cvref_t<decltype((instance))>::ControllerT::DmaChannelTxT::skControllerId, \
+                            std::remove_cvref_t<decltype((instance))>::ControllerT::DmaChannelTxT::skChannelId>    \
+        {                                                                                                          \
+            static void handle()                                                                                   \
+            {                                                                                                      \
+                (instance).handle_dma_irq();                                                                       \
+            }                                                                                                      \
+        };                                                                                                         \
     }
 
-#define VALLE_BIND_UART_LOGGER_UART_ISR_ROUTER(instance)                                                   \
-    namespace valle::platform                                                                              \
-    {                                                                                                      \
-        template <>                                                                                        \
-        struct UartGlobalIsrRouter<std::remove_cvref_t<decltype((instance))>::ControllerT::skPeripheralId> \
-        {                                                                                                  \
-            static void handle()                                                                           \
-            {                                                                                              \
-                (instance).handle_uart_irq();                                                              \
-            }                                                                                              \
-        };                                                                                                 \
+#define VALLE_BIND_UART_LOGGER_UART_ISR_ROUTER(instance)                                             \
+    namespace valle::platform                                                                        \
+    {                                                                                                \
+        template <>                                                                                  \
+        struct UartIrqRouter<std::remove_cvref_t<decltype((instance))>::ControllerT::skControllerId> \
+        {                                                                                            \
+            static void handle()                                                                     \
+            {                                                                                        \
+                (instance).handle_uart_irq();                                                        \
+            }                                                                                        \
+        };                                                                                           \
     }
 
 #define VALLE_BIND_UART_LOGGER_ISR_ROUTERS(instance) \

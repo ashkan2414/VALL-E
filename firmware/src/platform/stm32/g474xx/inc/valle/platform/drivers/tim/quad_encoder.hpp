@@ -14,15 +14,15 @@ namespace valle::platform
      * @brief Driver for timer quadrature encoder mode. This mode uses two input channels to decode quadrature signals
      * from an encoder.
      */
-    template <typename TControllerDevice>
+    template <typename TController>
     class TimQuadEncoderDriver
     {
     public:
-        using ControllerT                               = TControllerDevice;
-        static constexpr TimPeripheralId skPeripheralId = ControllerT::skPeripheralId;
+        using ControllerT                               = TController;
+        static constexpr TimControllerId skControllerId = ControllerT::skControllerId;
 
         using TraitsT       = typename ControllerT::TraitsT;
-        using InterfaceT    = TimControllerInterface<skPeripheralId>;
+        using InterfaceT    = TimControllerInterface<skControllerId>;
         using CounterValueT = typename TraitsT::CounterValueT;
 
         using InjectDevices = TypeList<ControllerT>;

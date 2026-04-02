@@ -8,37 +8,6 @@
 
 namespace valle::platform
 {
-    // =========================================================================
-    // HSI OSCILLATOR INFO DEVICE
-    // =========================================================================
-    template <typename T = void>
-    class HsiOscillatorInfoDevice
-    {
-    public:
-        struct Descriptor : public SharedDeviceDescriptor
-        {
-            constexpr static bool skNeedsInit = false;
-        };
-
-        using InterfaceT = HsiOscillatorInterface;
-
-        using InjectDevices = TypeList<>;
-
-        [[nodiscard]] bool is_ready() const
-        {
-            return InterfaceT::is_ready();
-        }
-
-        [[nodiscard]] uint32_t get_calibration() const
-        {
-            return InterfaceT::get_calibration();
-        }
-
-        [[nodiscard]] constexpr uint32_t get_frequency_hz() const
-        {
-            return InterfaceT::skFrequencyHz;
-        }
-    };
 
     // =============================================================================
     // HSI OSCILLATOR DEVICE
@@ -64,16 +33,32 @@ namespace valle::platform
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
     template <typename T = void>
-    class HsiOscillatorDevice
+    class HsiOscillator
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = HsiOscillatorInterface;
+        using HdiT          = HsiOscillatorHdi<T>;
+        using SctInfoHdiT   = SctInfoHdi<T>;
+        using PllInfoHdiT   = PllInfoHdi<T>;
+        using InjectDevices = TypeList<HdiT, SctInfoHdiT, PllInfoHdiT>;
 
-        using InjectDevices = TypeList<>;
+    private:
+        [[no_unique_address]] DeviceRef<HdiT>        m_hw;
+        [[no_unique_address]] DeviceRef<SctInfoHdiT> m_sct_info_hw;
+        [[no_unique_address]] DeviceRef<PllInfoHdiT> m_pll_info_hw;
+
+    public:
+        explicit HsiOscillator(DeviceRef<HdiT>&&        hardware_key,
+                               DeviceRef<SctInfoHdiT>&& sct_info_hw,
+                               DeviceRef<PllInfoHdiT>&& pll_info_hw)
+            : m_hw(std::move(hardware_key))
+            , m_sct_info_hw(std::move(sct_info_hw))
+            , m_pll_info_hw(std::move(pll_info_hw))
+        {
+        }
 
         // --- Initialization ---
         /**
@@ -84,18 +69,17 @@ namespace valle::platform
         {
             if (config.enabled)
             {
-                InterfaceT::enable();
+                m_hw->enable();
 
-                expect(wait_for_ready(InterfaceT::skDefaultEnableTimeoutCount),
-                       "HSI failed to become ready within timeout");
+                expect(wait_for_ready(HdiT::skDefaultEnableTimeoutCount), "HSI failed to become ready within timeout");
 
-                InterfaceT::set_calibration_trimming(config.trimming);
+                m_hw->set_calibration_trimming(config.trimming);
 
                 return true;
             }
 
-            const auto sysclk_status = SctInterface::get_source_status();
-            const auto pll_source    = PllInterface::get_source();
+            const auto sysclk_status = m_sct_info_hw->get_source_status();
+            const auto pll_source    = m_pll_info_hw->get_source();
 
             const bool hsi_used_as_sysclk = (sysclk_status == SctSourceStatus::kHSI);
             const bool hsi_used_by_pll_sysclk =
@@ -104,10 +88,9 @@ namespace valle::platform
             expect(!(hsi_used_as_sysclk || hsi_used_by_pll_sysclk),
                    "Cannot disable HSI while it is used by SYSCLK or active PLL system clock path");
 
-            InterfaceT::disable();
+            m_hw->disable();
 
-            expect(wait_for_not_ready(InterfaceT::skDefaultDisableTimeoutCount),
-                   "HSI failed to disable within timeout");
+            expect(wait_for_not_ready(HdiT::skDefaultDisableTimeoutCount), "HSI failed to disable within timeout");
 
             return true;
         }
@@ -115,13 +98,12 @@ namespace valle::platform
     private:
         [[nodiscard]] static bool wait_for_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() { return InterfaceT::is_ready(); },
-                                                                  timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([]() { return m_hw->is_ready(); }, timeout_count);
         }
 
         [[nodiscard]] static bool wait_for_not_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !InterfaceT::is_ready(); },
+            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !m_hw->is_ready(); },
                                                                   timeout_count);
         }
     };

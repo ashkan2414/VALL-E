@@ -1,9 +1,8 @@
 #pragma once
 
-#include "stm32g4xx_hal.h"
-#include "stm32g4xx_hal_gpio.h"
-#include "stm32g4xx_ll_exti.h"
+#include "stm32g4xx_ll_gpio.h"
 #include "stm32g4xx_ll_system.h"
+#include "valle/platform/hardware/exti.hpp"
 #include "valle/platform/hardware/gpio/id.hpp"
 
 namespace valle::platform
@@ -12,64 +11,53 @@ namespace valle::platform
     // ENUMERATIONS
     // =============================================================================
 
-    enum class GpioPullMode
+    enum class GpioPinMode
     {
-        kNoPull   = Gpio_NOPULL,
-        kPullUp   = Gpio_PULLUP,
-        kPullDown = Gpio_PULLDOWN,
+        kInput             = LL_GPIO_MODE_INPUT,
+        kOutput            = LL_GPIO_MODE_OUTPUT,
+        kAlternateFunction = LL_GPIO_MODE_ALTERNATE,
+        kAnalog            = LL_GPIO_MODE_ANALOG,
     };
 
-    enum class GpioSpeedMode
+    enum class GpioPinPullMode
     {
-        kLow      = Gpio_SPEED_FREQ_LOW,        // range up to 5 MHz
-        kMedium   = Gpio_SPEED_FREQ_MEDIUM,     // range  5 MHz to 25 MHz
-        kHigh     = Gpio_SPEED_FREQ_HIGH,       // range 25 MHz to 50 MHz
-        kVeryHigh = Gpio_SPEED_FREQ_VERY_HIGH,  // range 50 MHz to 120 MHz
+        kNoPull   = LL_GPIO_PULL_NO,
+        kPullUp   = LL_GPIO_PULL_UP,
+        kPullDown = LL_GPIO_PULL_DOWN,
     };
 
-    enum class GpioOutputMode
+    enum class GpioPinSpeedMode
     {
-        kPushPull  = Gpio_MODE_OUTPUT_PP,
-        kOpenDrain = Gpio_MODE_OUTPUT_OD,
+        kLow      = LL_GPIO_SPEED_FREQ_LOW,        // range up to 5 MHz
+        kMedium   = LL_GPIO_SPEED_FREQ_MEDIUM,     // range  5 MHz to 25 MHz
+        kHigh     = LL_GPIO_SPEED_FREQ_HIGH,       // range 25 MHz to 50 MHz
+        kVeryHigh = LL_GPIO_SPEED_FREQ_VERY_HIGH,  // range 50 MHz to 120 MHz
     };
 
-    enum class GpioInputInterruptTrigger
+    enum class GpioPinOutputMode
     {
-        kIntRisingEdge  = TRIGGER_RISING,
-        kIntFallingEdge = TRIGGER_FALLING,
-        kIntBothEdges   = TRIGGER_RISING | TRIGGER_FALLING,
-    };
-
-    enum class GpioInputInterruptAction
-    {
-        kInterrupt = EXTI_IT,
-        kEvent     = EXTI_EVT,
-    };
-
-    enum class GpioAlternateFunctionMode
-    {
-        kPushPull  = Gpio_MODE_AF_PP,
-        kOpenDrain = Gpio_MODE_AF_OD,
+        kPushPull  = LL_GPIO_OUTPUT_PUSHPULL,
+        kOpenDrain = LL_GPIO_OUTPUT_OPENDRAIN,
     };
 
     enum class GpioAlternativeFunction
     {
-        kAF0  = 0,
-        kAF1  = 1,
-        kAF2  = 2,
-        kAF3  = 3,
-        kAF4  = 4,
-        kAF5  = 5,
-        kAF6  = 6,
-        kAF7  = 7,
-        kAF8  = 8,
-        kAF9  = 9,
-        kAF10 = 10,
-        kAF11 = 11,
-        kAF12 = 12,
-        kAF13 = 13,
-        kAF14 = 14,
-        kAF15 = 15,
+        kAF0  = LL_GPIO_AF_0,
+        kAF1  = LL_GPIO_AF_1,
+        kAF2  = LL_GPIO_AF_2,
+        kAF3  = LL_GPIO_AF_3,
+        kAF4  = LL_GPIO_AF_4,
+        kAF5  = LL_GPIO_AF_5,
+        kAF6  = LL_GPIO_AF_6,
+        kAF7  = LL_GPIO_AF_7,
+        kAF8  = LL_GPIO_AF_8,
+        kAF9  = LL_GPIO_AF_9,
+        kAF10 = LL_GPIO_AF_10,
+        kAF11 = LL_GPIO_AF_11,
+        kAF12 = LL_GPIO_AF_12,
+        kAF13 = LL_GPIO_AF_13,
+        kAF14 = LL_GPIO_AF_14,
+        kAF15 = LL_GPIO_AF_15,
     };
 
     // ============================================================================
@@ -85,80 +73,45 @@ namespace valle::platform
     template <>
     struct GpioPortTraits<GpioPortId::kPortA>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioA;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTA;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOA_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOA;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortA;
     };
 
     template <>
     struct GpioPortTraits<GpioPortId::kPortB>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioB;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTB;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOB_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOB;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortB;
     };
     template <>
     struct GpioPortTraits<GpioPortId::kPortC>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioC;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTC;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOC_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOC;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortC;
     };
     template <>
     struct GpioPortTraits<GpioPortId::kPortD>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioD;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTD;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOD_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOD;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortD;
     };
     template <>
     struct GpioPortTraits<GpioPortId::kPortE>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioE;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTE;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOE_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOE;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortE;
     };
     template <>
     struct GpioPortTraits<GpioPortId::kPortF>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioF;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTF;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOF_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOF;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortF;
     };
     template <>
     struct GpioPortTraits<GpioPortId::kPortG>
     {
-        static inline Gpio_TypeDef* const skInstance         = GpioG;
-        static constexpr uint32_t         skLLSyscfgEXTIPort = LL_SYSCFG_EXTI_PORTG;
-
-        void enable_clock() const
-        {
-            __HAL_RCC_GPIOG_CLK_ENABLE();
-        }
+        static inline GPIO_TypeDef* const skInstance       = GPIOG;
+        static constexpr ExtiLineSource   skExtiLineSource = ExtiLineSource::kPortG;
     };
 
     // ---------------------------------------------------------------------------
@@ -168,182 +121,300 @@ namespace valle::platform
     template <GpioPortId tkPortId, GpioPinId tkPinId>
     struct GpioPinTraits
     {
-    private:
-        static constexpr uint8_t skPinIdx = static_cast<uint8_t>(tkPinId);
+        static constexpr uint32_t skLLIdTable[] = {LL_GPIO_PIN_0,
+                                                   LL_GPIO_PIN_1,
+                                                   LL_GPIO_PIN_2,
+                                                   LL_GPIO_PIN_3,
+                                                   LL_GPIO_PIN_4,
+                                                   LL_GPIO_PIN_5,
+                                                   LL_GPIO_PIN_6,
+                                                   LL_GPIO_PIN_7,
+                                                   LL_GPIO_PIN_8,
+                                                   LL_GPIO_PIN_9,
+                                                   LL_GPIO_PIN_10,
+                                                   LL_GPIO_PIN_11,
+                                                   LL_GPIO_PIN_12,
+                                                   LL_GPIO_PIN_13,
+                                                   LL_GPIO_PIN_14,
+                                                   LL_GPIO_PIN_15};
 
-        consteval IRQn_Type get_irq_n() const
+        static constexpr ExtiLineId skExtiLineTable[] = {ExtiLineId::kLine0,
+                                                         ExtiLineId::kLine1,
+                                                         ExtiLineId::kLine2,
+                                                         ExtiLineId::kLine3,
+                                                         ExtiLineId::kLine4,
+                                                         ExtiLineId::kLine5,
+                                                         ExtiLineId::kLine6,
+                                                         ExtiLineId::kLine7,
+                                                         ExtiLineId::kLine8,
+                                                         ExtiLineId::kLine9,
+                                                         ExtiLineId::kLine10,
+                                                         ExtiLineId::kLine11,
+                                                         ExtiLineId::kLine12,
+                                                         ExtiLineId::kLine13,
+                                                         ExtiLineId::kLine14,
+                                                         ExtiLineId::kLine15};
+
+        static constexpr uint8_t        skPinIdx         = static_cast<uint8_t>(tkPinId);
+        static constexpr uint16_t       skPinMask        = (1UL << skPinIdx);  // NOLINT(hicpp-signed-bitwise)
+        static constexpr uint32_t       skPinLLId        = skLLIdTable[skPinIdx];
+        static constexpr ExtiLineId     skExtiLine       = skExtiLineTable[skPinIdx];
+        static constexpr ExtiLineSource skExtiLineSource = GpioPortTraits<tkPortId>::skExtiLineSource;
+    };
+
+    // ============================================================================
+    // INTERFACE
+    // ============================================================================
+
+    template <GpioPortId tkPortId>
+    struct GpioPortInterface
+    {
+        using PortTraitsT = GpioPortTraits<tkPortId>;
+
+        void enable_clock() const
         {
-            if constexpr (skPinIdx == 0)
+            if constexpr (tkPortId == GpioPortId::kPortA)
             {
-                return EXTI0_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
             }
-            else if constexpr (skPinIdx == 1)
+            else if constexpr (tkPortId == GpioPortId::kPortB)
             {
-                return EXTI1_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
             }
-            else if constexpr (skPinIdx == 2)
+            else if constexpr (tkPortId == GpioPortId::kPortC)
             {
-                return EXTI2_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOC);
             }
-            else if constexpr (skPinIdx == 3)
+            else if constexpr (tkPortId == GpioPortId::kPortD)
             {
-                return EXTI3_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOD);
             }
-            else if constexpr (skPinIdx == 4)
+            else if constexpr (tkPortId == GpioPortId::kPortE)
             {
-                return EXTI4_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOE);
             }
-            else if constexpr (skPinIdx >= 5 && skPinIdx <= 9)
+            else if constexpr (tkPortId == GpioPortId::kPortF)
             {
-                return EXTI9_5_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOF);
             }
-            else if constexpr (skPinIdx >= 10 && skPinIdx <= 15)
+            else if constexpr (tkPortId == GpioPortId::kPortG)
             {
-                return EXTI15_10_IRQn;
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOG);
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<GpioPortId>, "Invalid GpioPortId");
             }
         }
 
-        consteval uint32_t get_ll_exti_line() const
+        void disable_clock() const
         {
-            if constexpr (skPinIdx == 0)
+            if constexpr (tkPortId == GpioPortId::kPortA)
             {
-                return LL_EXTI_LINE_0;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
             }
-            else if constexpr (skPinIdx == 1)
+            else if constexpr (tkPortId == GpioPortId::kPortB)
             {
-                return LL_EXTI_LINE_1;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOB);
             }
-            else if constexpr (skPinIdx == 2)
+            else if constexpr (tkPortId == GpioPortId::kPortC)
             {
-                return LL_EXTI_LINE_2;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOC);
             }
-            else if constexpr (skPinIdx == 3)
+            else if constexpr (tkPortId == GpioPortId::kPortD)
             {
-                return LL_EXTI_LINE_3;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOD);
             }
-            else if constexpr (skPinIdx == 4)
+            else if constexpr (tkPortId == GpioPortId::kPortE)
             {
-                return LL_EXTI_LINE_4;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOE);
             }
-            else if constexpr (skPinIdx == 5)
+            else if constexpr (tkPortId == GpioPortId::kPortF)
             {
-                return LL_EXTI_LINE_5;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOF);
             }
-            else if constexpr (skPinIdx == 6)
+            else if constexpr (tkPortId == GpioPortId::kPortG)
             {
-                return LL_EXTI_LINE_6;
+                LL_AHB2_GRP1_DisableClock(LL_AHB2_GRP1_PERIPH_GPIOG);
             }
-            else if constexpr (skPinIdx == 7)
+            else
             {
-                return LL_EXTI_LINE_7;
-            }
-            else if constexpr (skPinIdx == 8)
-            {
-                return LL_EXTI_LINE_8;
-            }
-            else if constexpr (skPinIdx == 9)
-            {
-                return LL_EXTI_LINE_9;
-            }
-            else if constexpr (skPinIdx == 10)
-            {
-                return LL_EXTI_LINE_10;
-            }
-            else if constexpr (skPinIdx == 11)
-            {
-                return LL_EXTI_LINE_11;
-            }
-            else if constexpr (skPinIdx == 12)
-            {
-                return LL_EXTI_LINE_12;
-            }
-            else if constexpr (skPinIdx == 13)
-            {
-                return LL_EXTI_LINE_13;
-            }
-            else if constexpr (skPinIdx == 14)
-            {
-                return LL_EXTI_LINE_14;
-            }
-            else if constexpr (skPinIdx == 15)
-            {
-                return LL_EXTI_LINE_15;
+                static_assert(kAlwaysFalseV<GpioPortId>, "Invalid GpioPortId");
             }
         }
 
-        consteval uint32_t get_ll_syscfg_exti_line() const
+        void lock_pin(const uint32_t pin_mask) const
         {
-            if constexpr (skPinIdx == 0)
+            LL_GPIO_LockPin(PortTraitsT::skInstance, pin_mask);
+        }
+
+        [[nodiscard]] bool is_pin_locked(const uint32_t pin_mask) const
+        {
+            return static_cast<bool>(LL_GPIO_IsPinLocked(PortTraitsT::skInstance, pin_mask) != 0U);
+        }
+
+        [[nodiscard]] bool is_any_pin_locked() const
+        {
+            return static_cast<bool>(LL_GPIO_IsAnyPinLocked(PortTraitsT::skInstance) != 0U);
+        }
+
+        [[nodiscard]] uint32_t read_input_port() const
+        {
+            return static_cast<uint32_t>(LL_GPIO_ReadInputPort(PortTraitsT::skInstance));
+        }
+
+        [[nodiscard]] bool is_input_pin_set(const uint32_t pin_mask) const
+        {
+            return static_cast<bool>(LL_GPIO_IsInputPinSet(PortTraitsT::skInstance, pin_mask) != 0U);
+        }
+
+        void write_output_port(const uint32_t port_value) const
+        {
+            LL_GPIO_WriteOutputPort(PortTraitsT::skInstance, port_value);
+        }
+
+        [[nodiscard]] uint32_t read_output_port() const
+        {
+            return static_cast<uint32_t>(LL_GPIO_ReadOutputPort(PortTraitsT::skInstance));
+        }
+
+        [[nodiscard]] bool is_output_pin_set(const uint32_t pin_mask) const
+        {
+            return static_cast<bool>(LL_GPIO_IsOutputPinSet(PortTraitsT::skInstance, pin_mask) != 0U);
+        }
+
+        void set_output_pin(const uint32_t pin_mask) const
+        {
+            LL_GPIO_SetOutputPin(PortTraitsT::skInstance, pin_mask);
+        }
+
+        void reset_output_pin(const uint32_t pin_mask) const
+        {
+            LL_GPIO_ResetOutputPin(PortTraitsT::skInstance, pin_mask);
+        }
+
+        void toggle_pin(const uint32_t pin_mask) const
+        {
+            LL_GPIO_TogglePin(PortTraitsT::skInstance, pin_mask);
+        }
+    };
+
+    template <GpioPortId tkPortId, GpioPinId tkPinId>
+    struct GpioPinInterface
+    {
+        using PortTraitsT = GpioPortTraits<tkPortId>;
+        using PinTraitsT  = GpioPinTraits<tkPortId, tkPinId>;
+
+        void set_mode(const GpioPinMode mode) const
+        {
+            LL_GPIO_SetPinMode(PortTraitsT::skInstance, PinTraitsT::skPinLLId, static_cast<uint32_t>(mode));
+        }
+
+        [[nodiscard]] GpioPinMode get_mode() const
+        {
+            return static_cast<GpioPinMode>(LL_GPIO_GetPinMode(PortTraitsT::skInstance, PinTraitsT::skPinLLId));
+        }
+
+        void set_output_mode(const GpioPinOutputMode output_mode) const
+        {
+            LL_GPIO_SetPinOutputType(
+                PortTraitsT::skInstance, PinTraitsT::skPinLLIdMask, static_cast<uint32_t>(output_mode));
+        }
+
+        [[nodiscard]] GpioPinOutputMode get_output_mode() const
+        {
+            return static_cast<GpioPinOutputMode>(
+                LL_GPIO_GetPinOutputType(PortTraitsT::skInstance, PinTraitsT::skPinLLId));
+        }
+
+        void set_speed(const GpioPinSpeedMode speed) const
+        {
+            LL_GPIO_SetPinSpeed(PortTraitsT::skInstance, PinTraitsT::skPinLLId, static_cast<uint32_t>(speed));
+        }
+
+        [[nodiscard]] GpioPinSpeedMode get_speed() const
+        {
+            return static_cast<GpioPinSpeedMode>(LL_GPIO_GetPinSpeed(PortTraitsT::skInstance, PinTraitsT::skPinLLId));
+        }
+
+        void set_pull(const GpioPinPullMode pull) const
+        {
+            LL_GPIO_SetPinPull(PortTraitsT::skInstance, PinTraitsT::skPinLLId, static_cast<uint32_t>(pull));
+        }
+
+        [[nodiscard]] GpioPinPullMode get_pull() const
+        {
+            return static_cast<GpioPinPullMode>(LL_GPIO_GetPinPull(PortTraitsT::skInstance, PinTraitsT::skPinLLId));
+        }
+
+        void set_alternate_function(const GpioAlternativeFunction alternate) const
+        {
+            if constexpr (PinTraitsT::skPinIdx >= 0 && PinTraitsT::skPinIdx <= 7)
             {
-                return LL_SYSCFG_EXTI_LINE0;
+                LL_GPIO_SetAFPin_0_7(PortTraitsT::skInstance, PinTraitsT::skPinLLId, static_cast<uint32_t>(alternate));
             }
-            else if constexpr (skPinIdx == 1)
+            else if constexpr (PinTraitsT::skPinIdx >= 8 && PinTraitsT::skPinIdx <= 15)
             {
-                return LL_SYSCFG_EXTI_LINE1;
+                LL_GPIO_SetAFPin_8_15(PortTraitsT::skInstance, PinTraitsT::skPinLLId, static_cast<uint32_t>(alternate));
             }
-            else if constexpr (skPinIdx == 2)
+            else
             {
-                return LL_SYSCFG_EXTI_LINE2;
-            }
-            else if constexpr (skPinIdx == 3)
-            {
-                return LL_SYSCFG_EXTI_LINE3;
-            }
-            else if constexpr (skPinIdx == 4)
-            {
-                return LL_SYSCFG_EXTI_LINE4;
-            }
-            else if constexpr (skPinIdx == 5)
-            {
-                return LL_SYSCFG_EXTI_LINE5;
-            }
-            else if constexpr (skPinIdx == 6)
-            {
-                return LL_SYSCFG_EXTI_LINE6;
-            }
-            else if constexpr (skPinIdx == 7)
-            {
-                return LL_SYSCFG_EXTI_LINE7;
-            }
-            else if constexpr (skPinIdx == 8)
-            {
-                return LL_SYSCFG_EXTI_LINE8;
-            }
-            else if constexpr (skPinIdx == 9)
-            {
-                return LL_SYSCFG_EXTI_LINE9;
-            }
-            else if constexpr (skPinIdx == 10)
-            {
-                return LL_SYSCFG_EXTI_LINE10;
-            }
-            else if constexpr (skPinIdx == 11)
-            {
-                return LL_SYSCFG_EXTI_LINE11;
-            }
-            else if constexpr (skPinIdx == 12)
-            {
-                return LL_SYSCFG_EXTI_LINE12;
-            }
-            else if constexpr (skPinIdx == 13)
-            {
-                return LL_SYSCFG_EXTI_LINE13;
-            }
-            else if constexpr (skPinIdx == 14)
-            {
-                return LL_SYSCFG_EXTI_LINE14;
-            }
-            else if constexpr (skPinIdx == 15)
-            {
-                return LL_SYSCFG_EXTI_LINE15;
+                static_assert(kAlwaysFalseV<PinTraitsT::skPinIdx>, "Invalid Pin Id");
             }
         }
 
-    public:
-        static constexpr uint16_t  skPinMask          = (1UL << skPinIdx);  // NOLINT(hicpp-signed-bitwise)
-        static constexpr IRQn_Type skIRQn             = get_irq_n();
-        static constexpr uint32_t  skLLEXTILine       = get_ll_exti_line();
-        static constexpr uint32_t  skLLSyscfgEXTILine = get_ll_syscfg_exti_line();
+        [[nodiscard]] GpioAlternativeFunction get_alternate_function() const
+        {
+            if constexpr (PinTraitsT::skPinIdx >= 0 && PinTraitsT::skPinIdx <= 7)
+            {
+                return static_cast<GpioAlternativeFunction>(
+                    LL_GPIO_GetAFPin_0_7(PortTraitsT::skInstance, PinTraitsT::skPinLLId));
+            }
+            else if constexpr (PinTraitsT::skPinIdx >= 8 && PinTraitsT::skPinIdx <= 15)
+            {
+                return static_cast<GpioAlternativeFunction>(
+                    LL_GPIO_GetAFPin_8_15(PortTraitsT::skInstance, PinTraitsT::skPinLLId));
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<PinTraitsT::skPinIdx>, "Invalid Pin Id");
+            }
+        }
+
+        void lock() const
+        {
+            LL_GPIO_LockPin(PortTraitsT::skInstance, PinTraitsT::skPinMask);
+        }
+
+        [[nodiscard]] bool is_locked() const
+        {
+            return static_cast<bool>(LL_GPIO_IsPinLocked(PortTraitsT::skInstance, PinTraitsT::skPinMask) != 0U);
+        }
+
+        [[nodiscard]] bool is_input_set() const
+        {
+            return static_cast<bool>(LL_GPIO_IsInputPinSet(PortTraitsT::skInstance, PinTraitsT::skPinMask) != 0U);
+        }
+
+        [[nodiscard]] bool is_output_set() const
+        {
+            return static_cast<bool>(LL_GPIO_IsOutputPinSet(PortTraitsT::skInstance, PinTraitsT::skPinMask) != 0U);
+        }
+
+        void set_output() const
+        {
+            LL_GPIO_SetOutputPin(PortTraitsT::skInstance, PinTraitsT::skPinMask);
+        }
+
+        void reset_output() const
+        {
+            LL_GPIO_ResetOutputPin(PortTraitsT::skInstance, PinTraitsT::skPinMask);
+        }
+
+        void toggle() const
+        {
+            LL_GPIO_TogglePin(PortTraitsT::skInstance, PinTraitsT::skPinMask);
+        }
     };
 
 }  // namespace valle::platform

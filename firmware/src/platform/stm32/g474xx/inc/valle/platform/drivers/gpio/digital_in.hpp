@@ -5,20 +5,6 @@
 namespace valle::platform
 {
 
-    struct GpioDigitalInInterruptConfig
-    {
-        uint32_t                  priority;
-        GpioInputInterruptTrigger trigger;
-        GpioInputInterruptAction  action;
-    };
-
-    struct GpioDigitalInConfig
-    {
-        GpioPullMode                                pull      = GpioPullMode::kNoPull;
-        std::optional<GpioDigitalInInterruptConfig> interrupt = std::nullopt;
-        bool                                        inverted  = false;
-    };
-
     template <typename TGpioPin>
     class GpioDigitalInDriver
     {
@@ -27,19 +13,16 @@ namespace valle::platform
 
     private:
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
-        bool                                      m_inverted;
 
     public:
         GpioDigitalInDriver() = delete;
 
-        GpioDigitalInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
+        GpioDigitalInDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
         {
         }
 
         [[nodiscard]] bool init(const GpioDigitalInConfig& config)
         {
-            m_inverted = config.inverted;
-
             uint32_t mode = Gpio_MODE_INPUT;
             if (config.interrupt.has_value())
             {
@@ -49,7 +32,7 @@ namespace valle::platform
 
             if (!m_pin->init(GpioPinConfig{.mode      = mode,
                                            .pull      = config.pull,
-                                           .speed     = GpioSpeedMode::kLow,
+                                           .speed     = GpioPinSpeedMode::kLow,
                                            .alternate = GpioAlternativeFunction::kAF0}))
             {
                 return false;
@@ -68,8 +51,7 @@ namespace valle::platform
         // --- API ---
         [[nodiscard]] inline bool read() const
         {
-            const bool state = m_pin->read();
-            return m_inverted ? !state : state;
+            return m_pin->read_input();
         }
     };
 
@@ -82,7 +64,7 @@ namespace valle::platform
         };
 
         template <>
-        struct ConditionalGpioDigitalInDriver<GpioNullPinDevice>
+        struct ConditionalGpioDigitalInDriver<NullDevice>
         {
             using type = std::monostate;
         };

@@ -44,6 +44,14 @@ namespace valle
     concept CSharedDevice = CDeviceOfType<T, DeviceType::kShared>;
     template <typename T>
     concept CNullDevice = CDeviceOfType<T, DeviceType::kNull>;
+
+    struct NullDevice
+    {
+        struct Descriptor : public NullDeviceDescriptor
+        {
+        };
+    };
+
     // ============================================================================
     // Initialization Traits
     // ============================================================================

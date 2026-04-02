@@ -6,38 +6,6 @@
 
 namespace valle::platform
 {
-    // =========================================================================
-    // LSE Oscillator INFO DEVICE
-    // =========================================================================
-    template <typename T = void>
-    class LseOscillatorInfoDevice
-    {
-    public:
-        struct Descriptor : public SharedDeviceDescriptor
-        {
-            constexpr static bool skNeedsInit = false;
-        };
-
-        using InterfaceT = LseOscillatorInterface;
-
-        using InjectDevices = TypeList<>;
-
-        [[nodiscard]] bool is_ready() const
-        {
-            return InterfaceT::is_ready();
-        }
-
-        [[nodiscard]] LseOscillatorDriveCapability get_drive_capability() const
-        {
-            return InterfaceT::get_drive_capability();
-        }
-
-        [[nodiscard]] constexpr uint32_t get_frequency_hz() const
-        {
-            return InterfaceT::skFrequencyHz;
-        }
-    };
-
     // =============================================================================
     // LSE OSCILLATOR DEVICE
     // =============================================================================
@@ -61,17 +29,24 @@ namespace valle::platform
     // DEVICE
     // --------------------------------------------------------------------------------
     template <typename T = void>
-    class LseOscillatorDevice
+    class LseOscillator
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = LseOscillatorInterface;
+        using HdiT          = LseOscillatorHdi<T>;
+        using DependDevices = TypeList<PowerController<>>;
+        using InjectDevices = TypeList<HdiT>;
 
-        using DependDevices = TypeList<PowerDevice<>>;
-        using InjectDevices = TypeList<>;
+    private:
+        [[no_unique_address]] DeviceRef<HdiT> m_hw;
+
+    public:
+        explicit LseOscillator(DeviceRef<HdiT>&& hardware_key) : m_hw(std::move(hardware_key))
+        {
+        }
 
         [[nodiscard]] bool init(const LseOscillatorConfig& config)
         {
@@ -79,29 +54,27 @@ namespace valle::platform
             // This is a quirk of the STM32G4 hardware.
             if (config.enabled)
             {
-                if (InterfaceT::is_ready())
+                if (m_hw->is_ready())
                 {
                     // If LSE is already enabled, just update the drive capability
-                    InterfaceT::set_drive_capability(config.drive);
+                    m_hw->set_drive_capability(config.drive);
                     return true;
                 }
 
                 // Set initial drive capability to high to ensure reliable startup,
                 // then reduce it to the desired level after the oscillator is stable.
-                InterfaceT::set_drive_capability(LseOscillatorDriveCapability::kHigh);
-                InterfaceT::enable(config.mode);
+                m_hw->set_drive_capability(LseOscillatorDriveCapability::kHigh);
+                m_hw->enable(config.mode);
 
-                expect(wait_for_ready(InterfaceT::skDefaultEnableTimeoutCount),
-                       "LSE failed to become ready within timeout");
+                expect(wait_for_ready(HdiT::skDefaultEnableTimeoutCount), "LSE failed to become ready within timeout");
 
-                InterfaceT::set_drive_capability(config.drive);
+                m_hw->set_drive_capability(config.drive);
 
                 return true;
             }
 
-            InterfaceT::disable();
-            expect(wait_for_not_ready(InterfaceT::skDefaultDisableTimeoutCount),
-                   "LSE failed to disable within timeout");
+            m_hw->disable();
+            expect(wait_for_not_ready(HdiT::skDefaultDisableTimeoutCount), "LSE failed to disable within timeout");
 
             return true;
         }
@@ -109,13 +82,12 @@ namespace valle::platform
     private:
         [[nodiscard]] static bool wait_for_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() { return InterfaceT::is_ready(); },
-                                                                  timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([]() { return m_hw->is_ready(); }, timeout_count);
         }
 
         [[nodiscard]] static bool wait_for_not_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !InterfaceT::is_ready(); },
+            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !m_hw->is_ready(); },
                                                                   timeout_count);
         }
     };

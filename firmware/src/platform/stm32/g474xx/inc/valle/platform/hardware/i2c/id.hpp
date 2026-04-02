@@ -6,7 +6,7 @@
 namespace valle::platform
 {
 
-    enum class I2cPeripheralId : uint8_t
+    enum class I2cControllerId : uint8_t
     {
         kI2c1 = 1,
         kI2c2 = 2,

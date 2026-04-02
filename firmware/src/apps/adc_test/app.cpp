@@ -25,7 +25,7 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::Adc12CommonDevice& dev)
+            [](platform::Adc12CommonController& dev)
             {
                 expect(dev.init(platform::AdcCommonConfig{
                            .clock_config =
@@ -33,17 +33,15 @@ namespace valle::app
                                                                        platform::AdcCommonAsyncClockPrescaler::kDiv8}}),
                        "Failed to initialize Adc12 Common Device");
             },
-            [](platform::Adc1ControllerDevice& dev) { expect(dev.init(), "Failed to initialize Test ADC Controller"); },
-            [](platform::DmaMux1ControllerDevice& dev)
+            [](platform::Adc1Controller& dev) { expect(dev.init(), "Failed to initialize Test ADC Controller"); },
+            [](platform::DmaMux1Controller& dev)
             { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
 
-            [](platform::Dma1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::Dma1Controller& dev) { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
 
-            [](platform::Dma2ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize Dma2 Controller Device"); },
+            [](platform::Dma2Controller& dev) { expect(dev.init(), "Failed to initialize Dma2 Controller Device"); },
 
-            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GpioPortA& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
         }  // namespace valle
         );
     }
@@ -61,7 +59,7 @@ namespace valle::app
                    .parity            = platform::UartParity::kNone,
                    .transfer_mode     = platform::UartTransferMode::kTxRx,
                    .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DmaPriority::kHigh,
+                   .dma_priority      = platform::DmaChannelPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),
@@ -104,7 +102,7 @@ namespace valle::app
                                .trigger_edge   = platform::AdcRegularGroupTriggerEdge::kRisingFalling,
                                .dma =
                                    platform::AdcRegularGroupDmaConfig{
-                                       .priority      = platform::DmaPriority::kHigh,
+                                       .priority      = platform::DmaChannelPriority::kHigh,
                                        .circular_mode = true,
                                        .interrupts =
                                            platform::DmaChannelInterruptConfig{

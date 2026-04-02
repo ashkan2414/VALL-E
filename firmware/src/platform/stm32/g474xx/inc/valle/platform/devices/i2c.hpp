@@ -11,7 +11,7 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/dma.hpp"
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
-#include "valle/platform/hardware/i2c.hpp"
+#include "valle/platform/hdi/i2c.hpp"
 #include "valle/utils/circular_queue.hpp"
 #include "valle/utils/sync.hpp"
 
@@ -21,18 +21,18 @@ namespace valle::platform
     // I2C CONTROLLER (THE UNIQUE DEVICE)
     // ============================================================================
     // ---------------------------------------------------------------------------
-    // COMPILE TimE CONFIGURATIONS
+    // COMPILE TIME CONFIGURATIONS
     // ---------------------------------------------------------------------------
     struct I2cControllerCTDefaultConfig
     {
-        using DmaChannelRxT = DmaNullChannelDevice;
-        using DmaChannelTxT = DmaNullChannelDevice;
-        using SCLPinT       = GpioNullPinDevice;
-        using SDAPinT       = GpioNullPinDevice;
-        using SMBAPinT      = GpioNullPinDevice;
+        using DmaChannelRxT = NullDevice;
+        using DmaChannelTxT = NullDevice;
+        using SCLPinT       = NullDevice;
+        using SDAPinT       = NullDevice;
+        using SMBAPinT      = NullDevice;
     };
 
-    template <typename T, I2cPeripheralId tkPeripheralId>
+    template <typename T, I2cControllerId tkControllerId>
     concept CValidI2cControllerCTConfig =
         requires {
             typename T::DmaChannelRxT;
@@ -41,35 +41,35 @@ namespace valle::platform
             typename T::SDAPinT;
             typename T::SMBAPinT;
         } &&
-        ((CNullDmaChannel<typename T::DmaChannelRxT> && CNullDmaChannel<typename T::DmaChannelTxT>) ||
-         (CDmaChannelDevice<typename T::DmaChannelRxT> && CDmaChannelDevice<typename T::DmaChannelTxT>)) &&
-        (CNullGpioPinDevice<typename T::SCLPinT> || CValidI2cControllerPin<tkPeripheralId,
-                                                                           I2cControllerGpioPinType::kSCL,
-                                                                           T::SCLPinT::skPortId,
-                                                                           T::SCLPinT::skPinId>) &&
-        (CNullGpioPinDevice<typename T::SDAPinT> || CValidI2cControllerPin<tkPeripheralId,
-                                                                           I2cControllerGpioPinType::kSDA,
-                                                                           T::SDAPinT::skPortId,
-                                                                           T::SDAPinT::skPinId>) &&
-        (CNullGpioPinDevice<typename T::SMBAPinT> || CValidI2cControllerPin<tkPeripheralId,
-                                                                            I2cControllerGpioPinType::kSMBA,
-                                                                            T::SMBAPinT::skPortId,
-                                                                            T::SMBAPinT::skPinId>);
+        ((CNullDevice<typename T::DmaChannelRxT> && CNullDevice<typename T::DmaChannelTxT>) ||
+         (CDmaChannel<typename T::DmaChannelRxT> && CDmaChannel<typename T::DmaChannelTxT>)) &&
+        (CNullDevice<typename T::SCLPinT> || CValidI2cControllerPin<tkControllerId,
+                                                                    I2cControllerGpioPinType::kSCL,
+                                                                    T::SCLPinT::skPortId,
+                                                                    T::SCLPinT::skPinId>) &&
+        (CNullDevice<typename T::SDAPinT> || CValidI2cControllerPin<tkControllerId,
+                                                                    I2cControllerGpioPinType::kSDA,
+                                                                    T::SDAPinT::skPortId,
+                                                                    T::SDAPinT::skPinId>) &&
+        (CNullDevice<typename T::SMBAPinT> || CValidI2cControllerPin<tkControllerId,
+                                                                     I2cControllerGpioPinType::kSMBA,
+                                                                     T::SMBAPinT::skPortId,
+                                                                     T::SMBAPinT::skPinId>);
 
-    template <I2cPeripheralId tkPeripheralId>
+    template <I2cControllerId tkControllerId>
     struct I2cControllerCTConfigRegistry
     {
         static constexpr auto skConfig = I2cControllerCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkPeripheralId, config)                        \
+#define VALLE_DEFINE_I2C_CONTROLLER_CT_CONFIG(tkControllerId, config)                        \
     namespace valle::platform                                                                \
     {                                                                                        \
         template <>                                                                          \
-        struct I2cControllerCTConfigRegistry<(tkPeripheralId)>                               \
+        struct I2cControllerCTConfigRegistry<(tkControllerId)>                               \
         {                                                                                    \
             static constexpr auto skConfig = (config);                                       \
-            static_assert(CValidI2cControllerCTConfig<decltype(skConfig), (tkPeripheralId)>, \
+            static_assert(CValidI2cControllerCTConfig<decltype(skConfig), (tkControllerId)>, \
                           "Invalid I2C Controller CT Config");                               \
         };                                                                                   \
     }
@@ -84,9 +84,9 @@ namespace valle::platform
     struct I2cControllerConfig
     {
         // Pre-calculated timing value (TODO: create a helper to calculate this from desired I2C speed and source clock)
-        uint32_t    timing_reg           = 0x40621236;  // 400kHz @ 170MHz APB1 clock (values from STM32CubeMX)
-        bool        enable_analog_filter = true;
-        DmaPriority dma_priority         = DmaPriority::kHigh;
+        uint32_t           timing_reg           = 0x40621236;  // 400kHz @ 170MHz APB1 clock (values from STM32CubeMX)
+        bool               enable_analog_filter = true;
+        DmaChannelPriority dma_priority         = DmaChannelPriority::kHigh;
     };
 
     /**
@@ -104,24 +104,24 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     namespace detail
     {
-        template <I2cPeripheralId tkPeripheralId, I2cControllerGpioPinType tkPinType, typename TPinDevice>
+        template <I2cControllerId tkControllerId, I2cControllerGpioPinType tkPinType, typename TPin>
         struct I2cControllerGpioPinDriverHelper
         {
             using type = GpioAlternateFunctionDriver<
-                TPinDevice,
-                kI2cControllerPinAF<tkPeripheralId, tkPinType, TPinDevice::skPortId, TPinDevice::skPinId>>;
+                TPin,
+                kI2cControllerPinAF<tkControllerId, tkPinType, TPin::skPortId, TPin::skPinId>>;
         };
 
-        template <I2cPeripheralId tkPeripheralId, I2cControllerGpioPinType tkPinType>
-        struct I2cControllerGpioPinDriverHelper<tkPeripheralId, tkPinType, GpioNullPinDevice>
+        template <I2cControllerId tkControllerId, I2cControllerGpioPinType tkPinType>
+        struct I2cControllerGpioPinDriverHelper<tkControllerId, tkPinType, NullDevice>
         {
             using type = std::monostate;
         };
     }  // namespace detail
 
-    template <I2cPeripheralId tkPeripheralId, I2cControllerGpioPinType tkPinType, typename TPinDevice>
+    template <I2cControllerId tkControllerId, I2cControllerGpioPinType tkPinType, typename TPin>
     using I2cControllerGpioPinDriver =
-        typename detail::I2cControllerGpioPinDriverHelper<tkPeripheralId, tkPinType, TPinDevice>::type;
+        typename detail::I2cControllerGpioPinDriverHelper<tkControllerId, tkPinType, TPin>::type;
 
     // ---------------------------------------------------------------------------
     // DEVICE CLASS
@@ -132,25 +132,25 @@ namespace valle::platform
      * @note This device is unique because despite a bus being shared, its state can only be managed
      * by one slave at a time. Users should write an arbitration layer if multiple slaves are to be used.
      */
-    template <I2cPeripheralId tkPeripheralId>
-    class I2cControllerDevice
+    template <I2cControllerId tkControllerId>
+    class I2cController
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        static constexpr I2cPeripheralId skPeripheralId = tkPeripheralId;
-        using ControllerTraitsT                         = I2cControllerTraits<skPeripheralId>;
-        using InterruptControllerT                      = I2cInterruptController<skPeripheralId>;
+        static constexpr I2cControllerId skControllerId = tkControllerId;
+        using ControllerTraitsT                         = I2cControllerTraits<skControllerId>;
+        using InterruptControllerT                      = I2cInterruptController<skControllerId>;
 
-        using CTConfigRegistryT          = I2cControllerCTConfigRegistry<skPeripheralId>;
+        using CTConfigRegistryT          = I2cControllerCTConfigRegistry<skControllerId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         using DmaChannelRxT            = typename CTConfigT::DmaChannelRxT;
         using DmaChannelTxT            = typename CTConfigT::DmaChannelTxT;
-        static constexpr bool skHasDMA = !CNullDmaChannel<DmaChannelRxT> && !CNullDmaChannel<DmaChannelTxT>;
+        static constexpr bool skHasDMA = !CNullDevice<DmaChannelRxT> && !CNullDevice<DmaChannelTxT>;
 
         template <I2cControllerGpioPinType tkPinType>
         using PinDeviceT = std::conditional_t<tkPinType == I2cControllerGpioPinType::kSCL,
@@ -165,14 +165,14 @@ namespace valle::platform
 
         // Check availability
         template <I2cControllerGpioPinType tkPinType>
-        static constexpr bool skHasPin = !CNullGpioPinDevice<PinDeviceT<tkPinType>>;
+        static constexpr bool skHasPin = !CNullDevice<PinDeviceT<tkPinType>>;
 
         static constexpr bool skHasSCLPin  = skHasPin<I2cControllerGpioPinType::kSCL>;
         static constexpr bool skHasSDAPin  = skHasPin<I2cControllerGpioPinType::kSDA>;
         static constexpr bool skHasSMBAPin = skHasPin<I2cControllerGpioPinType::kSMBA>;
 
         template <I2cControllerGpioPinType tkPinType>
-        using PinDriverT = I2cControllerGpioPinDriver<tkPeripheralId, tkPinType, PinDeviceT<tkPinType>>;
+        using PinDriverT = I2cControllerGpioPinDriver<tkControllerId, tkPinType, PinDeviceT<tkPinType>>;
 
         using SCLPinDriverT  = PinDriverT<I2cControllerGpioPinType::kSCL>;
         using SDAPinDriverT  = PinDriverT<I2cControllerGpioPinType::kSDA>;
@@ -192,7 +192,7 @@ namespace valle::platform
 
     public:
         template <typename... TArgs>
-        explicit I2cControllerDevice(TArgs&&... args)
+        explicit I2cController(TArgs&&... args)
             : m_dma_rx(extract_device_ref<skHasDMA, DmaChannelRxT>(std::forward<TArgs>(args)...))
             , m_dma_tx(extract_device_ref<skHasDMA, DmaChannelTxT>(std::forward<TArgs>(args)...))
             , m_scl_pin(extract_device_ref<skHasSCLPin, SCLPinT>(std::forward<TArgs>(args)...))
@@ -215,18 +215,18 @@ namespace valle::platform
 
             // Initialize Pins
             if (!m_scl_pin.init(GpioAlternateFunctionConfig{
-                    .mode  = GpioAlternateFunctionMode::kOpenDrain,
-                    .speed = GpioSpeedMode::kHigh,
-                    .pull  = GpioPullMode::kPullUp,
+                    .mode  = GpioPinOutputMode::kOpenDrain,
+                    .speed = GpioPinSpeedMode::kHigh,
+                    .pull  = GpioPinPullMode::kPullUp,
                 }))
             {
                 return false;
             }
 
             if (!m_sda_pin.init(GpioAlternateFunctionConfig{
-                    .mode  = GpioAlternateFunctionMode::kOpenDrain,
-                    .speed = GpioSpeedMode::kHigh,
-                    .pull  = GpioPullMode::kPullUp,
+                    .mode  = GpioPinOutputMode::kOpenDrain,
+                    .speed = GpioPinSpeedMode::kHigh,
+                    .pull  = GpioPinPullMode::kPullUp,
                 }))
             {
                 return false;
@@ -427,10 +427,11 @@ namespace valle::platform
 
     private:
         template <bool tkRead>
-        inline void dma_init(const DmaPriority& priority)
+        inline void dma_init(const DmaChannelPriority& priority)
             requires(skHasDMA)
         {
-            constexpr DmaDirection    direction = tkRead ? DmaDirection::kPeriphToMem : DmaDirection::kMemToPeriph;
+            constexpr DmaTransferDirection direction =
+                tkRead ? DmaTransferDirection::kPeriphToMem : DmaTransferDirection::kMemToPeriph;
             constexpr DmaMuxRequestId request_id =
                 tkRead ? ControllerTraitsT::skDmaMuxRequestRx : ControllerTraitsT::skDmaMuxRequestTx;
 
@@ -480,10 +481,10 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
-    using I2c1ControllerDevice = I2cControllerDevice<I2cPeripheralId::kI2c1>;
-    using I2c2ControllerDevice = I2cControllerDevice<I2cPeripheralId::kI2c2>;
-    using I2c3ControllerDevice = I2cControllerDevice<I2cPeripheralId::kI2c3>;
-    using I2c4ControllerDevice = I2cControllerDevice<I2cPeripheralId::kI2c4>;
+    using I2c1Controller = I2cController<I2cControllerId::kI2c1>;
+    using I2c2Controller = I2cController<I2cControllerId::kI2c2>;
+    using I2c3Controller = I2cController<I2cControllerId::kI2c3>;
+    using I2c4Controller = I2cController<I2cControllerId::kI2c4>;
 
     // ==========================================================================
     // I2C COMMAND BUFFER DEVICE (SHARED DEVICE)
@@ -717,7 +718,7 @@ namespace valle::platform
     {
     public:
         using ControllerT                               = TController;
-        constexpr static I2cPeripheralId skPeripheralId = ControllerT::skPeripheralId;
+        constexpr static I2cControllerId skControllerId = ControllerT::skControllerId;
 
     private:
         [[no_unique_address]] DeviceRef<ControllerT>                 m_controller;
@@ -1004,16 +1005,16 @@ namespace valle::platform
     // DRIVER CLASS
     // --------------------------------------------------------------------------------
 
-    template <I2cPeripheralId tkPeripheralId, uint8_t tkTransactionQueueSize = 10>
-    class I2cCommandBufferDevice
+    template <I2cControllerId tkControllerId, uint8_t tkTransactionQueueSize = 10>
+    class I2cCommandBuffer
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        constexpr static I2cPeripheralId skPeripheralId = tkPeripheralId;
-        using ControllerT                               = I2cControllerDevice<skPeripheralId>;
+        constexpr static I2cControllerId skControllerId = tkControllerId;
+        using ControllerT                               = I2cController<skControllerId>;
         constexpr static uint8_t skTransactionQueueSize = tkTransactionQueueSize;
 
         using InjectDevices = TypeList<ControllerT>;
@@ -1028,7 +1029,7 @@ namespace valle::platform
          *
          * @param controller The I2C controller device reference.
          */
-        I2cCommandBufferDevice(DeviceRef<ControllerT>&& controller) : m_shared_state(std::move(controller))
+        I2cCommandBuffer(DeviceRef<ControllerT>&& controller) : m_shared_state(std::move(controller))
         {
         }
 
@@ -1212,27 +1213,27 @@ namespace valle::platform
          * @brief Called from all error ISRs (ARLO, BERR, OVR, TimEOUT, PECERR, ALERT, etc.)
          *
          */
-        inline void handle_error_isr(const I2cErrorInterruptType& error)
+        inline void handle_error_isr(const I2cErrorInterruptSource& error)
         {
             I2cTransactionError mapped_error;
             switch (error)
             {
-                case I2cErrorInterruptType::kArbitrationLoss:
+                case I2cErrorInterruptSource::kArbitrationLoss:
                     mapped_error = I2cTransactionError::kArbitrationLoss;
                     break;
-                case I2cErrorInterruptType::kBusError:
+                case I2cErrorInterruptSource::kBusError:
                     mapped_error = I2cTransactionError::kBusError;
                     break;
-                case I2cErrorInterruptType::kOverrunUnderrun:
+                case I2cErrorInterruptSource::kOverrunUnderrun:
                     mapped_error = I2cTransactionError::kOverrunUnderrun;
                     break;
-                case I2cErrorInterruptType::kSMBusTimeout:
+                case I2cErrorInterruptSource::kSMBusTimeout:
                     mapped_error = I2cTransactionError::kSMBusTimeout;
                     break;
-                case I2cErrorInterruptType::kSMBusPecError:
+                case I2cErrorInterruptSource::kSMBusPecError:
                     mapped_error = I2cTransactionError::kSMBusPecError;
                     break;
-                case I2cErrorInterruptType::kSMBusAlert:
+                case I2cErrorInterruptSource::kSMBusAlert:
                     mapped_error = I2cTransactionError::kSMBusAlert;
                     break;
                 default:
@@ -1244,16 +1245,16 @@ namespace valle::platform
         }
     };
 
-    template <I2cPeripheralId tkPeripheralId, uint16_t tkAddress, bool tkIs10BitAddress = false>
-    class I2cCommandBufferSlaveDevice
+    template <I2cControllerId tkControllerId, uint16_t tkAddress, bool tkIs10BitAddress = false>
+    class I2cCommandBufferSlave
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        constexpr static uint8_t skPeripheralId = tkPeripheralId;
-        using ArbitratorT                       = I2cCommandBufferDevice<tkPeripheralId>;
+        constexpr static uint8_t skControllerId = tkControllerId;
+        using ArbitratorT                       = I2cCommandBuffer<tkControllerId>;
         constexpr static auto skAddress         = I2cSlaveAddress<tkIs10BitAddress>(tkAddress);
 
         using InjectDevices = TypeList<ArbitratorT>;
@@ -1269,7 +1270,7 @@ namespace valle::platform
          *
          * @param controller The I2C command buffer controller device reference.
          */
-        I2cCommandBufferSlaveDevice(DeviceRef<ArbitratorT>&& controller) : m_controller(std::move(controller))
+        I2cCommandBufferSlave(DeviceRef<ArbitratorT>&& controller) : m_controller(std::move(controller))
         {
         }
 
@@ -1356,58 +1357,58 @@ namespace valle::platform
     // --------------------------------------------------------------------------------
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2c1CommandBufferDevice = I2cCommandBufferDevice<I2cPeripheralId::kI2c1, tkTransactionQueueSize>;
+    using I2c1CommandBuffer = I2cCommandBuffer<I2cControllerId::kI2c1, tkTransactionQueueSize>;
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2c2CommandBufferDevice = I2cCommandBufferDevice<I2cPeripheralId::kI2c2, tkTransactionQueueSize>;
+    using I2c2CommandBuffer = I2cCommandBuffer<I2cControllerId::kI2c2, tkTransactionQueueSize>;
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2c3CommandBufferDevice = I2cCommandBufferDevice<I2cPeripheralId::kI2c3, tkTransactionQueueSize>;
+    using I2c3CommandBuffer = I2cCommandBuffer<I2cControllerId::kI2c3, tkTransactionQueueSize>;
 
     template <uint8_t tkTransactionQueueSize = 10>
-    using I2c4CommandBufferDevice = I2cCommandBufferDevice<I2cPeripheralId::kI2c4, tkTransactionQueueSize>;
+    using I2c4CommandBuffer = I2cCommandBuffer<I2cControllerId::kI2c4, tkTransactionQueueSize>;
 
 }  // namespace valle::platform
 
-#define VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(instance)                                                       \
-    namespace valle::platform                                                                                    \
-    {                                                                                                            \
-        template <>                                                                                              \
-        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skPeripheralId,                           \
-                            I2cInterruptType::kTransferComplete>                                                 \
-        {                                                                                                        \
-            static void handle()                                                                                 \
-            {                                                                                                    \
-                (instance).handle_tc_event_isr();                                                                \
-            }                                                                                                    \
-        };                                                                                                       \
-                                                                                                                 \
-        template <>                                                                                              \
-        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skPeripheralId,                           \
-                            I2cInterruptType::kStopDetection>                                                    \
-        {                                                                                                        \
-            static void handle()                                                                                 \
-            {                                                                                                    \
-                (instance).handle_stop_event_isr();                                                              \
-            }                                                                                                    \
-        };                                                                                                       \
-                                                                                                                 \
-        template <>                                                                                              \
-        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skPeripheralId,                           \
-                            I2cInterruptType::kNACKReceived>                                                     \
-        {                                                                                                        \
-            static void handle()                                                                                 \
-            {                                                                                                    \
-                (instance).handle_nack_event_isr();                                                              \
-            }                                                                                                    \
-        };                                                                                                       \
-                                                                                                                 \
-        template <>                                                                                              \
-        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skPeripheralId, I2cInterruptType::kError> \
-        {                                                                                                        \
-            static void handle(I2cErrorInterruptType error)                                                      \
-            {                                                                                                    \
-                (instance).handle_error_isr(error);                                                              \
-            }                                                                                                    \
-        };                                                                                                       \
+#define VALLE_BIND_I2C_COMMAND_BUFFER_DRIVER_ISR(instance)                                                         \
+    namespace valle::platform                                                                                      \
+    {                                                                                                              \
+        template <>                                                                                                \
+        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skControllerId,                             \
+                            I2cInterruptSource::kTransferComplete>                                                 \
+        {                                                                                                          \
+            static void handle()                                                                                   \
+            {                                                                                                      \
+                (instance).handle_tc_event_isr();                                                                  \
+            }                                                                                                      \
+        };                                                                                                         \
+                                                                                                                   \
+        template <>                                                                                                \
+        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skControllerId,                             \
+                            I2cInterruptSource::kStopDetection>                                                    \
+        {                                                                                                          \
+            static void handle()                                                                                   \
+            {                                                                                                      \
+                (instance).handle_stop_event_isr();                                                                \
+            }                                                                                                      \
+        };                                                                                                         \
+                                                                                                                   \
+        template <>                                                                                                \
+        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skControllerId,                             \
+                            I2cInterruptSource::kNACKReceived>                                                     \
+        {                                                                                                          \
+            static void handle()                                                                                   \
+            {                                                                                                      \
+                (instance).handle_nack_event_isr();                                                                \
+            }                                                                                                      \
+        };                                                                                                         \
+                                                                                                                   \
+        template <>                                                                                                \
+        struct I2cIsrRouter<std::remove_cvref_t<decltype((instance))>::skControllerId, I2cInterruptSource::kError> \
+        {                                                                                                          \
+            static void handle(I2cErrorInterruptSource error)                                                      \
+            {                                                                                                      \
+                (instance).handle_error_isr(error);                                                                \
+            }                                                                                                      \
+        };                                                                                                         \
     }

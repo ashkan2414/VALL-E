@@ -11,88 +11,89 @@ namespace valle::platform
     /**
      * @brief Check if any granular ISR handler is bound for this UART.
      *
-     * @tparam tkPeripheralId UART Peripheral ID.
+     * @tparam tkControllerId UART Controller ID.
      */
-    template <UartPeripheralId tkPeripheralId>
+    template <UartControllerId tkControllerId>
     [[nodiscard]] consteval static inline bool uart_has_any_granular_isr_handler()
     {
-        constexpr auto values = magic_enum::enum_values<UartInterruptType>();
+        constexpr auto values = magic_enum::enum_values<UartInterruptSource>();
 
         return [values]<std::size_t... Is>(std::index_sequence<Is...>)
         {
-            return (CBoundIsrRouter<UartIsrRouter<tkPeripheralId, values[Is]>> || ...);
+            return (CBoundIsrRouter<UartIsrRouter<tkControllerId, values[Is]>> || ...);
         }(std::make_index_sequence<values.size()>{});
     }
 
     /**
      * @brief UART Interrupt Handler Router
      *
-     * @tparam tkPeripheralId UART Index (1-5 for USART1-Uart5, 6 for LPUart1)
+     * @tparam tkControllerId UART Index (1-5 for USART1-Uart5, 6 for LPUart1)
      */
-    template <UartPeripheralId tkPeripheralId>
+    template <UartControllerId tkControllerId>
     static inline void uart_irq_handler()
     {
-        using GlobalRouterT               = UartGlobalIsrRouter<tkPeripheralId>;
-        constexpr bool kHasGlobalRouter   = CBoundIsrRouter<GlobalRouterT>;
-        constexpr bool kHasGranularRouter = uart_has_any_granular_isr_handler<tkPeripheralId>();
-        static_assert(!(kHasGlobalRouter && kHasGranularRouter), "VALLE CONFLICT: Global and Granular ISRs detected.");
+        using IrqRouterT                   = UartIrqRouter<tkControllerId>;
+        constexpr bool has_irq_handler     = CBoundIsrRouter<IrqRouterT>;
+        constexpr bool has_source_handlers = uart_has_any_granular_isr_handler<tkControllerId>();
+        static_assert(!(has_irq_handler && has_source_handlers),
+                      "VALLE CONFLICT: IRQ and Source ISR handlers detected.");
 
-        if constexpr (kHasGlobalRouter)
+        if constexpr (has_irq_handler)
         {
-            GlobalRouterT::handle();
+            IrqRouterT::handle();
             return;
         }
 
-#define HANDLE_UART_INT(tkIntType)                                      \
-    {                                                                   \
-        using RouterT = UartIsrRouter<tkPeripheralId, (tkIntType)>;     \
-        using TraitsT = UartInterruptTraits<tkPeripheralId, tkIntType>; \
-        if constexpr (CBoundIsrRouter<RouterT>)                         \
-        {                                                               \
-            if (TraitsT::is_pending())                                  \
-            {                                                           \
-                if constexpr (kIsrRouterConfigAck<RouterT>)             \
-                {                                                       \
-                    TraitsT::ack();                                     \
-                }                                                       \
-                RouterT::handle();                                      \
-            }                                                           \
-        }                                                               \
+#define HANDLE_UART_INT(tkIntSource)                                               \
+    {                                                                              \
+        using RouterT = UartIsrRouter<tkControllerId, (tkIntSource)>;              \
+        using TraitsT = UartInterruptSourceInterface<tkControllerId, tkIntSource>; \
+        if constexpr (CBoundIsrRouter<RouterT>)                                    \
+        {                                                                          \
+            if (TraitsT::is_pending())                                             \
+            {                                                                      \
+                if constexpr (kIsrRouterConfigAck<RouterT>)                        \
+                {                                                                  \
+                    TraitsT::clear();                                              \
+                }                                                                  \
+                RouterT::handle();                                                 \
+            }                                                                      \
+        }                                                                          \
     }
 
         // --- Core Status ---
-        HANDLE_UART_INT(UartInterruptType::kTxEmpty);
-        HANDLE_UART_INT(UartInterruptType::kTxComplete);
-        HANDLE_UART_INT(UartInterruptType::kTxCompleteBeforeGuard);
-        HANDLE_UART_INT(UartInterruptType::kRxNotEmpty);
-        HANDLE_UART_INT(UartInterruptType::kIdle);
+        HANDLE_UART_INT(UartInterruptSource::kTxEmpty);
+        HANDLE_UART_INT(UartInterruptSource::kTxComplete);
+        HANDLE_UART_INT(UartInterruptSource::kTxCompleteBeforeGuard);
+        HANDLE_UART_INT(UartInterruptSource::kRxNotEmpty);
+        HANDLE_UART_INT(UartInterruptSource::kIdle);
 
         // --- Hardware Flow Control ---
-        HANDLE_UART_INT(UartInterruptType::kCTS);
+        HANDLE_UART_INT(UartInterruptSource::kCTS);
 
         // --- FIFO Management ---
-        HANDLE_UART_INT(UartInterruptType::kTxFifoEmpty);
-        HANDLE_UART_INT(UartInterruptType::kRxFifoFull);
-        HANDLE_UART_INT(UartInterruptType::kTxFifoThreshold);
-        HANDLE_UART_INT(UartInterruptType::kRxFifoThreshold);
+        HANDLE_UART_INT(UartInterruptSource::kTxFifoEmpty);
+        HANDLE_UART_INT(UartInterruptSource::kRxFifoFull);
+        HANDLE_UART_INT(UartInterruptSource::kTxFifoThreshold);
+        HANDLE_UART_INT(UartInterruptSource::kRxFifoThreshold);
 
         // --- Errors ---
-        HANDLE_UART_INT(UartInterruptType::kOverrun);
-        HANDLE_UART_INT(UartInterruptType::kParityError);
-        HANDLE_UART_INT(UartInterruptType::kFramingError);
-        HANDLE_UART_INT(UartInterruptType::kNoiseError);
-        HANDLE_UART_INT(UartInterruptType::kSpiSlaveUnderrun);
+        HANDLE_UART_INT(UartInterruptSource::kOverrun);
+        HANDLE_UART_INT(UartInterruptSource::kParityError);
+        HANDLE_UART_INT(UartInterruptSource::kFramingError);
+        HANDLE_UART_INT(UartInterruptSource::kNoiseError);
+        HANDLE_UART_INT(UartInterruptSource::kSpiSlaveUnderrun);
 
         // --- Advanced Protocols ---
-        HANDLE_UART_INT(UartInterruptType::kCharMatch);
-        HANDLE_UART_INT(UartInterruptType::kReceiverTimeout);
-        HANDLE_UART_INT(UartInterruptType::kEndOfBlock);
-        HANDLE_UART_INT(UartInterruptType::kLinBreak);
-        HANDLE_UART_INT(UartInterruptType::kWakeup);
+        HANDLE_UART_INT(UartInterruptSource::kCharMatch);
+        HANDLE_UART_INT(UartInterruptSource::kReceiverTimeout);
+        HANDLE_UART_INT(UartInterruptSource::kEndOfBlock);
+        HANDLE_UART_INT(UartInterruptSource::kLinBreak);
+        HANDLE_UART_INT(UartInterruptSource::kWakeup);
 
         // --- Auto Baud Rate ---
-        HANDLE_UART_INT(UartInterruptType::kAutoBaudError);
-        HANDLE_UART_INT(UartInterruptType::kAutoBaudFinished);
+        HANDLE_UART_INT(UartInterruptSource::kAutoBaudError);
+        HANDLE_UART_INT(UartInterruptSource::kAutoBaudFinished);
 
 #undef HANDLE_UART_INT
     }
@@ -101,32 +102,32 @@ namespace valle::platform
     {
         void USART1_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            uart_irq_handler<UartPeripheralId::kUSART1>();
+            uart_irq_handler<UartControllerId::kUSART1>();
         }
 
         void USART2_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            uart_irq_handler<UartPeripheralId::kUSART2>();
+            uart_irq_handler<UartControllerId::kUSART2>();
         }
 
         void USART3_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            uart_irq_handler<UartPeripheralId::kUSART3>();
+            uart_irq_handler<UartControllerId::kUSART3>();
         }
 
         void UART4_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            uart_irq_handler<UartPeripheralId::kUart4>();
+            uart_irq_handler<UartControllerId::kUart4>();
         }
 
         void UART5_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            uart_irq_handler<UartPeripheralId::kUart5>();
+            uart_irq_handler<UartControllerId::kUart5>();
         }
 
         void LPUART1_IRQHandler(void)  // NOLINT(readability-identifier-naming)
         {
-            uart_irq_handler<UartPeripheralId::kLPUart1>();
+            uart_irq_handler<UartControllerId::kLPUart1>();
         }
     }
 }  // namespace valle::platform

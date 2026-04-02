@@ -99,7 +99,7 @@ namespace valle::platform
         typename TConverter::ConfigT converter_config{};
     };
 
-    template <CDevice TAdcChannel, CAdcConverter TConverter = AdcRawValueConverter<IdentityConverter<AdcValue>>>
+    template <C TAdcChannel, CAdcConverter TConverter = AdcRawValueConverter<IdentityConverter<AdcValue>>>
     class AdcAnalogSensorDriver
     {
     public:

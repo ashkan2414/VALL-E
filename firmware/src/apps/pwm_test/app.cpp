@@ -25,14 +25,13 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::Hrtim1ControllerDevice& dev)
+            [](platform::GpioPortA& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::Hrtim1Controller& dev)
             { expect(dev.init(), "Failed to initialize Hrtim1 Controller Device"); },
-            [](platform::DmaMux1ControllerDevice& dev)
+            [](platform::DmaMux1Controller& dev)
             { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
 
-            [](platform::Dma1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::Dma1Controller& dev) { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
         }  // namespace valle
         );
     }
@@ -50,7 +49,7 @@ namespace valle::app
                    .parity            = platform::UartParity::kNone,
                    .transfer_mode     = platform::UartTransferMode::kTxRx,
                    .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DmaPriority::kHigh,
+                   .dma_priority      = platform::DmaChannelPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),
@@ -73,8 +72,8 @@ namespace valle::app
                            .fault_state = platform::HrtimTimerOutputFaultState::kInactive,
                            .gpio_config =
                                platform::HrtimTimerOutputGpioConfig{
-                                   .speed = platform::GpioSpeedMode::kLow,
-                                   .pull  = platform::GpioPullMode::kNoPull,
+                                   .speed = platform::GpioPinSpeedMode::kLow,
+                                   .pull  = platform::GpioPinPullMode::kNoPull,
                                },
                        },
                    .deadtime_config = platform::HrtimTimerDeadTimeConfig{.rise_ns = 200.0F, .fall_ns = 200.0F},

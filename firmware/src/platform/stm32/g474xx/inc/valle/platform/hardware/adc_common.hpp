@@ -6,16 +6,30 @@
 
 namespace valle::platform
 {
-    enum class AdcCommonId : uint32_t
+    // ============================================================================
+    // ID
+    // ============================================================================
+    enum class AdcCommonControllerId : uint8_t
     {
-        kAdc12,
+        kAdc12 = 0,
         kAdc345
     };
+
+    // =============================================================================
+    // SPECIFICATIONS
+    // ============================================================================
+    struct AdcCommonControllerSpec
+    {
+        AdcCommonControllerId controller_id;
+    };
+
+    inline constexpr auto kAdc12CommonControllerSpec  = AdcCommonControllerSpec{AdcCommonControllerId::kAdc12};
+    inline constexpr auto kAdc345CommonControllerSpec = AdcCommonControllerSpec{AdcCommonControllerId::kAdc345};
 
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class AdcCommonAsyncClockPrescaler
+    enum class AdcCommonAsyncClockPrescaler : uint32_t
     {
         kDiv1   = LL_ADC_CLOCK_ASYNC_DIV1,
         kDiv2   = LL_ADC_CLOCK_ASYNC_DIV2,
@@ -31,48 +45,27 @@ namespace valle::platform
         kDiv256 = LL_ADC_CLOCK_ASYNC_DIV256,
     };
 
-    enum class AdcCommonSyncClockPrescaler
+    enum class AdcCommonSyncClockPrescaler : uint32_t
     {
         kDiv1 = LL_ADC_CLOCK_SYNC_PCLK_DIV1,
         kDiv2 = LL_ADC_CLOCK_SYNC_PCLK_DIV2,
         kDiv4 = LL_ADC_CLOCK_SYNC_PCLK_DIV4
     };
 
-    // ============================================================================
-    // HARDWARE TRAITS
-    // ============================================================================
-    template <AdcCommonId tkCommonId>
-    struct AdcCommonTraits;
+    // =========================================================================
+    // ROOT TRAITS
+    // ===========================================================================
 
-    template <>
-    struct AdcCommonTraits<AdcCommonId::kAdc12>
-    {
-        static inline Adc_Common_TypeDef* const skInstance = Adc12_COMMON;
-
-        static void enable_clock()
-        {
-            LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_ADC12);
-        }
-    };
-
-    template <>
-    struct AdcCommonTraits<AdcCommonId::kAdc345>
-    {
-        static inline Adc_Common_TypeDef* const skInstance = Adc345_COMMON;
-
-        static void enable_clock()
-        {
-            LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_ADC345);
-        }
-    };
-
-    // ============================================================================
-    // INTERFACE
-    // ============================================================================
-
-    struct AdcCommonRootInterface
+    struct AdcCommonRootTraits
     {
         static constexpr uint32_t skMaxClockFreqHz = 60'000'000U;  // 60MHz
+
+        [[nodiscard]] static constexpr uint8_t controller_id_to_index(const AdcCommonControllerId controller_id)
+        {
+            static_assert(static_cast<uint8_t>(AdcCommonControllerId::kAdc12) == 0,
+                          "AdcCommonControllerId enum values must start at 0");
+            return static_cast<uint8_t>(controller_id);
+        }
 
         static constexpr uint32_t get_prescaler_factor(const AdcCommonAsyncClockPrescaler prescaler)
         {
@@ -139,4 +132,105 @@ namespace valle::platform
         }
     };
 
+    // ============================================================================
+    // HARDWARE TRAITS
+    // ============================================================================
+    template <AdcCommonControllerSpec tkControllerSpec>
+    struct AdcCommonControllerTraits;
+
+    template <>
+    struct AdcCommonControllerTraits<AdcCommonControllerSpec{AdcCommonControllerId::kAdc12}>
+    {
+        static inline ADC_Common_TypeDef *const skInstance = ADC12_COMMON;
+
+        static void enable_clock()
+        {
+            LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_ADC12);
+        }
+    };
+
+    template <>
+    struct AdcCommonControllerTraits<AdcCommonControllerSpec{AdcCommonControllerId::kAdc345}>
+    {
+        static inline ADC_Common_TypeDef *const skInstance = ADC345_COMMON;
+
+        static void enable_clock()
+        {
+            LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_ADC345);
+        }
+    };
+
+    // ============================================================================
+    // INTERFACE
+    // ============================================================================
+
+    template <AdcCommonControllerSpec tkControllerSpec>
+    struct AdcCommonControllerInterface : public AdcCommonRootTraits
+    {
+        using TraitsT = AdcCommonControllerTraits<tkControllerSpec>;
+
+        void enable_clock()
+        {
+            if constexpr (tkControllerSpec.controller_id == AdcCommonControllerId::kAdc12)
+            {
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_ADC12);
+            }
+            else if constexpr (tkControllerSpec.controller_id == AdcCommonControllerId::kAdc345)
+            {
+                LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_ADC345);
+            }
+            else
+            {
+                static_assert(kAlwaysFalseV<tkControllerSpec.controller_id>, "Unsupported ADC Common ID");
+            }
+        }
+
+        void set_common_clock_async(const AdcCommonAsyncClockPrescaler prescaler) const
+        {
+            LL_ADC_SetCommonClock(TraitsT::skInstance, static_cast<uint32_t>(prescaler));
+        }
+
+        void set_common_clock_sync(const AdcCommonSyncClockPrescaler prescaler) const
+        {
+            LL_ADC_SetCommonClock(TraitsT::skInstance, static_cast<uint32_t>(prescaler));
+        }
+    };
+
 }  // namespace valle::platform
+
+__STATIC_INLINE void LL_ADC_SetCommonPathInternalCh(ADC_Common_TypeDef *ADCxy_COMMON, uint32_t PathInternal)
+__STATIC_INLINE void LL_ADC_SetCommonPathInternalChAdd(ADC_Common_TypeDef *ADCxy_COMMON, uint32_t PathInternal)
+__STATIC_INLINE void LL_ADC_SetCommonPathInternalChRem(ADC_Common_TypeDef *ADCxy_COMMON, uint32_t PathInternal)
+__STATIC_INLINE uint32_t LL_ADC_GetCommonPathInternalCh(const ADC_Common_TypeDef *ADCxy_COMMON)
+
+__STATIC_INLINE void LL_ADC_SetMultimode(ADC_Common_TypeDef *ADCxy_COMMON, uint32_t Multimode)
+__STATIC_INLINE uint32_t LL_ADC_GetMultimode(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE void LL_ADC_SetMultiDMATransfer(ADC_Common_TypeDef *ADCxy_COMMON, uint32_t MultiDMATransfer)
+__STATIC_INLINE uint32_t LL_ADC_GetMultiDMATransfer(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE void LL_ADC_SetMultiTwoSamplingDelay(ADC_Common_TypeDef *ADCxy_COMMON, uint32_t MultiTwoSamplingDelay)
+__STATIC_INLINE uint32_t LL_ADC_GetMultiTwoSamplingDelay(const ADC_Common_TypeDef *ADCxy_COMMON)
+
+__STATIC_INLINE uint32_t LL_ADC_REG_ReadMultiConversionData32(const ADC_Common_TypeDef *ADCxy_COMMON,
+
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_ADRDY(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_ADRDY(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_EOC(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_EOC(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_EOS(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_EOS(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_OVR(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_OVR(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_EOSMP(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_EOSMP(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_JEOC(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_JEOC(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_JEOS(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_JEOS(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_JQOVF(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_JQOVF(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_AWD1(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_AWD1(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_AWD2(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_AWD2(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_MST_AWD3(const ADC_Common_TypeDef *ADCxy_COMMON)
+__STATIC_INLINE uint32_t LL_ADC_IsActiveFlag_SLV_AWD3(const ADC_Common_TypeDef *ADCxy_COMMON)

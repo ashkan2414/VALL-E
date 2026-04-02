@@ -5,47 +5,21 @@
 
 namespace valle::platform
 {
-    // =========================================================================
-    // Hsi48 Oscillator INFO DEVICE
-    // =========================================================================
-    template <typename T = void>
-    class Hsi48OscillatorInfoDevice
-    {
-    public:
-        struct Descriptor : public SharedDeviceDescriptor
-        {
-            constexpr static bool skNeedsInit = false;
-        };
-
-        using InterfaceT = Hsi48OscillatorInterface;
-
-        using InjectDevices = TypeList<>;
-
-        [[nodiscard]] bool is_ready() const
-        {
-            return InterfaceT::is_ready();
-        }
-
-        [[nodiscard]] constexpr uint32_t get_frequency_hz() const
-        {
-            return InterfaceT::skFrequencyHz;
-        }
-    };
 
     // =========================================================================
-    // Hsi48 Oscillator DEVICE
+    // HSI48 Oscillator DEVICE
     // =========================================================================
 
     // -----------------------------------------------------------------------------
     // CONFIGURATION
     // -----------------------------------------------------------------------------
-    struct Hsi48OscillatorConfig
+    struct HSI48OscillatorConfig
     {
         bool enabled = true;
 
         [[nodiscard]] constexpr uint32_t get_frequency_hz() const
         {
-            return enabled ? Hsi48OscillatorInterface::skFrequencyHz : 0U;
+            return enabled ? HSI48OscillatorInterface::skFrequencyHz : 0U;
         }
     };
 
@@ -53,33 +27,39 @@ namespace valle::platform
     // DEVICE
     // -----------------------------------------------------------------------------
     template <typename T = void>
-    class Hsi48OscillatorDevice
+    class HSI48Oscillator
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = Hsi48OscillatorInterface;
+        using HdiT          = HSI48OscillatorHdi<T>;
+        using InjectDevices = TypeList<HdiT>;
 
-        using InjectDevices = TypeList<>;
+    private:
+        [[no_unique_address]] DeviceRef<HdiT> m_hw;
 
-        [[nodiscard]] bool init(const Hsi48OscillatorConfig& config)
+    public:
+        explicit HSI48Oscillator(DeviceRef<HdiT>&& hardware_key) : m_hw(std::move(hardware_key))
+        {
+        }
+
+        [[nodiscard]] bool init(const HSI48OscillatorConfig& config)
         {
             if (config.enabled)
             {
-                InterfaceT::enable();
+                m_hw->enable();
 
-                expect(wait_for_ready(InterfaceT::skDefaultEnableTimeoutCount),
-                       "Hsi48 failed to become ready within timeout");
+                expect(wait_for_ready(HdiT::skDefaultEnableTimeoutCount),
+                       "HSI48 failed to become ready within timeout");
 
                 return true;
             }
 
-            InterfaceT::disable();
+            m_hw->disable();
 
-            expect(wait_for_not_ready(InterfaceT::skDefaultDisableTimeoutCount),
-                   "Hsi48 failed to disable within timeout");
+            expect(wait_for_not_ready(HdiT::skDefaultDisableTimeoutCount), "HSI48 failed to disable within timeout");
 
             return true;
         }
@@ -87,13 +67,12 @@ namespace valle::platform
     private:
         [[nodiscard]] static bool wait_for_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() { return InterfaceT::is_ready(); },
-                                                                  timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([]() { return m_hw->is_ready(); }, timeout_count);
         }
 
         [[nodiscard]] static bool wait_for_not_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !InterfaceT::is_ready(); },
+            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !m_hw->is_ready(); },
                                                                   timeout_count);
         }
     };

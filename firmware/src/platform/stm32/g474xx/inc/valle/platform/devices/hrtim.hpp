@@ -7,7 +7,7 @@
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/rcc.hpp"
 #include "valle/platform/drivers/gpio/alternate_function.hpp"
-#include "valle/platform/hardware/hrtim.hpp"
+#include "valle/platform/hdi/hrtim.hpp"
 
 namespace valle::platform
 {
@@ -16,49 +16,48 @@ namespace valle::platform
     // =============================================================================
 
     // -----------------------------------------------------------------------------
-    // COMPILE TimE CONFIGURATIONS
+    // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
     struct HrtimControllerCTDefaultConfig
     {
-        using SCInPinT  = GpioNullPinDevice;
-        using SCOutPinT = GpioNullPinDevice;
+        using SCInPinT  = NullDevice;
+        using SCOutPinT = NullDevice;
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType>
-    using HrtimControllerDefaultPinDevice = HrtimControllerPinMap<tkPeripheralId, tkPinType, 0>;
+    template <HrtimControllerId tkControllerId, HrtimControllerGpioPinType tkPinType>
+    using HrtimControllerDefaultPin = HrtimControllerPinMap<tkControllerId, tkPinType, 0>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType, typename TPinDevice>
-    concept CValidHrtimControllerPinDevice =
-        CGpioPinDevice<TPinDevice> &&
-        CValidHrtimControllerPin<tkPeripheralId, tkPinType, TPinDevice::skPortId, TPinDevice::skPinId>;
+    template <HrtimControllerId tkControllerId, HrtimControllerGpioPinType tkPinType, typename TPin>
+    concept CValidHrtimControllerPin =
+        CGpioPin<TPin> && CValidHrtimControllerPin<tkControllerId, tkPinType, TPin::skPortId, TPin::skPinId>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType, typename TPinDevice>
+    template <HrtimControllerId tkControllerId, HrtimControllerGpioPinType tkPinType, typename TPin>
     concept CValidHrtimControllerPinCTConfig =
-        CNullGpioPinDevice<TPinDevice> || CValidHrtimControllerPinDevice<tkPeripheralId, tkPinType, TPinDevice>;
+        CNullDevice<TPin> || CValidHrtimControllerPin<tkControllerId, tkPinType, TPin>;
 
-    template <typename T, HrtimPeripheralId tkPeripheralId>
+    template <typename T, HrtimControllerId tkControllerId>
     concept CValidHrtimControllerCTConfig =
         requires {
             typename T::SCInPinT;
             typename T::SCOutPinT;
         } &&
-        (CValidHrtimControllerPinCTConfig<tkPeripheralId, HrtimControllerGpioPinType::kSCIn, typename T::SCInPinT>) &&
-        (CValidHrtimControllerPinCTConfig<tkPeripheralId, HrtimControllerGpioPinType::kSCOut, typename T::SCOutPinT>);
+        (CValidHrtimControllerPinCTConfig<tkControllerId, HrtimControllerGpioPinType::kSCIn, typename T::SCInPinT>) &&
+        (CValidHrtimControllerPinCTConfig<tkControllerId, HrtimControllerGpioPinType::kSCOut, typename T::SCOutPinT>);
 
-    template <HrtimPeripheralId tkPeripheralId>
+    template <HrtimControllerId tkControllerId>
     struct HrtimControllerCTConfigRegistry
     {
         static constexpr auto skConfig = HrtimControllerCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(tkPeripheralId, config)                        \
+#define VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(tkControllerId, config)                        \
     namespace valle::platform                                                                  \
     {                                                                                          \
         template <>                                                                            \
-        struct HrtimControllerCTConfigRegistry<(tkPeripheralId)>                               \
+        struct HrtimControllerCTConfigRegistry<(tkControllerId)>                               \
         {                                                                                      \
             static constexpr auto skConfig = (config);                                         \
-            static_assert(CValidHrtimControllerCTConfig<decltype(skConfig), (tkPeripheralId)>, \
+            static_assert(CValidHrtimControllerCTConfig<decltype(skConfig), (tkControllerId)>, \
                           "Invalid HRTIM Controller CT Config");                               \
         };                                                                                     \
     }
@@ -69,54 +68,54 @@ namespace valle::platform
 
     namespace detail
     {
-        template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType, typename TPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimControllerGpioPinType tkPinType, typename TPin>
         struct HrtimControllerGpioPinDriverHelper
         {
             using type = GpioAlternateFunctionDriver<
-                TPinDevice,
-                kHrtimControllerPinAF<tkPeripheralId, tkPinType, TPinDevice::skPortId, TPinDevice::skPinId>>;
+                TPin,
+                kHrtimControllerPinAF<tkControllerId, tkPinType, TPin::skPortId, TPin::skPinId>>;
         };
 
-        template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType>
-        struct HrtimControllerGpioPinDriverHelper<tkPeripheralId, tkPinType, GpioNullPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimControllerGpioPinType tkPinType>
+        struct HrtimControllerGpioPinDriverHelper<tkControllerId, tkPinType, NullDevice>
         {
             using type = std::monostate;
         };
 
     }  // namespace detail
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimControllerGpioPinType tkPinType, typename TPinDevice>
+    template <HrtimControllerId tkControllerId, HrtimControllerGpioPinType tkPinType, typename TPin>
     using HrtimControllerGpioPinDriver =
-        typename detail::HrtimControllerGpioPinDriverHelper<tkPeripheralId, tkPinType, TPinDevice>::type;
+        typename detail::HrtimControllerGpioPinDriverHelper<tkControllerId, tkPinType, TPin>::type;
 
     // -----------------------------------------------------------------------------
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <HrtimPeripheralId tkPeripheralId>
-    class HrtimControllerDevice
+    template <HrtimControllerId tkControllerId>
+    class HrtimController
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
-        static constexpr HrtimPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr HrtimControllerId skControllerId = tkControllerId;
 
-        using ControllerTraitsT          = HrtimControllerTraits<tkPeripheralId>;
-        using CTConfigRegistryT          = HrtimControllerCTConfigRegistry<tkPeripheralId>;
+        using ControllerTraitsT          = HrtimControllerTraits<tkControllerId>;
+        using CTConfigRegistryT          = HrtimControllerCTConfigRegistry<tkControllerId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         using SCInPinT  = typename CTConfigT::SCInPinT;
         using SCOutPinT = typename CTConfigT::SCOutPinT;
 
-        static constexpr bool skHasSCInPin  = !CNullGpioPinDevice<SCInPinT>;
-        static constexpr bool skHasSCOutPin = !CNullGpioPinDevice<SCOutPinT>;
+        static constexpr bool skHasSCInPin  = !CNullDevice<SCInPinT>;
+        static constexpr bool skHasSCOutPin = !CNullDevice<SCOutPinT>;
 
         using SCInPinDriverT =
-            HrtimControllerGpioPinDriver<tkPeripheralId, HrtimControllerGpioPinType::kSCIn, SCInPinT>;
+            HrtimControllerGpioPinDriver<tkControllerId, HrtimControllerGpioPinType::kSCIn, SCInPinT>;
         using SCOutPinDriverT =
-            HrtimControllerGpioPinDriver<tkPeripheralId, HrtimControllerGpioPinType::kSCOut, SCOutPinT>;
+            HrtimControllerGpioPinDriver<tkControllerId, HrtimControllerGpioPinType::kSCOut, SCOutPinT>;
 
         using InjectDevices = FilterNullDevices<TypeList<SCInPinT, SCOutPinT>>;
 
@@ -126,7 +125,7 @@ namespace valle::platform
 
     public:
         template <typename... TArgs>
-        explicit HrtimControllerDevice(TArgs&&... args)
+        explicit HrtimController(TArgs&&... args)
             : m_scin_pin(extract_device_ref<skHasSCInPin, SCInPinT>(std::forward<TArgs>(args)...))
             , m_scout_pin(extract_device_ref<skHasSCOutPin, SCOutPinT>(std::forward<TArgs>(args)...))
         {
@@ -152,7 +151,7 @@ namespace valle::platform
 
             if (!calibration_success)
             {
-                VALLE_LOG_ERROR("HRTIM{} DLL Calibration timed out!", kHrtimControllerNumFromId<tkPeripheralId>);
+                VALLE_LOG_ERROR("HRTIM{} DLL Calibration timed out!", kHrtimControllerNumFromId<tkControllerId>);
                 return false;
             }
 
@@ -164,51 +163,50 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using Hrtim1ControllerDevice = HrtimControllerDevice<HrtimPeripheralId::kHrtim1>;
+    using Hrtim1Controller = HrtimController<HrtimControllerId::kHrtim1>;
 
     // =============================================================================
     // HRTIM FAULT DEVICE (SHARED DEVICE)
     // =============================================================================
 
     // -----------------------------------------------------------------------------
-    // COMPILE TimE CONFIGURATIONS
+    // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
     struct HrtimFaultCTDefaultConfig
     {
-        using PinT = GpioNullPinDevice;
+        using PinT = NullDevice;
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, uint8_t tkOutputIdx = 0>
-    using HrtimFaultPinDeviceMap = GpioPinDevice<HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>::skPortId,
-                                                 HrtimFaultPinMap<tkPeripheralId, tkFaultId, tkOutputIdx>::skPinId>;
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId, uint8_t tkOutputIdx = 0>
+    using HrtimFaultPinDeviceMap = GpioPin<HrtimFaultPinMap<tkControllerId, tkFaultId, tkOutputIdx>::skPortId,
+                                           HrtimFaultPinMap<tkControllerId, tkFaultId, tkOutputIdx>::skPinId>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
-    using HrtimFaultDefaultPinDevice = HrtimFaultPinDeviceMap<tkPeripheralId, tkFaultId, 0>;
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId>
+    using HrtimFaultDefaultPin = HrtimFaultPinDeviceMap<tkControllerId, tkFaultId, 0>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, typename TPinDevice>
-    concept CValidHrtimFaultPinDevice =
-        CGpioPinDevice<TPinDevice> &&
-        CValidHrtimFaultPin<tkPeripheralId, tkFaultId, TPinDevice::skPortId, TPinDevice::skPinId>;
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId, typename TPin>
+    concept CValidHrtimFaultPin =
+        CGpioPin<TPin> && CValidHrtimFaultPin<tkControllerId, tkFaultId, TPin::skPortId, TPin::skPinId>;
 
-    template <typename T, HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
-    concept CValidHrtimFaultCTConfig =
-        requires { typename T::PinT; } && (CNullGpioPinDevice<typename T::PinT> ||
-                                           CValidHrtimFaultPinDevice<tkPeripheralId, tkFaultId, typename T::PinT>);
+    template <typename T, HrtimControllerId tkControllerId, HrtimFaultId tkFaultId>
+    concept CValidHrtimFaultCTConfig = requires {
+        typename T::PinT;
+    } && (CNullDevice<typename T::PinT> || CValidHrtimFaultPin<tkControllerId, tkFaultId, typename T::PinT>);
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId>
     struct HrtimFaultCTConfigRegistry
     {
         static constexpr auto skConfig = HrtimFaultCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_HRTIM_FAULT_CT_CONFIG(tkPeripheralId, tkFaultId, config)                          \
+#define VALLE_DEFINE_HRTIM_FAULT_CT_CONFIG(tkControllerId, tkFaultId, config)                          \
     namespace valle::platform                                                                          \
     {                                                                                                  \
         template <>                                                                                    \
-        struct HrtimFaultCTConfigRegistry<(tkPeripheralId), (tkFaultId)>                               \
+        struct HrtimFaultCTConfigRegistry<(tkControllerId), (tkFaultId)>                               \
         {                                                                                              \
             static constexpr auto skConfig = (config);                                                 \
-            static_assert(CValidHrtimFaultCTConfig<decltype(skConfig), (tkPeripheralId), (tkFaultId)>, \
+            static_assert(CValidHrtimFaultCTConfig<decltype(skConfig), (tkControllerId), (tkFaultId)>, \
                           "Invalid HRTIM Fault CT Config");                                            \
         };                                                                                             \
     }
@@ -234,51 +232,51 @@ namespace valle::platform
 
     namespace detail
     {
-        template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, typename TPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId, typename TPin>
         struct HrtimFaultGpioPinDriverHelper
         {
-            using type = GpioAlternateFunctionDriver<
-                TPinDevice,
-                kHrtimFaultPinAF<tkPeripheralId, tkFaultId, TPinDevice::skPortId, TPinDevice::skPinId>>;
+            using type =
+                GpioAlternateFunctionDriver<TPin,
+                                            kHrtimFaultPinAF<tkControllerId, tkFaultId, TPin::skPortId, TPin::skPinId>>;
         };
 
-        template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
-        struct HrtimFaultGpioPinDriverHelper<tkPeripheralId, tkFaultId, GpioNullPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId>
+        struct HrtimFaultGpioPinDriverHelper<tkControllerId, tkFaultId, NullDevice>
         {
             using type = std::monostate;
         };
 
     }  // namespace detail
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId, typename TPinDevice>
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId, typename TPin>
     using HrtimFaultGpioPinDriver =
-        typename detail::HrtimFaultGpioPinDriverHelper<tkPeripheralId, tkFaultId, TPinDevice>::type;
+        typename detail::HrtimFaultGpioPinDriverHelper<tkControllerId, tkFaultId, TPin>::type;
 
     // -----------------------------------------------------------------------------
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
-    class HrtimFaultDevice
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId>
+    class HrtimFault
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        static constexpr HrtimPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr HrtimControllerId skControllerId = tkControllerId;
         static constexpr HrtimFaultId      skFaultId      = tkFaultId;
 
-        using ControllerT       = HrtimControllerDevice<tkPeripheralId>;
-        using ControllerTraitsT = HrtimControllerTraits<tkPeripheralId>;
-        using FaultTraitsT      = HrtimFaultTraits<tkPeripheralId, skFaultId>;
+        using ControllerT       = HrtimController<tkControllerId>;
+        using ControllerTraitsT = HrtimControllerTraits<tkControllerId>;
+        using FaultTraitsT      = HrtimFaultTraits<tkControllerId, skFaultId>;
 
-        using CTConfigRegistryT          = HrtimFaultCTConfigRegistry<tkPeripheralId, skFaultId>;
+        using CTConfigRegistryT          = HrtimFaultCTConfigRegistry<tkControllerId, skFaultId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         using PinT       = typename CTConfigT::PinT;
-        using PinDriverT = HrtimFaultGpioPinDriver<tkPeripheralId, skFaultId, PinT>;
+        using PinDriverT = HrtimFaultGpioPinDriver<tkControllerId, skFaultId, PinT>;
 
         using InjectDevices = FilterNullDevices<TypeList<ControllerT, PinT>>;
 
@@ -288,9 +286,9 @@ namespace valle::platform
 
     public:
         template <typename... TArgs>
-        explicit HrtimFaultDevice(TArgs&&... args)
+        explicit HrtimFault(TArgs&&... args)
             : m_controller(extract_device_ref<true, ControllerT>(std::forward<TArgs>(args)...))
-            , m_pin(extract_device_ref<!CNullGpioPinDevice<PinT>, PinT>(std::forward<TArgs>(args)...))
+            , m_pin(extract_device_ref<!CNullDevice<PinT>, PinT>(std::forward<TArgs>(args)...))
         {
         }
 
@@ -337,7 +335,7 @@ namespace valle::platform
         }
     };
 
-    class HrtimNullFaultDevice
+    class HrtimNullFault
     {
     public:
         struct Descriptor : public NullDeviceDescriptor
@@ -349,58 +347,57 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using Hrtim1Fault1Device = HrtimFaultDevice<HrtimPeripheralId::kHrtim1, HrtimFaultId::kFault1>;
-    using Hrtim1Fault2Device = HrtimFaultDevice<HrtimPeripheralId::kHrtim1, HrtimFaultId::kFault2>;
-    using Hrtim1Fault3Device = HrtimFaultDevice<HrtimPeripheralId::kHrtim1, HrtimFaultId::kFault3>;
-    using Hrtim1Fault4Device = HrtimFaultDevice<HrtimPeripheralId::kHrtim1, HrtimFaultId::kFault4>;
-    using Hrtim1Fault5Device = HrtimFaultDevice<HrtimPeripheralId::kHrtim1, HrtimFaultId::kFault5>;
-    using Hrtim1Fault6Device = HrtimFaultDevice<HrtimPeripheralId::kHrtim1, HrtimFaultId::kFault6>;
+    using Hrtim1Fault1 = HrtimFault<HrtimControllerId::kHrtim1, HrtimFaultId::kFault1>;
+    using Hrtim1Fault2 = HrtimFault<HrtimControllerId::kHrtim1, HrtimFaultId::kFault2>;
+    using Hrtim1Fault3 = HrtimFault<HrtimControllerId::kHrtim1, HrtimFaultId::kFault3>;
+    using Hrtim1Fault4 = HrtimFault<HrtimControllerId::kHrtim1, HrtimFaultId::kFault4>;
+    using Hrtim1Fault5 = HrtimFault<HrtimControllerId::kHrtim1, HrtimFaultId::kFault5>;
+    using Hrtim1Fault6 = HrtimFault<HrtimControllerId::kHrtim1, HrtimFaultId::kFault6>;
 
     // =============================================================================
     // HRTIM EXTERNAL EVENT DEVICE (SHARED DEVICE)
     // =============================================================================
 
     // -----------------------------------------------------------------------------
-    // COMPILE TimE CONFIGURATIONS
+    // COMPILE TIME CONFIGURATIONS
     // -----------------------------------------------------------------------------
     struct HrtimExternalEventCTDefaultConfig
     {
-        using PinT = GpioNullPinDevice;
+        using PinT = NullDevice;
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId, uint8_t tkOutputIdx = 0>
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId, uint8_t tkOutputIdx = 0>
     using HrtimExternalEventPinDeviceMap =
-        GpioPinDevice<HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>::skPortId,
-                      HrtimExternalEventPinMap<tkPeripheralId, tkExternalEventId, tkOutputIdx>::skPinId>;
+        GpioPin<HrtimExternalEventPinMap<tkControllerId, tkExternalEventId, tkOutputIdx>::skPortId,
+                HrtimExternalEventPinMap<tkControllerId, tkExternalEventId, tkOutputIdx>::skPinId>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
-    using HrtimExternalEventDefaultPinDevice = HrtimExternalEventPinDeviceMap<tkPeripheralId, tkExternalEventId, 0>;
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId>
+    using HrtimExternalEventDefaultPin = HrtimExternalEventPinDeviceMap<tkControllerId, tkExternalEventId, 0>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId, typename TPinDevice>
-    concept CValidHrtimExternalEventPinDevice =
-        CGpioPinDevice<TPinDevice> &&
-        CValidHrtimExternalEventPin<tkPeripheralId, tkExternalEventId, TPinDevice::skPortId, TPinDevice::skPinId>;
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId, typename TPin>
+    concept CValidHrtimExternalEventPin =
+        CGpioPin<TPin> && CValidHrtimExternalEventPin<tkControllerId, tkExternalEventId, TPin::skPortId, TPin::skPinId>;
 
-    template <typename T, HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
+    template <typename T, HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId>
     concept CValidHrtimExternalEventCTConfig =
         requires { typename T::PinT; } &&
-        (CNullGpioPinDevice<typename T::PinT> ||
-         CValidHrtimExternalEventPinDevice<tkPeripheralId, tkExternalEventId, typename T::PinT>);
+        (CNullDevice<typename T::PinT> ||
+         CValidHrtimExternalEventPin<tkControllerId, tkExternalEventId, typename T::PinT>);
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId>
     struct HrtimExternalEventCTConfigRegistry
     {
         static constexpr auto skConfig = HrtimExternalEventCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_HRTIM_EXTERNAL_EVENT_CT_CONFIG(tkPeripheralId, tkExternalEventId, config)                         \
+#define VALLE_DEFINE_HRTIM_EXTERNAL_EVENT_CT_CONFIG(tkControllerId, tkExternalEventId, config)                         \
     namespace valle::platform                                                                                          \
     {                                                                                                                  \
         template <>                                                                                                    \
-        struct HrtimExternalEventCTConfigRegistry<(tkPeripheralId), (tkExternalEventId)>                               \
+        struct HrtimExternalEventCTConfigRegistry<(tkControllerId), (tkExternalEventId)>                               \
         {                                                                                                              \
             static constexpr auto skConfig = (config);                                                                 \
-            static_assert(CValidHrtimExternalEventCTConfig<decltype(skConfig), (tkPeripheralId), (tkExternalEventId)>, \
+            static_assert(CValidHrtimExternalEventCTConfig<decltype(skConfig), (tkControllerId), (tkExternalEventId)>, \
                           "Invalid HRTIM ExternalEvent CT Config");                                                    \
         };                                                                                                             \
     }
@@ -424,51 +421,51 @@ namespace valle::platform
 
     namespace detail
     {
-        template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId, typename TPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId, typename TPin>
         struct HrtimExternalEventGpioPinDriverHelper
         {
             using type = GpioAlternateFunctionDriver<
-                TPinDevice,
-                kHrtimExternalEventPinAF<tkPeripheralId, tkExternalEventId, TPinDevice::skPortId, TPinDevice::skPinId>>;
+                TPin,
+                kHrtimExternalEventPinAF<tkControllerId, tkExternalEventId, TPin::skPortId, TPin::skPinId>>;
         };
 
-        template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
-        struct HrtimExternalEventGpioPinDriverHelper<tkPeripheralId, tkExternalEventId, GpioNullPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId>
+        struct HrtimExternalEventGpioPinDriverHelper<tkControllerId, tkExternalEventId, NullDevice>
         {
             using type = std::monostate;
         };
 
     }  // namespace detail
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId, typename TPinDevice>
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId, typename TPin>
     using HrtimExternalEventGpioPinDriver =
-        typename detail::HrtimExternalEventGpioPinDriverHelper<tkPeripheralId, tkExternalEventId, TPinDevice>::type;
+        typename detail::HrtimExternalEventGpioPinDriverHelper<tkControllerId, tkExternalEventId, TPin>::type;
 
     // -----------------------------------------------------------------------------
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
-    class HrtimExternalEventDevice
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId>
+    class HrtimExternalEvent
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        static constexpr HrtimPeripheralId    skPeripheralId    = tkPeripheralId;
+        static constexpr HrtimControllerId    skControllerId    = tkControllerId;
         static constexpr HrtimExternalEventId skExternalEventId = tkExternalEventId;
 
-        using ControllerT          = HrtimControllerDevice<tkPeripheralId>;
-        using ControllerTraitsT    = HrtimControllerTraits<tkPeripheralId>;
-        using ExternalEventTraitsT = HrtimExternalEventTraits<tkPeripheralId, skExternalEventId>;
+        using ControllerT          = HrtimController<tkControllerId>;
+        using ControllerTraitsT    = HrtimControllerTraits<tkControllerId>;
+        using ExternalEventTraitsT = HrtimExternalEventTraits<tkControllerId, skExternalEventId>;
 
-        using CTConfigRegistryT          = HrtimExternalEventCTConfigRegistry<tkPeripheralId, skExternalEventId>;
+        using CTConfigRegistryT          = HrtimExternalEventCTConfigRegistry<tkControllerId, skExternalEventId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         using PinT       = typename CTConfigT::PinT;
-        using PinDriverT = HrtimExternalEventGpioPinDriver<tkPeripheralId, skExternalEventId, PinT>;
+        using PinDriverT = HrtimExternalEventGpioPinDriver<tkControllerId, skExternalEventId, PinT>;
 
         using InjectDevices = FilterNullDevices<TypeList<ControllerT, PinT>>;
 
@@ -478,9 +475,9 @@ namespace valle::platform
 
     public:
         template <typename... TArgs>
-        explicit HrtimExternalEventDevice(TArgs&&... args)
+        explicit HrtimExternalEvent(TArgs&&... args)
             : m_controller(extract_device_ref<true, ControllerT>(std::forward<TArgs>(args)...))
-            , m_pin(extract_device_ref<!CNullGpioPinDevice<PinT>, PinT>(std::forward<TArgs>(args)...))
+            , m_pin(extract_device_ref<!CNullDevice<PinT>, PinT>(std::forward<TArgs>(args)...))
         {
         }
 
@@ -511,7 +508,7 @@ namespace valle::platform
         }
     };
 
-    class HrtimNullExternalEventDevice
+    class HrtimNullExternalEvent
     {
     public:
         struct Descriptor : public NullDeviceDescriptor
@@ -523,39 +520,30 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using Hrtim1ExternalEvent1Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent1>;
-    using Hrtim1ExternalEvent2Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent2>;
-    using Hrtim1ExternalEvent3Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent3>;
-    using Hrtim1ExternalEvent4Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent4>;
-    using Hrtim1ExternalEvent5Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent5>;
-    using Hrtim1ExternalEvent6Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent6>;
-    using Hrtim1ExternalEvent7Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent7>;
-    using Hrtim1ExternalEvent8Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent8>;
-    using Hrtim1ExternalEvent9Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent9>;
-    using Hrtim1ExternalEvent10Device =
-        HrtimExternalEventDevice<HrtimPeripheralId::kHrtim1, HrtimExternalEventId::kExternalEvent10>;
+    using Hrtim1ExternalEvent1 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent1>;
+    using Hrtim1ExternalEvent2 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent2>;
+    using Hrtim1ExternalEvent3 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent3>;
+    using Hrtim1ExternalEvent4 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent4>;
+    using Hrtim1ExternalEvent5 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent5>;
+    using Hrtim1ExternalEvent6 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent6>;
+    using Hrtim1ExternalEvent7 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent7>;
+    using Hrtim1ExternalEvent8 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent8>;
+    using Hrtim1ExternalEvent9 = HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent9>;
+    using Hrtim1ExternalEvent10 =
+        HrtimExternalEvent<HrtimControllerId::kHrtim1, HrtimExternalEventId::kExternalEvent10>;
 
     // =============================================================================
     // HRTIM TIMER DEVICE (UNIQUE DEVICE)
     // =============================================================================
 
     // ---------------------------------------------------------------------------
-    // COMPILE TimE CONFIGURATIONS
+    // COMPILE TIME CONFIGURATIONS
     // ---------------------------------------------------------------------------
 
     struct HrtimTimerCTDefaultConfig
     {
-        using Output1PinT = GpioNullPinDevice;
-        using Output2PinT = GpioNullPinDevice;
+        using Output1PinT = NullDevice;
+        using Output2PinT = NullDevice;
 
         constexpr static bool skUseFault1 = false;
         constexpr static bool skUseFault2 = false;
@@ -576,47 +564,40 @@ namespace valle::platform
         constexpr static bool skUseExternalEvent10 = false;
     };
 
-    template <HrtimPeripheralId     tkPeripheralId,
+    template <HrtimControllerId     tkControllerId,
               HrtimTimerId          tkTimerId,
               HrtimTimerGpioPinType tkPinType,
               uint8_t               tkOutputIdx = 0>
     using HrtimTimerPinDeviceMap =
-        GpioPinDevice<HrtimTimerPinMap<tkPeripheralId, tkTimerId, tkPinType, tkOutputIdx>::skPortId,
-                      HrtimTimerPinMap<tkPeripheralId, tkTimerId, tkPinType, tkOutputIdx>::skPinId>;
+        GpioPin<HrtimTimerPinMap<tkControllerId, tkTimerId, tkPinType, tkOutputIdx>::skPortId,
+                HrtimTimerPinMap<tkControllerId, tkTimerId, tkPinType, tkOutputIdx>::skPinId>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType>
-    using HrtimTimerDefaultPinDevice = HrtimTimerPinDeviceMap<tkPeripheralId, tkTimerId, tkPinType, 0>;
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType>
+    using HrtimTimerDefaultPin = HrtimTimerPinDeviceMap<tkControllerId, tkTimerId, tkPinType, 0>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
-    using HrtimTimerDefaultOutput1PinDevice =
-        HrtimTimerDefaultPinDevice<tkPeripheralId, tkTimerId, HrtimTimerGpioPinType::kOutput1>;
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
+    using HrtimTimerDefaultOutput1Pin =
+        HrtimTimerDefaultPin<tkControllerId, tkTimerId, HrtimTimerGpioPinType::kOutput1>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
-    using HrtimTimerDefaultOutput2PinDevice =
-        HrtimTimerDefaultPinDevice<tkPeripheralId, tkTimerId, HrtimTimerGpioPinType::kOutput2>;
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
+    using HrtimTimerDefaultOutput2Pin =
+        HrtimTimerDefaultPin<tkControllerId, tkTimerId, HrtimTimerGpioPinType::kOutput2>;
 
-    template <HrtimPeripheralId     tkPeripheralId,
-              HrtimTimerId          tkTimerId,
-              HrtimTimerGpioPinType tkPinType,
-              typename TPinDevice>
-    concept CValidHrtimTimerPinDevice =
-        CGpioPinDevice<TPinDevice> &&
-        CValidHrtimTimerPin<tkPeripheralId, tkTimerId, tkPinType, TPinDevice::skPortId, TPinDevice::skPinId>;
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType, typename TPin>
+    concept CValidHrtimTimerPin =
+        CGpioPin<TPin> && CValidHrtimTimerPin<tkControllerId, tkTimerId, tkPinType, TPin::skPortId, TPin::skPinId>;
 
-    template <HrtimPeripheralId     tkPeripheralId,
-              HrtimTimerId          tkTimerId,
-              HrtimTimerGpioPinType tkPinType,
-              typename TPinDevice>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType, typename TPin>
     concept CValidHrtimTimerPinCTConfig =
-        (CNullGpioPinDevice<TPinDevice> || CValidHrtimTimerPinDevice<tkPeripheralId, tkTimerId, tkPinType, TPinDevice>);
+        (CNullDevice<TPin> || CValidHrtimTimerPin<tkControllerId, tkTimerId, tkPinType, TPin>);
 
-    template <typename T, HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    template <typename T, HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
     concept CValidHrtimTimerCTConfig = requires { typename T::Output1PinT; } &&
-                                       (CValidHrtimTimerPinCTConfig<tkPeripheralId,
+                                       (CValidHrtimTimerPinCTConfig<tkControllerId,
                                                                     tkTimerId,
                                                                     HrtimTimerGpioPinType::kOutput1,
                                                                     typename T::Output1PinT>) &&
-                                       (CValidHrtimTimerPinCTConfig<tkPeripheralId,
+                                       (CValidHrtimTimerPinCTConfig<tkControllerId,
                                                                     tkTimerId,
                                                                     HrtimTimerGpioPinType::kOutput2,
                                                                     typename T::Output2PinT>) &&
@@ -637,20 +618,20 @@ namespace valle::platform
                                     std::is_same_v<std::remove_cvref_t<decltype(T::skUseExternalEvent9)>, bool>&&
                                     std::is_same_v<std::remove_cvref_t<decltype(T::skUseExternalEvent10)>, bool>;
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
     struct HrtimTimerCTConfigRegistry
     {
         static constexpr auto skConfig = HrtimTimerCTDefaultConfig{};
     };
 
-#define VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(tkPeripheralId, tkTimerId, config)                          \
+#define VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(tkControllerId, tkTimerId, config)                          \
     namespace valle::platform                                                                          \
     {                                                                                                  \
         template <>                                                                                    \
-        struct HrtimTimerCTConfigRegistry<(tkPeripheralId), (tkTimerId)>                               \
+        struct HrtimTimerCTConfigRegistry<(tkControllerId), (tkTimerId)>                               \
         {                                                                                              \
             static constexpr auto skConfig = (config);                                                 \
-            static_assert(CValidHrtimTimerCTConfig<decltype(skConfig), (tkPeripheralId), (tkTimerId)>, \
+            static_assert(CValidHrtimTimerCTConfig<decltype(skConfig), (tkControllerId), (tkTimerId)>, \
                           "Invalid HRTIM Timer CT Config");                                            \
         };                                                                                             \
     }
@@ -682,8 +663,8 @@ namespace valle::platform
 
     struct HrtimTimerOutputGpioConfig
     {
-        GpioSpeedMode speed = GpioSpeedMode::kHigh;
-        GpioPullMode  pull  = GpioPullMode::kNoPull;
+        GpioPinSpeedMode speed = GpioPinSpeedMode::kHigh;
+        GpioPinPullMode  pull  = GpioPinPullMode::kNoPull;
     };
 
     struct HrtimTimerDeadTimeConfig
@@ -714,67 +695,64 @@ namespace valle::platform
 
     namespace detail
     {
-        template <HrtimPeripheralId     tkPeripheralId,
+        template <HrtimControllerId     tkControllerId,
                   HrtimTimerId          tkTimerId,
                   HrtimTimerGpioPinType tkPinType,
-                  typename TPinDevice>
+                  typename TPin>
         struct HrtimTimerGpioPinDriverHelper
         {
             constexpr static auto skAF =
-                kHrtimTimerPinAF<tkPeripheralId, tkTimerId, tkPinType, TPinDevice::skPortId, TPinDevice::skPinId>;
-            using type = GpioAlternateFunctionDriver<TPinDevice, skAF>;
+                kHrtimTimerPinAF<tkControllerId, tkTimerId, tkPinType, TPin::skPortId, TPin::skPinId>;
+            using type = GpioAlternateFunctionDriver<TPin, skAF>;
         };
 
-        template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType>
-        struct HrtimTimerGpioPinDriverHelper<tkPeripheralId, tkTimerId, tkPinType, GpioNullPinDevice>
+        template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType>
+        struct HrtimTimerGpioPinDriverHelper<tkControllerId, tkTimerId, tkPinType, NullDevice>
         {
             using type = std::monostate;
         };
 
     }  // namespace detail
 
-    template <HrtimPeripheralId     tkPeripheralId,
-              HrtimTimerId          tkTimerId,
-              HrtimTimerGpioPinType tkPinType,
-              typename TPinDevice>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerGpioPinType tkPinType, typename TPin>
     using HrtimTimerGpioPinDriver =
-        typename detail::HrtimTimerGpioPinDriverHelper<tkPeripheralId, tkTimerId, tkPinType, TPinDevice>::type;
+        typename detail::HrtimTimerGpioPinDriverHelper<tkControllerId, tkTimerId, tkPinType, TPin>::type;
 
     // -----------------------------------------------------------------------------
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
-    class HrtimTimerDevice
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
+    class HrtimTimer
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        static constexpr HrtimPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr HrtimControllerId skControllerId = tkControllerId;
         static constexpr HrtimTimerId      skTimerId      = tkTimerId;
 
-        using ControllerT          = HrtimControllerDevice<tkPeripheralId>;
-        using ControllerTraitsT    = HrtimControllerTraits<tkPeripheralId>;
-        using TimerTraitsT         = HrtimTimerTraits<tkPeripheralId, tkTimerId>;
-        using InterfaceT           = HrtimTimerInterface<tkPeripheralId, tkTimerId>;
-        using InterruptControllerT = HrtimTimerInterruptController<tkPeripheralId, tkTimerId>;
+        using ControllerT          = HrtimController<tkControllerId>;
+        using ControllerTraitsT    = HrtimControllerTraits<tkControllerId>;
+        using TimerTraitsT         = HrtimTimerTraits<tkControllerId, tkTimerId>;
+        using InterfaceT           = HrtimTimerInterface<tkControllerId, tkTimerId>;
+        using InterruptControllerT = HrtimTimerInterruptController<tkControllerId, tkTimerId>;
 
-        using CTConfigRegistryT          = HrtimTimerCTConfigRegistry<tkPeripheralId, tkTimerId>;
+        using CTConfigRegistryT          = HrtimTimerCTConfigRegistry<tkControllerId, tkTimerId>;
         static constexpr auto skCTConfig = CTConfigRegistryT::skConfig;
         using CTConfigT                  = decltype(skCTConfig);
 
         using Output1PinT = typename CTConfigT::Output1PinT;
         using Output2PinT = typename CTConfigT::Output2PinT;
 
-        static constexpr bool skHasOutput1Pin = !CNullGpioPinDevice<Output1PinT>;
-        static constexpr bool skHasOutput2Pin = !CNullGpioPinDevice<Output2PinT>;
+        static constexpr bool skHasOutput1Pin = !CNullDevice<Output1PinT>;
+        static constexpr bool skHasOutput2Pin = !CNullDevice<Output2PinT>;
 
         using Output1PinDriverT =
-            HrtimTimerGpioPinDriver<tkPeripheralId, tkTimerId, HrtimTimerGpioPinType::kOutput1, Output1PinT>;
+            HrtimTimerGpioPinDriver<tkControllerId, tkTimerId, HrtimTimerGpioPinType::kOutput1, Output1PinT>;
         using Output2PinDriverT =
-            HrtimTimerGpioPinDriver<tkPeripheralId, tkTimerId, HrtimTimerGpioPinType::kOutput2, Output2PinT>;
+            HrtimTimerGpioPinDriver<tkControllerId, tkTimerId, HrtimTimerGpioPinType::kOutput2, Output2PinT>;
 
         static constexpr bool skHasFault1 = CTConfigT::skUseFault1;
         static constexpr bool skHasFault2 = CTConfigT::skUseFault2;
@@ -796,62 +774,62 @@ namespace valle::platform
         static constexpr bool skHasExternalEvent9  = CTConfigT::skUseExternalEvent9;
         static constexpr bool skHasExternalEvent10 = CTConfigT::skUseExternalEvent10;
 
-        using Fault1DeviceT = std::
-            conditional_t<skHasFault1, HrtimFaultDevice<tkPeripheralId, HrtimFaultId::kFault1>, HrtimNullFaultDevice>;
-        using Fault2DeviceT = std::
-            conditional_t<skHasFault2, HrtimFaultDevice<tkPeripheralId, HrtimFaultId::kFault2>, HrtimNullFaultDevice>;
-        using Fault3DeviceT = std::
-            conditional_t<skHasFault3, HrtimFaultDevice<tkPeripheralId, HrtimFaultId::kFault3>, HrtimNullFaultDevice>;
-        using Fault4DeviceT = std::
-            conditional_t<skHasFault4, HrtimFaultDevice<tkPeripheralId, HrtimFaultId::kFault4>, HrtimNullFaultDevice>;
-        using Fault5DeviceT = std::
-            conditional_t<skHasFault5, HrtimFaultDevice<tkPeripheralId, HrtimFaultId::kFault5>, HrtimNullFaultDevice>;
-        using Fault6DeviceT = std::
-            conditional_t<skHasFault6, HrtimFaultDevice<tkPeripheralId, HrtimFaultId::kFault6>, HrtimNullFaultDevice>;
+        using Fault1DeviceT =
+            std::conditional_t<skHasFault1, HrtimFault<tkControllerId, HrtimFaultId::kFault1>, HrtimNullFault>;
+        using Fault2DeviceT =
+            std::conditional_t<skHasFault2, HrtimFault<tkControllerId, HrtimFaultId::kFault2>, HrtimNullFault>;
+        using Fault3DeviceT =
+            std::conditional_t<skHasFault3, HrtimFault<tkControllerId, HrtimFaultId::kFault3>, HrtimNullFault>;
+        using Fault4DeviceT =
+            std::conditional_t<skHasFault4, HrtimFault<tkControllerId, HrtimFaultId::kFault4>, HrtimNullFault>;
+        using Fault5DeviceT =
+            std::conditional_t<skHasFault5, HrtimFault<tkControllerId, HrtimFaultId::kFault5>, HrtimNullFault>;
+        using Fault6DeviceT =
+            std::conditional_t<skHasFault6, HrtimFault<tkControllerId, HrtimFaultId::kFault6>, HrtimNullFault>;
 
         using ExternalEvent1DeviceT =
             std::conditional_t<skHasExternalEvent1,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent1>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent1>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent2DeviceT =
             std::conditional_t<skHasExternalEvent2,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent2>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent2>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent3DeviceT =
             std::conditional_t<skHasExternalEvent3,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent3>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent3>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent4DeviceT =
             std::conditional_t<skHasExternalEvent4,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent4>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent4>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent5DeviceT =
             std::conditional_t<skHasExternalEvent5,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent5>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent5>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent6DeviceT =
             std::conditional_t<skHasExternalEvent6,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent6>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent6>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent7DeviceT =
             std::conditional_t<skHasExternalEvent7,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent7>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent7>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent8DeviceT =
             std::conditional_t<skHasExternalEvent8,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent8>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent8>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent9DeviceT =
             std::conditional_t<skHasExternalEvent9,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent9>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent9>,
+                               HrtimNullExternalEvent>;
         using ExternalEvent10DeviceT =
             std::conditional_t<skHasExternalEvent10,
-                               HrtimExternalEventDevice<tkPeripheralId, HrtimExternalEventId::kExternalEvent10>,
-                               HrtimNullExternalEventDevice>;
+                               HrtimExternalEvent<tkControllerId, HrtimExternalEventId::kExternalEvent10>,
+                               HrtimNullExternalEvent>;
 
         using InjectDevices = FilterNullDevices<TypeList<ControllerT,
-                                                         RccInfoDevice<>,
+                                                         RccInfo<>,
                                                          Output1PinT,
                                                          Output2PinT,
                                                          Fault1DeviceT,
@@ -872,8 +850,8 @@ namespace valle::platform
                                                          ExternalEvent10DeviceT>>;
 
     private:
-        [[no_unique_address]] DeviceRef<ControllerT>     m_controller;
-        [[no_unique_address]] DeviceRef<RccInfoDevice<>> m_rcc_info;
+        [[no_unique_address]] DeviceRef<ControllerT> m_controller;
+        [[no_unique_address]] DeviceRef<RccInfo<>>   m_rcc_info;
 
         Output1PinDriverT                                                                        m_output1_pin;
         Output2PinDriverT                                                                        m_output2_pin;
@@ -896,9 +874,9 @@ namespace valle::platform
 
     public:
         template <typename... TArgs>
-        explicit HrtimTimerDevice(TArgs&&... args)
+        explicit HrtimTimer(TArgs&&... args)
             : m_controller(extract_device_ref<true, ControllerT>(std::forward<TArgs>(args)...))
-            , m_rcc_info(extract_device_ref<true, RccInfoDevice<>>(std::forward<TArgs>(args)...))
+            , m_rcc_info(extract_device_ref<true, RccInfo<>>(std::forward<TArgs>(args)...))
             , m_output1_pin(extract_device_ref<skHasOutput1Pin, Output1PinT>(std::forward<TArgs>(args)...))
             , m_output2_pin(extract_device_ref<skHasOutput2Pin, Output2PinT>(std::forward<TArgs>(args)...))
             , m_fault1_device(extract_device_ref<skHasFault1, Fault1DeviceT>(std::forward<TArgs>(args)...))
@@ -1085,7 +1063,7 @@ namespace valle::platform
             {
                 // ERROR: Negative deadtime is invalid
                 VALLE_LOG_ERROR("HRTIM{} Timer {} requested deadtime ({} ns) is below hardware limit ({} ns)!",
-                                static_cast<int>(tkPeripheralId),
+                                static_cast<int>(tkControllerId),
                                 enum_name(tkTimerId),
                                 min_requested_ns,
                                 min_hw_deadtime_ns);
@@ -1097,7 +1075,7 @@ namespace valle::platform
             {
                 // ERROR: Requested deadtime exceeds hardware capability
                 VALLE_LOG_ERROR("HRTIM{} Timer {} requested deadtime ({} ns) exceeds hardware limit ({} ns)!",
-                                static_cast<int>(tkPeripheralId),
+                                static_cast<int>(tkControllerId),
                                 enum_name(tkTimerId),
                                 max_requested_ns,
                                 max_hw_deadtime_ns);
@@ -1229,7 +1207,7 @@ namespace valle::platform
             if constexpr (tkOutputNum == 1)
             {
                 return m_output1_pin.init(GpioAlternateFunctionConfig{
-                    .mode  = GpioAlternateFunctionMode::kPushPull,
+                    .mode  = GpioPinOutputMode::kPushPull,
                     .speed = config.speed,
                     .pull  = config.pull,
                 });
@@ -1237,7 +1215,7 @@ namespace valle::platform
             else if constexpr (tkOutputNum == 2)
             {
                 return m_output2_pin.init(GpioAlternateFunctionConfig{
-                    .mode  = GpioAlternateFunctionMode::kPushPull,
+                    .mode  = GpioPinOutputMode::kPushPull,
                     .speed = config.speed,
                     .pull  = config.pull,
                 });
@@ -1249,11 +1227,11 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using Hrtim1TimerADevice = HrtimTimerDevice<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerA>;
-    using Hrtim1TimerBDevice = HrtimTimerDevice<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerB>;
-    using Hrtim1TimerCDevice = HrtimTimerDevice<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerC>;
-    using Hrtim1TimerDDevice = HrtimTimerDevice<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerD>;
-    using Hrtim1TimerEDevice = HrtimTimerDevice<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerE>;
-    using Hrtim1TimerFDevice = HrtimTimerDevice<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerF>;
+    using Hrtim1TimerA = HrtimTimer<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerA>;
+    using Hrtim1TimerB = HrtimTimer<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerB>;
+    using Hrtim1TimerC = HrtimTimer<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerC>;
+    using Hrtim1TimerD = HrtimTimer<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerD>;
+    using Hrtim1TimerE = HrtimTimer<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerE>;
+    using Hrtim1TimerF = HrtimTimer<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerF>;
 
 }  // namespace valle::platform

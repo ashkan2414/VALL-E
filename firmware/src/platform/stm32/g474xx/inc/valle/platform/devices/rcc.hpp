@@ -22,7 +22,7 @@ namespace valle::platform
      * @brief Aggregated read-only information device for the entire RCC system.
      */
     template <typename T = void>
-    class RccInfoDevice
+    class RccInfo
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
@@ -30,33 +30,33 @@ namespace valle::platform
             constexpr static bool skNeedsInit = false;
         };
 
-        using InjectDevices = TypeList<HsiOscillatorInfoDevice<>,
-                                       HseOscillatorInfoDevice<>,
-                                       Hsi48OscillatorInfoDevice<>,
-                                       LsiOscillatorInfoDevice<>,
-                                       LseOscillatorInfoDevice<>,
-                                       PllInfoDevice<>,
-                                       SctInfoDevice<>>;
+        using InjectDevices = TypeList<HsiOscillatorInfo<>,
+                                       HseOscillatorInfo<>,
+                                       Hsi48OscillatorInfo<>,
+                                       LsiOscillatorInfo<>,
+                                       LseOscillatorInfo<>,
+                                       PllInfo<>,
+                                       SctInfo<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<HsiOscillatorInfoDevice<>>   m_hsi_info;
-        [[no_unique_address]] DeviceRef<HseOscillatorInfoDevice<>>   m_hse_info;
-        [[no_unique_address]] DeviceRef<Hsi48OscillatorInfoDevice<>> m_hsi48_info;
-        [[no_unique_address]] DeviceRef<LsiOscillatorInfoDevice<>>   m_lsi_info;
-        [[no_unique_address]] DeviceRef<LseOscillatorInfoDevice<>>   m_lse_info;
-        [[no_unique_address]] DeviceRef<PllInfoDevice<>>             m_pll_info;
-        [[no_unique_address]] DeviceRef<SctInfoDevice<>>             m_sct_info;
+        [[no_unique_address]] DeviceRef<HsiOscillatorInfo<>>   m_hsi_info;
+        [[no_unique_address]] DeviceRef<HseOscillatorInfo<>>   m_hse_info;
+        [[no_unique_address]] DeviceRef<Hsi48OscillatorInfo<>> m_hsi48_info;
+        [[no_unique_address]] DeviceRef<LsiOscillatorInfo<>>   m_lsi_info;
+        [[no_unique_address]] DeviceRef<LseOscillatorInfo<>>   m_lse_info;
+        [[no_unique_address]] DeviceRef<PllInfo<>>             m_pll_info;
+        [[no_unique_address]] DeviceRef<SctInfo<>>             m_sct_info;
 
     public:
-        RccInfoDevice() = delete;
+        RccInfo() = delete;
 
-        RccInfoDevice(DeviceRef<HsiOscillatorInfoDevice<>>&&   hsi,
-                      DeviceRef<HseOscillatorInfoDevice<>>&&   hse,
-                      DeviceRef<Hsi48OscillatorInfoDevice<>>&& hsi48,
-                      DeviceRef<LsiOscillatorInfoDevice<>>&&   lsi,
-                      DeviceRef<LseOscillatorInfoDevice<>>&&   lse,
-                      DeviceRef<PllInfoDevice<>>&&             pll,
-                      DeviceRef<SctInfoDevice<>>&&             sct)
+        RccInfo(DeviceRef<HsiOscillatorInfo<>>&&   hsi,
+                DeviceRef<HseOscillatorInfo<>>&&   hse,
+                DeviceRef<Hsi48OscillatorInfo<>>&& hsi48,
+                DeviceRef<LsiOscillatorInfo<>>&&   lsi,
+                DeviceRef<LseOscillatorInfo<>>&&   lse,
+                DeviceRef<PllInfo<>>&&             pll,
+                DeviceRef<SctInfo<>>&&             sct)
             : m_hsi_info(std::move(hsi))
             , m_hse_info(std::move(hse))
             , m_hsi48_info(std::move(hsi48))
@@ -1158,40 +1158,40 @@ namespace valle::platform
      * @brief Reset and Clock Control device.
      */
     template <typename T = void>
-    class RccDevice
+    class Rcc
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InjectDevices = TypeList<HsiOscillatorDevice<>,
-                                       HseOscillatorDevice<>,
-                                       Hsi48OscillatorDevice<>,
-                                       LsiOscillatorDevice<>,
-                                       LseOscillatorDevice<>,
-                                       PllDevice<>,
-                                       SctDevice<>>;
+        using InjectDevices = TypeList<HsiOscillator<>,
+                                       HseOscillator<>,
+                                       Hsi48Oscillator<>,
+                                       LsiOscillator<>,
+                                       LseOscillator<>,
+                                       Pll<>,
+                                       Sct<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<HsiOscillatorDevice<>>   m_hsi;
-        [[no_unique_address]] DeviceRef<HseOscillatorDevice<>>   m_hse;
-        [[no_unique_address]] DeviceRef<Hsi48OscillatorDevice<>> m_hsi48;
-        [[no_unique_address]] DeviceRef<LsiOscillatorDevice<>>   m_lsi;
-        [[no_unique_address]] DeviceRef<LseOscillatorDevice<>>   m_lse;
-        [[no_unique_address]] DeviceRef<PllDevice<>>             m_pll;
-        [[no_unique_address]] DeviceRef<SctDevice<>>             m_sct;
+        [[no_unique_address]] DeviceRef<HsiOscillator<>>   m_hsi;
+        [[no_unique_address]] DeviceRef<HseOscillator<>>   m_hse;
+        [[no_unique_address]] DeviceRef<Hsi48Oscillator<>> m_hsi48;
+        [[no_unique_address]] DeviceRef<LsiOscillator<>>   m_lsi;
+        [[no_unique_address]] DeviceRef<LseOscillator<>>   m_lse;
+        [[no_unique_address]] DeviceRef<Pll<>>             m_pll;
+        [[no_unique_address]] DeviceRef<Sct<>>             m_sct;
 
     public:
-        RccDevice() = delete;
+        Rcc() = delete;
 
-        RccDevice(DeviceRef<HsiOscillatorDevice<>>&&   hsi,
-                  DeviceRef<HseOscillatorDevice<>>&&   hse,
-                  DeviceRef<Hsi48OscillatorDevice<>>&& hsi48,
-                  DeviceRef<LsiOscillatorDevice<>>&&   lsi,
-                  DeviceRef<LseOscillatorDevice<>>&&   lse,
-                  DeviceRef<PllDevice<>>&&             pll,
-                  DeviceRef<SctDevice<>>&&             sct)
+        Rcc(DeviceRef<HsiOscillator<>>&&   hsi,
+            DeviceRef<HseOscillator<>>&&   hse,
+            DeviceRef<Hsi48Oscillator<>>&& hsi48,
+            DeviceRef<LsiOscillator<>>&&   lsi,
+            DeviceRef<LseOscillator<>>&&   lse,
+            DeviceRef<Pll<>>&&             pll,
+            DeviceRef<Sct<>>&&             sct)
             : m_hsi(std::move(hsi))
             , m_hse(std::move(hse))
             , m_hsi48(std::move(hsi48))

@@ -13,227 +13,6 @@
 
 namespace valle::platform
 {
-    // =========================================================================
-    // SCT INFO DEVICE
-    // =========================================================================
-    template <typename T = void>
-    class SctInfoDevice
-    {
-    public:
-        struct Descriptor : public SharedDeviceDescriptor
-        {
-            constexpr static bool skNeedsInit = false;
-        };
-
-        using DependDevices = TypeList<>;
-        using InjectDevices = TypeList<HseOscillatorInfoDevice<>, HsiOscillatorInfoDevice<>, PllInfoDevice<>>;
-
-    private:
-        [[no_unique_address]] DeviceRef<HseOscillatorInfoDevice<>> m_hse_info;
-        [[no_unique_address]] DeviceRef<HsiOscillatorInfoDevice<>> m_hsi_info;
-        [[no_unique_address]] DeviceRef<PllInfoDevice<>>           m_pll_info;
-
-    public:
-        SctInfoDevice() = delete;
-
-        SctInfoDevice(DeviceRef<HseOscillatorInfoDevice<>>&& hse_info,
-                      DeviceRef<HsiOscillatorInfoDevice<>>&& hsi_info,
-                      DeviceRef<PllInfoDevice<>>&&           pll_info)
-            : m_hse_info(std::move(hse_info)), m_hsi_info(std::move(hsi_info)), m_pll_info(std::move(pll_info))
-        {
-        }
-
-        [[nodiscard]] SctSourceStatus get_source_status() const
-        {
-            return SctInterface::get_source_status();
-        }
-
-        [[nodiscard]] SctAHBPrescaler get_ahb_prescaler() const
-        {
-            return SctInterface::get_ahb_prescaler();
-        }
-
-        [[nodiscard]] SctAPB1Prescaler get_apb1_prescaler() const
-        {
-            return SctInterface::get_apb1_prescaler();
-        }
-
-        [[nodiscard]] SctAPB2Prescaler get_apb2_prescaler() const
-        {
-            return SctInterface::get_apb2_prescaler();
-        }
-
-        [[nodiscard]] uint32_t get_sysclk_freq_hz_for_source(const SctSYSCLKSource sysclk_source) const
-        {
-            switch (sysclk_source)
-            {
-                case SctSYSCLKSource::kHSI:
-                    return m_hsi_info->get_frequency_hz();
-
-                case SctSYSCLKSource::kHSE:
-                    return m_hse_info->get_frequency_hz();
-
-                case SctSYSCLKSource::kPLL:
-                    return m_pll_info->get_r_output_freq_hz();
-            }
-
-            return 0;
-        }
-
-        [[nodiscard]] uint32_t get_sysclk_freq_hz() const
-        {
-            switch (get_source_status())
-            {
-                case SctSourceStatus::kHSI:
-                    return m_hsi_info->get_frequency_hz();
-
-                case SctSourceStatus::kHSE:
-                    return m_hse_info->get_frequency_hz();
-
-                case SctSourceStatus::kPLL:
-                    return m_pll_info->get_r_output_freq_hz();
-            }
-
-            return 0;
-        }
-
-        [[nodiscard]] uint32_t get_hclk_freq_hz() const
-        {
-            return SctInterface::get_hclk_freq_hz(get_sysclk_freq_hz());
-        }
-
-        [[nodiscard]] uint32_t get_pclk1_freq_hz() const
-        {
-            return SctInterface::get_pclk1_freq_hz(get_hclk_freq_hz());
-        }
-
-        [[nodiscard]] uint32_t get_apb1_peripheral_freq_hz() const
-        {
-            return SctInterface::get_apb1_peripheral_freq_hz(get_pclk1_freq_hz());
-        }
-
-        [[nodiscard]] uint32_t get_apb1_timer_freq_hz() const
-        {
-            return SctInterface::get_apb1_timer_freq_hz(get_pclk1_freq_hz());
-        }
-
-        [[nodiscard]] uint32_t get_pclk2_freq_hz() const
-        {
-            return SctInterface::get_pclk2_freq_hz(get_hclk_freq_hz());
-        }
-
-        [[nodiscard]] uint32_t get_apb2_peripheral_freq_hz() const
-        {
-            return SctInterface::get_apb2_peripheral_freq_hz(get_pclk2_freq_hz());
-        }
-
-        [[nodiscard]] uint32_t get_apb2_timer_freq_hz() const
-        {
-            return SctInterface::get_apb2_timer_freq_hz(get_pclk2_freq_hz());
-        }
-
-        // ---------------------------------------------------------------------
-        // Peripheral clock tree
-        // ---------------------------------------------------------------------
-        [[nodiscard]] SctUSART1ClockSource get_usart1_source() const
-        {
-            return SctInterface::get_usart1_source();
-        }
-
-        [[nodiscard]] SctUSART2ClockSource get_usart2_source() const
-        {
-            return SctInterface::get_usart2_source();
-        }
-
-        [[nodiscard]] SctUSART3ClockSource get_usart3_source() const
-        {
-            return SctInterface::get_usart3_source();
-        }
-
-#if defined(UART4)
-        [[nodiscard]] SctUart4ClockSource get_uart4_source() const
-        {
-            return SctInterface::get_uart4_source();
-        }
-
-        [[nodiscard]] SctUart5ClockSource get_uart5_source() const
-        {
-            return SctInterface::get_uart5_source();
-        }
-#endif
-
-        [[nodiscard]] SctLPUart1ClockSource get_lpuart1_source() const
-        {
-            return SctInterface::get_lpuart1_source();
-        }
-
-        [[nodiscard]] SctI2c1ClockSource get_i2c1_source() const
-        {
-            return SctInterface::get_i2c1_source();
-        }
-
-        [[nodiscard]] SctI2c2ClockSource get_i2c2_source() const
-        {
-            return SctInterface::get_i2c2_source();
-        }
-
-        [[nodiscard]] SctI2c3ClockSource get_i2c3_source() const
-        {
-            return SctInterface::get_i2c3_source();
-        }
-
-        [[nodiscard]] SctI2c4ClockSource get_i2c4_source() const
-        {
-            return SctInterface::get_i2c4_source();
-        }
-
-        [[nodiscard]] SctLPTim1ClockSource get_lptim1_source() const
-        {
-            return SctInterface::get_lptim1_source();
-        }
-
-        [[nodiscard]] SctSAI1ClockSource get_sai1_source() const
-        {
-            return SctInterface::get_sai1_source();
-        }
-
-        [[nodiscard]] SctI2SClockSource get_i2s_source() const
-        {
-            return SctInterface::get_i2s_source();
-        }
-
-#if defined(FDCAN1)
-        [[nodiscard]] SctFDCANClockSource get_fdcan_source() const
-        {
-            return SctInterface::get_fdcan_source();
-        }
-#endif /* FDCAN1 */
-
-        [[nodiscard]] SctRNGClockSource get_rng_source() const
-        {
-            return SctInterface::get_rng_source();
-        }
-
-        [[nodiscard]] SctUSBClockSource get_usb_source() const
-        {
-            return SctInterface::get_usb_source();
-        }
-
-        [[nodiscard]] SctAdc12ClockSource get_adc12_source() const
-        {
-            return SctInterface::get_adc12_source();
-        }
-
-        [[nodiscard]] SctAdc345ClockSource get_adc345_source() const
-        {
-            return SctInterface::get_adc345_source();
-        }
-
-        [[nodiscard]] SctQuadSpiClockSource get_quadspi_source() const
-        {
-            return SctInterface::get_quadspi_source();
-        }
-    };
 
     // =============================================================================
     // SCT DEVICE
@@ -280,7 +59,7 @@ namespace valle::platform
             const uint32_t              sysclk_source_hz,
             const PowerVoltageRangeMode voltage_range) const
         {
-            return SctInterface::validate_config(
+            return SctInfoHdi<>::validate_config(
                 sysclk_source_hz, voltage_range, ahb_prescaler, apb1_prescaler, apb2_prescaler);
         }
 
@@ -291,42 +70,42 @@ namespace valle::platform
 
         [[nodiscard]] constexpr uint32_t get_hclk_freq_hz(const uint32_t sysclk_source_hz) const
         {
-            return SctInterface::calculate_hclk_freq_hz(get_sysclk_freq_hz(sysclk_source_hz), ahb_prescaler);
+            return SctInfoHdi<>::calculate_hclk_freq_hz(get_sysclk_freq_hz(sysclk_source_hz), ahb_prescaler);
         }
 
         [[nodiscard]] constexpr uint32_t get_pclk1_freq_hz(const uint32_t hclk_hz) const
         {
-            return SctInterface::calculate_pclk1_freq_hz(hclk_hz, apb1_prescaler);
+            return SctInfoHdi<>::calculate_pclk1_freq_hz(hclk_hz, apb1_prescaler);
         }
 
         [[nodiscard]] constexpr uint32_t get_apb1_peripheral_freq_hz(const uint32_t pclk1_hz) const
         {
-            return SctInterface::calculate_apb1_peripheral_freq_hz(pclk1_hz);
+            return SctInfoHdi<>::calculate_apb1_peripheral_freq_hz(pclk1_hz);
         }
 
         [[nodiscard]] constexpr uint32_t get_apb1_timer_freq_hz(const uint32_t pclk1_hz) const
         {
-            return SctInterface::calculate_apb1_timer_freq_hz(pclk1_hz, apb1_prescaler);
+            return SctInfoHdi<>::calculate_apb1_timer_freq_hz(pclk1_hz, apb1_prescaler);
         }
 
         [[nodiscard]] constexpr uint32_t get_pclk2_freq_hz(const uint32_t hclk_hz) const
         {
-            return SctInterface::calculate_pclk2_freq_hz(hclk_hz, apb2_prescaler);
+            return SctInfoHdi<>::calculate_pclk2_freq_hz(hclk_hz, apb2_prescaler);
         }
 
         [[nodiscard]] constexpr uint32_t get_apb2_peripheral_freq_hz(const uint32_t pclk2_hz) const
         {
-            return SctInterface::calculate_apb2_peripheral_freq_hz(pclk2_hz);
+            return SctInfoHdi<>::calculate_apb2_peripheral_freq_hz(pclk2_hz);
         }
 
         [[nodiscard]] constexpr uint32_t get_apb2_timer_freq_hz(const uint32_t pclk2_hz) const
         {
-            return SctInterface::calculate_apb2_timer_freq_hz(pclk2_hz, apb2_prescaler);
+            return SctInfoHdi<>::calculate_apb2_timer_freq_hz(pclk2_hz, apb2_prescaler);
         }
 
         [[nodiscard]] constexpr uint32_t get_mco_freq_hz(const uint32_t source_hz) const
         {
-            return SctInterface::calculate_mco_freq_hz(source_hz, mco_prescaler);
+            return SctInfoHdi<>::calculate_mco_freq_hz(source_hz, mco_prescaler);
         }
     };
 
@@ -334,27 +113,33 @@ namespace valle::platform
      * @brief System clock tree device.
      */
     template <typename T = void>
-    class SctDevice
+    class Sct
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = SctInterface;
+        using HdiT           = SctHdi<T>;
+        using HsiOscillatorT = HsiOscillator<T>;
+        using HseOscillatorT = HseOscillator<T>;
+        using PllT           = Pll<T>;
+        using SctInfoHdiT    = SctInfoHdi<T>;
+        using PowerInfoHdiT  = PowerInfoHdi<T>;
 
-        using DependDevices = TypeList<HsiOscillatorDevice<>, HseOscillatorDevice<>, PllDevice<>>;
-        using InjectDevices = TypeList<SctInfoDevice<>, PowerInfoDevice<>>;
+        using DependDevices = TypeList<HsiOscillatorT, HseOscillatorT, PllT>;
+        using InjectDevices = TypeList<SctInfoHdiT, PowerInfoHdiT>;
 
     private:
-        [[no_unique_address]] DeviceRef<SctInfoDevice<>>   m_info;
-        [[no_unique_address]] DeviceRef<PowerInfoDevice<>> m_power_info;
+        [[no_unique_address]] DeviceRef<HdiT>          m_hw;
+        [[no_unique_address]] DeviceRef<SctInfoHdiT>   m_info;
+        [[no_unique_address]] DeviceRef<PowerInfoHdiT> m_power_info;
 
     public:
-        SctDevice() = delete;
+        Sct() = delete;
 
-        SctDevice(DeviceRef<SctInfoDevice<>>&& info, DeviceRef<PowerInfoDevice<>>&& power_info)
-            : m_info(std::move(info)), m_power_info(std::move(power_info))
+        Sct(DeviceRef<HdiT>&& hw, DeviceRef<SctInfoHdiT>&& info, DeviceRef<PowerInfoHdiT>&& power_info)
+            : m_hw(std::move(hw)), m_info(std::move(info)), m_power_info(std::move(power_info))
         {
         }
 
@@ -367,7 +152,7 @@ namespace valle::platform
          * @param config SCT configuration.
          * @return true if the source switch completed successfully.
          */
-        [[nodiscard]] inline bool init(const SctConfig& config)
+        [[nodiscard]] bool init(const SctConfig& config)
         {
             const PowerVoltageRangeMode voltage_range     = m_power_info->get_voltage_range_mode();
             const uint32_t              current_sysclk_hz = m_info->get_sysclk_freq_hz();
@@ -435,22 +220,22 @@ namespace valle::platform
                 if ((m_info->get_ahb_prescaler() == SctAHBPrescaler::kDiv1) ||
                     (config.ahb_prescaler == SctAHBPrescaler::kDiv1))
                 {
-                    InterfaceT::set_ahb_prescaler(SctAHBPrescaler::kDiv2);
+                    m_hw->set_ahb_prescaler(SctAHBPrescaler::kDiv2);
                     temporary_hpre_div2_applied = true;
                 }
             }
             else if (leaving_pll_above_80mhz)
             {
-                InterfaceT::set_ahb_prescaler(SctAHBPrescaler::kDiv2);
+                m_hw->set_ahb_prescaler(SctAHBPrescaler::kDiv2);
                 temporary_hpre_div2_applied = true;
             }
 
             // ---------------------------------------------------------------------
             // Switch SYSCLK source
             // ---------------------------------------------------------------------
-            InterfaceT::set_sysclk_source(config.sysclk_source);
+            m_hw->set_sysclk_source(config.sysclk_source);
 
-            expect(wait_for_source_active(config.sysclk_source, InterfaceT::skDefaultSourceSwitchTimeoutCount),
+            expect(wait_for_source_active(config.sysclk_source, HdiT::skDefaultSourceSwitchTimeoutCount),
                    "SCT source switch failed to complete within timeout");
 
             // ---------------------------------------------------------------------
@@ -464,21 +249,21 @@ namespace valle::platform
             // ---------------------------------------------------------------------
 
             const bool hclk_changed =
-                temporary_hpre_div2_applied || (InterfaceT::get_ahb_prescaler() != config.ahb_prescaler);
+                temporary_hpre_div2_applied || (m_hw->get_ahb_prescaler() != config.ahb_prescaler);
 
             if (hclk_changed)
             {
-                InterfaceT::set_apb1_prescaler(SctAPB1Prescaler::kDiv16);
-                InterfaceT::set_apb2_prescaler(SctAPB2Prescaler::kDiv16);
-                InterfaceT::set_ahb_prescaler(config.ahb_prescaler);
+                m_hw->set_apb1_prescaler(SctAPB1Prescaler::kDiv16);
+                m_hw->set_apb2_prescaler(SctAPB2Prescaler::kDiv16);
+                m_hw->set_ahb_prescaler(config.ahb_prescaler);
             }
             else if (temporary_hpre_div2_applied)
             {
-                InterfaceT::set_ahb_prescaler(config.ahb_prescaler);
+                m_hw->set_ahb_prescaler(config.ahb_prescaler);
             }
 
-            InterfaceT::set_apb1_prescaler(config.apb1_prescaler);
-            InterfaceT::set_apb2_prescaler(config.apb2_prescaler);
+            m_hw->set_apb1_prescaler(config.apb1_prescaler);
+            m_hw->set_apb2_prescaler(config.apb2_prescaler);
 
             // Short delay to ensure APB prescaler changes take effect before frequency checks below
             TimingContext::delay_countdown(2000U);
@@ -492,50 +277,51 @@ namespace valle::platform
 
                 expect(TimingContext::wait_for_with_timeout_countdown(
                            [&]() -> bool { return FlashInterface::get_latency() == required_flash_latency; },
-                           InterfaceT::skDefaultSourceSwitchTimeoutCount),
+                           HdiT::skDefaultSourceSwitchTimeoutCount),
                        "FLASH latency failed to decrease within timeout");
             }
 
             SystemCoreClockUpdate();
+#ifdef USE_HAL_DRIVER
             HAL_InitTick(uwTickPrio);
-
+#endif
             // -----------------------------------------------------------------
             // MCO
             // -----------------------------------------------------------------
-            InterfaceT::config_mco(config.mco_source, config.mco_prescaler);
+            m_hw->config_mco(config.mco_source, config.mco_prescaler);
 
             // -----------------------------------------------------------------
             // Peripeheral clock mux
             // -----------------------------------------------------------------
-            InterfaceT::set_usart1_source(config.usart1_source);
-            InterfaceT::set_usart2_source(config.usart2_source);
-            InterfaceT::set_usart3_source(config.usart3_source);
-            InterfaceT::set_uart4_source(config.uart4_source);
-            InterfaceT::set_uart5_source(config.uart5_source);
-            InterfaceT::set_lpuart1_source(config.lpuart1_source);
-            InterfaceT::set_i2c1_source(config.i2c1_source);
-            InterfaceT::set_i2c2_source(config.i2c2_source);
-            InterfaceT::set_i2c3_source(config.i2c3_source);
-            InterfaceT::set_i2c4_source(config.i2c4_source);
-            InterfaceT::set_lptim1_source(config.lptim1_source);
-            InterfaceT::set_sai1_source(config.sai1_source);
-            InterfaceT::set_i2s_source(config.i2s_source);
-            InterfaceT::set_fdcan_source(config.fdcan_source);
-            InterfaceT::set_rng_source(config.rng_source);
-            InterfaceT::set_usb_source(config.usb_source);
-            InterfaceT::set_adc12_source(config.adc12_source);
-            InterfaceT::set_adc345_source(config.adc345_source);
-            InterfaceT::set_quadspi_source(config.quadspi_source);
+            m_hw->set_usart1_source(config.usart1_source);
+            m_hw->set_usart2_source(config.usart2_source);
+            m_hw->set_usart3_source(config.usart3_source);
+            m_hw->set_uart4_source(config.uart4_source);
+            m_hw->set_uart5_source(config.uart5_source);
+            m_hw->set_lpuart1_source(config.lpuart1_source);
+            m_hw->set_i2c1_source(config.i2c1_source);
+            m_hw->set_i2c2_source(config.i2c2_source);
+            m_hw->set_i2c3_source(config.i2c3_source);
+            m_hw->set_i2c4_source(config.i2c4_source);
+            m_hw->set_lptim1_source(config.lptim1_source);
+            m_hw->set_sai1_source(config.sai1_source);
+            m_hw->set_i2s_source(config.i2s_source);
+            m_hw->set_fdcan_source(config.fdcan_source);
+            m_hw->set_rng_source(config.rng_source);
+            m_hw->set_usb_source(config.usb_source);
+            m_hw->set_adc12_source(config.adc12_source);
+            m_hw->set_adc345_source(config.adc345_source);
+            m_hw->set_quadspi_source(config.quadspi_source);
 
             return true;
         }
 
     private:
-        [[nodiscard]] static bool wait_for_source_active(const SctSYSCLKSource sysclk_source,
-                                                         const uint32_t        timeout_count)
+        [[nodiscard]] bool wait_for_source_active(const SctSYSCLKSource sysclk_source,
+                                                  const uint32_t        timeout_count) const
         {
             return TimingContext::wait_for_with_timeout_countdown(
-                [sysclk_source]() -> bool { return InterfaceT::is_source_active(sysclk_source); }, timeout_count);
+                [sysclk_source]() -> bool { return m_hw->is_source_active(sysclk_source); }, timeout_count);
         }
     };
 

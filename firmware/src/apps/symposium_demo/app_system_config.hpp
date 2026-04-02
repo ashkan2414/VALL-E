@@ -14,7 +14,7 @@
 
 namespace valle::app
 {
-    static constexpr platform::HrtimPeripheralId kVcaHrtimPwmId = platform::HrtimPeripheralId::kHrtim1;
+    static constexpr platform::HrtimControllerId kVcaHrtimPwmId = platform::HrtimControllerId::kHrtim1;
     struct HrtimControllerCTConfig : public platform::HrtimControllerCTDefaultConfig
     {
     };
@@ -22,14 +22,14 @@ namespace valle::app
     static constexpr uint8_t kIntakeValveVcaCurrentLoopDriverId = 0;
     struct IntakeValveVcaCurrentLoopDriverCTConfig
     {
-        using PWMOutput1PinT              = platform::GpioPinA8Device;
-        using PWMOutput2PinT              = platform::GpioPinA9Device;
-        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel2Device;
+        using PWMOutput1PinT              = platform::GpioPinA8;
+        using PWMOutput2PinT              = platform::GpioPinA9;
+        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel2;
 
-        static constexpr platform::HrtimPeripheralId skVcaHrtimPwmId      = kVcaHrtimPwmId;
+        static constexpr platform::HrtimControllerId skVcaHrtimPwmId      = kVcaHrtimPwmId;
         static constexpr platform::HrtimTimerId      skVcaHrtimPwmTimerId = platform::HrtimTimerId::kTimerA;
 
-        static constexpr platform::AdcPeripheralId skCurrentSensorAdcId        = platform::AdcPeripheralId::kAdc1;
+        static constexpr platform::AdcControllerId skCurrentSensorAdcId        = platform::AdcControllerId::kAdc1;
         static constexpr platform::AdcChannelId    skCurrentSensorAdcChannelId = platform::AdcChannelId::kChannel1;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
@@ -40,14 +40,14 @@ namespace valle::app
     static constexpr uint8_t kExhaustValveVcaCurrentLoopDriverId = 1;
     struct ExhaustValveVcaCurrentLoopDriverCTConfig
     {
-        using PWMOutput1PinT              = platform::GpioPinB14Device;
-        using PWMOutput2PinT              = platform::GpioPinB15Device;
-        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel3Device;
+        using PWMOutput1PinT              = platform::GpioPinB14;
+        using PWMOutput2PinT              = platform::GpioPinB15;
+        using CurrentSensorAdcDmaChannelT = platform::Dma1Channel3;
 
-        static constexpr platform::HrtimPeripheralId skVcaHrtimPwmId      = kVcaHrtimPwmId;
+        static constexpr platform::HrtimControllerId skVcaHrtimPwmId      = kVcaHrtimPwmId;
         static constexpr platform::HrtimTimerId      skVcaHrtimPwmTimerId = platform::HrtimTimerId::kTimerD;
 
-        static constexpr platform::AdcPeripheralId skCurrentSensorAdcId        = platform::AdcPeripheralId::kAdc2;
+        static constexpr platform::AdcControllerId skCurrentSensorAdcId        = platform::AdcControllerId::kAdc2;
         static constexpr platform::AdcChannelId    skCurrentSensorAdcChannelId = platform::AdcChannelId::kChannel2;
 
         static constexpr ACS724Model skCurrentSensorModel = ACS724Model::k2P5ABi;
@@ -56,24 +56,24 @@ namespace valle::app
     };
 
     // Position Sensor I2C Controller Config
-    constexpr platform::I2cPeripheralId kPositionSensorI2cId             = platform::I2cPeripheralId::kI2c1;
+    constexpr platform::I2cControllerId kPositionSensorI2cId             = platform::I2cControllerId::kI2c1;
     constexpr uint16_t                  kPositionSensorI2cAddress        = 0x2B;
     constexpr bool                      kPositionSensorI2cAddressIs10Bit = false;
 
     struct PositionSensorI2cControllerCTConfig : public platform::I2cControllerCTDefaultConfig
     {
-        using DmaChannelRxT = platform::Dma1Channel4Device;
-        using DmaChannelTxT = platform::Dma1Channel5Device;
-        using SCLPinT       = platform::GpioPinB8Device;
-        using SDAPinT       = platform::GpioPinB9Device;
+        using DmaChannelRxT = platform::Dma1Channel4;
+        using DmaChannelTxT = platform::Dma1Channel5;
+        using SCLPinT       = platform::GpioPinB8;
+        using SDAPinT       = platform::GpioPinB9;
     };
 
     // TIM for Quadrature Encoder
-    constexpr auto kCrankEncoderTimId = platform::TimPeripheralId::kTim2;
+    constexpr auto kCrankEncoderTimId = platform::TimControllerId::kTim2;
     struct CrankEncoderTimControllerCTConfig : public platform::TimControllerCTDefaultConfig
     {
-        using Ch1PinT = platform::GpioPinA15Device;
-        using Ch2PinT = platform::GpioPinB3Device;
+        using Ch1PinT = platform::GpioPinA15;
+        using Ch2PinT = platform::GpioPinB3;
     };
 }  // namespace valle::app
 
@@ -106,12 +106,11 @@ namespace valle
         using ExhaustValveVcaCurrentLoopDriverConfigT = typename ExhaustValveVcaCurrentLoopDriverT::ConfigT;
 
         // Position Sensor (LDC161X) Configurations
-        using PositionSensorI2cControllerT  = platform::I2cCommandBufferDevice<kPositionSensorI2cId>;
-        using PositionSensorI2cSlaveDeviceT = platform::I2cCommandBufferSlaveDevice<kPositionSensorI2cId,
-                                                                                    kPositionSensorI2cAddress,
-                                                                                    kPositionSensorI2cAddressIs10Bit>;
+        using PositionSensorI2cControllerT  = platform::I2cCommandBuffer<kPositionSensorI2cId>;
+        using PositionSensorI2cSlaveDeviceT = platform::
+            I2cCommandBufferSlave<kPositionSensorI2cId, kPositionSensorI2cAddress, kPositionSensorI2cAddressIs10Bit>;
 
-        using PositionSensorINTBPinT = platform::GpioPinC11Device;
+        using PositionSensorINTBPinT = platform::GpioPinC11;
         using PositionSensorModuleT =
             platform::app::LDC161XSensorModule<PositionSensorI2cSlaveDeviceT, 2, PositionSensorINTBPinT>;
         using PositionSensorModuleConfigT = typename PositionSensorModuleT::ConfigT;
@@ -141,16 +140,16 @@ namespace valle
         static constexpr LDC161XChannel kIntakeValvePositionChannel  = LDC161XChannel::kChannel1;
 
         // AMT10x Crank Encoder Configurations
-        using AMT10xTimControllerT = platform::TimControllerDevice<kCrankEncoderTimId>;
+        using AMT10xTimControllerT = platform::TimController<kCrankEncoderTimId>;
         using AMT10xTimEncoderModuleT =
-            platform::app::AMT10xTimEncoderModule<AMT10xTimControllerT, platform::GpioPinB5Device, AMT10xPPR::k2048>;
+            platform::app::AMT10xTimEncoderModule<AMT10xTimControllerT, platform::GpioPinB5, AMT10xPPR::k2048>;
         using AMT10xTimEncoderModuleConfigT = typename AMT10xTimEncoderModuleT::ConfigT;
 
         using CrankEncoderModuleT       = platform::app::AMT10xCrankEncoderModuleX<AMT10xTimEncoderModuleT>;
         using CrankEncoderModuleConfigT = typename CrankEncoderModuleT::ConfigT;
 
         // Test GPIO Driver
-        using TestGpioDriverT = platform::GpioDigitalOutDriver<platform::GpioPinB6Device>;
+        using TestGpioDriverT = platform::GpioDigitalOutDriver<platform::GpioPinB6>;
 
         // Declare Main Driver List
         using MainDriversT = TypeList<platform::CoreSystemDriver,
@@ -170,7 +169,7 @@ namespace valle
             using BaseT = PackedDriverBase<RootDevicesT>;
             using BaseT::BaseT;
 
-            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2c1CommandBufferDevice<>);
+            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2c1CommandBuffer<>);
         };
 
         // ============================================================================

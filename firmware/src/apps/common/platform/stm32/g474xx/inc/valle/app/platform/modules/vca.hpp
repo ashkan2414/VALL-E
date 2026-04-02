@@ -15,22 +15,22 @@ namespace valle::platform::app
     /**
      * @brief VCAControllerModule (Voice Coil Actuator) Controller Class
      *
-     * @tparam THrtimTimerDevice Hardware Device class for HRTIM control.
+     * @tparam THrtimTimer Hardware Device class for HRTIM control.
      * @tparam tkMode  Control mode (open-loop duty or closed-loop current).
      */
-    template <typename THrtimDevice>
+    template <typename THrtim>
     class VCAControllerHrtimHalfBridgeInterface
-        : public valle::app::VCAControllerModuleHalfBridgeInterface<VCAControllerHrtimHalfBridgeInterface<THrtimDevice>,
+        : public valle::app::VCAControllerModuleHalfBridgeInterface<VCAControllerHrtimHalfBridgeInterface<THrtim>,
                                                                     VCAControllerHrtimHalfBridgeInterfaceConfig>
     {
     public:
         using ConfigT = VCAControllerHrtimHalfBridgeInterfaceConfig;
 
-        using InjectDevices                    = TypeList<THrtimDevice>;
-        static constexpr uint8_t skDeviceIndex = THrtimDevice::skIndex;
+        using InjectDevices                    = TypeList<THrtim>;
+        static constexpr uint8_t skDeviceIndex = THrtim::skIndex;
 
     private:
-        HrtimHalfBridgeDriver<THrtimDevice> m_device;  /// Hardware
+        HrtimHalfBridgeDriver<THrtim> m_device;  /// Hardware
 
     public:
         VCAControllerHrtimHalfBridgeInterface() = delete;
@@ -40,7 +40,7 @@ namespace valle::platform::app
          *
          * @param hw Hardware device reference for the HRTIM control.
          */
-        inline explicit VCAControllerHrtimHalfBridgeInterface(DeviceRef<THrtimDevice>&& hw) : m_device(std::move(hw))
+        inline explicit VCAControllerHrtimHalfBridgeInterface(DeviceRef<THrtim>&& hw) : m_device(std::move(hw))
         {
         }
 
@@ -69,7 +69,7 @@ namespace valle::platform::app
          */
         template <HrtimTimerAdcTriggerId tkTriggerId>
         [[nodiscard]] inline bool init_adc_trigger(
-            const HrtimTimerAdcTriggerConfig<THrtimDevice::skTimerId, tkTriggerId>& config)
+            const HrtimTimerAdcTriggerConfig<THrtim::skTimerId, tkTriggerId>& config)
         {
             return m_device.init_adc_trigger(config);
         }
@@ -107,8 +107,8 @@ namespace valle::platform::app
     using VCAControllerHrtimModuleConfig =
         valle::app::VCAControllerModuleConfigX<VCAControllerHrtimHalfBridgeInterfaceConfig, TControllerConfig>;
 
-    template <typename THrtimDevice, typename TController>
+    template <typename THrtim, typename TController>
     using VCAControllerHrtimModule =
-        valle::app::VCAControllerModuleX<VCAControllerHrtimHalfBridgeInterface<THrtimDevice>, TController>;
+        valle::app::VCAControllerModuleX<VCAControllerHrtimHalfBridgeInterface<THrtim>, TController>;
 
 }  // namespace valle::platform::app

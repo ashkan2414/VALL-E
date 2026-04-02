@@ -7,127 +7,46 @@ namespace valle::platform
     // ============================================================================
     // INTERRUPT TRAITS
     // ============================================================================
-    enum class DmaChannelInterruptType : uint8_t
+
+    template <DmaChannelSpec tkChannelSpec, DmaChannelInterruptSource tkIntSource>
+    struct DmaChannelInterruptSourceInterface
     {
-        kTransferComplete,
-        kHalfTransfer,
-        kTransferError
+    private:
+        static constexpr DmaChannelInterface<tkChannelSpec> skInterface{};
+
+    public:
+        static constexpr bool skShouldClear = true;
+
+        static void enable()
+        {
+            skInterface.enable_interrupt(tkIntSource);
+        }
+
+        static void disable()
+        {
+            skInterface.disable_interrupt(tkIntSource);
+        }
+
+        static void clear()
+        {
+            skInterface.clear_interrupt_flag(tkIntSource);
+        }
+
+        static bool is_enabled()
+        {
+            return skInterface.is_interrupt_enabled(tkIntSource);
+        }
+
+        static bool is_flag_active()
+        {
+            return skInterface.is_interrupt_flag_active(tkIntSource);
+        }
+
+        static bool is_pending()
+        {
+            return is_flag_active() && is_enabled();
+        }
     };
-
-    template <DmaPeripheralId tkPeripheralId, DmaChannelId tkChannelId, DmaChannelInterruptType tkIntType>
-    struct DmaChannelInterruptTraits;
-
-#define DEFINE_DMA_INT_TRAIT(tkIntType, ll_name, should_clear)                                                 \
-    template <DmaPeripheralId tkPeripheralId, DmaChannelId tkChannelId>                                        \
-    struct DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, (tkIntType)>                                 \
-    {                                                                                                          \
-        static constexpr bool skShouldClear = (should_clear);                                                  \
-                                                                                                               \
-        static inline void enable()                                                                            \
-        {                                                                                                      \
-            LL_DMA_EnableIT_##ll_name(DmaControllerTraits<tkPeripheralId>::skInstance,                         \
-                                      DmaChannelTraits<tkPeripheralId, tkChannelId>::skChannelLLId);           \
-        }                                                                                                      \
-        static inline void disable()                                                                           \
-        {                                                                                                      \
-            LL_DMA_DisableIT_##ll_name(DmaControllerTraits<tkPeripheralId>::skInstance,                        \
-                                       DmaChannelTraits<tkPeripheralId, tkChannelId>::skChannelLLId);          \
-        }                                                                                                      \
-        static inline bool is_enabled()                                                                        \
-        {                                                                                                      \
-            return LL_DMA_IsEnabledIT_##ll_name(DmaControllerTraits<tkPeripheralId>::skInstance,               \
-                                                DmaChannelTraits<tkPeripheralId, tkChannelId>::skChannelLLId); \
-        }                                                                                                      \
-        static inline bool flag_active()                                                                       \
-        {                                                                                                      \
-            if constexpr (tkChannelId == DmaChannelId::kChannel1)                                              \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##1(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel2)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##2(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel3)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##3(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel4)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##4(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel5)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##5(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel6)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##6(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel7)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##7(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel8)                                         \
-            {                                                                                                  \
-                return LL_DMA_IsActiveFlag_##ll_name##8(DmaControllerTraits<tkPeripheralId>::skInstance);      \
-            }                                                                                                  \
-            else                                                                                               \
-            {                                                                                                  \
-                static_assert(false, "Invalid DMA Channel ID");                                                \
-            }                                                                                                  \
-        }                                                                                                      \
-                                                                                                               \
-        static inline bool is_pending()                                                                        \
-        {                                                                                                      \
-            return flag_active() && is_enabled();                                                              \
-        }                                                                                                      \
-        static inline void ack()                                                                               \
-        {                                                                                                      \
-            if constexpr (tkChannelId == DmaChannelId::kChannel1)                                              \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##1(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel2)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##2(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel3)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##3(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel4)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##4(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel5)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##5(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel6)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##6(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel7)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##7(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else if constexpr (tkChannelId == DmaChannelId::kChannel8)                                         \
-            {                                                                                                  \
-                LL_DMA_ClearFlag_##ll_name##8(DmaControllerTraits<tkPeripheralId>::skInstance);                \
-            }                                                                                                  \
-            else                                                                                               \
-            {                                                                                                  \
-                static_assert(false, "Invalid DMA Channel ID");                                                \
-            }                                                                                                  \
-        }                                                                                                      \
-    };
-
-    DEFINE_DMA_INT_TRAIT(DmaChannelInterruptType::kTransferComplete, TC, true);
-    DEFINE_DMA_INT_TRAIT(DmaChannelInterruptType::kHalfTransfer, HT, true);
-    DEFINE_DMA_INT_TRAIT(DmaChannelInterruptType::kTransferError, TE, true);
-
-#undef DEFINE_DMA_INT_TRAIT
 
     // ===========================================================================
     // INTERRUPT CONTROLLER
@@ -155,15 +74,12 @@ namespace valle::platform
         DmaChannelInterruptMask interrupts{};  // Which interrupts to enable
     };
 
-    template <DmaPeripheralId tkPeripheralId, DmaChannelId tkChannelId>
-
+    template <DmaChannelSpec tkChannelSpec>
     struct DmaChannelInterruptController
     {
     public:
-        static constexpr DmaPeripheralId skPeripheralId = tkPeripheralId;
-        static constexpr DmaChannelId    skChannelId    = tkChannelId;
-        using ControllerTraitsT                         = DmaControllerTraits<tkPeripheralId>;
-        using ChannelTraitsT                            = DmaChannelTraits<tkPeripheralId, tkChannelId>;
+        static constexpr DmaChannelSpec skChannelSpec = tkChannelSpec;
+        using ChannelTraitsT                          = DmaChannelTraits<skChannelSpec>;
 
         /**
          * @brief Enable interrupts for this channel.
@@ -178,23 +94,21 @@ namespace valle::platform
 
             if (config.interrupts.transfer_complete)
             {
-                DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kTransferComplete>::
-                    ack();
-                DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kTransferComplete>::
-                    enable();
+                DmaChannelInterruptSourceInterface<tkChannelSpec,
+                                                   DmaChannelInterruptSource::kTransferComplete>::clear();
+                DmaChannelInterruptSourceInterface<tkChannelSpec,
+                                                   DmaChannelInterruptSource::kTransferComplete>::enable();
             }
             if (config.interrupts.half_transfer)
             {
-                DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kHalfTransfer>::ack();
-                DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kHalfTransfer>::
-                    enable();
+                DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kHalfTransfer>::clear();
+                DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kHalfTransfer>::enable();
             }
 
             if (config.interrupts.transfer_error)
             {
-                DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kTransferError>::ack();
-                DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kTransferError>::
-                    enable();
+                DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kTransferError>::clear();
+                DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kTransferError>::enable();
             }
 
             NVIC_SetPriority(ChannelTraitsT::skIRQn, config.priority);
@@ -206,10 +120,9 @@ namespace valle::platform
          */
         static void disable_interrupts()
         {
-            DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kTransferComplete>::
-                disable();
-            DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kHalfTransfer>::disable();
-            DmaChannelInterruptTraits<tkPeripheralId, tkChannelId, DmaChannelInterruptType::kTransferError>::disable();
+            DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kTransferComplete>::disable();
+            DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kHalfTransfer>::disable();
+            DmaChannelInterruptSourceInterface<tkChannelSpec, DmaChannelInterruptSource::kTransferError>::disable();
             NVIC_DisableIRQ(ChannelTraitsT::skIRQn);
         }
     };
@@ -227,11 +140,11 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId DMA Peripheral ID.
+     * @tparam tkControllerId DMA Controller ID.
      * @tparam tkChannelId    DMA Channel ID.
      */
-    template <DmaPeripheralId tkPeripheralId, DmaChannelId tkChannelId>
-    struct DmaGlobalIsrRouter
+    template <DmaChannelSpec tkChannelSpec>
+    struct DmaIrqRouter
     {
         using UnboundIsrHandlerTag = void;
 
@@ -250,11 +163,11 @@ namespace valle::platform
      * Specialize this template to handle specific DMA interrupts for a given
      * controller and channel.
      *
-     * @tparam tkPeripheralId DMA Peripheral ID (1 or 2)
+     * @tparam tkControllerId DMA Controller ID (1 or 2)
      * @tparam tkChannelId    DMA Channel ID (1-8)
-     * @tparam tkIntType      DMA Interrupt Type
+     * @tparam tkIntSource      DMA Interrupt Type
      */
-    template <DmaPeripheralId tkPeripheralId, DmaChannelId tkChannelId, DmaChannelInterruptType tkIntType>
+    template <DmaChannelSpec tkChannelSpec, DmaChannelInterruptSource tkIntSource>
     struct DmaIsrRouter
     {
         using UnboundIsrHandlerTag = void;
@@ -263,5 +176,11 @@ namespace valle::platform
             // Do nothing by default (optimized away)
         }
     };
+
+    using DmaChannelInterruptIrqRouterContext = InterruptIrqRouterContext<DmaChannelSpec,
+                                                                          DmaChannelInterruptSource,
+                                                                          DmaChannelInterruptSourceInterface,
+                                                                          DmaIrqRouter,
+                                                                          DmaIsrRouter>;
 
 }  // namespace valle::platform

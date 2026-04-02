@@ -8,57 +8,57 @@ namespace valle::platform
     // HRTIM CONTROLLER INTERRUPTS
     // =============================================================================
 
-    enum class HrtimControllerInterruptType : uint8_t
+    enum class HrtimControllerInterruptSource : uint8_t
     {
         kDLLReady,         // DLLRDY
         kBurstModePeriod,  // BMPER
         kSync,             // SYNC
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimControllerInterruptType tkIntType>
-    struct HrtimControllerInterruptTraits;
+    template <HrtimControllerId tkControllerId, HrtimControllerInterruptSource tkIntSource>
+    struct HrtimControllerInterruptSourceInterface;
 
-#define DEFINE_HRTIM_INT_TRAIT(tkIntType, ll_name)                                                     \
-    template <HrtimPeripheralId tkPeripheralId>                                                        \
-    struct HrtimControllerInterruptTraits<tkPeripheralId, tkIntType>                                   \
+#define DEFINE_HRTIM_INT_TRAIT(tkIntSource, ll_name)                                                   \
+    template <HrtimControllerId tkControllerId>                                                        \
+    struct HrtimControllerInterruptSourceInterface<tkControllerId, tkIntSource>                        \
     {                                                                                                  \
         static inline void enable()                                                                    \
         {                                                                                              \
-            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);            \
+            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);            \
         }                                                                                              \
         static inline void disable()                                                                   \
         {                                                                                              \
-            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);           \
+            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);           \
         }                                                                                              \
         static inline bool is_enabled()                                                                \
         {                                                                                              \
-            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);  \
+            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);  \
         }                                                                                              \
         static inline bool flag_active()                                                               \
         {                                                                                              \
-            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance); \
+            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance); \
         }                                                                                              \
                                                                                                        \
         static inline bool is_pending()                                                                \
         {                                                                                              \
             return flag_active() && is_enabled();                                                      \
         }                                                                                              \
-        static inline void ack()                                                                       \
+        static inline void clear()                                                                     \
         {                                                                                              \
-            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);           \
+            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);           \
         }                                                                                              \
     };
 
-    DEFINE_HRTIM_INT_TRAIT(HrtimControllerInterruptType::kDLLReady, DLLRDY);
-    DEFINE_HRTIM_INT_TRAIT(HrtimControllerInterruptType::kBurstModePeriod, BMPER);
-    DEFINE_HRTIM_INT_TRAIT(HrtimControllerInterruptType::kSync, SYNC);
+    DEFINE_HRTIM_INT_TRAIT(HrtimControllerInterruptSource::kDLLReady, DLLRDY);
+    DEFINE_HRTIM_INT_TRAIT(HrtimControllerInterruptSource::kBurstModePeriod, BMPER);
+    DEFINE_HRTIM_INT_TRAIT(HrtimControllerInterruptSource::kSync, SYNC);
 
 #undef DEFINE_HRTIM_INT_TRAIT
 
     // =============================================================================
     // HRTIM FAULT INTERRUPTS
     // =============================================================================
-    enum class HrtimFaultInterruptType : uint8_t
+    enum class HrtimFaultInterruptSource : uint8_t
     {
         kSystemFault,  // SYSFLT
         kFault1,       // FLT1
@@ -69,46 +69,46 @@ namespace valle::platform
         kFault6,       // FLT6
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultInterruptType tkIntType>
-    struct HrtimFaultInterruptTraits;
+    template <HrtimControllerId tkControllerId, HrtimFaultInterruptSource tkIntSource>
+    struct HrtimFaultInterruptSourceInterface;
 
-#define DEFINE_HRTIM_FAULT_INT_TRAIT(tkIntType, ll_name)                                               \
-    template <HrtimPeripheralId tkPeripheralId>                                                        \
-    struct HrtimFaultInterruptTraits<tkPeripheralId, tkIntType>                                        \
+#define DEFINE_HRTIM_FAULT_INT_TRAIT(tkIntSource, ll_name)                                             \
+    template <HrtimControllerId tkControllerId>                                                        \
+    struct HrtimFaultInterruptSourceInterface<tkControllerId, tkIntSource>                             \
     {                                                                                                  \
         static inline void enable()                                                                    \
         {                                                                                              \
-            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);            \
+            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);            \
         }                                                                                              \
         static inline void disable()                                                                   \
         {                                                                                              \
-            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);           \
+            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);           \
         }                                                                                              \
         static inline bool is_enabled()                                                                \
         {                                                                                              \
-            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);  \
+            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);  \
         }                                                                                              \
         static inline bool flag_active()                                                               \
         {                                                                                              \
-            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance); \
+            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance); \
         }                                                                                              \
         static inline bool is_pending()                                                                \
         {                                                                                              \
             return flag_active() && is_enabled();                                                      \
         }                                                                                              \
-        static inline void ack()                                                                       \
+        static inline void clear()                                                                     \
         {                                                                                              \
-            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance);           \
+            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance);           \
         }                                                                                              \
     };
 
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kSystemFault, SYSFLT);
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kFault1, FLT1);
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kFault2, FLT2);
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kFault3, FLT3);
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kFault4, FLT4);
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kFault5, FLT5);
-    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptType::kFault6, FLT6);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kSystemFault, SYSFLT);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kFault1, FLT1);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kFault2, FLT2);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kFault3, FLT3);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kFault4, FLT4);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kFault5, FLT5);
+    DEFINE_HRTIM_FAULT_INT_TRAIT(HrtimFaultInterruptSource::kFault6, FLT6);
 
 #undef DEFINE_HRTIM_FAULT_INT_TRAIT
 
@@ -116,7 +116,7 @@ namespace valle::platform
     // HRTIM MASTER TIMER INTERRUPTS
     // =============================================================================
 
-    enum class HrtimMasterTimerInterruptType : uint8_t
+    enum class HrtimMasterTimerInterruptSource : uint8_t
     {
         kCompare1,    // CMP1
         kCompare2,    // CMP2
@@ -126,29 +126,29 @@ namespace valle::platform
         kRepetition,  // REP
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimMasterTimerInterruptType tkIntType>
-    struct HrtimMasterTimerInterruptTraits;
+    template <HrtimControllerId tkControllerId, HrtimMasterTimerInterruptSource tkIntSource>
+    struct HrtimMasterTimerInterruptSourceInterface;
 
-#define DEFINE_HRTIM_INT_TRAIT(tkIntType, ll_name)                                                                  \
-    template <HrtimPeripheralId tkPeripheralId>                                                                     \
-    struct HrtimMasterTimerInterruptTraits<tkPeripheralId, tkIntType>                                               \
+#define DEFINE_HRTIM_INT_TRAIT(tkIntSource, ll_name)                                                                \
+    template <HrtimControllerId tkControllerId>                                                                     \
+    struct HrtimMasterTimerInterruptSourceInterface<tkControllerId, tkIntSource>                                    \
     {                                                                                                               \
         static inline void enable()                                                                                 \
         {                                                                                                           \
-            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance, LL_HRTIM_TIMER_MASTER);  \
+            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance, LL_HRTIM_TIMER_MASTER);  \
         }                                                                                                           \
         static inline void disable()                                                                                \
         {                                                                                                           \
-            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance, LL_HRTIM_TIMER_MASTER); \
+            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance, LL_HRTIM_TIMER_MASTER); \
         }                                                                                                           \
         static inline bool is_enabled()                                                                             \
         {                                                                                                           \
-            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,                \
+            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,                \
                                                   LL_HRTIM_TIMER_MASTER);                                           \
         }                                                                                                           \
         static inline bool flag_active()                                                                            \
         {                                                                                                           \
-            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,               \
+            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,               \
                                                    LL_HRTIM_TIMER_MASTER);                                          \
         }                                                                                                           \
                                                                                                                     \
@@ -156,18 +156,18 @@ namespace valle::platform
         {                                                                                                           \
             return flag_active() && is_enabled();                                                                   \
         }                                                                                                           \
-        static inline void ack()                                                                                    \
+        static inline void clear()                                                                                  \
         {                                                                                                           \
-            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance, LL_HRTIM_TIMER_MASTER); \
+            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance, LL_HRTIM_TIMER_MASTER); \
         }                                                                                                           \
     };
 
-    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptType::kCompare1, CMP1);
-    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptType::kCompare2, CMP2);
-    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptType::kCompare3, CMP3);
-    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptType::kCompare4, CMP4);
-    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptType::kUpdate, UPDATE);
-    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptType::kRepetition, REP);
+    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptSource::kCompare1, CMP1);
+    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptSource::kCompare2, CMP2);
+    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptSource::kCompare3, CMP3);
+    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptSource::kCompare4, CMP4);
+    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptSource::kUpdate, UPDATE);
+    DEFINE_HRTIM_INT_TRAIT(HrtimMasterTimerInterruptSource::kRepetition, REP);
 
 #undef DEFINE_HRTIM_INT_TRAIT
 
@@ -175,7 +175,7 @@ namespace valle::platform
     // HRTIM TIMER INTERRUPTS
     // =============================================================================
 
-    enum class HrtimTimerInterruptType : uint8_t
+    enum class HrtimTimerInterruptSource : uint8_t
     {
         kCompare1,           // CMP1
         kCompare2,           // CMP2
@@ -193,59 +193,59 @@ namespace valle::platform
         kDelayedProtection,  // DLYPRT
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId, HrtimTimerInterruptType tkIntType>
-    struct HrtimTimerInterruptTraits;
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerInterruptSource tkIntSource>
+    struct HrtimTimerInterruptSourceInterface;
 
-#define DEFINE_HRTIM_INT_TRAIT(tkIntType, ll_name)                                                       \
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>                                  \
-    struct HrtimTimerInterruptTraits<tkPeripheralId, tkTimerId, tkIntType>                               \
+#define DEFINE_HRTIM_INT_TRAIT(tkIntSource, ll_name)                                                     \
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>                                  \
+    struct HrtimTimerInterruptSourceInterface<tkControllerId, tkTimerId, tkIntSource>                    \
     {                                                                                                    \
         static inline void enable()                                                                      \
         {                                                                                                \
-            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,               \
-                                        HrtimTimerTraits<tkPeripheralId, tkTimerId>::skLLId);            \
+            LL_HRTIM_EnableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,               \
+                                        HrtimTimerTraits<tkControllerId, tkTimerId>::skLLId);            \
         }                                                                                                \
         static inline void disable()                                                                     \
         {                                                                                                \
-            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,              \
-                                         HrtimTimerTraits<tkPeripheralId, tkTimerId>::skLLId);           \
+            LL_HRTIM_DisableIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,              \
+                                         HrtimTimerTraits<tkControllerId, tkTimerId>::skLLId);           \
         }                                                                                                \
         static inline bool is_enabled()                                                                  \
         {                                                                                                \
-            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,     \
-                                                  HrtimTimerTraits<tkPeripheralId, tkTimerId>::skLLId);  \
+            return LL_HRTIM_IsEnabledIT_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,     \
+                                                  HrtimTimerTraits<tkControllerId, tkTimerId>::skLLId);  \
         }                                                                                                \
         static inline bool flag_active()                                                                 \
         {                                                                                                \
-            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,    \
-                                                   HrtimTimerTraits<tkPeripheralId, tkTimerId>::skLLId); \
+            return LL_HRTIM_IsActiveFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,    \
+                                                   HrtimTimerTraits<tkControllerId, tkTimerId>::skLLId); \
         }                                                                                                \
                                                                                                          \
         static inline bool is_pending()                                                                  \
         {                                                                                                \
             return flag_active() && is_enabled();                                                        \
         }                                                                                                \
-        static inline void ack()                                                                         \
+        static inline void clear()                                                                       \
         {                                                                                                \
-            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkPeripheralId>::skInstance,              \
-                                         HrtimTimerTraits<tkPeripheralId, tkTimerId>::skLLId);           \
+            LL_HRTIM_ClearFlag_##ll_name(HrtimControllerTraits<tkControllerId>::skInstance,              \
+                                         HrtimTimerTraits<tkControllerId, tkTimerId>::skLLId);           \
         }                                                                                                \
     };
 
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kCompare1, CMP1);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kCompare2, CMP2);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kCompare3, CMP3);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kCompare4, CMP4);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kUpdate, UPDATE);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kRepetition, REP);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kCapture1, CPT1);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kCapture2, CPT2);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kOutput1Set, SET1);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kOutput1Reset, RST1);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kOutput2Set, SET2);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kOutput2Reset, RST2);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kReset, RST);
-    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptType::kDelayedProtection, DLYPRT);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kCompare1, CMP1);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kCompare2, CMP2);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kCompare3, CMP3);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kCompare4, CMP4);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kUpdate, UPDATE);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kRepetition, REP);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kCapture1, CPT1);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kCapture2, CPT2);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kOutput1Set, SET1);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kOutput1Reset, RST1);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kOutput2Set, SET2);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kOutput2Reset, RST2);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kReset, RST);
+    DEFINE_HRTIM_INT_TRAIT(HrtimTimerInterruptSource::kDelayedProtection, DLYPRT);
 
 #undef DEFINE_HRTIM_INT_TRAIT
 
@@ -287,15 +287,15 @@ namespace valle::platform
         HrtimTimerInterruptMask interrupts{};
     };
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
 
     class HrtimTimerInterruptController
     {
     public:
-        static constexpr HrtimPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr HrtimControllerId skControllerId = tkControllerId;
         static constexpr HrtimTimerId      skTimerId      = tkTimerId;
-        using ControllerTraitsT                           = HrtimControllerTraits<tkPeripheralId>;
-        using TimerTraitsT                                = HrtimTimerTraits<tkPeripheralId, tkTimerId>;
+        using ControllerTraitsT                           = HrtimControllerTraits<tkControllerId>;
+        using TimerTraitsT                                = HrtimTimerTraits<tkControllerId, tkTimerId>;
 
         static void enable_interrupts(const HrtimTimerInterruptConfig& config)
         {
@@ -306,73 +306,89 @@ namespace valle::platform
 
             if (config.interrupts.compare1)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare1>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare1>::
+                    enable();
             }
 
             if (config.interrupts.compare2)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare2>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare2>::
+                    enable();
             }
 
             if (config.interrupts.compare3)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare3>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare3>::
+                    enable();
             }
 
             if (config.interrupts.compare4)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare4>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare4>::
+                    enable();
             }
 
             if (config.interrupts.update)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kUpdate>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kUpdate>::
+                    enable();
             }
 
             if (config.interrupts.repetition)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kRepetition>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kRepetition>::
+                    enable();
             }
 
             if (config.interrupts.capture1)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCapture1>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCapture1>::
+                    enable();
             }
 
             if (config.interrupts.capture2)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCapture2>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCapture2>::
+                    enable();
             }
 
             if (config.interrupts.output1_set)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput1Set>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kOutput1Set>::
+                    enable();
             }
 
             if (config.interrupts.output1_reset)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput1Reset>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId,
+                                                   skTimerId,
+                                                   HrtimTimerInterruptSource::kOutput1Reset>::enable();
             }
 
             if (config.interrupts.output2_set)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput2Set>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kOutput2Set>::
+                    enable();
             }
 
             if (config.interrupts.output2_reset)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput2Reset>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId,
+                                                   skTimerId,
+                                                   HrtimTimerInterruptSource::kOutput2Reset>::enable();
             }
 
             if (config.interrupts.reset)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kReset>::enable();
+                HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kReset>::
+                    enable();
             }
 
             if (config.interrupts.delayed_protection)
             {
-                HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kDelayedProtection>::
-                    enable();
+                HrtimTimerInterruptSourceInterface<skControllerId,
+                                                   skTimerId,
+                                                   HrtimTimerInterruptSource::kDelayedProtection>::enable();
             }
 
             NVIC_SetPriority(TimerTraitsT::skIRQn, config.priority);
@@ -381,21 +397,34 @@ namespace valle::platform
 
         static void disable_interrupts()
         {
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare1>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare2>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare3>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCompare4>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kUpdate>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kRepetition>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCapture1>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kCapture2>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput1Set>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput1Reset>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput2Set>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kOutput2Reset>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kReset>::disable();
-            HrtimTimerInterruptTraits<skPeripheralId, skTimerId, HrtimTimerInterruptType::kDelayedProtection>::
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare1>::
                 disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare2>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare3>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCompare4>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kUpdate>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kRepetition>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCapture1>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kCapture2>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kOutput1Set>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kOutput1Reset>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kOutput2Set>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kOutput2Reset>::
+                disable();
+            HrtimTimerInterruptSourceInterface<skControllerId, skTimerId, HrtimTimerInterruptSource::kReset>::disable();
+            HrtimTimerInterruptSourceInterface<skControllerId,
+                                               skTimerId,
+                                               HrtimTimerInterruptSource::kDelayedProtection>::disable();
 
             NVIC_DisableIRQ(TimerTraitsT::skIRQn);
         }
@@ -414,9 +443,9 @@ namespace valle::platform
      * (e.g., when delegating to the ST HAL). Binding this takes precedence over
      * all controller and master timer ISR routers.
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId>
+    template <HrtimControllerId tkControllerId>
 
     struct HrtimGlobalMasterIsrRouter
     {
@@ -435,9 +464,9 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId>
+    template <HrtimControllerId tkControllerId>
 
     struct HrtimGlobalControllerIsrRouter
     {
@@ -456,9 +485,9 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId, HrtimControllerInterruptType tkIntType>
+    template <HrtimControllerId tkControllerId, HrtimControllerInterruptSource tkIntSource>
 
     struct HrtimControllerIsrRouter
     {
@@ -477,9 +506,9 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId>
+    template <HrtimControllerId tkControllerId>
 
     struct HrtimGlobalFaultIsrRouter
     {
@@ -498,9 +527,9 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultInterruptType tkIntType>
+    template <HrtimControllerId tkControllerId, HrtimFaultInterruptSource tkIntSource>
 
     struct HrtimFaultIsrRouter
     {
@@ -519,9 +548,9 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId>
+    template <HrtimControllerId tkControllerId>
 
     struct HrtimGlobalMasterTimerIsrRouter
     {
@@ -540,9 +569,9 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      */
-    template <HrtimPeripheralId tkPeripheralId, HrtimMasterTimerInterruptType tkIntType>
+    template <HrtimControllerId tkControllerId, HrtimMasterTimerInterruptSource tkIntSource>
 
     struct HrtimMasterTimerIsrRouter
     {
@@ -561,10 +590,10 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId HRTIM Peripheral ID.
+     * @tparam tkControllerId HRTIM Controller ID.
      * @tparam tkTimerId HRTIM Timer ID.
      */
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
 
     struct HrtimGlobalTimerIsrRouter
     {
@@ -585,11 +614,11 @@ namespace valle::platform
      * Specialize this template in your application or driver to bind
      * logic to specific HRTIM interrupts.
      *
-     * @tparam tkPeripheralId The HRTIM peripheral index the interrupt belongs to.
+     * @tparam tkControllerId The HRTIM peripheral index the interrupt belongs to.
      * @tparam tkTimerId The HRTIM Timer index the interrupt belongs to.
-     * @tparam tkIntType The interrupt type triggered.
+     * @tparam tkIntSource The interrupt type triggered.
      */
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId, HrtimTimerInterruptType tkIntType>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId, HrtimTimerInterruptSource tkIntSource>
 
     struct HrtimTimerIsrRouter
     {

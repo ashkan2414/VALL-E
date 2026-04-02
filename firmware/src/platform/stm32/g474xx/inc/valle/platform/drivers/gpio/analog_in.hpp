@@ -4,9 +4,6 @@
 
 namespace valle::platform
 {
-    struct GpioAnalogInConfig
-    {
-    };
 
     /**
      * @brief Configures a pin as Analog (High Impedance).
@@ -31,10 +28,7 @@ namespace valle::platform
         [[nodiscard]] bool init(const GpioAnalogInConfig& config)
         {
             (void)config;
-            return m_pin.get().init(GpioPinConfig{.mode      = Gpio_MODE_ANALOG,
-                                                  .pull      = GpioPullMode::kNoPull,
-                                                  .speed     = GpioSpeedMode::kLow,
-                                                  .alternate = GpioAlternativeFunction::kAF0});
+            return m_pin->init_as_analog_in(config);
         }
     };
 
@@ -47,7 +41,7 @@ namespace valle::platform
         };
 
         template <>
-        struct ConditionalGpioAnalogInDriver<GpioNullPinDevice>
+        struct ConditionalGpioAnalogInDriver<NullDevice>
         {
             using type = std::monostate;
         };

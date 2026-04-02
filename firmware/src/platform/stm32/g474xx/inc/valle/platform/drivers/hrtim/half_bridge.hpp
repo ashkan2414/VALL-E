@@ -55,19 +55,19 @@ namespace valle::platform
         }
     };
 
-    template <typename THrtimTimerDevice>
+    template <typename THrtimTimer>
     class HrtimHalfBridgeDriver
     {
     public:
-        using InjectDevices     = TypeList<THrtimTimerDevice>;
-        using HrtimTimerT       = THrtimTimerDevice;
+        using InjectDevices     = TypeList<THrtimTimer>;
+        using HrtimTimerT       = THrtimTimer;
         using ControllerTraitsT = HrtimTimerT::ControllerTraitsT;
         using TimerTraitsT      = HrtimTimerT::TimerTraitsT;
         using InterfaceT        = HrtimTimerT::InterfaceT;
 
         static constexpr size_t skIndex = HrtimTimerT::skIndex;
 
-        static constexpr auto skPeripheralId = HrtimTimerT::skPeripheralId;
+        static constexpr auto skControllerId = HrtimTimerT::skControllerId;
         static constexpr auto skTimerId      = HrtimTimerT::skTimerId;
 
         static_assert(HrtimTimerT::skHasOutput1Pin && HrtimTimerT::skHasOutput2Pin,
@@ -104,7 +104,7 @@ namespace valle::platform
             if (config.min_duty > config.max_duty)
             {
                 VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM invalid duty cycle limits: min_duty {} > max_duty {}",
-                                static_cast<int>(skPeripheralId),
+                                static_cast<int>(skControllerId),
                                 enum_name(skTimerId),
                                 config.min_duty,
                                 config.max_duty);
@@ -114,7 +114,7 @@ namespace valle::platform
             if (config.max_duty > 1.0F)
             {
                 VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM max_duty {} is above 100%!",
-                                static_cast<int>(skPeripheralId),
+                                static_cast<int>(skControllerId),
                                 enum_name(skTimerId),
                                 config.max_duty);
                 return false;
@@ -123,7 +123,7 @@ namespace valle::platform
             if (config.min_duty < 0.0F)
             {
                 VALLE_LOG_ERROR("HRTIM{} Timer {} Half-bridge PWM min_duty {} is below 0%!",
-                                static_cast<int>(skPeripheralId),
+                                static_cast<int>(skControllerId),
                                 enum_name(skTimerId),
                                 config.min_duty);
                 return false;
@@ -141,7 +141,7 @@ namespace valle::platform
             {
                 VALLE_LOG_ERROR(
                     "HRTIM{} Timer {} Half-bridge PWM target frequency {} Hz is too low. Must be above {} Hz.",
-                    static_cast<int>(skPeripheralId),
+                    static_cast<int>(skControllerId),
                     enum_name(skTimerId),
                     config.freq_hz,
                     min_freq_hz);
@@ -154,7 +154,7 @@ namespace valle::platform
             {
                 VALLE_LOG_ERROR(
                     "HRTIM{} Timer {} Half-bridge PWM target frequency {} Hz is too high. Must be below {} Hz.",
-                    static_cast<int>(skPeripheralId),
+                    static_cast<int>(skControllerId),
                     enum_name(skTimerId),
                     config.freq_hz,
                     max_freq_hz);
@@ -358,11 +358,11 @@ namespace valle::platform
         }
     };
 
-    using Hrtim1TimerAHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerADevice>;
-    using Hrtim1TimerBHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerBDevice>;
-    using Hrtim1TimerCHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerCDevice>;
-    using Hrtim1TimerDHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerDDevice>;
-    using Hrtim1TimerEHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerEDevice>;
-    using Hrtim1TimerFHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerFDevice>;
+    using Hrtim1TimerAHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerA>;
+    using Hrtim1TimerBHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerB>;
+    using Hrtim1TimerCHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerC>;
+    using Hrtim1TimerDHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerD>;
+    using Hrtim1TimerEHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerE>;
+    using Hrtim1TimerFHalfBridgeDriver = HrtimHalfBridgeDriver<Hrtim1TimerF>;
 
 }  // namespace valle::platform

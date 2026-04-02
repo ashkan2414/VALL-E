@@ -10,16 +10,16 @@
 namespace valle::app
 {
     // TIM for Quadrature CrankEncoder
-    constexpr auto kCrankEncoderTimPeripheralId = platform::TimPeripheralId::kTim2;
+    constexpr auto kCrankEncoderTimControllerId = platform::TimControllerId::kTim2;
     struct CrankEncoderTimControllerCTConfig : public platform::TimControllerCTDefaultConfig
     {
-        using Ch1PinT = platform::GpioPinA15Device;
-        using Ch2PinT = platform::GpioPinB3Device;
+        using Ch1PinT = platform::GpioPinA15;
+        using Ch2PinT = platform::GpioPinB3;
     };
 
 }  // namespace valle::app
 
-VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTimPeripheralId,
+VALLE_DEFINE_TIMER_CONTROLLER_CT_CONFIG(valle::app::kCrankEncoderTimControllerId,
                                         valle::app::CrankEncoderTimControllerCTConfig{});
 
 namespace valle
@@ -29,9 +29,9 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using AMT10xTimControllerT = platform::TimControllerDevice<kCrankEncoderTimPeripheralId>;
+        using AMT10xTimControllerT = platform::TimController<kCrankEncoderTimControllerId>;
         using AMT10xTimEncoderModuleT =
-            platform::app::AMT10xTimEncoderModule<AMT10xTimControllerT, platform::GpioPinB5Device, AMT10xPPR::k2048>;
+            platform::app::AMT10xTimEncoderModule<AMT10xTimControllerT, platform::GpioPinB5, AMT10xPPR::k2048>;
         using AMT10xTimEncoderModuleConfigT = typename AMT10xTimEncoderModuleT::ConfigT;
 
         using CrankEncoderModuleT       = platform::app::AMT10xCrankEncoderModuleX<AMT10xTimEncoderModuleT>;

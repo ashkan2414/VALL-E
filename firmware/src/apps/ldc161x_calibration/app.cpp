@@ -26,20 +26,19 @@ namespace valle::app
     {
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::DmaMux1ControllerDevice& dev)
+            [](platform::DmaMux1Controller& dev)
             { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
-            [](platform::Dma1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
-            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::GpioPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
-            [](platform::I2c1CommandBufferDevice<>& dev)
+            [](platform::Dma1Controller& dev) { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::GpioPortA& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GpioPortB& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
+            [](platform::I2c1CommandBuffer<>& dev)
             {
                 expect(dev.init(platform::I2cCommandBufferDeviceConfig{
                            .controller_config =
                                platform::I2cControllerConfig{
                                    .timing_reg = 0x40621236,  // 400kHz @ 170MHz APB1 clock (values from STM32CubeMX)
                                    .enable_analog_filter = true,
-                                   .dma_priority         = platform::DmaPriority::kHigh,
+                                   .dma_priority         = platform::DmaChannelPriority::kHigh,
                                },
                            .event_int_priority = 5,
                            .error_int_priority = 5,
@@ -63,7 +62,7 @@ namespace valle::app
                    .parity            = platform::UartParity::kNone,
                    .transfer_mode     = platform::UartTransferMode::kTxRx,
                    .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DmaPriority::kHigh,
+                   .dma_priority      = platform::DmaChannelPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),

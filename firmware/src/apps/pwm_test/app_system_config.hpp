@@ -10,7 +10,7 @@
 namespace valle::app
 {
     // HRTIM Controller
-    constexpr platform::HrtimPeripheralId kHrtimPeripheralId = 1;
+    constexpr platform::HrtimControllerId kHrtimControllerId = 1;
     struct HrtimControllerCTConfig : public platform::HrtimControllerCTDefaultConfig
     {
     };
@@ -19,15 +19,15 @@ namespace valle::app
     constexpr auto kHrtimTimerId = platform::HrtimTimerId::kTimerA;
     struct HrtimTimerCTConfig : public platform::HrtimTimerCTDefaultConfig
     {
-        using Output1PinT = platform::GpioPinA8Device;
-        using Output2PinT = platform::GpioPinA9Device;
+        using Output1PinT = platform::GpioPinA8;
+        using Output2PinT = platform::GpioPinA9;
     };
 
 }  // namespace valle::app
 
 // Bind compile-time configurations
-VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kHrtimPeripheralId, valle::app::HrtimControllerCTConfig{});
-VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(valle::app::kHrtimPeripheralId,
+VALLE_DEFINE_HRTIM_CONTROLLER_CT_CONFIG(valle::app::kHrtimControllerId, valle::app::HrtimControllerCTConfig{});
+VALLE_DEFINE_HRTIM_TIMER_CT_CONFIG(valle::app::kHrtimControllerId,
                                    valle::app::kHrtimTimerId,
                                    valle::app::HrtimTimerCTConfig{});
 
@@ -38,7 +38,7 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using HrtimTimerDeviceT      = platform::HrtimTimerDevice<kHrtimPeripheralId, kHrtimTimerId>;
+        using HrtimTimerDeviceT      = platform::HrtimTimer<kHrtimControllerId, kHrtimTimerId>;
         using HrtimHalfBridgeDriverT = platform::HrtimHalfBridgeDriver<HrtimTimerDeviceT>;
 
         // Declare Main Driver List

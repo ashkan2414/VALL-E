@@ -6,7 +6,7 @@
 
 #include "valle/platform/core.hpp"
 #include "valle/platform/devices/rcc.hpp"
-#include "valle/platform/hardware/adc_common.hpp"
+#include "valle/platform/hdi/adc_common.hpp"
 
 namespace valle::platform
 {
@@ -17,9 +17,9 @@ namespace valle::platform
     // -----------------------------------------------------------------------------
     // CONFIGURATIONS
     // -----------------------------------------------------------------------------
-    enum class AdcCommonClockSource
+    enum class AdcCommonClockSource : uint8_t
     {
-        kAsyncPllP,
+        kAsyncPllP = 0,
         kAsyncSysclk,
         kSync
     };
@@ -37,18 +37,6 @@ namespace valle::platform
     struct AdcCommonConfig
     {
         std::variant<AdcCommonAsyncClockConfig, AdcCommonSyncClockConfig> clock_config;
-    };
-
-    template <AdcCommonId tkCommonId>
-    struct AdcCommonConfigTraits
-    {
-        [[nodiscard]] static constexpr std::optional<std::string_view> validate(const AdcCommonConfig config,
-                                                                                const RccConfig&      rcc_config)
-        {
-            const auto clock_source   = get_clock_source(rcc_config.sct);
-            const auto source_freq_hz = get_source_clock_freq_hz(rcc_config);
-            return validate(config, clock_source, source_freq_hz);
-        }
 
         [[nodiscard]] static constexpr std::optional<std::string_view> validate(const AdcCommonConfig      config,
                                                                                 const AdcCommonClockSource clock_source,
@@ -64,10 +52,10 @@ namespace valle::platform
                                    return "ADC clock source must be asynchronous for AdcCommonAsyncClockConfig";
                                }
 
-                               const auto target_freq_hz = AdcCommonRootInterface::calculate_async_clock_freq_hz(
+                               const auto target_freq_hz = AdcCommonRootTraits::calculate_async_clock_freq_hz(
                                    source_freq_hz, async_config.prescaler);
 
-                               if (target_freq_hz > AdcCommonRootInterface::skMaxClockFreqHz)
+                               if (target_freq_hz > AdcCommonRootTraits::skMaxClockFreqHz)
                                {
                                    return "ADC clock frequency exceeds maximum allowed frequency";
                                }
@@ -82,10 +70,10 @@ namespace valle::platform
                                    return "ADC clock source must be synchronous for AdcCommonSyncClockConfig";
                                }
 
-                               const auto target_freq_hz = AdcCommonRootInterface::calculate_sync_clock_freq_hz(
+                               const auto target_freq_hz = AdcCommonRootTraits::calculate_sync_clock_freq_hz(
                                    source_freq_hz, sync_config.prescaler);
 
-                               if (target_freq_hz > AdcCommonRootInterface::skMaxClockFreqHz)
+                               if (target_freq_hz > AdcCommonRootTraits::skMaxClockFreqHz)
                                {
                                    return "ADC clock frequency exceeds maximum allowed frequency";
                                }
@@ -95,9 +83,19 @@ namespace valle::platform
                 config.clock_config);
         }
 
+        template <AdcCommonControllerId tkControllerId>
+        [[nodiscard]] static constexpr std::optional<std::string_view> validate(const AdcCommonConfig config,
+                                                                                const RccConfig&      rcc_config)
+        {
+            const auto clock_source   = get_clock_source<tkControllerId>(rcc_config.sct);
+            const auto source_freq_hz = get_source_clock_freq_hz<tkControllerId>(rcc_config);
+            return validate(config, clock_source, source_freq_hz);
+        }
+
+        template <AdcCommonControllerId tkControllerId>
         [[nodiscard]] static constexpr AdcCommonClockSource get_clock_source(const SctConfig& sct_config)
         {
-            if constexpr (tkCommonId == AdcCommonId::kAdc12)
+            if constexpr (tkControllerId == AdcCommonControllerId::kAdc12)
             {
                 switch (sct_config.adc12_source)
                 {
@@ -109,7 +107,7 @@ namespace valle::platform
                         return AdcCommonClockSource::kSync;
                 }
             }
-            else if constexpr (tkCommonId == AdcCommonId::kAdc345)
+            else if constexpr (tkControllerId == AdcCommonControllerId::kAdc345)
             {
                 switch (sct_config.adc345_source)
                 {
@@ -123,23 +121,24 @@ namespace valle::platform
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkCommonId>, "Unsupported ADC Common ID");
+                static_assert(kAlwaysFalseV<tkControllerId>, "Unsupported ADC Common ID");
             }
         }
 
+        template <AdcCommonControllerId tkControllerId>
         [[nodiscard]] static constexpr uint32_t get_source_clock_freq_hz(const RccConfig& rcc_config)
         {
-            if constexpr (tkCommonId == AdcCommonId::kAdc12)
+            if constexpr (tkControllerId == AdcCommonControllerId::kAdc12)
             {
                 return rcc_config.get_adc12_freq_hz();
             }
-            else if constexpr (tkCommonId == AdcCommonId::kAdc345)
+            else if constexpr (tkControllerId == AdcCommonControllerId::kAdc345)
             {
                 return rcc_config.get_adc345_freq_hz();
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkCommonId>, "Unsupported ADC Common ID");
+                static_assert(kAlwaysFalseV<tkControllerId>, "Unsupported ADC Common ID");
             }
         }
     };
@@ -148,27 +147,28 @@ namespace valle::platform
     // DEVICE CLASS
     // -----------------------------------------------------------------------------
 
-    template <AdcCommonId tkCommonId>
-    class AdcCommonDevice
+    template <AdcCommonControllerId tkControllerId>
+    class AdcCommonController
     {
     public:
         struct Descriptor : public SharedDeviceDescriptor
         {
         };
 
-        static constexpr AdcCommonId skCommonId = tkCommonId;
-        using ClockTraitsT                      = AdcCommonTraits<skCommonId>;
-        using RootInterfaceT                    = AdcCommonRootInterface;
-
-        using InjectDevices = TypeList<RccInfoDevice<>>;
+        static constexpr AdcCommonControllerId skCommonId = tkControllerId;
+        using ClockTraitsT                                = AdcCommonControllerTraits<skCommonId>;
+        using ControllerHdiT                              = AdcCommonControllerHdi<skCommonId>;
+        using InjectDevices                               = TypeList<ControllerHdiT, RccInfo<>>;
 
     private:
-        [[no_unique_address]] DeviceRef<RccInfoDevice<>> m_rcc_info;
+        [[no_unique_address]] DeviceRef<ControllerHdiT> m_controller_hw;
+        [[no_unique_address]] DeviceRef<RccInfo<>>      m_rcc_info;
 
     public:
-        AdcCommonDevice() = delete;
+        AdcCommonController() = delete;
 
-        AdcCommonDevice(DeviceRef<RccInfoDevice<>>&& rcc_info) : m_rcc_info(std::move(rcc_info))
+        AdcCommonController(DeviceRef<ControllerHdiT>&& hardware_key, DeviceRef<RccInfo<>>&& rcc_info)
+            : m_controller_hw(std::move(hardware_key)), m_rcc_info(std::move(rcc_info))
         {
         }
 
@@ -184,29 +184,27 @@ namespace valle::platform
             // Validate configuration against current clock tree settings
             const auto clock_source   = get_clock_source();
             const auto source_freq_hz = get_source_clock_freq_hz();
-            if (AdcCommonConfigTraits<skCommonId>::validate(config, clock_source, source_freq_hz).has_value())
+            if (AdcCommonConfig::validate(config, clock_source, source_freq_hz).has_value())
             {
                 return false;
             }
 
             // Enable the ADC peripheral clock (REQUIRED before writing to any ADC registers)
-            ClockTraitsT::enable_clock();
+            m_controller_hw->enable_clock(true);
 
             // Now we can safely configure the ADC Common Control Register (Adc_CCR)
-            std::visit(
-                Overloaded{
-                    [](const AdcCommonAsyncClockConfig& async_config)
-                    { LL_ADC_SetCommonClock(ClockTraitsT::skInstance, static_cast<uint32_t>(async_config.prescaler)); },
-                    [](const AdcCommonSyncClockConfig& sync_config)
-                    { LL_ADC_SetCommonClock(ClockTraitsT::skInstance, static_cast<uint32_t>(sync_config.prescaler)); }},
-                config.clock_config);
+            std::visit(Overloaded{[](const AdcCommonAsyncClockConfig& async_config)
+                                  { m_controller_hw->set_common_clock_async(async_config.prescaler); },
+                                  [](const AdcCommonSyncClockConfig& sync_config)
+                                  { m_controller_hw->set_common_clock_sync(sync_config.prescaler); }},
+                       config.clock_config);
 
             return true;
         }
 
         [[nodiscard]] AdcCommonClockSource get_clock_source() const
         {
-            if constexpr (tkCommonId == AdcCommonId::kAdc12)
+            if constexpr (tkControllerId == AdcCommonControllerId::kAdc12)
             {
                 switch (m_rcc_info->get_adc12_source())
                 {
@@ -218,7 +216,7 @@ namespace valle::platform
                         return AdcCommonClockSource::kSync;
                 }
             }
-            else if constexpr (tkCommonId == AdcCommonId::kAdc345)
+            else if constexpr (tkControllerId == AdcCommonControllerId::kAdc345)
             {
                 switch (m_rcc_info->get_adc345_source())
                 {
@@ -232,23 +230,23 @@ namespace valle::platform
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkCommonId>, "Unsupported ADC Common ID");
+                static_assert(kAlwaysFalseV<tkControllerId>, "Unsupported ADC Common ID");
             }
         }
 
         [[nodiscard]] uint32_t get_source_clock_freq_hz() const
         {
-            if constexpr (tkCommonId == AdcCommonId::kAdc12)
+            if constexpr (tkControllerId == AdcCommonControllerId::kAdc12)
             {
                 return m_rcc_info->get_adc12_freq_hz();
             }
-            else if constexpr (tkCommonId == AdcCommonId::kAdc345)
+            else if constexpr (tkControllerId == AdcCommonControllerId::kAdc345)
             {
                 return m_rcc_info->get_adc345_freq_hz();
             }
             else
             {
-                static_assert(kAlwaysFalseV<tkCommonId>, "Unsupported ADC Common ID");
+                static_assert(kAlwaysFalseV<tkControllerId>, "Unsupported ADC Common ID");
             }
         }
     };
@@ -257,7 +255,7 @@ namespace valle::platform
     // DEVICE ALIASES
     // -----------------------------------------------------------------------------
 
-    using Adc12CommonDevice  = AdcCommonDevice<AdcCommonId::kAdc12>;
-    using Adc345CommonDevice = AdcCommonDevice<AdcCommonId::kAdc345>;
+    using Adc12CommonController  = AdcCommonController<AdcCommonControllerId::kAdc12>;
+    using Adc345CommonController = AdcCommonController<AdcCommonControllerId::kAdc345>;
 
 }  // namespace valle::platform

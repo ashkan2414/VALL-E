@@ -10,16 +10,16 @@
 namespace valle::app
 {
     // Position Sensor I2C Controller Config
-    constexpr platform::I2cPeripheralId kPositionSensorI2cId             = platform::I2cPeripheralId::kI2c1;
+    constexpr platform::I2cControllerId kPositionSensorI2cId             = platform::I2cControllerId::kI2c1;
     constexpr uint16_t                  kPositionSensorI2cAddress        = 0x2B;
     constexpr bool                      kPositionSensorI2cAddressIs10Bit = false;
 
     struct PositionSensorI2cControllerCTConfig : public platform::I2cControllerCTDefaultConfig
     {
-        using DmaChannelRxT = platform::Dma1Channel3Device;
-        using DmaChannelTxT = platform::Dma1Channel4Device;
-        using SCLPinT       = platform::GpioPinB8Device;
-        using SDAPinT       = platform::GpioPinB9Device;
+        using DmaChannelRxT = platform::Dma1Channel3;
+        using DmaChannelTxT = platform::Dma1Channel4;
+        using SCLPinT       = platform::GpioPinB8;
+        using SDAPinT       = platform::GpioPinB9;
     };
 }  // namespace valle::app
 
@@ -33,11 +33,10 @@ namespace valle
         // ============================================================================
         // Drivers
         // ============================================================================
-        using PositionSensorI2cControllerT  = platform::I2cCommandBufferDevice<kPositionSensorI2cId>;
-        using PositionSensorI2cSlaveDeviceT = platform::I2cCommandBufferSlaveDevice<kPositionSensorI2cId,
-                                                                                    kPositionSensorI2cAddress,
-                                                                                    kPositionSensorI2cAddressIs10Bit>;
-        using PositionSensorINTBPinT        = platform::GpioPinC11Device;
+        using PositionSensorI2cControllerT  = platform::I2cCommandBuffer<kPositionSensorI2cId>;
+        using PositionSensorI2cSlaveDeviceT = platform::
+            I2cCommandBufferSlave<kPositionSensorI2cId, kPositionSensorI2cAddress, kPositionSensorI2cAddressIs10Bit>;
+        using PositionSensorINTBPinT = platform::GpioPinC11;
 
         using PositionSensorModuleT =
             platform::app::LDC161XSensorModule<PositionSensorI2cSlaveDeviceT, 2, PositionSensorINTBPinT>;
@@ -56,7 +55,7 @@ namespace valle
             using BaseT = PackedDriverBase<RootDevicesT>;
             using BaseT::BaseT;
 
-            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2c1CommandBufferDevice<>);
+            VALLE_DEFINE_PACKED_DEVICE_DRIVER_ACCESSOR(i2c1, platform::I2c1CommandBuffer<>);
         };
 
         // ============================================================================

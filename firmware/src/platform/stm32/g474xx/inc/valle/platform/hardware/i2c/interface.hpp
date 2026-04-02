@@ -33,11 +33,11 @@ namespace valle::platform
     // HARDWARE TRAITS
     // ============================================================================
 
-    template <I2cPeripheralId tkPeripheralId>
+    template <I2cControllerId tkControllerId>
     struct I2cControllerTraits;
 
     template <>
-    struct I2cControllerTraits<I2cPeripheralId::kI2c1>
+    struct I2cControllerTraits<I2cControllerId::kI2c1>
     {
         static inline I2c_TypeDef* const skInstance        = I2c1;
         static constexpr uint32_t        skClock           = LL_APB1_GRP1_PERIPH_I2C1;
@@ -48,7 +48,7 @@ namespace valle::platform
     };
 
     template <>
-    struct I2cControllerTraits<I2cPeripheralId::kI2c2>
+    struct I2cControllerTraits<I2cControllerId::kI2c2>
     {
         static inline I2c_TypeDef* const skInstance        = I2c2;
         static constexpr uint32_t        skClock           = LL_APB1_GRP1_PERIPH_I2C2;
@@ -59,7 +59,7 @@ namespace valle::platform
     };
 
     template <>
-    struct I2cControllerTraits<I2cPeripheralId::kI2c3>
+    struct I2cControllerTraits<I2cControllerId::kI2c3>
     {
         static inline I2c_TypeDef* const skInstance        = I2c3;
         static constexpr uint32_t        skClock           = LL_APB1_GRP1_PERIPH_I2C3;
@@ -70,7 +70,7 @@ namespace valle::platform
     };
 
     template <>
-    struct I2cControllerTraits<I2cPeripheralId::kI2c4>
+    struct I2cControllerTraits<I2cControllerId::kI2c4>
     {
         static inline I2c_TypeDef* const skInstance        = I2c4;
         static constexpr uint32_t        skClock           = LL_APB1_GRP2_PERIPH_I2C4;

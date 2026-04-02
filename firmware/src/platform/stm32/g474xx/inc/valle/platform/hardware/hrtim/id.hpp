@@ -4,7 +4,7 @@
 
 namespace valle::platform
 {
-    enum class HrtimPeripheralId : uint8_t
+    enum class HrtimControllerId : uint8_t
     {
         kHrtim1 = 1,
     };
@@ -43,9 +43,9 @@ namespace valle::platform
         kExternalEvent10,
     };
 
-    template <HrtimPeripheralId tkPeripheralId>
-    static constexpr uint8_t kHrtimControllerNumFromId = static_cast<uint8_t>(tkPeripheralId);
-    static_assert(kHrtimControllerNumFromId<HrtimPeripheralId::kHrtim1> == 1,
+    template <HrtimControllerId tkControllerId>
+    static constexpr uint8_t kHrtimControllerNumFromId = static_cast<uint8_t>(tkControllerId);
+    static_assert(kHrtimControllerNumFromId<HrtimControllerId::kHrtim1> == 1,
                   "HRTIM Controller number from ID mapping is incorrect!");
 
     template <HrtimExternalEventId tkExternalEventId>

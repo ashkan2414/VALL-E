@@ -8,7 +8,7 @@ namespace valle::platform
     // INTERRUPT TRAITS
     // ============================================================================
 
-    enum class UartInterruptType : uint8_t
+    enum class UartInterruptSource : uint8_t
     {
         // --- Basic ---
         kTxEmpty,                // TXE / TXFNF: Transmit data register empty (or FIFO not full)
@@ -45,73 +45,74 @@ namespace valle::platform
         kAutoBaudFinished  // ABRF: Auto-baud rate finished
     };
 
-    template <UartPeripheralId tkPeripheralId, UartInterruptType tkIntType>
-    struct UartInterruptTraits;
+    template <UartControllerId tkControllerId, UartInterruptSource tkIntSource>
+    struct UartInterruptSourceInterface;
 
-#define DEFINE_UART_INT_TRAIT(tkIntType, ll_name)                                                                      \
-    template <UartPeripheralId tkPeripheralId>                                                                         \
-    struct UartInterruptTraits<tkPeripheralId, (tkIntType)>                                                            \
-    {                                                                                                                  \
-        static inline void enable()                                                                                    \
-        {                                                                                                              \
-            LL_USART_EnableIT_##ll_name(UartControllerTraits<tkPeripheralId>::skInstance);                             \
-        }                                                                                                              \
-        static inline void disable()                                                                                   \
-        {                                                                                                              \
-            LL_USART_DisableIT_##ll_name(UartControllerTraits<tkPeripheralId>::skInstance);                            \
-        }                                                                                                              \
-        static inline bool is_enabled()                                                                                \
-        {                                                                                                              \
-            return LL_USART_IsEnabledIT_##ll_name(UartControllerTraits<tkPeripheralId>::skInstance);                   \
-        }                                                                                                              \
-        static inline bool flag_active()                                                                               \
-        {                                                                                                              \
-            return LL_USART_IsActiveFlag_##ll_name(UartControllerTraits<tkPeripheralId>::skInstance);                  \
-        }                                                                                                              \
-        static inline bool is_pending()                                                                                \
-        {                                                                                                              \
-            return flag_active() && is_enabled();                                                                      \
-        }                                                                                                              \
-        static inline void ack()                                                                                       \
-        {                                                                                                              \
-            /* Note: Some flags (TXE, RXNE) have no clear register; */                                                 \
-            /* they are cleared by RDR/TDR access. LL handles this. */                                                 \
-            if constexpr ((tkIntType) != UartInterruptType::kTxEmpty && (tkIntType) != UartInterruptType::kRxNotEmpty) \
-            {                                                                                                          \
-                LL_USART_ClearFlag_##ll_name(UartControllerTraits<tkPeripheralId>::skInstance);                        \
-            }                                                                                                          \
-        }                                                                                                              \
+#define DEFINE_UART_INT_TRAIT(tkIntSource, ll_name)                                                   \
+    template <UartControllerId tkControllerId>                                                        \
+    struct UartInterruptSourceInterface<tkControllerId, (tkIntSource)>                                \
+    {                                                                                                 \
+        static inline void enable()                                                                   \
+        {                                                                                             \
+            LL_USART_EnableIT_##ll_name(UartControllerTraits<tkControllerId>::skInstance);            \
+        }                                                                                             \
+        static inline void disable()                                                                  \
+        {                                                                                             \
+            LL_USART_DisableIT_##ll_name(UartControllerTraits<tkControllerId>::skInstance);           \
+        }                                                                                             \
+        static inline bool is_enabled()                                                               \
+        {                                                                                             \
+            return LL_USART_IsEnabledIT_##ll_name(UartControllerTraits<tkControllerId>::skInstance);  \
+        }                                                                                             \
+        static inline bool flag_active()                                                              \
+        {                                                                                             \
+            return LL_USART_IsActiveFlag_##ll_name(UartControllerTraits<tkControllerId>::skInstance); \
+        }                                                                                             \
+        static inline bool is_pending()                                                               \
+        {                                                                                             \
+            return flag_active() && is_enabled();                                                     \
+        }                                                                                             \
+        static inline void clear()                                                                    \
+        {                                                                                             \
+            /* Note: Some flags (TXE, RXNE) have no clear register; */                                \
+            /* they are cleared by RDR/TDR access. LL handles this. */                                \
+            if constexpr ((tkIntSource) != UartInterruptSource::kTxEmpty &&                           \
+                          (tkIntSource) != UartInterruptSource::kRxNotEmpty)                          \
+            {                                                                                         \
+                LL_USART_ClearFlag_##ll_name(UartControllerTraits<tkControllerId>::skInstance);       \
+            }                                                                                         \
+        }                                                                                             \
     };
 
     // Basic
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kTxEmpty, TXE_TXFNF);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kTxComplete, TC);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kTxCompleteBeforeGuard, TCBGT);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kRxNotEmpty, RXNE_RXFNE);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kIdle, IDLE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kTxEmpty, TXE_TXFNF);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kTxComplete, TC);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kTxCompleteBeforeGuard, TCBGT);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kRxNotEmpty, RXNE_RXFNE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kIdle, IDLE);
 
     // Errors
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kOverrun, ORE);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kParityError, PE);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kFramingError, FE);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kNoiseError, NE);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kSpiSlaveUnderrun, UDR);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kOverrun, ORE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kParityError, PE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kFramingError, FE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kNoiseError, NE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kSpiSlaveUnderrun, UDR);
 
     // Flow Control
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kCTS, CTS);  // LL uses 'CTS' for the CTSIF trait
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kCTS, CTS);  // LL uses 'CTS' for the CTSIF trait
 
     // FIFO
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kTxFifoEmpty, TXFE);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kRxFifoFull, RXFF);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kTxFifoThreshold, TXFT);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kRxFifoThreshold, RXFT);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kTxFifoEmpty, TXFE);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kRxFifoFull, RXFF);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kTxFifoThreshold, TXFT);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kRxFifoThreshold, RXFT);
 
     // Protocol
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kCharMatch, CM);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kReceiverTimeout, RTO);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kEndOfBlock, EOB);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kLinBreak, LBD);
-    DEFINE_UART_INT_TRAIT(UartInterruptType::kWakeup, WUF);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kCharMatch, CM);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kReceiverTimeout, RTO);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kEndOfBlock, EOB);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kLinBreak, LBD);
+    DEFINE_UART_INT_TRAIT(UartInterruptSource::kWakeup, WUF);
 
 #undef DEFINE_UART_INT_TRAIT
 
@@ -165,95 +166,95 @@ namespace valle::platform
         UartInterruptMask interrupts{};
     };
 
-    template <UartPeripheralId tkPeripheralId>
+    template <UartControllerId tkControllerId>
     class UartInterruptController
     {
     public:
-        static constexpr UartPeripheralId skPeripheralId = tkPeripheralId;
-        using ControllerTraitsT                          = UartControllerTraits<tkPeripheralId>;
+        static constexpr UartControllerId skControllerId = tkControllerId;
+        using ControllerTraitsT                          = UartControllerTraits<tkControllerId>;
 
         static void enable_interrupts(const UartControllerInterruptConfig& config)
         {
             if (config.interrupts.tx_empty)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxEmpty>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxEmpty>::enable();
             }
             if (config.interrupts.tx_complete)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxComplete>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxComplete>::enable();
             }
 
             if (config.interrupts.rx_not_empty)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kRxNotEmpty>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kRxNotEmpty>::enable();
             }
             if (config.interrupts.idle)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kIdle>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kIdle>::enable();
             }
             if (config.interrupts.tx_complete_before_guard)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxCompleteBeforeGuard>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxCompleteBeforeGuard>::enable();
             }
             if (config.interrupts.overrun_error)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kOverrun>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kOverrun>::enable();
             }
             if (config.interrupts.parity_error)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kParityError>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kParityError>::enable();
             }
             if (config.interrupts.framing_error)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kFramingError>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kFramingError>::enable();
             }
             if (config.interrupts.noise_error)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kNoiseError>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kNoiseError>::enable();
             }
             if (config.interrupts.spi_slave_underrun)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kSpiSlaveUnderrun>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kSpiSlaveUnderrun>::enable();
             }
             if (config.interrupts.cts)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kCTS>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kCTS>::enable();
             }
             if (config.interrupts.tx_fifo_empty)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxFifoEmpty>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxFifoEmpty>::enable();
             }
             if (config.interrupts.rx_fifo_full)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kRxFifoFull>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kRxFifoFull>::enable();
             }
             if (config.interrupts.tx_fifo_threshold)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxFifoThreshold>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxFifoThreshold>::enable();
             }
             if (config.interrupts.rx_fifo_threshold)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kRxFifoThreshold>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kRxFifoThreshold>::enable();
             }
             if (config.interrupts.char_match)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kCharMatch>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kCharMatch>::enable();
             }
             if (config.interrupts.receiver_timeout)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kReceiverTimeout>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kReceiverTimeout>::enable();
             }
             if (config.interrupts.end_of_block)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kEndOfBlock>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kEndOfBlock>::enable();
             }
             if (config.interrupts.lin_break)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kLinBreak>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kLinBreak>::enable();
             }
             if (config.interrupts.wakeup)
             {
-                UartInterruptTraits<tkPeripheralId, UartInterruptType::kWakeup>::enable();
+                UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kWakeup>::enable();
             }
 
             // Set NVIC Priority and Enable IRQ
@@ -263,26 +264,26 @@ namespace valle::platform
 
         static void disable_interrupts()
         {
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxEmpty>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxComplete>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kRxNotEmpty>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kIdle>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxCompleteBeforeGuard>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kOverrun>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kParityError>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kFramingError>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kNoiseError>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kSpiSlaveUnderrun>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kCTS>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxFifoEmpty>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kRxFifoFull>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kTxFifoThreshold>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kRxFifoThreshold>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kCharMatch>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kReceiverTimeout>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kEndOfBlock>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kLinBreak>::disable();
-            UartInterruptTraits<tkPeripheralId, UartInterruptType::kWakeup>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxEmpty>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxComplete>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kRxNotEmpty>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kIdle>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxCompleteBeforeGuard>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kOverrun>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kParityError>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kFramingError>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kNoiseError>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kSpiSlaveUnderrun>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kCTS>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxFifoEmpty>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kRxFifoFull>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kTxFifoThreshold>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kRxFifoThreshold>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kCharMatch>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kReceiverTimeout>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kEndOfBlock>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kLinBreak>::disable();
+            UartInterruptSourceInterface<tkControllerId, UartInterruptSource::kWakeup>::disable();
 
             NVIC_DisableIRQ(ControllerTraitsT::skIRQn);
         }
@@ -301,10 +302,10 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., when delegating to the ST HAL).
      *
-     * @tparam tkPeripheralId UART Peripheral ID.
+     * @tparam tkControllerId UART Controller ID.
      */
-    template <UartPeripheralId tkPeripheralId>
-    struct UartGlobalIsrRouter
+    template <UartControllerId tkControllerId>
+    struct UartIrqRouter
     {
         using UnboundIsrHandlerTag = void;
 
@@ -323,10 +324,10 @@ namespace valle::platform
      * Specialize this template in your application or driver to bind
      * logic to specific UART interrupts.
      *
-     * @tparam tkPeripheralId UART Peripheral ID.
-     * @tparam tkIntType      UART Interrupt Type.
+     * @tparam tkControllerId UART Controller ID.
+     * @tparam tkIntSource      UART Interrupt Type.
      */
-    template <UartPeripheralId tkPeripheralId, UartInterruptType tkIntType>
+    template <UartControllerId tkControllerId, UartInterruptSource tkIntSource>
     struct UartIsrRouter
     {
         using UnboundIsrHandlerTag = void;

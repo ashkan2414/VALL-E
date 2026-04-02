@@ -12,21 +12,20 @@ namespace valle::platform::app
         uint32_t intb_interrupt_priority = 5;
     };
 
-    template <typename TI2cSlaveDevice, uint8_t tkNumChannels, typename TINTBPin = GpioNullPinDevice>
+    template <typename TI2cSlave, uint8_t tkNumChannels, typename TINTBPin = NullDevice>
         requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
-    class LDC161XSensorModuleI2cInterface
-        : public valle::app::LDC161XSensorModuleI2cInterfaceX<
-              LDC161XSensorModuleI2cInterface<TI2cSlaveDevice, tkNumChannels, TINTBPin>,
-              LDC161XSensorModuleI2cInterfaceConfig>
+    class LDC161XSensorModuleI2cInterface : public valle::app::LDC161XSensorModuleI2cInterfaceX<
+                                                LDC161XSensorModuleI2cInterface<TI2cSlave, tkNumChannels, TINTBPin>,
+                                                LDC161XSensorModuleI2cInterfaceConfig>
     {
     public:
-        using I2cSlaveDeviceT                  = TI2cSlaveDevice;
+        using I2cSlaveDeviceT                  = TI2cSlave;
         using INTBPinT                         = TINTBPin;
         static constexpr uint8_t skNumChannels = tkNumChannels;
-        static constexpr bool    skHasINTBPin  = !CNullGpioPinDevice<INTBPinT>;
+        static constexpr bool    skHasINTBPin  = !CNullDevice<INTBPinT>;
 
         using ConfigT                   = LDC161XSensorModuleI2cInterfaceConfig;
-        constexpr static auto skAddress = TI2cSlaveDevice::skAddress;
+        constexpr static auto skAddress = TI2cSlave::skAddress;
 
         using InjectDevices = FilterNullDevices<TypeList<I2cSlaveDeviceT, INTBPinT>>;
 
@@ -65,7 +64,7 @@ namespace valle::platform::app
             if constexpr (skHasINTBPin)
             {
                 if (!m_intb_pin.init(GpioDigitalInConfig{
-                        .pull = GpioPullMode::kNoPull,
+                        .pull = GpioPinPullMode::kNoPull,
                         .interrupt =
                             GpioDigitalInInterruptConfig{
                                 .priority = config.intb_interrupt_priority,
@@ -253,10 +252,10 @@ namespace valle::platform::app
     using LDC161XSensorModuleConfig =
         valle::app::LDC161XSensorModuleConfigX<LDC161XSensorModuleI2cInterfaceConfig, tkNumChannels>;
 
-    template <typename TI2cSlaveDevice, uint8_t tkNumChannels, typename TINTBPin = GpioNullPinDevice>
+    template <typename TI2cSlave, uint8_t tkNumChannels, typename TINTBPin = NullDevice>
         requires(valle::app::CLDC161XValidNumChannels<tkNumChannels>)
     using LDC161XSensorModule =
-        valle::app::LDC161XSensorModuleX<LDC161XSensorModuleI2cInterface<TI2cSlaveDevice, tkNumChannels, TINTBPin>,
+        valle::app::LDC161XSensorModuleX<LDC161XSensorModuleI2cInterface<TI2cSlave, tkNumChannels, TINTBPin>,
                                          tkNumChannels>;
 
 }  // namespace valle::platform::app

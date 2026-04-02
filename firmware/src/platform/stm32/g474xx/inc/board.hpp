@@ -2,10 +2,10 @@
 
 #include "valle/platform/devices/gpio.hpp"
 
-using RccOsc32InGpioPinDevice  = GpioPinC14Device;
-using RccOsc32OutGpioPinDevice = GpioPinC15Device;
-using RccOscInGpioPinDevice    = GpioPinF0Device;
-using RccOscOutGpioPinDevice   = GpioPinF1Device;
-using TSWDIOGpioPinDevice      = GpioPinA13Device;
-using TSWCLKGpioPinDevice      = GpioPinA14Device;
-using TSWOGpioPinDevice        = GpioPinB3Device;
+using RccOsc32InGpioPin  = GpioPinC14;
+using RccOsc32OutGpioPin = GpioPinC15;
+using RccOscInGpioPin    = GpioPinF0;
+using RccOscOutGpioPin   = GpioPinF1;
+using TSWDIOGpioPin      = GpioPinA13;
+using TSWCLKGpioPin      = GpioPinA14;
+using TSWOGpioPin        = GpioPinB3;

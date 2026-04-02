@@ -312,12 +312,12 @@ namespace valle::platform
     // CONTROLLER
     // -------------------------------------------------------------------------
 
-    template <TimPeripheralId tkPeripheralId>
+    template <TimControllerId tkControllerId>
     struct TimControllerTraits;
 
-#define DEFINE_TIM_TRAITS(tkPeripheralId, num, bus, counter_type)         \
+#define DEFINE_TIM_TRAITS(tkControllerId, num, bus, counter_type)         \
     template <>                                                           \
-    struct TimControllerTraits<tkPeripheralId>                            \
+    struct TimControllerTraits<tkControllerId>                            \
     {                                                                     \
         using CounterValueT                         = counter_type;       \
         static inline TIM_TypeDef* const skInstance = TIM##num;           \
@@ -327,68 +327,68 @@ namespace valle::platform
         }                                                                 \
     };
 
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim1, 1, APB2, uint16_t);    // Advanced 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim2, 2, APB1, uint32_t);    // General Purpose 32-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim3, 3, APB1, uint16_t);    // General Purpose 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim4, 4, APB1, uint16_t);    // General Purpose 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim5, 5, APB1, uint32_t);    // General Purpose 32-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim6, 6, APB1, uint16_t);    // Basic 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim7, 7, APB1, uint16_t);    // Basic 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim8, 8, APB2, uint16_t);    // Advanced 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim15, 15, APB2, uint16_t);  // General Purpose 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim16, 16, APB2, uint16_t);  // General Purpose 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim17, 17, APB2, uint16_t);  // General Purpose 16-bit
-    DEFINE_TIM_TRAITS(TimPeripheralId::kTim20, 20, APB2, uint16_t);  // Advanced 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim1, 1, APB2, uint16_t);    // Advanced 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim2, 2, APB1, uint32_t);    // General Purpose 32-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim3, 3, APB1, uint16_t);    // General Purpose 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim4, 4, APB1, uint16_t);    // General Purpose 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim5, 5, APB1, uint32_t);    // General Purpose 32-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim6, 6, APB1, uint16_t);    // Basic 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim7, 7, APB1, uint16_t);    // Basic 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim8, 8, APB2, uint16_t);    // Advanced 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim15, 15, APB2, uint16_t);  // General Purpose 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim16, 16, APB2, uint16_t);  // General Purpose 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim17, 17, APB2, uint16_t);  // General Purpose 16-bit
+    DEFINE_TIM_TRAITS(TimControllerId::kTim20, 20, APB2, uint16_t);  // Advanced 16-bit
 
 #undef DEFINE_TIM_TRAITS
 
     // -------------------------------------------------------------------------
     // TIMER TRAITS
     // -------------------------------------------------------------------------
-    template <TimPeripheralId tkPeripheralId, TimChannelId tkChannelId>
+    template <TimControllerId tkControllerId, TimChannelId tkChannelId>
     struct TimChannelTraits;
 
-    template <TimPeripheralId tkPeripheralId>
-    struct TimChannelTraits<tkPeripheralId, TimChannelId::kCh1>
+    template <TimControllerId tkControllerId>
+    struct TimChannelTraits<tkControllerId, TimChannelId::kCh1>
     {
         static constexpr uint32_t skLLChannelId              = LL_TIM_CHANNEL_CH1;
         static constexpr bool     skHasComplementaryChannel  = true;
         static constexpr uint32_t skLLComplementaryChannelId = LL_TIM_CHANNEL_CH1N;
     };
 
-    template <TimPeripheralId tkPeripheralId>
-    struct TimChannelTraits<tkPeripheralId, TimChannelId::kCh2>
+    template <TimControllerId tkControllerId>
+    struct TimChannelTraits<tkControllerId, TimChannelId::kCh2>
     {
         static constexpr uint32_t skLLChannelId              = LL_TIM_CHANNEL_CH2;
         static constexpr bool     skHasComplementaryChannel  = true;
         static constexpr uint32_t skLLComplementaryChannelId = LL_TIM_CHANNEL_CH2N;
     };
 
-    template <TimPeripheralId tkPeripheralId>
-    struct TimChannelTraits<tkPeripheralId, TimChannelId::kCh3>
+    template <TimControllerId tkControllerId>
+    struct TimChannelTraits<tkControllerId, TimChannelId::kCh3>
     {
         static constexpr uint32_t skLLChannelId              = LL_TIM_CHANNEL_CH3;
         static constexpr bool     skHasComplementaryChannel  = true;
         static constexpr uint32_t skLLComplementaryChannelId = LL_TIM_CHANNEL_CH3N;
     };
 
-    template <TimPeripheralId tkPeripheralId>
-    struct TimChannelTraits<tkPeripheralId, TimChannelId::kCh4>
+    template <TimControllerId tkControllerId>
+    struct TimChannelTraits<tkControllerId, TimChannelId::kCh4>
     {
         static constexpr uint32_t skLLChannelId              = LL_TIM_CHANNEL_CH4;
         static constexpr bool     skHasComplementaryChannel  = true;
         static constexpr uint32_t skLLComplementaryChannelId = LL_TIM_CHANNEL_CH4N;
     };
 
-    template <TimPeripheralId tkPeripheralId>
-    struct TimChannelTraits<tkPeripheralId, TimChannelId::kCh5>
+    template <TimControllerId tkControllerId>
+    struct TimChannelTraits<tkControllerId, TimChannelId::kCh5>
     {
         static constexpr uint32_t skLLChannelId             = LL_TIM_CHANNEL_CH5;
         static constexpr bool     skHasComplementaryChannel = true;
     };
 
-    template <TimPeripheralId tkPeripheralId>
-    struct TimChannelTraits<tkPeripheralId, TimChannelId::kCh6>
+    template <TimControllerId tkControllerId>
+    struct TimChannelTraits<tkControllerId, TimChannelId::kCh6>
     {
         static constexpr uint32_t skLLChannelId             = LL_TIM_CHANNEL_CH6;
         static constexpr bool     skHasComplementaryChannel = true;
@@ -398,10 +398,10 @@ namespace valle::platform
     // HARDWARE INTERFACES
     // ============================================================================
 
-    template <TimPeripheralId tkPeripheralId>
+    template <TimControllerId tkControllerId>
     struct TimControllerInterface
     {
-        using ControllerTraitsT = TimControllerTraits<tkPeripheralId>;
+        using ControllerTraitsT = TimControllerTraits<tkControllerId>;
         using CounterValueT     = typename ControllerTraitsT::CounterValueT;
 
         // ---------------------------------------------------------------------
@@ -678,11 +678,11 @@ namespace valle::platform
     // CHANNEL INTERFACE
     // =========================================================================
 
-    template <TimPeripheralId tkPeripheralId, TimChannelId tkChannel>
+    template <TimControllerId tkControllerId, TimChannelId tkChannel>
     struct TimChannelInterface
     {
-        using ControllerTraitsT = TimControllerTraits<tkPeripheralId>;
-        using ChannelTraitsT    = TimChannelTraits<tkPeripheralId, tkChannel>;
+        using ControllerTraitsT = TimControllerTraits<tkControllerId>;
+        using ChannelTraitsT    = TimChannelTraits<tkControllerId, tkChannel>;
 
         // ---------------------------------------------------------------------
         // CHANNEL ENABLE

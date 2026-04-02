@@ -4,13 +4,6 @@
 
 namespace valle::platform
 {
-    struct GpioDigitalOutConfig
-    {
-        GpioOutputMode mode  = GpioOutputMode::kPushPull;
-        GpioSpeedMode  speed = GpioSpeedMode::kLow;
-        GpioPullMode   pull  = GpioPullMode::kNoPull;
-    };
-
     template <typename TGpioPin>
     class GpioDigitalOutDriver
     {
@@ -19,7 +12,6 @@ namespace valle::platform
 
     private:
         [[no_unique_address]] DeviceRef<TGpioPin> m_pin;
-        bool                                      m_inverted = false;
 
     public:
         GpioDigitalOutDriver() = delete;
@@ -28,33 +20,39 @@ namespace valle::platform
          * @brief Construct a new Digital Out
          * @param pin Injected Pin Resource
          */
-        GpioDigitalOutDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin)), m_inverted(false)
+        GpioDigitalOutDriver(DeviceRef<TGpioPin>&& pin) : m_pin(std::move(pin))
         {
         }
 
         [[nodiscard]] bool init(const GpioDigitalOutConfig& config)
         {
-            return m_pin.get().init(GpioPinConfig{.mode      = static_cast<uint32_t>(config.mode),
-                                                  .pull      = config.pull,
-                                                  .speed     = config.speed,
-                                                  .alternate = GpioAlternativeFunction::kAF0});
+            return m_pin->init_as_digital_out(config);
         }
 
         // --- API ---
-        inline void write(const bool state)
+        void write(const bool state)
         {
-            m_pin.get().write(state ^ m_inverted);
+            m_pin->write(state);
         }
 
-        inline void toggle()
+        void set()
         {
-            m_pin.get().toggle();
+            m_pin->set();
         }
 
-        [[nodiscard]] inline bool read() const
+        void reset()
         {
-            // Read ODR, not IDR
-            return (TGpioPin::skPort->ODR & TGpioPin::skPinMask) != 0;
+            m_pin->reset();
+        }
+
+        void toggle()
+        {
+            m_pin->toggle();
+        }
+
+        [[nodiscard]] bool read() const
+        {
+            return m_pin->read_output();
         }
     };
 
@@ -67,7 +65,7 @@ namespace valle::platform
         };
 
         template <>
-        struct ConditionalGpioDigitalOutDriver<GpioNullPinDevice>
+        struct ConditionalGpioDigitalOutDriver<NullDevice>
         {
             using type = std::monostate;
         };

@@ -18,64 +18,42 @@ namespace valle::platform
         }
     };
 
-    // =========================================================================
-    // LSI Oscillator INFO DEVICE
-    // =========================================================================
-    template <typename T = void>
-    class LsiOscillatorInfoDevice
-    {
-    public:
-        struct Descriptor : public SharedDeviceDescriptor
-        {
-            constexpr static bool skNeedsInit = false;
-        };
-
-        using InterfaceT = LsiOscillatorInterface;
-
-        using InjectDevices = TypeList<>;
-
-        [[nodiscard]] static bool is_ready()
-        {
-            return InterfaceT::is_ready();
-        }
-
-        [[nodiscard]] constexpr uint32_t get_frequency_hz() const
-        {
-            return InterfaceT::skFrequencyHz;
-        }
-    };
-
     // =============================================================================
     // DEVICE
     // =============================================================================
     template <typename T = void>
-    class LsiOscillatorDevice
+    class LsiOscillator
     {
     public:
         struct Descriptor : public UniqueDeviceDescriptor
         {
         };
 
-        using InterfaceT = LsiOscillatorInterface;
+        using HdiT          = LsiOscillatorHdi<T>;
+        using InjectDevices = TypeList<HdiT>;
 
-        using InjectDevices = TypeList<>;
+    private:
+        [[no_unique_address]] DeviceRef<HdiT> m_hw;
+
+    public:
+        explicit LsiOscillator(DeviceRef<HdiT>&& hardware_key) : m_hw(std::move(hardware_key))
+        {
+        }
 
         [[nodiscard]] inline bool init(const LsiOscillatorConfig& config)
         {
             if (config.enabled)
             {
-                InterfaceT::enable();
+                m_hw->enable();
 
-                expect(wait_for_ready(InterfaceT::skDefaultEnableTimeoutCount),
-                       "LSI failed to become ready within timeout");
+                expect(wait_for_ready(HdiT::skDefaultEnableTimeoutCount), "LSI failed to become ready within timeout");
 
                 return true;
             }
 
-            InterfaceT::disable();
+            m_hw->disable();
 
-            expect(wait_for_not_ready(InterfaceT::skDefaultDisableTimeoutCount),
-                   "LSI failed to disable within timeout");
+            expect(wait_for_not_ready(HdiT::skDefaultDisableTimeoutCount), "LSI failed to disable within timeout");
 
             return true;
         }
@@ -83,13 +61,12 @@ namespace valle::platform
     private:
         [[nodiscard]] static bool wait_for_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() { return InterfaceT::is_ready(); },
-                                                                  timeout_count);
+            return TimingContext::wait_for_with_timeout_countdown([]() { return m_hw->is_ready(); }, timeout_count);
         }
 
         [[nodiscard]] static bool wait_for_not_ready(const uint32_t timeout_count)
         {
-            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !InterfaceT::is_ready(); },
+            return TimingContext::wait_for_with_timeout_countdown([]() -> bool { return !m_hw->is_ready(); },
                                                                   timeout_count);
         }
     };

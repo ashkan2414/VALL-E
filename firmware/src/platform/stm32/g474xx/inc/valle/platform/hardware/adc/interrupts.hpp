@@ -1,74 +1,59 @@
 #pragma once
 
-#include "valle/platform/hardware/ADC/interface.hpp"
+#include "valle/platform/hardware/adc/interface.hpp"
 
 namespace valle::platform
 {
     // ============================================================================
     // INTERRUPT TRAITS
     // ============================================================================
-    enum class AdcInterruptType : uint8_t
-    {
-        kReady = 0,
-        kRegularEndOfConversion,
-        kRegularEndOfSequence,
-        kRegularEndOfSampling,
-        kInjectEndOfConversion,
-        kInjectEndOfSequence,
-        kInjectContextQueueOverflow,
-        kOverrun,
-        kAnalogWatchdog1,
-        kAnalogWatchdog2,
-        kAnalogWatchdog3,
+
+    template <AdcControllerSpec tkControllerSpec, AdcInterruptSource tkIntSource>
+    struct AdcControllerInterruptSourceInterface;
+
+#define DEFINE_ADC_INT_TRAIT(tkIntSource, ll_name, should_clear)                                     \
+    template <AdcControllerSpec tkControllerSpec>                                                    \
+    struct AdcControllerInterruptSourceInterface<tkControllerSpec, (tkIntSource)>                    \
+    {                                                                                                \
+        static constexpr bool skShouldClear = (should_clear);                                        \
+                                                                                                     \
+        static inline void enable()                                                                  \
+        {                                                                                            \
+            LL_ADC_EnableIT_##ll_name(AdcControllerTraits<tkControllerSpec>::skInstance);            \
+        }                                                                                            \
+        static inline void disable()                                                                 \
+        {                                                                                            \
+            LL_ADC_DisableIT_##ll_name(AdcControllerTraits<tkControllerSpec>::skInstance);           \
+        }                                                                                            \
+        static inline bool is_enabled()                                                              \
+        {                                                                                            \
+            return LL_ADC_IsEnabledIT_##ll_name(AdcControllerTraits<tkControllerSpec>::skInstance);  \
+        }                                                                                            \
+        static inline bool flag_active()                                                             \
+        {                                                                                            \
+            return LL_ADC_IsActiveFlag_##ll_name(AdcControllerTraits<tkControllerSpec>::skInstance); \
+        }                                                                                            \
+        static inline bool is_pending()                                                              \
+        {                                                                                            \
+            return flag_active() && is_enabled();                                                    \
+        }                                                                                            \
+        static inline void clear()                                                                   \
+        {                                                                                            \
+            LL_ADC_ClearFlag_##ll_name(AdcControllerTraits<tkControllerSpec>::skInstance);           \
+        }                                                                                            \
     };
 
-    template <AdcPeripheralId tkPeripheralId, AdcInterruptType tkIntType>
-    struct AdcInterruptTraits;
-
-#define DEFINE_ADC_INT_TRAIT(tkIntType, ll_name, should_clear)                                     \
-    template <AdcPeripheralId tkPeripheralId>                                                      \
-    struct AdcInterruptTraits<tkPeripheralId, (tkIntType)>                                         \
-    {                                                                                              \
-        static constexpr bool skShouldClear = (should_clear);                                      \
-                                                                                                   \
-        static inline void enable()                                                                \
-        {                                                                                          \
-            LL_ADC_EnableIT_##ll_name(AdcControllerTraits<tkPeripheralId>::skInstance);            \
-        }                                                                                          \
-        static inline void disable()                                                               \
-        {                                                                                          \
-            LL_ADC_DisableIT_##ll_name(AdcControllerTraits<tkPeripheralId>::skInstance);           \
-        }                                                                                          \
-        static inline bool is_enabled()                                                            \
-        {                                                                                          \
-            return LL_ADC_IsEnabledIT_##ll_name(AdcControllerTraits<tkPeripheralId>::skInstance);  \
-        }                                                                                          \
-        static inline bool flag_active()                                                           \
-        {                                                                                          \
-            return LL_ADC_IsActiveFlag_##ll_name(AdcControllerTraits<tkPeripheralId>::skInstance); \
-        }                                                                                          \
-                                                                                                   \
-        static inline bool is_pending()                                                            \
-        {                                                                                          \
-            return flag_active() && is_enabled();                                                  \
-        }                                                                                          \
-        static inline void ack()                                                                   \
-        {                                                                                          \
-            LL_ADC_ClearFlag_##ll_name(AdcControllerTraits<tkPeripheralId>::skInstance);           \
-        }                                                                                          \
-    };
-
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kReady, ADRDY, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kRegularEndOfConversion, EOC, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kRegularEndOfSequence, EOS, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kRegularEndOfSampling, EOSMP, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kInjectEndOfConversion, JEOC, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kInjectEndOfSequence, JEOS, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kInjectContextQueueOverflow, JQOVF, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kOverrun, OVR, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kAnalogWatchdog1, AWD1, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kAnalogWatchdog2, AWD2, true);
-    DEFINE_ADC_INT_TRAIT(AdcInterruptType::kAnalogWatchdog3, AWD3, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kReady, ADRDY, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kRegularEndOfConversion, EOC, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kRegularEndOfSequence, EOS, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kRegularEndOfSampling, EOSMP, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kInjectEndOfConversion, JEOC, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kInjectEndOfSequence, JEOS, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kInjectContextQueueOverflow, JQOVF, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kOverrun, OVR, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kAnalogWatchdog1, AWD1, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kAnalogWatchdog2, AWD2, true);
+    DEFINE_ADC_INT_TRAIT(AdcInterruptSource::kAnalogWatchdog3, AWD3, true);
 #undef DEFINE_ADC_INT_TRAIT
 
     // ============================================================================
@@ -102,12 +87,12 @@ namespace valle::platform
         AdcInterruptMask interrupts;    // Which interrupts to enable
     };
 
-    template <AdcPeripheralId tkPeripheralId>
+    template <AdcControllerSpec tkControllerSpec>
     class AdcInterruptController
     {
     public:
-        static constexpr AdcPeripheralId skPeripheralId = tkPeripheralId;
-        using ControllerTraitsT                         = AdcControllerTraits<tkPeripheralId>;
+        static constexpr AdcControllerSpec skControllerSpec = tkControllerSpec;
+        using ControllerTraitsT                             = AdcControllerTraits<tkControllerSpec>;
 
         static void enable_interrupts(const AdcInterruptConfig& config)
         {
@@ -118,68 +103,80 @@ namespace valle::platform
 
             if (config.interrupts.ready)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kReady>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kReady>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kReady>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kReady>::enable();
             }
 
             if (config.interrupts.reg_eoc)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kRegularEndOfConversion>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kRegularEndOfConversion>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kRegularEndOfConversion>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kRegularEndOfConversion>::enable();
             }
 
             if (config.interrupts.reg_eos)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kRegularEndOfSequence>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kRegularEndOfSequence>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kRegularEndOfSequence>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kRegularEndOfSequence>::enable();
             }
 
             if (config.interrupts.reg_eosmp)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kRegularEndOfSampling>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kRegularEndOfSampling>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kRegularEndOfSampling>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kRegularEndOfSampling>::enable();
             }
 
             if (config.interrupts.inj_eoc)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kInjectEndOfConversion>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kInjectEndOfConversion>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kInjectEndOfConversion>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kInjectEndOfConversion>::enable();
             }
 
             if (config.interrupts.inj_eos)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kInjectEndOfSequence>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kInjectEndOfSequence>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kInjectEndOfSequence>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kInjectEndOfSequence>::enable();
             }
 
             if (config.interrupts.inj_cqovf)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kInjectContextQueueOverflow>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kInjectContextQueueOverflow>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kInjectContextQueueOverflow>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec,
+                                                      AdcInterruptSource::kInjectContextQueueOverflow>::enable();
             }
 
             if (config.interrupts.ovr)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kOverrun>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kOverrun>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kOverrun>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kOverrun>::enable();
             }
 
             if (config.interrupts.awd1)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kAnalogWatchdog1>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kAnalogWatchdog1>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kAnalogWatchdog1>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kAnalogWatchdog1>::enable();
             }
 
             if (config.interrupts.awd2)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kAnalogWatchdog2>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kAnalogWatchdog2>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kAnalogWatchdog2>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kAnalogWatchdog2>::enable();
             }
 
             if (config.interrupts.awd3)
             {
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kAnalogWatchdog3>::ack();
-                AdcInterruptTraits<tkPeripheralId, AdcInterruptType::kAnalogWatchdog3>::enable();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kAnalogWatchdog3>::clear();
+                AdcControllerInterruptSourceInterface<tkControllerSpec, AdcInterruptSource::kAnalogWatchdog3>::enable();
             }
 
             NVIC_SetPriority(ControllerTraitsT::skIRQn, config.priority);
@@ -189,6 +186,13 @@ namespace valle::platform
         void disable_interrupts()
         {
             NVIC_DisableIRQ(ControllerTraitsT::skIRQn);
+        }
+
+        template <AdcInterruptSource tkIntSource>
+        static void enable_interrupt()
+        {
+            AdcControllerInterruptSourceInterface<tkControllerSpec, tkIntSource>::clear();
+            AdcControllerInterruptSourceInterface<tkControllerSpec, tkIntSource>::enable();
         }
     };
 
@@ -206,10 +210,10 @@ namespace valle::platform
      * Specialize this template to handle all ADC interrupts for a given
      * controller in one function (e.g., when using the ST HAL).
      *
-     * @tparam tkPeripheralId ADC Peripheral ID (1-5)
+     * @tparam tkControllerSpec ADC Controller ID (1-5)
      */
-    template <AdcPeripheralId tkPeripheralId>
-    struct AdcGlobalIsrRouter
+    template <AdcControllerId tkControllerSpec>
+    struct AdcIrqRouter
     {
         using UnboundIsrHandlerTag = void;
         static void handle()
@@ -225,10 +229,10 @@ namespace valle::platform
     /**
      * @brief ADC Interrupt Router.
      *
-     * @tparam tkPeripheralId The ADC peripheral index the interrupt belongs to.
-     * @tparam tkIntType The interrupt type triggered.
+     * @tparam tkControllerSpec The ADC peripheral index the interrupt belongs to.
+     * @tparam tkIntSource The interrupt type triggered.
      */
-    template <AdcPeripheralId tkPeripheralId, AdcInterruptType tkIntType>
+    template <AdcControllerId tkControllerSpec, AdcInterruptSource tkIntSource>
     struct AdcIsrRouter
     {
         using UnboundIsrHandlerTag = void;

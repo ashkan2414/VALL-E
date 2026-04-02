@@ -4,8 +4,8 @@ namespace valle::platform
 {
 
     template <>
-    struct AdcIsrRouter<valle::app::VCACurrentLoopDriverT::skCurrentSensorAdcPeripheralId,
-                        AdcInterruptType::kInjectEndOfSequence>
+    struct AdcIsrRouter<valle::app::VCACurrentLoopDriverT::skCurrentSensorAdcControllerId,
+                        AdcInterruptSource::kInjectEndOfSequence>
     {
         static void handle()
         {
@@ -25,9 +25,9 @@ namespace valle::platform
     };
 
     template <>
-    struct HrtimTimerIsrRouter<valle::app::VCACurrentLoopDriverT::skVcaHrtimPwmPeripheralId,
+    struct HrtimTimerIsrRouter<valle::app::VCACurrentLoopDriverT::skVcaHrtimPwmControllerId,
                                valle::app::VCACurrentLoopDriverT::skVcaHrtimPwmTimerId,
-                               HrtimTimerInterruptType::kRepetition>
+                               HrtimTimerInterruptSource::kRepetition>
     {
         static void handle()
         {

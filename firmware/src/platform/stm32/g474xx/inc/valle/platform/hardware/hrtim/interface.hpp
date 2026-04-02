@@ -901,11 +901,11 @@ namespace valle::platform
     // ============================================================================
     // HARDWARE TRAITS
     // ============================================================================
-    template <HrtimPeripheralId tkPeripheralId>
+    template <HrtimControllerId tkControllerId>
     struct HrtimControllerTraits;
 
     template <>
-    struct HrtimControllerTraits<HrtimPeripheralId::kHrtim1>
+    struct HrtimControllerTraits<HrtimControllerId::kHrtim1>
     {
         static inline Hrtim_TypeDef* const skInstance = Hrtim1;
 
@@ -918,7 +918,7 @@ namespace valle::platform
     // ---------------------------------------------------------------------------
     // HRTIM FAULT
     // ---------------------------------------------------------------------------
-    template <HrtimPeripheralId tkPeripheralId, HrtimFaultId tkFaultId>
+    template <HrtimControllerId tkControllerId, HrtimFaultId tkFaultId>
     struct HrtimFaultTraits
     {
     private:
@@ -961,7 +961,7 @@ namespace valle::platform
     // ---------------------------------------------------------------------------
     // HRTIM EEV
     // ---------------------------------------------------------------------------
-    template <HrtimPeripheralId tkPeripheralId, HrtimExternalEventId tkExternalEventId>
+    template <HrtimControllerId tkControllerId, HrtimExternalEventId tkExternalEventId>
     struct HrtimExternalEventTraits
     {
     private:
@@ -1020,12 +1020,12 @@ namespace valle::platform
     // ----------------------------------------------------------------------------
     // HRTIM TIMER
     // ----------------------------------------------------------------------------
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
     struct HrtimTimerTraits;
 
     // Hrtim1 Timer A (tkHrtimTimerId 0)
     template <>
-    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerA>
+    struct HrtimTimerTraits<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerA>
     {
         static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_A;
         static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_A;
@@ -1037,7 +1037,7 @@ namespace valle::platform
 
     // Hrtim1 Timer B
     template <>
-    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerB>
+    struct HrtimTimerTraits<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerB>
     {
         static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_B;
         static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_B;
@@ -1049,7 +1049,7 @@ namespace valle::platform
 
     // Hrtim1 Timer C
     template <>
-    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerC>
+    struct HrtimTimerTraits<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerC>
     {
         static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_C;
         static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_C;
@@ -1061,7 +1061,7 @@ namespace valle::platform
 
     // Hrtim1 Timer D
     template <>
-    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerD>
+    struct HrtimTimerTraits<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerD>
     {
         static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_D;
         static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_D;
@@ -1073,7 +1073,7 @@ namespace valle::platform
 
     // Hrtim1 Timer E
     template <>
-    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerE>
+    struct HrtimTimerTraits<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerE>
     {
         static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_E;
         static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_E;
@@ -1085,7 +1085,7 @@ namespace valle::platform
 
     // Hrtim1 Timer F
     template <>
-    struct HrtimTimerTraits<HrtimPeripheralId::kHrtim1, HrtimTimerId::kTimerF>
+    struct HrtimTimerTraits<HrtimControllerId::kHrtim1, HrtimTimerId::kTimerF>
     {
         static constexpr uint32_t  skLLId            = LL_HRTIM_TIMER_F;
         static constexpr uint32_t  skTimerIdx        = Hrtim_TIMERINDEX_TIMER_F;
@@ -1099,14 +1099,14 @@ namespace valle::platform
     // Interface
     // ============================================================================
 
-    template <HrtimPeripheralId tkPeripheralId, HrtimTimerId tkTimerId>
+    template <HrtimControllerId tkControllerId, HrtimTimerId tkTimerId>
     struct HrtimTimerInterface
     {
-        static constexpr HrtimPeripheralId skPeripheralId = tkPeripheralId;
+        static constexpr HrtimControllerId skControllerId = tkControllerId;
         static constexpr HrtimTimerId      skTimerId      = tkTimerId;
 
-        using ControllerTraitsT = HrtimControllerTraits<tkPeripheralId>;
-        using TimerTraitsT      = HrtimTimerTraits<tkPeripheralId, tkTimerId>;
+        using ControllerTraitsT = HrtimControllerTraits<tkControllerId>;
+        using TimerTraitsT      = HrtimTimerTraits<tkControllerId, tkTimerId>;
 
         static constexpr uint32_t            skMinPrescalerNum      = 0;
         static constexpr uint32_t            skMaxPrescalerNum      = 7;

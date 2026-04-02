@@ -1,47 +1,40 @@
 #pragma once
 
-#include "stm32g4xx_hal.h"
-#include "stm32g4xx_hal_gpio.h"
 #include "stm32g4xx_ll_exti.h"
-#include "valle/platform/hardware/gpio/interface.hpp"
+#include "valle/platform/hardware/exti/interface.hpp"
 
 namespace valle::platform
 {
     // ============================================================================
     // INTERRUPT TRAITS
     // ============================================================================
-    template <GpioPortId tkPortId, GpioPinId tkPinId>
-
-    struct GpioPinInterruptTraits
+    template <ExtiLineId tkLineId>
+        requires(ExtiLineTraits<tkLineId>::skIrqNum.has_value())
+    struct ExtiLineInterruptSourceInterface
     {
-        static constexpr IRQn_Type skIRQn = GpioPinTraits<tkPortId, tkPinId>::skIRQn;
+        using LineTraitsT = ExtiLineTraits<tkLineId>;
+        using InterfaceT  = ExtiLineInterface<tkLineId>;
 
-        using PortTraitsT = GpioPortTraits<tkPortId>;
-        using PinTraitsT  = GpioPinTraits<tkPortId, tkPinId>;
-
-        static inline bool is_exti_source()
-        {
-            return LL_SYSCFG_GetEXTISource(PinTraitsT::skLLSyscfgEXTILine) == PortTraitsT::skLLSyscfgEXTIPort;
-        }
+        static constexpr auto skIRQn = ExtiLineTraits<tkLineId>::skIrqNum;
 
         static inline void enable()
         {
-            LL_EXTI_EnableIT_0_31(PinTraitsT::skLLEXTILine);
+            InterfaceT{}.enable_interrupt();
         }
 
         static inline void disable()
         {
-            LL_EXTI_DisableIT_0_31(PinTraitsT::skLLEXTILine);
+            InterfaceT{}.disable_interrupt();
         }
 
         static inline bool is_enabled()
         {
-            return LL_EXTI_IsEnabledIT_0_31(PinTraitsT::skLLEXTILine) != 0 && is_exti_source();
+            return InterfaceT{}.is_interrupt_enabled();
         }
 
         static inline bool flag_active()
         {
-            return LL_EXTI_IsActiveFlag_0_31(PinTraitsT::skLLEXTILine) != 0 && is_exti_source();
+            return InterfaceT{}.is_flag_active();
         }
 
         static inline bool is_pending()
@@ -49,12 +42,9 @@ namespace valle::platform
             return flag_active() && is_enabled();
         }
 
-        static inline void ack()
+        static inline void clear()
         {
-            if (is_exti_source())
-            {
-                LL_EXTI_ClearFlag_0_31(PinTraitsT::skLLEXTILine);
-            }
+            InterfaceT{}.clear_flag();
         }
     };
 
@@ -65,33 +55,31 @@ namespace valle::platform
     /**
      * @brief Configuration for GPIO Interrupts.
      */
-    struct GpioPinInterruptConfig
+    struct ExtiLineInterruptConfig
     {
         uint32_t priority = 5;  // NVIC Priority (0 = Highest, 15 = Lowest)
     };
 
-    template <GpioPortId tkPortId, GpioPinId tkPinId>
-
-    struct GpioPinInterruptController
+    template <ExtiLineId tkLineId>
+    struct ExtiLineInterruptController
     {
     public:
-        static constexpr GpioPortId skPortId = tkPortId;
-        static constexpr GpioPinId  skPinId  = tkPinId;
+        static constexpr ExtiLineId skLineId = tkLineId;
 
-        using PinTraitsT       = GpioPinTraits<tkPortId, tkPinId>;
-        using InterruptTraitsT = GpioPinInterruptTraits<tkPortId, tkPinId>;
+        using LineTraitsT               = ExtiLineTraits<tkLineId>;
+        using InterruptSourceInterfaceT = ExtiLineInterruptSourceInterface<tkLineId>;
 
         /**
          * @brief Enable interrupts for this GPIO pin.
          * @param config Configuration for GPIO Interrupts.
          */
-        static void enable_interrupts(const GpioPinInterruptConfig& config)
+        static void enable_interrupts(const ExtiLineInterruptConfig& config)
         {
-            InterruptTraitsT::ack();
-            InterruptTraitsT::enable();
+            InterruptSourceInterfaceT::clear();
+            InterruptSourceInterfaceT::enable();
 
-            NVIC_SetPriority(InterruptTraitsT::skIRQn, config.priority);
-            NVIC_EnableIRQ(InterruptTraitsT::skIRQn);
+            NVIC_SetPriority(InterruptSourceInterfaceT::skIRQn, config.priority);
+            NVIC_EnableIRQ(InterruptSourceInterfaceT::skIRQn);
         }
 
         /**
@@ -99,7 +87,7 @@ namespace valle::platform
          */
         static void disable_interrupts()
         {
-            InterruptTraitsT::disable();
+            InterruptSourceInterfaceT::disable();
 
             // Note: We intentionally do NOT disable the NVIC IRQ here.
             // EXTI lines 5-9 and 10-15 share NVIC interrupts. If we called
@@ -116,7 +104,7 @@ namespace valle::platform
     // GLOBAL ISR ROUTER
     // ---------------------------------------------------------------------------
 
-    enum class EXTIInterruptType
+    enum class EXTIInterruptSource
     {
         k0,
         k1,
@@ -132,10 +120,10 @@ namespace valle::platform
      * Specializing this allows you to handle the entire ISR in one function
      * (e.g., EXTI15_10_IRQHandler).
      *
-     * @tparam tkInterruptType EXTI interrupt type (e.g., EXTIInterruptType::k15_10).
+     * @tparam tkInterruptSource EXTI interrupt type (e.g., EXTIInterruptSource::k15_10).
      */
-    template <EXTIInterruptType tkInterruptType>
-    struct GpioEXTIGlobalIsrRouter
+    template <EXTIInterruptSource tkInterruptSource>
+    struct GpioEXTIIrqRouter
     {
         using UnboundIsrHandlerTag = void;
 
@@ -152,14 +140,13 @@ namespace valle::platform
      * @brief GPIO ISR Router
      *
      * Specialize this template to handle specific GPIO EXTI interrupts
-     * for a given port and pin.
+     * for a given EXTI line.
      *
-     * @tparam tkPortId GPIO Port ID (e.g., GpioPortId::kPortA)
-     * @tparam tkPinId  GPIO Pin ID (0-15)
+     * @tparam tkLineId EXTI line ID (e.g., ExtiLineId::kLine13).
      */
-    template <GpioPortId tkPortId, GpioPinId tkPinId>
+    template <ExtiLineId tkLineId>
 
-    struct GpioPinIsrRouter
+    struct ExtiLineIsrRouter
     {
         using UnboundIsrHandlerTag = void;
         static void handle()

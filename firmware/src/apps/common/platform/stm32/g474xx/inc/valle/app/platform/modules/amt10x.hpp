@@ -11,18 +11,17 @@ namespace valle::platform::app
     /**
      * @brief Platform implementation of AMT10x encoder interface using STM32 Timer Encoder Mode.
      *
-     * @tparam TControllerDevice The Timer controller device (e.g. Tim1, Tim2, etc.).
+     * @tparam TController The Timer controller device (e.g. Tim1, Tim2, etc.).
      * @tparam tkPPR The PPR setting for the encoder.
      */
-    template <typename TControllerDevice, typename TIndexGpioPinDevice, valle::app::AMT10xPPR tkPPR>
-    class AMT10xModuleTimEncoderInterface
-        : public valle::app::AMT10xModuleEncoderInterfaceX<
-              AMT10xModuleTimEncoderInterface<TControllerDevice, TIndexGpioPinDevice, tkPPR>,
-              TimQuadEncoderConfig>
+    template <typename TController, typename TIndexGpioPin, valle::app::AMT10xPPR tkPPR>
+    class AMT10xModuleTimEncoderInterface : public valle::app::AMT10xModuleEncoderInterfaceX<
+                                                AMT10xModuleTimEncoderInterface<TController, TIndexGpioPin, tkPPR>,
+                                                TimQuadEncoderConfig>
     {
     public:
-        using ControllerT         = TControllerDevice;
-        using IndexGpioPinDeviceT = TIndexGpioPinDevice;
+        using ControllerT         = TController;
+        using IndexGpioPinDeviceT = TIndexGpioPin;
 
         using EncoderDriverT            = TimQuadEncoderDriver<ControllerT>;
         using IndexGpioDigitalInDriverT = GpioDigitalInDriver<IndexGpioPinDeviceT>;
@@ -46,7 +45,7 @@ namespace valle::platform::app
         [[nodiscard]] bool init_impl(const ConfigT& config)
         {
             if (!m_index_pin.init(GpioDigitalInConfig{
-                    .pull      = GpioPullMode::kNoPull,
+                    .pull      = GpioPinPullMode::kNoPull,
                     .interrupt = std::nullopt,
                     .inverted  = false,
                 }))
@@ -125,9 +124,8 @@ namespace valle::platform::app
 
     using AMT10xTimEncoderModuleConfig = valle::app::AMT10xModuleConfigX<AMT10xModuleTimEncoderInterfaceConfig>;
 
-    template <typename TControllerDevice, typename TIndexGpioPinDevice, valle::app::AMT10xPPR tkPPR>
+    template <typename TController, typename TIndexGpioPin, valle::app::AMT10xPPR tkPPR>
     using AMT10xTimEncoderModule =
-        valle::app::AMT10xModuleX<AMT10xModuleTimEncoderInterface<TControllerDevice, TIndexGpioPinDevice, tkPPR>,
-                                  tkPPR>;
+        valle::app::AMT10xModuleX<AMT10xModuleTimEncoderInterface<TController, TIndexGpioPin, tkPPR>, tkPPR>;
 
 }  // namespace valle::platform::app

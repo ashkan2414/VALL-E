@@ -33,14 +33,13 @@ namespace valle::app
         // TODO: Implement a "owned shared device" concept to allow drivers to allow a clear owner.
         g_drivers.root.foreach (DeviceInitOverloaded{
             [](platform::CoreSystemDriver& dev) { (void)dev; },
-            [](platform::GpioPortADevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
-            [](platform::GpioPortBDevice& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
-            [](platform::Hrtim1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
-            [](platform::DmaMux1ControllerDevice& dev)
+            [](platform::GpioPortA& dev) { expect(dev.init(), "Failed to initialize GPIO Port A Device"); },
+            [](platform::GpioPortB& dev) { expect(dev.init(), "Failed to initialize GPIO Port B Device"); },
+            [](platform::Hrtim1Controller& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
+            [](platform::DmaMux1Controller& dev)
             { expect(dev.init(), "Failed to initialize DmaMux1 Controller Device"); },
-            [](platform::Dma1ControllerDevice& dev)
-            { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
-            [](platform::Adc12CommonDevice& dev)
+            [](platform::Dma1Controller& dev) { expect(dev.init(), "Failed to initialize Dma1 Controller Device"); },
+            [](platform::Adc12CommonController& dev)
             {
                 expect(dev.init(platform::AdcCommonConfig{
                            .clock_config =
@@ -48,7 +47,7 @@ namespace valle::app
                                                                        platform::AdcCommonAsyncClockPrescaler::kDiv4}}),
                        "Failed to initialize Adc12 Common Device");
             },
-            [](platform::Adc1ControllerDevice& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
+            [](platform::Adc1Controller& dev) { (void)dev; },  // Initialized by VCA Current Loop Driver
         }  // namespace valle
         );
     }
@@ -66,7 +65,7 @@ namespace valle::app
                    .parity            = platform::UartParity::kNone,
                    .transfer_mode     = platform::UartTransferMode::kTxRx,
                    .hw_flow_ctrl      = platform::UartHardwareFlowControl::kNone,
-                   .dma_priority      = platform::DmaPriority::kHigh,
+                   .dma_priority      = platform::DmaChannelPriority::kHigh,
                    .dma_int_priority  = 5,
                    .uart_int_priority = 5,
                }),
@@ -88,9 +87,9 @@ namespace valle::app
                "Failed to initialize AMT102 Crank Encoder module");
 
         expect(g_drivers.test_gpio.init(platform::GpioDigitalOutConfig{
-                   .mode  = platform::GpioOutputMode::kPushPull,
-                   .speed = platform::GpioSpeedMode::kLow,
-                   .pull  = platform::GpioPullMode::kNoPull,
+                   .mode  = platform::GpioPinOutputMode::kPushPull,
+                   .speed = platform::GpioPinSpeedMode::kLow,
+                   .pull  = platform::GpioPinPullMode::kNoPull,
                }),
                "Failed to initialize Test GPIO Driver");
     }
