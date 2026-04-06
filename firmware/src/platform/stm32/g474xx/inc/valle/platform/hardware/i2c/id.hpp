@@ -3,16 +3,23 @@
 #include <cstdint>
 #include <variant>
 
+#include "valle/platform/core/id.hpp"
+
 namespace valle::platform
 {
 
-    enum class I2cControllerId : uint8_t
+    struct I2cControllerId : public SequentialEnumValue<I2cControllerId, uint8_t, 1, 4>
     {
-        kI2c1 = 1,
-        kI2c2 = 2,
-        kI2c3 = 3,
-        kI2c4 = 4,
+        static const I2cControllerId kI2c1;
+        static const I2cControllerId kI2c2;
+        static const I2cControllerId kI2c3;
+        static const I2cControllerId kI2c4;
     };
+
+    inline constexpr I2cControllerId I2cControllerId::kI2c1 = I2cControllerId::from_number<1>();
+    inline constexpr I2cControllerId I2cControllerId::kI2c2 = I2cControllerId::from_number<2>();
+    inline constexpr I2cControllerId I2cControllerId::kI2c3 = I2cControllerId::from_number<3>();
+    inline constexpr I2cControllerId I2cControllerId::kI2c4 = I2cControllerId::from_number<4>();
 
     template <bool tkIs10BitAddress>
     struct I2cSlaveAddress

@@ -7,7 +7,9 @@
 
 namespace valle::platform
 {
-
+    // ============================================================================
+    // ADC CONTROLLER
+    // ===========================================================================
     struct AdcControllerId : public SequentialEnumValue<AdcControllerId, uint8_t, 1, 5>
     {
         static const AdcControllerId kAdc1;
@@ -22,6 +24,21 @@ namespace valle::platform
     inline constexpr AdcControllerId AdcControllerId::kAdc3 = AdcControllerId::from_number<3>();
     inline constexpr AdcControllerId AdcControllerId::kAdc4 = AdcControllerId::from_number<4>();
     inline constexpr AdcControllerId AdcControllerId::kAdc5 = AdcControllerId::from_number<5>();
+
+    struct AdcControllerSpec
+    {
+        AdcControllerId controller_id;
+    };
+
+    inline constexpr auto kAdc1ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc1};
+    inline constexpr auto kAdc2ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc2};
+    inline constexpr auto kAdc3ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc3};
+    inline constexpr auto kAdc4ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc4};
+    inline constexpr auto kAdc5ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc5};
+
+    // ============================================================================
+    // ADC CHANNEL
+    // ===========================================================================
 
     inline constexpr auto kAdcChannelIdNumberMapping =
         LLDriverEnumValueSequentialNumberMapping<19>{.start_number = 0,
@@ -79,98 +96,47 @@ namespace valle::platform
         static const AdcChannelId kChannelVOPAmp6;
     };
 
-    inline constexpr AdcChannelId AdcChannelId::kChannel0       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_0>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel1       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_1>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel2       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_2>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel3       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_3>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel4       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_4>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel5       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_5>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel6       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_6>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel7       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_7>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel8       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_8>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel9       = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_9>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel10      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_10>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel11      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_11>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel12      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_12>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel13      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_13>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel14      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_14>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel15      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_15>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel16      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_16>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel17      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_17>();
-    inline constexpr AdcChannelId AdcChannelId::kChannel18      = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_18>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVRefInt = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VREFINT>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel0       = AdcChannelId::from_number<0>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel1       = AdcChannelId::from_number<1>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel2       = AdcChannelId::from_number<2>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel3       = AdcChannelId::from_number<3>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel4       = AdcChannelId::from_number<4>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel5       = AdcChannelId::from_number<5>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel6       = AdcChannelId::from_number<6>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel7       = AdcChannelId::from_number<7>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel8       = AdcChannelId::from_number<8>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel9       = AdcChannelId::from_number<9>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel10      = AdcChannelId::from_number<10>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel11      = AdcChannelId::from_number<11>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel12      = AdcChannelId::from_number<12>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel13      = AdcChannelId::from_number<13>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel14      = AdcChannelId::from_number<14>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel15      = AdcChannelId::from_number<15>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel16      = AdcChannelId::from_number<16>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel17      = AdcChannelId::from_number<17>();
+    inline constexpr AdcChannelId AdcChannelId::kChannel18      = AdcChannelId::from_number<18>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVRefInt = AdcChannelId::from_ll<LL_ADC_CHANNEL_VREFINT>();
     inline constexpr AdcChannelId AdcChannelId::kChannelTempSensorAdc1 =
-        AdcChannelId::from_ll_id<LL_ADC_CHANNEL_TEMPSENSOR_ADC1>();
+        AdcChannelId::from_ll<LL_ADC_CHANNEL_TEMPSENSOR_ADC1>();
     inline constexpr AdcChannelId AdcChannelId::kChannelTempSensorAdc5 =
-        AdcChannelId::from_ll_id<LL_ADC_CHANNEL_TEMPSENSOR_ADC5>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVBat    = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VBAT>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp1 = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP1>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp2 = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP2>();
+        AdcChannelId::from_ll<LL_ADC_CHANNEL_TEMPSENSOR_ADC5>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVBat    = AdcChannelId::from_ll<LL_ADC_CHANNEL_VBAT>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp1 = AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP1>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp2 = AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP2>();
     inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp3Adc2 =
-        AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP3_ADC2>();
+        AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP3_ADC2>();
     inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp3Adc3 =
-        AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP3_ADC3>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp4 = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP4>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp5 = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP5>();
-    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp6 = AdcChannelId::from_ll_id<LL_ADC_CHANNEL_VOPAMP6>();
-
-    enum class AdcInjectChannelRank : uint8_t
-    {
-        kRank1 = 1,
-        kRank2,
-        kRank3,
-        kRank4,
-    };
-
-    enum class AdcRegularChannelRank : uint8_t
-    {
-        kRank1 = 1,
-        kRank2,
-        kRank3,
-        kRank4,
-        kRank5,
-        kRank6,
-        kRank7,
-        kRank8,
-        kRank9,
-        kRank10,
-        kRank11,
-        kRank12,
-        kRank13,
-        kRank14,
-        kRank15,
-        kRank16,
-    };
-
-    enum class AdcOffsetBlockId : uint8_t
-    {
-        kOffset1 = 1,
-        kOffset2,
-        kOffset3,
-        kOffset4,
-    };
-
-    // ============================================================================
-    // SPECIFIERS
-    // ============================================================================
-
-    struct AdcControllerSpec
-    {
-        AdcControllerId controller_id;
-    };
-
-    inline constexpr auto kAdc1ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc1};
-    inline constexpr auto kAdc2ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc2};
-    inline constexpr auto kAdc3ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc3};
-    inline constexpr auto kAdc4ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc4};
-    inline constexpr auto kAdc5ControllerSpec = AdcControllerSpec{AdcControllerId::kAdc5};
+        AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP3_ADC3>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp4 = AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP4>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp5 = AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP5>();
+    inline constexpr AdcChannelId AdcChannelId::kChannelVOPAmp6 = AdcChannelId::from_ll<LL_ADC_CHANNEL_VOPAMP6>();
 
     struct AdcChannelSpec
     {
         AdcControllerId controller_id;
         AdcChannelId    channel_id;
 
-        [[nodiscard]] constexpr AdcControllerSpec controller_spec() const
+        [[nodiscard]] constexpr VALLE_FORCE_INLINE AdcControllerSpec controller_spec() const
         {
             return AdcControllerSpec{controller_id};
         }
@@ -349,12 +315,33 @@ namespace valle::platform
     inline constexpr auto kAdc5ChannelVOPAmp6Spec =
         AdcChannelSpec{AdcControllerId::kAdc5, AdcChannelId::kChannelVOPAmp6};
 
+    // =========================================================================
+    // ADC INJECT CHANNEL RANKS
+    // =========================================================================
+
+    inline constexpr auto kAdcInjectChannelRankNumberMapping = LLDriverEnumValueSequentialNumberMapping<4>{
+        .start_number = 1, .ll_id_table = {LL_ADC_INJ_RANK_1, LL_ADC_INJ_RANK_2, LL_ADC_INJ_RANK_3, LL_ADC_INJ_RANK_4}};
+
+    struct AdcInjectChannelRank
+        : public NumberedLLDriverEnumValue<AdcInjectChannelRank, kAdcInjectChannelRankNumberMapping>
+    {
+        static const AdcInjectChannelRank kRank1;
+        static const AdcInjectChannelRank kRank2;
+        static const AdcInjectChannelRank kRank3;
+        static const AdcInjectChannelRank kRank4;
+    };
+
+    inline constexpr AdcInjectChannelRank AdcInjectChannelRank::kRank1 = AdcInjectChannelRank::from_number<1>();
+    inline constexpr AdcInjectChannelRank AdcInjectChannelRank::kRank2 = AdcInjectChannelRank::from_number<2>();
+    inline constexpr AdcInjectChannelRank AdcInjectChannelRank::kRank3 = AdcInjectChannelRank::from_number<3>();
+    inline constexpr AdcInjectChannelRank AdcInjectChannelRank::kRank4 = AdcInjectChannelRank::from_number<4>();
+
     struct AdcInjectChannelRankSpec
     {
         AdcControllerId      controller_id;
         AdcInjectChannelRank rank;
 
-        [[nodiscard]] constexpr AdcControllerSpec controller_spec() const
+        [[nodiscard]] constexpr VALLE_FORCE_INLINE AdcControllerSpec controller_spec() const
         {
             return AdcControllerSpec{controller_id};
         }
@@ -404,12 +391,73 @@ namespace valle::platform
         AdcInjectChannelRankSpec{AdcControllerId::kAdc5, AdcInjectChannelRank::kRank3};
     inline constexpr auto kAdc5InjectChannelRank4Spec =
         AdcInjectChannelRankSpec{AdcControllerId::kAdc5, AdcInjectChannelRank::kRank4};
+
+    // =========================================================================
+    // ADC REGULAR CHANNEL RANKS
+    // =========================================================================
+
+    inline constexpr auto kAdcRegularChannelRankNumberMapping =
+        LLDriverEnumValueSequentialNumberMapping<16>{.start_number = 1,
+                                                     .ll_id_table  = {LL_ADC_REG_RANK_1,
+                                                                      LL_ADC_REG_RANK_2,
+                                                                      LL_ADC_REG_RANK_3,
+                                                                      LL_ADC_REG_RANK_4,
+                                                                      LL_ADC_REG_RANK_5,
+                                                                      LL_ADC_REG_RANK_6,
+                                                                      LL_ADC_REG_RANK_7,
+                                                                      LL_ADC_REG_RANK_8,
+                                                                      LL_ADC_REG_RANK_9,
+                                                                      LL_ADC_REG_RANK_10,
+                                                                      LL_ADC_REG_RANK_11,
+                                                                      LL_ADC_REG_RANK_12,
+                                                                      LL_ADC_REG_RANK_13,
+                                                                      LL_ADC_REG_RANK_14,
+                                                                      LL_ADC_REG_RANK_15,
+                                                                      LL_ADC_REG_RANK_16}};
+    struct AdcRegularChannelRank
+        : public NumberedLLDriverEnumValue<AdcRegularChannelRank, kAdcRegularChannelRankNumberMapping>
+    {
+        static const AdcRegularChannelRank kRank1;
+        static const AdcRegularChannelRank kRank2;
+        static const AdcRegularChannelRank kRank3;
+        static const AdcRegularChannelRank kRank4;
+        static const AdcRegularChannelRank kRank5;
+        static const AdcRegularChannelRank kRank6;
+        static const AdcRegularChannelRank kRank7;
+        static const AdcRegularChannelRank kRank8;
+        static const AdcRegularChannelRank kRank9;
+        static const AdcRegularChannelRank kRank10;
+        static const AdcRegularChannelRank kRank11;
+        static const AdcRegularChannelRank kRank12;
+        static const AdcRegularChannelRank kRank13;
+        static const AdcRegularChannelRank kRank14;
+        static const AdcRegularChannelRank kRank15;
+        static const AdcRegularChannelRank kRank16;
+    };
+
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank1  = AdcRegularChannelRank::from_number<1>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank2  = AdcRegularChannelRank::from_number<2>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank3  = AdcRegularChannelRank::from_number<3>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank4  = AdcRegularChannelRank::from_number<4>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank5  = AdcRegularChannelRank::from_number<5>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank6  = AdcRegularChannelRank::from_number<6>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank7  = AdcRegularChannelRank::from_number<7>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank8  = AdcRegularChannelRank::from_number<8>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank9  = AdcRegularChannelRank::from_number<9>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank10 = AdcRegularChannelRank::from_number<10>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank11 = AdcRegularChannelRank::from_number<11>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank12 = AdcRegularChannelRank::from_number<12>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank13 = AdcRegularChannelRank::from_number<13>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank14 = AdcRegularChannelRank::from_number<14>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank15 = AdcRegularChannelRank::from_number<15>();
+    inline constexpr AdcRegularChannelRank AdcRegularChannelRank::kRank16 = AdcRegularChannelRank::from_number<16>();
+
     struct AdcRegularChannelRankSpec
     {
         AdcControllerId       controller_id;
         AdcRegularChannelRank rank;
 
-        [[nodiscard]] constexpr AdcControllerSpec controller_spec() const
+        [[nodiscard]] constexpr VALLE_FORCE_INLINE AdcControllerSpec controller_spec() const
         {
             return AdcControllerSpec{controller_id};
         }
@@ -580,58 +628,144 @@ namespace valle::platform
     inline constexpr auto kAdc5RegularChannelRank16Spec =
         AdcRegularChannelRankSpec{AdcControllerId::kAdc5, AdcRegularChannelRank::kRank16};
 
-    struct AdcInjectChannelSpec
+    // =========================================================================
+    // ADC OFFSET BLOCKS
+    // =========================================================================
+
+    inline constexpr auto kAdcOffsetBlockIdNumberMapping = LLDriverEnumValueSequentialNumberMapping<4>{
+        .start_number = 1, .ll_id_table = {LL_ADC_OFFSET_1, LL_ADC_OFFSET_2, LL_ADC_OFFSET_3, LL_ADC_OFFSET_4}};
+
+    struct AdcOffsetBlockId : public NumberedLLDriverEnumValue<AdcOffsetBlockId, kAdcOffsetBlockIdNumberMapping>
     {
-        AdcControllerId      controller_id;
-        AdcChannelId         channel_id;
-        AdcInjectChannelRank rank;
-
-        [[nodiscard]] constexpr AdcControllerSpec controller_spec() const
-        {
-            return AdcControllerSpec{controller_id};
-        }
-
-        [[nodiscard]] constexpr AdcInjectChannelRankSpec rank_spec() const
-        {
-            return AdcInjectChannelRankSpec{controller_id, rank};
-        }
-
-        [[nodiscard]] constexpr AdcChannelSpec channel_spec() const
-        {
-            return AdcChannelSpec{controller_id, channel_id};
-        }
+        static const AdcOffsetBlockId kOffset1;
+        static const AdcOffsetBlockId kOffset2;
+        static const AdcOffsetBlockId kOffset3;
+        static const AdcOffsetBlockId kOffset4;
     };
 
-    struct AdcRegularChannelSpec
-    {
-        AdcControllerId       controller_id;
-        AdcChannelId          channel_id;
-        AdcRegularChannelRank rank;
+    inline constexpr AdcOffsetBlockId AdcOffsetBlockId::kOffset1 = AdcOffsetBlockId::from_number<1>();
+    inline constexpr AdcOffsetBlockId AdcOffsetBlockId::kOffset2 = AdcOffsetBlockId::from_number<2>();
+    inline constexpr AdcOffsetBlockId AdcOffsetBlockId::kOffset3 = AdcOffsetBlockId::from_number<3>();
+    inline constexpr AdcOffsetBlockId AdcOffsetBlockId::kOffset4 = AdcOffsetBlockId::from_number<4>();
 
-        [[nodiscard]] constexpr AdcControllerSpec controller_spec() const
-        {
-            return AdcControllerSpec{controller_id};
-        }
-
-        [[nodiscard]] constexpr AdcChannelSpec channel_spec() const
-        {
-            return AdcChannelSpec{controller_id, channel_id};
-        }
-
-        [[nodiscard]] constexpr AdcRegularChannelRankSpec rank_spec() const
-        {
-            return AdcRegularChannelRankSpec{controller_id, rank};
-        }
-    };
     struct AdcOffsetBlockSpec
     {
         AdcControllerId  controller_id;
         AdcOffsetBlockId block_id;
 
-        [[nodiscard]] constexpr AdcControllerSpec controller_spec() const
+        [[nodiscard]] constexpr VALLE_FORCE_INLINE AdcControllerSpec controller_spec() const
         {
             return AdcControllerSpec{controller_id};
         }
     };
+
+    inline constexpr auto kAdc1OffsetBlock1Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc1, AdcOffsetBlockId::kOffset1};
+    inline constexpr auto kAdc1OffsetBlock2Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc1, AdcOffsetBlockId::kOffset2};
+    inline constexpr auto kAdc1OffsetBlock3Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc1, AdcOffsetBlockId::kOffset3};
+    inline constexpr auto kAdc1OffsetBlock4Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc1, AdcOffsetBlockId::kOffset4};
+
+    inline constexpr auto kAdc2OffsetBlock1Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc2, AdcOffsetBlockId::kOffset1};
+    inline constexpr auto kAdc2OffsetBlock2Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc2, AdcOffsetBlockId::kOffset2};
+    inline constexpr auto kAdc2OffsetBlock3Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc2, AdcOffsetBlockId::kOffset3};
+    inline constexpr auto kAdc2OffsetBlock4Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc2, AdcOffsetBlockId::kOffset4};
+
+    inline constexpr auto kAdc3OffsetBlock1Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc3, AdcOffsetBlockId::kOffset1};
+    inline constexpr auto kAdc3OffsetBlock2Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc3, AdcOffsetBlockId::kOffset2};
+    inline constexpr auto kAdc3OffsetBlock3Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc3, AdcOffsetBlockId::kOffset3};
+    inline constexpr auto kAdc3OffsetBlock4Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc3, AdcOffsetBlockId::kOffset4};
+
+    inline constexpr auto kAdc4OffsetBlock1Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc4, AdcOffsetBlockId::kOffset1};
+    inline constexpr auto kAdc4OffsetBlock2Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc4, AdcOffsetBlockId::kOffset2};
+    inline constexpr auto kAdc4OffsetBlock3Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc4, AdcOffsetBlockId::kOffset3};
+    inline constexpr auto kAdc4OffsetBlock4Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc4, AdcOffsetBlockId::kOffset4};
+
+    inline constexpr auto kAdc5OffsetBlock1Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc5, AdcOffsetBlockId::kOffset1};
+    inline constexpr auto kAdc5OffsetBlock2Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc5, AdcOffsetBlockId::kOffset2};
+    inline constexpr auto kAdc5OffsetBlock3Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc5, AdcOffsetBlockId::kOffset3};
+    inline constexpr auto kAdc5OffsetBlock4Spec =
+        AdcOffsetBlockSpec{AdcControllerId::kAdc5, AdcOffsetBlockId::kOffset4};
+
+    // =========================================================================
+    // ADC ANALOG WATCHDOGS
+    // =========================================================================
+    inline constexpr auto kAdcAnalogWatchdogIdNumberMapping = LLDriverEnumValueSequentialNumberMapping<4>{
+        .start_number = 1, .ll_id_table = {LL_ADC_AWD1, LL_ADC_AWD2, LL_ADC_AWD3}};
+
+    struct AdcAnalogWatchdogId
+        : public NumberedLLDriverEnumValue<AdcAnalogWatchdogId, kAdcAnalogWatchdogIdNumberMapping>
+    {
+        static const AdcAnalogWatchdogId kWatchdog1;
+        static const AdcAnalogWatchdogId kWatchdog2;
+        static const AdcAnalogWatchdogId kWatchdog3;
+    };
+
+    inline constexpr AdcAnalogWatchdogId AdcAnalogWatchdogId::kWatchdog1 = AdcAnalogWatchdogId::from_number<1>();
+    inline constexpr AdcAnalogWatchdogId AdcAnalogWatchdogId::kWatchdog2 = AdcAnalogWatchdogId::from_number<2>();
+    inline constexpr AdcAnalogWatchdogId AdcAnalogWatchdogId::kWatchdog3 = AdcAnalogWatchdogId::from_number<3>();
+
+    struct AdcAnalogWatchdogSpec
+    {
+        AdcControllerId     controller_id;
+        AdcAnalogWatchdogId watchdog_id;
+
+        [[nodiscard]] constexpr VALLE_FORCE_INLINE AdcControllerSpec controller_spec() const
+        {
+            return AdcControllerSpec{controller_id};
+        }
+    };
+
+    inline constexpr auto kAdc1AnalogWatchdog1Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc1, AdcAnalogWatchdogId::kWatchdog1};
+    inline constexpr auto kAdc1AnalogWatchdog2Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc1, AdcAnalogWatchdogId::kWatchdog2};
+    inline constexpr auto kAdc1AnalogWatchdog3Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc1, AdcAnalogWatchdogId::kWatchdog3};
+
+    inline constexpr auto kAdc2AnalogWatchdog1Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc2, AdcAnalogWatchdogId::kWatchdog1};
+    inline constexpr auto kAdc2AnalogWatchdog2Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc2, AdcAnalogWatchdogId::kWatchdog2};
+    inline constexpr auto kAdc2AnalogWatchdog3Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc2, AdcAnalogWatchdogId::kWatchdog3};
+
+    inline constexpr auto kAdc3AnalogWatchdog1Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc3, AdcAnalogWatchdogId::kWatchdog1};
+    inline constexpr auto kAdc3AnalogWatchdog2Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc3, AdcAnalogWatchdogId::kWatchdog2};
+    inline constexpr auto kAdc3AnalogWatchdog3Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc3, AdcAnalogWatchdogId::kWatchdog3};
+
+    inline constexpr auto kAdc4AnalogWatchdog1Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc4, AdcAnalogWatchdogId::kWatchdog1};
+    inline constexpr auto kAdc4AnalogWatchdog2Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc4, AdcAnalogWatchdogId::kWatchdog2};
+    inline constexpr auto kAdc4AnalogWatchdog3Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc4, AdcAnalogWatchdogId::kWatchdog3};
+
+    inline constexpr auto kAdc5AnalogWatchdog1Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc5, AdcAnalogWatchdogId::kWatchdog1};
+    inline constexpr auto kAdc5AnalogWatchdog2Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc5, AdcAnalogWatchdogId::kWatchdog2};
+    inline constexpr auto kAdc5AnalogWatchdog3Spec =
+        AdcAnalogWatchdogSpec{AdcControllerId::kAdc5, AdcAnalogWatchdogId::kWatchdog3};
 
 }  // namespace valle::platform

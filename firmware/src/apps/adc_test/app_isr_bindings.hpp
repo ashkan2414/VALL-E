@@ -11,7 +11,7 @@ namespace valle::platform
     }
 
     template <>
-    struct AdcIsrRouter<valle::app::TestAdcChannelT::skControllerId, AdcInterruptSource::kInjectEndOfSequence>
+    struct AdcIsrRouter<valle::app::TestAdcChannelT::skControllerId, AdcControllerInterruptSource::kInjectEndOfSequence>
     {
         static void handle()
         {

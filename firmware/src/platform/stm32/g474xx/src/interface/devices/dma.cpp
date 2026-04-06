@@ -14,7 +14,7 @@ namespace valle::platform
     template <DmaChannelSpec tkChannelSpec>
     static void dma_irq_handler()
     {
-        DmaChannelInterruptIrqRouterContext::dispatch<tkChannelSpec>();
+        DmaChannelIrqRouterContext::dispatch<tkChannelSpec>();
     }
 
     // ============================================================================

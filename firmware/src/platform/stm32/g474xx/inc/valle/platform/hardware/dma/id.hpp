@@ -2,25 +2,51 @@
 
 #include <cstdint>
 
+#include "stm32g4xx_ll_dma.h"
+#include "valle/platform/core/id.hpp"
+
 namespace valle::platform
 {
-    enum class DmaControllerId : uint8_t
+    struct DmaControllerId : public SequentialEnumValue<DmaControllerId, uint8_t, 1, 2>
     {
-        kDma1 = 1,
-        kDma2 = 2,
+        static const DmaControllerId kDma1;
+        static const DmaControllerId kDma2;
     };
 
-    enum class DmaChannelId : uint8_t
+    inline constexpr DmaControllerId DmaControllerId::kDma1 = DmaControllerId::from_number<1>();
+    inline constexpr DmaControllerId DmaControllerId::kDma2 = DmaControllerId::from_number<2>();
+
+    inline constexpr auto kDmaChannelIdNumberMapping =
+        LLDriverEnumValueSequentialNumberMapping<8>{.start_number = 1,
+                                                    .ll_id_table  = {LL_DMA_CHANNEL_1,
+                                                                     LL_DMA_CHANNEL_2,
+                                                                     LL_DMA_CHANNEL_3,
+                                                                     LL_DMA_CHANNEL_4,
+                                                                     LL_DMA_CHANNEL_5,
+                                                                     LL_DMA_CHANNEL_6,
+                                                                     LL_DMA_CHANNEL_7,
+                                                                     LL_DMA_CHANNEL_8}};
+
+    struct DmaChannelId : public NumberedLLDriverEnumValue<DmaChannelId, kDmaChannelIdNumberMapping>
     {
-        kChannel1 = 1,
-        kChannel2,
-        kChannel3,
-        kChannel4,
-        kChannel5,
-        kChannel6,
-        kChannel7,
-        kChannel8,
+        static const DmaChannelId kChannel1;
+        static const DmaChannelId kChannel2;
+        static const DmaChannelId kChannel3;
+        static const DmaChannelId kChannel4;
+        static const DmaChannelId kChannel5;
+        static const DmaChannelId kChannel6;
+        static const DmaChannelId kChannel7;
+        static const DmaChannelId kChannel8;
     };
+
+    inline constexpr DmaChannelId DmaChannelId::kChannel1 = DmaChannelId::from_number<1>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel2 = DmaChannelId::from_number<2>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel3 = DmaChannelId::from_number<3>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel4 = DmaChannelId::from_number<4>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel5 = DmaChannelId::from_number<5>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel6 = DmaChannelId::from_number<6>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel7 = DmaChannelId::from_number<7>();
+    inline constexpr DmaChannelId DmaChannelId::kChannel8 = DmaChannelId::from_number<8>();
 
     // ===========================================================================
     // SPECS

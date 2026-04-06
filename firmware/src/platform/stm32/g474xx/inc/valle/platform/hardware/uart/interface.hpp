@@ -10,66 +10,113 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class UartBaudRate
+    struct UartBaudRate : public EnumValue<UartBaudRate, uint32_t>
     {
-        kBaud1200    = 1200,
-        kBaud2400    = 2400,
-        kBaud4800    = 4800,
-        kBaud9600    = 9600,
-        kBaud14400   = 14400,
-        kBaud19200   = 19200,
-        kBaud38400   = 38400,
-        kBaud57600   = 57600,
-        kBaud115200  = 115200,
-        kBaud230400  = 230400,
-        kBaud460800  = 460800,
-        kBaud921600  = 921600,
-        kBaud1000000 = 1000000,
-        kBaud2000000 = 2000000,
+        static const UartBaudRate kBaud1200;
+        static const UartBaudRate kBaud2400;
+        static const UartBaudRate kBaud4800;
+        static const UartBaudRate kBaud9600;
+        static const UartBaudRate kBaud14400;
+        static const UartBaudRate kBaud19200;
+        static const UartBaudRate kBaud38400;
+        static const UartBaudRate kBaud57600;
+        static const UartBaudRate kBaud115200;
+        static const UartBaudRate kBaud230400;
+        static const UartBaudRate kBaud460800;
+        static const UartBaudRate kBaud921600;
+        static const UartBaudRate kBaud1000000;
+        static const UartBaudRate kBaud2000000;
     };
 
-    enum class UartWordLength
+    inline constexpr UartBaudRate UartBaudRate::kBaud1200 = UartBaudRate::from_number<1200>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud2400 = UartBaudRate::from_number<2400>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud4800 = UartBaudRate::from_number<4800>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud9600 = UartBaudRate::from_number<9600>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud14400 = UartBaudRate::from_number<14400>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud19200 = UartBaudRate::from_number<19200>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud38400 = UartBaudRate::from_number<38400>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud57600 = UartBaudRate::from_number<57600>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud115200 = UartBaudRate::from_number<115200>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud230400 = UartBaudRate::from_number<230400>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud460800 = UartBaudRate::from_number<460800>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud921600 = UartBaudRate::from_number<921600>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud1000000 = UartBaudRate::from_number<1000000>();
+    inline constexpr UartBaudRate UartBaudRate::kBaud2000000 = UartBaudRate::from_number<2000000>();
+
+
+    struct UartWordLength : public LLDriverEnumValue<UartWordLength>
     {
-        kBits7 = UART_WORDLENGTH_7B,
-        kBits8 = UART_WORDLENGTH_8B,
-        kBits9 = UART_WORDLENGTH_9B,
+        static const UartWordLength kBits7;
+        static const UartWordLength kBits8;
+        static const UartWordLength kBits9;
     };
 
-    enum class UartWakeUpAddressLength
+    inline constexpr UartWordLength UartWordLength::kBits7 = UartWordLength::from_ll<UART_WORDLENGTH_7B>();
+    inline constexpr UartWordLength UartWordLength::kBits8 = UartWordLength::from_ll<UART_WORDLENGTH_8B>();
+    inline constexpr UartWordLength UartWordLength::kBits9 = UartWordLength::from_ll<UART_WORDLENGTH_9B>();
+
+
+    struct UartWakeUpAddressLength : public LLDriverEnumValue<UartWakeUpAddressLength>
     {
-        kBits4 = UART_ADDRESS_DETECT_4B,
-        kBits7 = UART_ADDRESS_DETECT_7B,
+        static const UartWakeUpAddressLength kBits4;
+        static const UartWakeUpAddressLength kBits7;
     };
 
-    enum class UartStopBits
+    inline constexpr UartWakeUpAddressLength UartWakeUpAddressLength::kBits4 = UartWakeUpAddressLength::from_ll<UART_ADDRESS_DETECT_4B>();
+    inline constexpr UartWakeUpAddressLength UartWakeUpAddressLength::kBits7 = UartWakeUpAddressLength::from_ll<UART_ADDRESS_DETECT_7B>();
+
+
+    struct UartStopBits : public LLDriverEnumValue<UartStopBits>
     {
-        kBits1   = UART_STOPBITS_1,
-        kBits0_5 = UART_STOPBITS_0_5,
-        kBits2   = UART_STOPBITS_2,
-        kBits1_5 = UART_STOPBITS_1_5,
+        static const UartStopBits kBits1;
+        static const UartStopBits kBits0_5;
+        static const UartStopBits kBits2;
+        static const UartStopBits kBits1_5;
     };
 
-    enum class UartParity
+    inline constexpr UartStopBits UartStopBits::kBits1 = UartStopBits::from_ll<UART_STOPBITS_1>();
+    inline constexpr UartStopBits UartStopBits::kBits0_5 = UartStopBits::from_ll<UART_STOPBITS_0_5>();
+    inline constexpr UartStopBits UartStopBits::kBits2 = UartStopBits::from_ll<UART_STOPBITS_2>();
+    inline constexpr UartStopBits UartStopBits::kBits1_5 = UartStopBits::from_ll<UART_STOPBITS_1_5>();
+
+
+    struct UartParity : public LLDriverEnumValue<UartParity>
     {
-        kNone = UART_PARITY_NONE,
-        kEven = UART_PARITY_EVEN,
-        kOdd  = UART_PARITY_ODD,
+        static const UartParity kNone;
+        static const UartParity kEven;
+        static const UartParity kOdd;
     };
 
-    enum class UartHardwareFlowControl
+    inline constexpr UartParity UartParity::kNone = UartParity::from_ll<UART_PARITY_NONE>();
+    inline constexpr UartParity UartParity::kEven = UartParity::from_ll<UART_PARITY_EVEN>();
+    inline constexpr UartParity UartParity::kOdd = UartParity::from_ll<UART_PARITY_ODD>();
+
+
+    struct UartHardwareFlowControl : public LLDriverEnumValue<UartHardwareFlowControl>
     {
-        kNone    = UART_HWCONTROL_NONE,
-        kRTS     = UART_HWCONTROL_RTS,
-        kCTS     = UART_HWCONTROL_CTS,
-        kRTS_CTS = UART_HWCONTROL_RTS_CTS,
+        static const UartHardwareFlowControl kNone;
+        static const UartHardwareFlowControl kRTS;
+        static const UartHardwareFlowControl kCTS;
+        static const UartHardwareFlowControl kRTS_CTS;
     };
 
-    enum class UartTransferMode
+    inline constexpr UartHardwareFlowControl UartHardwareFlowControl::kNone = UartHardwareFlowControl::from_ll<UART_HWCONTROL_NONE>();
+    inline constexpr UartHardwareFlowControl UartHardwareFlowControl::kRTS = UartHardwareFlowControl::from_ll<UART_HWCONTROL_RTS>();
+    inline constexpr UartHardwareFlowControl UartHardwareFlowControl::kCTS = UartHardwareFlowControl::from_ll<UART_HWCONTROL_CTS>();
+    inline constexpr UartHardwareFlowControl UartHardwareFlowControl::kRTS_CTS = UartHardwareFlowControl::from_ll<UART_HWCONTROL_RTS_CTS>();
+
+
+    struct UartTransferMode : public LLDriverEnumValue<UartTransferMode>
     {
-        kTx   = UART_MODE_TX,
-        kRx   = UART_MODE_RX,
-        kTxRx = UART_MODE_TX_RX,
+        static const UartTransferMode kTx;
+        static const UartTransferMode kRx;
+        static const UartTransferMode kTxRx;
     };
+
+    inline constexpr UartTransferMode UartTransferMode::kTx = UartTransferMode::from_ll<UART_MODE_TX>();
+    inline constexpr UartTransferMode UartTransferMode::kRx = UartTransferMode::from_ll<UART_MODE_RX>();
+    inline constexpr UartTransferMode UartTransferMode::kTxRx = UartTransferMode::from_ll<UART_MODE_TX_RX>();
+
 
     // ===========================================================================
     // HARDWARE TRAITS

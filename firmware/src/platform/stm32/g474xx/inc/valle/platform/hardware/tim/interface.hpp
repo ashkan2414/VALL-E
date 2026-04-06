@@ -13,296 +13,515 @@ namespace valle::platform
     // COUNTER ENUMS
     // -------------------------------------------------------------------------
 
-    enum class TimControllerCounterMode : uint32_t
+    struct TimControllerCounterMode : public LLDriverEnumValue<TimControllerCounterMode>
     {
-        kUp           = LL_TIM_COUNTERMODE_UP,
-        kDown         = LL_TIM_COUNTERMODE_DOWN,
-        kCenterDown   = LL_TIM_COUNTERMODE_CENTER_DOWN,
-        kCenterUp     = LL_TIM_COUNTERMODE_CENTER_UP,
-        kCenterUpDown = LL_TIM_COUNTERMODE_CENTER_UP_DOWN
+        static const TimControllerCounterMode kUp;
+        static const TimControllerCounterMode kDown;
+        static const TimControllerCounterMode kCenterDown;
+        static const TimControllerCounterMode kCenterUp;
+        static const TimControllerCounterMode kCenterUpDown;
     };
 
-    enum class TimControllerDirection : uint32_t
+    inline constexpr TimControllerCounterMode TimControllerCounterMode::kUp = TimControllerCounterMode::from_ll<LL_TIM_COUNTERMODE_UP>();
+    inline constexpr TimControllerCounterMode TimControllerCounterMode::kDown = TimControllerCounterMode::from_ll<LL_TIM_COUNTERMODE_DOWN>();
+    inline constexpr TimControllerCounterMode TimControllerCounterMode::kCenterDown = TimControllerCounterMode::from_ll<LL_TIM_COUNTERMODE_CENTER_DOWN>();
+    inline constexpr TimControllerCounterMode TimControllerCounterMode::kCenterUp = TimControllerCounterMode::from_ll<LL_TIM_COUNTERMODE_CENTER_UP>();
+    inline constexpr TimControllerCounterMode TimControllerCounterMode::kCenterUpDown = TimControllerCounterMode::from_ll<LL_TIM_COUNTERMODE_CENTER_UP_DOWN>();
+
+
+    struct TimControllerDirection : public LLDriverEnumValue<TimControllerDirection>
     {
-        kUp   = LL_TIM_COUNTERDIRECTION_UP,
-        kDown = LL_TIM_COUNTERDIRECTION_DOWN
+        static const TimControllerDirection kUp;
+        static const TimControllerDirection kDown;
     };
 
-    enum class TimControllerClockDivision : uint32_t
+    inline constexpr TimControllerDirection TimControllerDirection::kUp = TimControllerDirection::from_ll<LL_TIM_COUNTERDIRECTION_UP>();
+    inline constexpr TimControllerDirection TimControllerDirection::kDown = TimControllerDirection::from_ll<LL_TIM_COUNTERDIRECTION_DOWN>();
+
+
+    struct TimControllerClockDivision : public LLDriverEnumValue<TimControllerClockDivision>
     {
-        kDiv1 = LL_TIM_CLOCKDIVISION_DIV1,
-        kDiv2 = LL_TIM_CLOCKDIVISION_DIV2,
-        kDiv4 = LL_TIM_CLOCKDIVISION_DIV4
+        static const TimControllerClockDivision kDiv1;
+        static const TimControllerClockDivision kDiv2;
+        static const TimControllerClockDivision kDiv4;
     };
 
-    enum class TimControllerUpdateSource : uint32_t
+    inline constexpr TimControllerClockDivision TimControllerClockDivision::kDiv1 = TimControllerClockDivision::from_ll<LL_TIM_CLOCKDIVISION_DIV1>();
+    inline constexpr TimControllerClockDivision TimControllerClockDivision::kDiv2 = TimControllerClockDivision::from_ll<LL_TIM_CLOCKDIVISION_DIV2>();
+    inline constexpr TimControllerClockDivision TimControllerClockDivision::kDiv4 = TimControllerClockDivision::from_ll<LL_TIM_CLOCKDIVISION_DIV4>();
+
+
+    struct TimControllerUpdateSource : public LLDriverEnumValue<TimControllerUpdateSource>
     {
-        kRegular = LL_TIM_UPDATESOURCE_REGULAR,
-        kCounter = LL_TIM_UPDATESOURCE_COUNTER
+        static const TimControllerUpdateSource kRegular;
+        static const TimControllerUpdateSource kCounter;
     };
 
-    enum class TimControllerDmaBurstBase : uint32_t
+    inline constexpr TimControllerUpdateSource TimControllerUpdateSource::kRegular = TimControllerUpdateSource::from_ll<LL_TIM_UPDATESOURCE_REGULAR>();
+    inline constexpr TimControllerUpdateSource TimControllerUpdateSource::kCounter = TimControllerUpdateSource::from_ll<LL_TIM_UPDATESOURCE_COUNTER>();
+
+
+    struct TimControllerDmaBurstBase : public LLDriverEnumValue<TimControllerDmaBurstBase>
     {
-        kControlRegister1     = LL_TIM_DMABURST_BASEADDR_CR1,
-        kControlRegister2     = LL_TIM_DMABURST_BASEADDR_CR2,
-        kSlaveModeControl     = LL_TIM_DMABURST_BASEADDR_SMCR,
-        kDmaInterruptEnable   = LL_TIM_DMABURST_BASEADDR_DIER,
-        kStatus               = LL_TIM_DMABURST_BASEADDR_SR,
-        kEventGeneration      = LL_TIM_DMABURST_BASEADDR_EGR,
-        kCaptureCompareMode1  = LL_TIM_DMABURST_BASEADDR_CCMR1,
-        kCaptureCompareMode2  = LL_TIM_DMABURST_BASEADDR_CCMR2,
-        kCaptureCompareEnable = LL_TIM_DMABURST_BASEADDR_CCER,
-        kCounter              = LL_TIM_DMABURST_BASEADDR_CNT,
-        kPrescaler            = LL_TIM_DMABURST_BASEADDR_PSC,
-        kAutoReload           = LL_TIM_DMABURST_BASEADDR_ARR,
-        kRepetitionCounter    = LL_TIM_DMABURST_BASEADDR_RCR,
-        kCaptureCompare1      = LL_TIM_DMABURST_BASEADDR_CCR1,
-        kCaptureCompare2      = LL_TIM_DMABURST_BASEADDR_CCR2,
-        kCaptureCompare3      = LL_TIM_DMABURST_BASEADDR_CCR3,
-        kCaptureCompare4      = LL_TIM_DMABURST_BASEADDR_CCR4,
-        kBreakDeadTime        = LL_TIM_DMABURST_BASEADDR_BDTR,
-        kOptionRegister       = LL_TIM_DMABURST_BASEADDR_OR,
-        kCaptureCompareMode3  = LL_TIM_DMABURST_BASEADDR_CCMR3,
-        kCaptureCompare5      = LL_TIM_DMABURST_BASEADDR_CCR5,
-        kCaptureCompare6      = LL_TIM_DMABURST_BASEADDR_CCR6,
-        kAlternateFunction1   = LL_TIM_DMABURST_BASEADDR_AF1,
-        kAlternateFunction2   = LL_TIM_DMABURST_BASEADDR_AF2,
-        kTimerInputSelection  = LL_TIM_DMABURST_BASEADDR_TISEL
+        static const TimControllerDmaBurstBase kControlRegister1;
+        static const TimControllerDmaBurstBase kControlRegister2;
+        static const TimControllerDmaBurstBase kSlaveModeControl;
+        static const TimControllerDmaBurstBase kDmaInterruptEnable;
+        static const TimControllerDmaBurstBase kStatus;
+        static const TimControllerDmaBurstBase kEventGeneration;
+        static const TimControllerDmaBurstBase kCaptureCompareMode1;
+        static const TimControllerDmaBurstBase kCaptureCompareMode2;
+        static const TimControllerDmaBurstBase kCaptureCompareEnable;
+        static const TimControllerDmaBurstBase kCounter;
+        static const TimControllerDmaBurstBase kPrescaler;
+        static const TimControllerDmaBurstBase kAutoReload;
+        static const TimControllerDmaBurstBase kRepetitionCounter;
+        static const TimControllerDmaBurstBase kCaptureCompare1;
+        static const TimControllerDmaBurstBase kCaptureCompare2;
+        static const TimControllerDmaBurstBase kCaptureCompare3;
+        static const TimControllerDmaBurstBase kCaptureCompare4;
+        static const TimControllerDmaBurstBase kBreakDeadTime;
+        static const TimControllerDmaBurstBase kOptionRegister;
+        static const TimControllerDmaBurstBase kCaptureCompareMode3;
+        static const TimControllerDmaBurstBase kCaptureCompare5;
+        static const TimControllerDmaBurstBase kCaptureCompare6;
+        static const TimControllerDmaBurstBase kAlternateFunction1;
+        static const TimControllerDmaBurstBase kAlternateFunction2;
+        static const TimControllerDmaBurstBase kTimerInputSelection;
     };
 
-    enum class TimControllerDmaBurstLength : uint32_t
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kControlRegister1 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CR1>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kControlRegister2 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CR2>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kSlaveModeControl = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_SMCR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kDmaInterruptEnable = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_DIER>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kStatus = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_SR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kEventGeneration = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_EGR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompareMode1 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCMR1>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompareMode2 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCMR2>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompareEnable = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCER>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCounter = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CNT>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kPrescaler = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_PSC>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kAutoReload = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_ARR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kRepetitionCounter = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_RCR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompare1 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCR1>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompare2 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCR2>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompare3 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCR3>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompare4 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCR4>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kBreakDeadTime = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_BDTR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kOptionRegister = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_OR>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompareMode3 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCMR3>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompare5 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCR5>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kCaptureCompare6 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_CCR6>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kAlternateFunction1 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_AF1>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kAlternateFunction2 = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_AF2>();
+    inline constexpr TimControllerDmaBurstBase TimControllerDmaBurstBase::kTimerInputSelection = TimControllerDmaBurstBase::from_ll<LL_TIM_DMABURST_BASEADDR_TISEL>();
+
+
+    struct TimControllerDmaBurstLength : public LLDriverEnumValue<TimControllerDmaBurstLength>
     {
-        k1Transfer   = LL_TIM_DMABURST_LENGTH_1TRANSFER,
-        k2Transfers  = LL_TIM_DMABURST_LENGTH_2TRANSFERS,
-        k3Transfers  = LL_TIM_DMABURST_LENGTH_3TRANSFERS,
-        k4Transfers  = LL_TIM_DMABURST_LENGTH_4TRANSFERS,
-        k18Transfers = LL_TIM_DMABURST_LENGTH_18TRANSFERS
+        static const TimControllerDmaBurstLength k1Transfer;
+        static const TimControllerDmaBurstLength k2Transfers;
+        static const TimControllerDmaBurstLength k3Transfers;
+        static const TimControllerDmaBurstLength k4Transfers;
+        static const TimControllerDmaBurstLength k18Transfers;
     };
 
-    enum class TimControllerOnePulseMode : uint32_t
+    inline constexpr TimControllerDmaBurstLength TimControllerDmaBurstLength::k1Transfer = TimControllerDmaBurstLength::from_ll<LL_TIM_DMABURST_LENGTH_1TRANSFER>();
+    inline constexpr TimControllerDmaBurstLength TimControllerDmaBurstLength::k2Transfers = TimControllerDmaBurstLength::from_ll<LL_TIM_DMABURST_LENGTH_2TRANSFERS>();
+    inline constexpr TimControllerDmaBurstLength TimControllerDmaBurstLength::k3Transfers = TimControllerDmaBurstLength::from_ll<LL_TIM_DMABURST_LENGTH_3TRANSFERS>();
+    inline constexpr TimControllerDmaBurstLength TimControllerDmaBurstLength::k4Transfers = TimControllerDmaBurstLength::from_ll<LL_TIM_DMABURST_LENGTH_4TRANSFERS>();
+    inline constexpr TimControllerDmaBurstLength TimControllerDmaBurstLength::k18Transfers = TimControllerDmaBurstLength::from_ll<LL_TIM_DMABURST_LENGTH_18TRANSFERS>();
+
+
+    struct TimControllerOnePulseMode : public LLDriverEnumValue<TimControllerOnePulseMode>
     {
-        kRepetitive = LL_TIM_ONEPULSEMODE_REPETITIVE,
-        kSingle     = LL_TIM_ONEPULSEMODE_SINGLE
+        static const TimControllerOnePulseMode kRepetitive;
+        static const TimControllerOnePulseMode kSingle;
     };
 
-    enum class TimControllerUpdateMode : uint32_t
+    inline constexpr TimControllerOnePulseMode TimControllerOnePulseMode::kRepetitive = TimControllerOnePulseMode::from_ll<LL_TIM_ONEPULSEMODE_REPETITIVE>();
+    inline constexpr TimControllerOnePulseMode TimControllerOnePulseMode::kSingle = TimControllerOnePulseMode::from_ll<LL_TIM_ONEPULSEMODE_SINGLE>();
+
+
+    struct TimControllerUpdateMode : public EnumValue<TimControllerUpdateMode, uint32_t>
     {
-        kImmediate = 0,
-        kPreload   = 1
+        static const TimControllerUpdateMode kImmediate;
+        static const TimControllerUpdateMode kPreload;
     };
+
+    inline constexpr TimControllerUpdateMode TimControllerUpdateMode::kImmediate = TimControllerUpdateMode::from_number<0>();
+    inline constexpr TimControllerUpdateMode TimControllerUpdateMode::kPreload = TimControllerUpdateMode::from_number<1>();
+
 
     // -------------------------------------------------------------------------
     // ENCODER
     // -------------------------------------------------------------------------
 
-    enum class TimControllerEncoderMode : uint32_t
+    struct TimControllerEncoderMode : public LLDriverEnumValue<TimControllerEncoderMode>
     {
-        kX2TimerInput1                  = LL_TIM_ENCODERMODE_X2_TI1,
-        kX2TimerInput2                  = LL_TIM_ENCODERMODE_X2_TI2,
-        kX4TimerInput12                 = LL_TIM_ENCODERMODE_X4_TI12,
-        kClockPlusDirectionX2           = LL_TIM_ENCODERMODE_CLOCKPLUSDIRECTION_X2,
-        kClockPlusDirectionX1           = LL_TIM_ENCODERMODE_CLOCKPLUSDIRECTION_X1,
-        kDirectionalClockX2             = LL_TIM_ENCODERMODE_DIRECTIONALCLOCK_X2,
-        kDirectionalClockX1TimerInput12 = LL_TIM_ENCODERMODE_DIRECTIONALCLOCK_X1_TI12,
-        kX1TimerInput1                  = LL_TIM_ENCODERMODE_X1_TI1,
-        kX1TimerInput2                  = LL_TIM_ENCODERMODE_X1_TI2
+        static const TimControllerEncoderMode kX2TimerInput1;
+        static const TimControllerEncoderMode kX2TimerInput2;
+        static const TimControllerEncoderMode kX4TimerInput12;
+        static const TimControllerEncoderMode kClockPlusDirectionX2;
+        static const TimControllerEncoderMode kClockPlusDirectionX1;
+        static const TimControllerEncoderMode kDirectionalClockX2;
+        static const TimControllerEncoderMode kDirectionalClockX1TimerInput12;
+        static const TimControllerEncoderMode kX1TimerInput1;
+        static const TimControllerEncoderMode kX1TimerInput2;
     };
+
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kX2TimerInput1 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_X2_TI1>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kX2TimerInput2 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_X2_TI2>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kX4TimerInput12 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_X4_TI12>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kClockPlusDirectionX2 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_CLOCKPLUSDIRECTION_X2>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kClockPlusDirectionX1 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_CLOCKPLUSDIRECTION_X1>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kDirectionalClockX2 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_DIRECTIONALCLOCK_X2>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kDirectionalClockX1TimerInput12 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_DIRECTIONALCLOCK_X1_TI12>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kX1TimerInput1 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_X1_TI1>();
+    inline constexpr TimControllerEncoderMode TimControllerEncoderMode::kX1TimerInput2 = TimControllerEncoderMode::from_ll<LL_TIM_ENCODERMODE_X1_TI2>();
+
 
     // -------------------------------------------------------------------------
     // INPUT CAPTURE
     // -------------------------------------------------------------------------
 
-    enum class TimChannelInputCapturePolarity : uint32_t
+    struct TimChannelInputCapturePolarity : public LLDriverEnumValue<TimChannelInputCapturePolarity>
     {
-        kRising    = LL_TIM_IC_POLARITY_RISING,
-        kFalling   = LL_TIM_IC_POLARITY_FALLING,
-        kBothEdges = LL_TIM_IC_POLARITY_BOTHEDGE
+        static const TimChannelInputCapturePolarity kRising;
+        static const TimChannelInputCapturePolarity kFalling;
+        static const TimChannelInputCapturePolarity kBothEdges;
     };
 
-    enum class TimChannelInputCaptureActiveInput : uint32_t
+    inline constexpr TimChannelInputCapturePolarity TimChannelInputCapturePolarity::kRising = TimChannelInputCapturePolarity::from_ll<LL_TIM_IC_POLARITY_RISING>();
+    inline constexpr TimChannelInputCapturePolarity TimChannelInputCapturePolarity::kFalling = TimChannelInputCapturePolarity::from_ll<LL_TIM_IC_POLARITY_FALLING>();
+    inline constexpr TimChannelInputCapturePolarity TimChannelInputCapturePolarity::kBothEdges = TimChannelInputCapturePolarity::from_ll<LL_TIM_IC_POLARITY_BOTHEDGE>();
+
+
+    struct TimChannelInputCaptureActiveInput : public LLDriverEnumValue<TimChannelInputCaptureActiveInput>
     {
-        kDirectTimerInput    = LL_TIM_ACTIVEINPUT_DIRECTTI,
-        kIndirectTimerInput  = LL_TIM_ACTIVEINPUT_INDIRECTTI,
-        kTimerReferenceClock = LL_TIM_ACTIVEINPUT_TRC
+        static const TimChannelInputCaptureActiveInput kDirectTimerInput;
+        static const TimChannelInputCaptureActiveInput kIndirectTimerInput;
+        static const TimChannelInputCaptureActiveInput kTimerReferenceClock;
     };
 
-    enum class TimChannelInputCapturePrescaler : uint32_t
+    inline constexpr TimChannelInputCaptureActiveInput TimChannelInputCaptureActiveInput::kDirectTimerInput = TimChannelInputCaptureActiveInput::from_ll<LL_TIM_ACTIVEINPUT_DIRECTTI>();
+    inline constexpr TimChannelInputCaptureActiveInput TimChannelInputCaptureActiveInput::kIndirectTimerInput = TimChannelInputCaptureActiveInput::from_ll<LL_TIM_ACTIVEINPUT_INDIRECTTI>();
+    inline constexpr TimChannelInputCaptureActiveInput TimChannelInputCaptureActiveInput::kTimerReferenceClock = TimChannelInputCaptureActiveInput::from_ll<LL_TIM_ACTIVEINPUT_TRC>();
+
+
+    struct TimChannelInputCapturePrescaler : public LLDriverEnumValue<TimChannelInputCapturePrescaler>
     {
-        kDiv1 = LL_TIM_ICPSC_DIV1,
-        kDiv2 = LL_TIM_ICPSC_DIV2,
-        kDiv4 = LL_TIM_ICPSC_DIV4,
-        kDiv8 = LL_TIM_ICPSC_DIV8
+        static const TimChannelInputCapturePrescaler kDiv1;
+        static const TimChannelInputCapturePrescaler kDiv2;
+        static const TimChannelInputCapturePrescaler kDiv4;
+        static const TimChannelInputCapturePrescaler kDiv8;
     };
 
-    enum class TimChannelInputCaptureFilter : uint32_t
+    inline constexpr TimChannelInputCapturePrescaler TimChannelInputCapturePrescaler::kDiv1 = TimChannelInputCapturePrescaler::from_ll<LL_TIM_ICPSC_DIV1>();
+    inline constexpr TimChannelInputCapturePrescaler TimChannelInputCapturePrescaler::kDiv2 = TimChannelInputCapturePrescaler::from_ll<LL_TIM_ICPSC_DIV2>();
+    inline constexpr TimChannelInputCapturePrescaler TimChannelInputCapturePrescaler::kDiv4 = TimChannelInputCapturePrescaler::from_ll<LL_TIM_ICPSC_DIV4>();
+    inline constexpr TimChannelInputCapturePrescaler TimChannelInputCapturePrescaler::kDiv8 = TimChannelInputCapturePrescaler::from_ll<LL_TIM_ICPSC_DIV8>();
+
+
+    struct TimChannelInputCaptureFilter : public LLDriverEnumValue<TimChannelInputCaptureFilter>
     {
-        kNone               = LL_TIM_IC_FILTER_FDIV1,
-        kFreqDiv1N2Samples  = LL_TIM_IC_FILTER_FDIV1_N2,
-        kFreqDiv1N4Samples  = LL_TIM_IC_FILTER_FDIV1_N4,
-        kFreqDiv1N8Samples  = LL_TIM_IC_FILTER_FDIV1_N8,
-        kFreqDiv2N6Samples  = LL_TIM_IC_FILTER_FDIV2_N6,
-        kFreqDiv2N8Samples  = LL_TIM_IC_FILTER_FDIV2_N8,
-        kFreqDiv4N6Samples  = LL_TIM_IC_FILTER_FDIV4_N6,
-        kFreqDiv4N8Samples  = LL_TIM_IC_FILTER_FDIV4_N8,
-        kFreqDiv8N6Samples  = LL_TIM_IC_FILTER_FDIV8_N6,
-        kFreqDiv8N8Samples  = LL_TIM_IC_FILTER_FDIV8_N8,
-        kFreqDiv16N5Samples = LL_TIM_IC_FILTER_FDIV16_N5,
-        kFreqDiv16N6Samples = LL_TIM_IC_FILTER_FDIV16_N6,
-        kFreqDiv16N8Samples = LL_TIM_IC_FILTER_FDIV16_N8,
-        kFreqDiv32N5Samples = LL_TIM_IC_FILTER_FDIV32_N5,
-        kFreqDiv32N6Samples = LL_TIM_IC_FILTER_FDIV32_N6,
-        kFreqDiv32N8Samples = LL_TIM_IC_FILTER_FDIV32_N8
+        static const TimChannelInputCaptureFilter kNone;
+        static const TimChannelInputCaptureFilter kFreqDiv1N2Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv1N4Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv1N8Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv2N6Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv2N8Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv4N6Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv4N8Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv8N6Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv8N8Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv16N5Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv16N6Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv16N8Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv32N5Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv32N6Samples;
+        static const TimChannelInputCaptureFilter kFreqDiv32N8Samples;
     };
+
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kNone = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV1>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv1N2Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV1_N2>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv1N4Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV1_N4>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv1N8Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV1_N8>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv2N6Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV2_N6>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv2N8Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV2_N8>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv4N6Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV4_N6>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv4N8Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV4_N8>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv8N6Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV8_N6>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv8N8Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV8_N8>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv16N5Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV16_N5>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv16N6Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV16_N6>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv16N8Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV16_N8>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv32N5Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV32_N5>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv32N6Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV32_N6>();
+    inline constexpr TimChannelInputCaptureFilter TimChannelInputCaptureFilter::kFreqDiv32N8Samples = TimChannelInputCaptureFilter::from_ll<LL_TIM_IC_FILTER_FDIV32_N8>();
+
 
     // -------------------------------------------------------------------------
     // OUTPUT COMPARE
     // -------------------------------------------------------------------------
 
-    enum class TimChannelOutputCaptureMode : uint32_t
+    struct TimChannelOutputCaptureMode : public LLDriverEnumValue<TimChannelOutputCaptureMode>
     {
-        kFrozen                     = LL_TIM_OCMODE_FROZEN,
-        kActive                     = LL_TIM_OCMODE_ACTIVE,
-        kInactive                   = LL_TIM_OCMODE_INACTIVE,
-        kToggle                     = LL_TIM_OCMODE_TOGGLE,
-        kForcedInactive             = LL_TIM_OCMODE_FORCED_INACTIVE,
-        kForcedActive               = LL_TIM_OCMODE_FORCED_ACTIVE,
-        kPwm1                       = LL_TIM_OCMODE_PWM1,
-        kPwm2                       = LL_TIM_OCMODE_PWM2,
-        kRetriggerableOnePulseMode1 = LL_TIM_OCMODE_RETRIG_OPM1,
-        kRetriggerableOnePulseMode2 = LL_TIM_OCMODE_RETRIG_OPM2,
-        kCombinedPwm1               = LL_TIM_OCMODE_COMBINED_PWM1,
-        kCombinedPwm2               = LL_TIM_OCMODE_COMBINED_PWM2,
-        kAsymmetricPwm1             = LL_TIM_OCMODE_ASYMMETRIC_PWM1,
-        kAsymmetricPwm2             = LL_TIM_OCMODE_ASYMMETRIC_PWM2,
-        kDirectionOutput            = LL_TIM_OCMODE_DIRECTION_OUTPUT
+        static const TimChannelOutputCaptureMode kFrozen;
+        static const TimChannelOutputCaptureMode kActive;
+        static const TimChannelOutputCaptureMode kInactive;
+        static const TimChannelOutputCaptureMode kToggle;
+        static const TimChannelOutputCaptureMode kForcedInactive;
+        static const TimChannelOutputCaptureMode kForcedActive;
+        static const TimChannelOutputCaptureMode kPwm1;
+        static const TimChannelOutputCaptureMode kPwm2;
+        static const TimChannelOutputCaptureMode kRetriggerableOnePulseMode1;
+        static const TimChannelOutputCaptureMode kRetriggerableOnePulseMode2;
+        static const TimChannelOutputCaptureMode kCombinedPwm1;
+        static const TimChannelOutputCaptureMode kCombinedPwm2;
+        static const TimChannelOutputCaptureMode kAsymmetricPwm1;
+        static const TimChannelOutputCaptureMode kAsymmetricPwm2;
+        static const TimChannelOutputCaptureMode kDirectionOutput;
     };
 
-    enum class TimChannelOutputCapturePolarity : uint32_t
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kFrozen = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_FROZEN>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kActive = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_ACTIVE>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kInactive = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_INACTIVE>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kToggle = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_TOGGLE>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kForcedInactive = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_FORCED_INACTIVE>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kForcedActive = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_FORCED_ACTIVE>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kPwm1 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_PWM1>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kPwm2 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_PWM2>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kRetriggerableOnePulseMode1 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_RETRIG_OPM1>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kRetriggerableOnePulseMode2 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_RETRIG_OPM2>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kCombinedPwm1 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_COMBINED_PWM1>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kCombinedPwm2 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_COMBINED_PWM2>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kAsymmetricPwm1 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_ASYMMETRIC_PWM1>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kAsymmetricPwm2 = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_ASYMMETRIC_PWM2>();
+    inline constexpr TimChannelOutputCaptureMode TimChannelOutputCaptureMode::kDirectionOutput = TimChannelOutputCaptureMode::from_ll<LL_TIM_OCMODE_DIRECTION_OUTPUT>();
+
+
+    struct TimChannelOutputCapturePolarity : public LLDriverEnumValue<TimChannelOutputCapturePolarity>
     {
-        kHigh = LL_TIM_OCPOLARITY_HIGH,
-        kLow  = LL_TIM_OCPOLARITY_LOW
+        static const TimChannelOutputCapturePolarity kHigh;
+        static const TimChannelOutputCapturePolarity kLow;
     };
 
-    enum class TimChannelOutputCaptureIdleState : uint32_t
+    inline constexpr TimChannelOutputCapturePolarity TimChannelOutputCapturePolarity::kHigh = TimChannelOutputCapturePolarity::from_ll<LL_TIM_OCPOLARITY_HIGH>();
+    inline constexpr TimChannelOutputCapturePolarity TimChannelOutputCapturePolarity::kLow = TimChannelOutputCapturePolarity::from_ll<LL_TIM_OCPOLARITY_LOW>();
+
+
+    struct TimChannelOutputCaptureIdleState : public LLDriverEnumValue<TimChannelOutputCaptureIdleState>
     {
-        kLow  = LL_TIM_OCIdLESTATE_LOW,
-        kHigh = LL_TIM_OCIdLESTATE_HIGH
+        static const TimChannelOutputCaptureIdleState kLow;
+        static const TimChannelOutputCaptureIdleState kHigh;
     };
+
+    inline constexpr TimChannelOutputCaptureIdleState TimChannelOutputCaptureIdleState::kLow = TimChannelOutputCaptureIdleState::from_ll<LL_TIM_OCIdLESTATE_LOW>();
+    inline constexpr TimChannelOutputCaptureIdleState TimChannelOutputCaptureIdleState::kHigh = TimChannelOutputCaptureIdleState::from_ll<LL_TIM_OCIdLESTATE_HIGH>();
+
 
     // -------------------------------------------------------------------------
     // MASTER / SLAVE / TRIGGER ENUMS
     // -------------------------------------------------------------------------
 
-    enum class TimControllerTriggerOutputSource : uint32_t
+    struct TimControllerTriggerOutputSource : public LLDriverEnumValue<TimControllerTriggerOutputSource>
     {
-        kReset               = LL_TIM_TRGO_RESET,
-        kEnable              = LL_TIM_TRGO_ENABLE,
-        kUpdate              = LL_TIM_TRGO_UPDATE,
-        kCompareChannel1Flag = LL_TIM_TRGO_CC1IF,
-        kOutputCompare1Ref   = LL_TIM_TRGO_OC1REF,
-        kOutputCompare2Ref   = LL_TIM_TRGO_OC2REF,
-        kOutputCompare3Ref   = LL_TIM_TRGO_OC3REF,
-        kOutputCompare4Ref   = LL_TIM_TRGO_OC4REF,
-        kEncoderClockSource  = LL_TIM_TRGO_ENCODERCLK
+        static const TimControllerTriggerOutputSource kReset;
+        static const TimControllerTriggerOutputSource kEnable;
+        static const TimControllerTriggerOutputSource kUpdate;
+        static const TimControllerTriggerOutputSource kCompareChannel1Flag;
+        static const TimControllerTriggerOutputSource kOutputCompare1Ref;
+        static const TimControllerTriggerOutputSource kOutputCompare2Ref;
+        static const TimControllerTriggerOutputSource kOutputCompare3Ref;
+        static const TimControllerTriggerOutputSource kOutputCompare4Ref;
+        static const TimControllerTriggerOutputSource kEncoderClockSource;
     };
 
-    enum class TimControllerTriggerOutput2Source : uint32_t
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kReset = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_RESET>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kEnable = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_ENABLE>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kUpdate = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_UPDATE>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kCompareChannel1Flag = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_CC1IF>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kOutputCompare1Ref = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_OC1REF>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kOutputCompare2Ref = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_OC2REF>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kOutputCompare3Ref = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_OC3REF>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kOutputCompare4Ref = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_OC4REF>();
+    inline constexpr TimControllerTriggerOutputSource TimControllerTriggerOutputSource::kEncoderClockSource = TimControllerTriggerOutputSource::from_ll<LL_TIM_TRGO_ENCODERCLK>();
+
+
+    struct TimControllerTriggerOutput2Source : public LLDriverEnumValue<TimControllerTriggerOutput2Source>
     {
-        kReset                                     = LL_TIM_TRGO2_RESET,
-        kEnable                                    = LL_TIM_TRGO2_ENABLE,
-        kUpdate                                    = LL_TIM_TRGO2_UPDATE,
-        kCompareChannel1Flag                       = LL_TIM_TRGO2_CC1F,
-        kOutputCompare1Ref                         = LL_TIM_TRGO2_OC1,
-        kOutputCompare2Ref                         = LL_TIM_TRGO2_OC2,
-        kOutputCompare3Ref                         = LL_TIM_TRGO2_OC3,
-        kOutputCompare4Ref                         = LL_TIM_TRGO2_OC4,
-        kOutputCompare5Ref                         = LL_TIM_TRGO2_OC5,
-        kOutputCompare6Ref                         = LL_TIM_TRGO2_OC6,
-        kOutputCompare4RisingFallingEdge           = LL_TIM_TRGO2_OC4_RISINGFALLING,
-        kOutputCompare6RisingFallingEdge           = LL_TIM_TRGO2_OC6_RISINGFALLING,
-        kOutputCompare4RisingOutputCompare6Rising  = LL_TIM_TRGO2_OC4_RISING_OC6_RISING,
-        kOutputCompare4RisingOutputCompare6Falling = LL_TIM_TRGO2_OC4_RISING_OC6_FALLING,
-        kOutputCompare5RisingOutputCompare6Rising  = LL_TIM_TRGO2_OC5_RISING_OC6_RISING,
-        kOutputCompare5RisingOutputCompare6Falling = LL_TIM_TRGO2_OC5_RISING_OC6_FALLING
+        static const TimControllerTriggerOutput2Source kReset;
+        static const TimControllerTriggerOutput2Source kEnable;
+        static const TimControllerTriggerOutput2Source kUpdate;
+        static const TimControllerTriggerOutput2Source kCompareChannel1Flag;
+        static const TimControllerTriggerOutput2Source kOutputCompare1Ref;
+        static const TimControllerTriggerOutput2Source kOutputCompare2Ref;
+        static const TimControllerTriggerOutput2Source kOutputCompare3Ref;
+        static const TimControllerTriggerOutput2Source kOutputCompare4Ref;
+        static const TimControllerTriggerOutput2Source kOutputCompare5Ref;
+        static const TimControllerTriggerOutput2Source kOutputCompare6Ref;
+        static const TimControllerTriggerOutput2Source kOutputCompare4RisingFallingEdge;
+        static const TimControllerTriggerOutput2Source kOutputCompare6RisingFallingEdge;
+        static const TimControllerTriggerOutput2Source kOutputCompare4RisingOutputCompare6Rising;
+        static const TimControllerTriggerOutput2Source kOutputCompare4RisingOutputCompare6Falling;
+        static const TimControllerTriggerOutput2Source kOutputCompare5RisingOutputCompare6Rising;
+        static const TimControllerTriggerOutput2Source kOutputCompare5RisingOutputCompare6Falling;
     };
 
-    enum class TimControllerSlaveMode : uint32_t
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kReset = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_RESET>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kEnable = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_ENABLE>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kUpdate = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_UPDATE>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kCompareChannel1Flag = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_CC1F>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare1Ref = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC1>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare2Ref = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC2>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare3Ref = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC3>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare4Ref = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC4>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare5Ref = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC5>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare6Ref = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC6>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare4RisingFallingEdge = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC4_RISINGFALLING>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare6RisingFallingEdge = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC6_RISINGFALLING>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare4RisingOutputCompare6Rising = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC4_RISING_OC6_RISING>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare4RisingOutputCompare6Falling = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC4_RISING_OC6_FALLING>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare5RisingOutputCompare6Rising = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC5_RISING_OC6_RISING>();
+    inline constexpr TimControllerTriggerOutput2Source TimControllerTriggerOutput2Source::kOutputCompare5RisingOutputCompare6Falling = TimControllerTriggerOutput2Source::from_ll<LL_TIM_TRGO2_OC5_RISING_OC6_FALLING>();
+
+
+    struct TimControllerSlaveMode : public LLDriverEnumValue<TimControllerSlaveMode>
     {
-        kDisabled     = LL_TIM_SLAVEMODE_DISABLED,
-        kReset        = LL_TIM_SLAVEMODE_RESET,
-        kGated        = LL_TIM_SLAVEMODE_GATED,
-        kTrigger      = LL_TIM_SLAVEMODE_TRIGGER,
-        kResetTrigger = LL_TIM_SLAVEMODE_COMBINED_RESETTRIGGER,
-        kGatedReset   = LL_TIM_SLAVEMODE_COMBINED_GATEDRESET
+        static const TimControllerSlaveMode kDisabled;
+        static const TimControllerSlaveMode kReset;
+        static const TimControllerSlaveMode kGated;
+        static const TimControllerSlaveMode kTrigger;
+        static const TimControllerSlaveMode kResetTrigger;
+        static const TimControllerSlaveMode kGatedReset;
     };
 
-    enum class TimControllerTriggerSource : uint32_t
+    inline constexpr TimControllerSlaveMode TimControllerSlaveMode::kDisabled = TimControllerSlaveMode::from_ll<LL_TIM_SLAVEMODE_DISABLED>();
+    inline constexpr TimControllerSlaveMode TimControllerSlaveMode::kReset = TimControllerSlaveMode::from_ll<LL_TIM_SLAVEMODE_RESET>();
+    inline constexpr TimControllerSlaveMode TimControllerSlaveMode::kGated = TimControllerSlaveMode::from_ll<LL_TIM_SLAVEMODE_GATED>();
+    inline constexpr TimControllerSlaveMode TimControllerSlaveMode::kTrigger = TimControllerSlaveMode::from_ll<LL_TIM_SLAVEMODE_TRIGGER>();
+    inline constexpr TimControllerSlaveMode TimControllerSlaveMode::kResetTrigger = TimControllerSlaveMode::from_ll<LL_TIM_SLAVEMODE_COMBINED_RESETTRIGGER>();
+    inline constexpr TimControllerSlaveMode TimControllerSlaveMode::kGatedReset = TimControllerSlaveMode::from_ll<LL_TIM_SLAVEMODE_COMBINED_GATEDRESET>();
+
+
+    struct TimControllerTriggerSource : public LLDriverEnumValue<TimControllerTriggerSource>
     {
-        kInternalTrigger0                = LL_TIM_TS_ITR0,
-        kInternalTrigger1                = LL_TIM_TS_ITR1,
-        kInternalTrigger2                = LL_TIM_TS_ITR2,
-        kInternalTrigger3                = LL_TIM_TS_ITR3,
-        kInternalTrigger4                = LL_TIM_TS_ITR4,
-        kInternalTrigger5                = LL_TIM_TS_ITR5,
-        kInternalTrigger6                = LL_TIM_TS_ITR6,
-        kInternalTrigger7                = LL_TIM_TS_ITR7,
-        kInternalTrigger8                = LL_TIM_TS_ITR8,
-        kInternalTrigger9                = LL_TIM_TS_ITR9,
-        kInternalTrigger10               = LL_TIM_TS_ITR10,
-        kInternalTrigger11               = LL_TIM_TS_ITR11,
-        kTimerInput1FallingEdgeDetection = LL_TIM_TS_TI1F_ED,
-        kTimerInput1FilteredInput1       = LL_TIM_TS_TI1FP1,
-        kTimerInput2FilteredInput2       = LL_TIM_TS_TI2FP2,
-        kExternalTriggerFiltered         = LL_TIM_TS_ETRF
+        static const TimControllerTriggerSource kInternalTrigger0;
+        static const TimControllerTriggerSource kInternalTrigger1;
+        static const TimControllerTriggerSource kInternalTrigger2;
+        static const TimControllerTriggerSource kInternalTrigger3;
+        static const TimControllerTriggerSource kInternalTrigger4;
+        static const TimControllerTriggerSource kInternalTrigger5;
+        static const TimControllerTriggerSource kInternalTrigger6;
+        static const TimControllerTriggerSource kInternalTrigger7;
+        static const TimControllerTriggerSource kInternalTrigger8;
+        static const TimControllerTriggerSource kInternalTrigger9;
+        static const TimControllerTriggerSource kInternalTrigger10;
+        static const TimControllerTriggerSource kInternalTrigger11;
+        static const TimControllerTriggerSource kTimerInput1FallingEdgeDetection;
+        static const TimControllerTriggerSource kTimerInput1FilteredInput1;
+        static const TimControllerTriggerSource kTimerInput2FilteredInput2;
+        static const TimControllerTriggerSource kExternalTriggerFiltered;
     };
+
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger0 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR0>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger1 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR1>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger2 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR2>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger3 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR3>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger4 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR4>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger5 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR5>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger6 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR6>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger7 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR7>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger8 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR8>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger9 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR9>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger10 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR10>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kInternalTrigger11 = TimControllerTriggerSource::from_ll<LL_TIM_TS_ITR11>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kTimerInput1FallingEdgeDetection = TimControllerTriggerSource::from_ll<LL_TIM_TS_TI1F_ED>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kTimerInput1FilteredInput1 = TimControllerTriggerSource::from_ll<LL_TIM_TS_TI1FP1>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kTimerInput2FilteredInput2 = TimControllerTriggerSource::from_ll<LL_TIM_TS_TI2FP2>();
+    inline constexpr TimControllerTriggerSource TimControllerTriggerSource::kExternalTriggerFiltered = TimControllerTriggerSource::from_ll<LL_TIM_TS_ETRF>();
+
 
     // -------------------------------------------------------------------------
     // BREAK ENUMS
     // -------------------------------------------------------------------------
 
-    enum class TimControllerBreakPolarity : uint32_t
+    struct TimControllerBreakPolarity : public LLDriverEnumValue<TimControllerBreakPolarity>
     {
-        kLow  = LL_TIM_BREAK_POLARITY_LOW,
-        kHigh = LL_TIM_BREAK_POLARITY_HIGH
+        static const TimControllerBreakPolarity kLow;
+        static const TimControllerBreakPolarity kHigh;
     };
 
-    enum class TimControllerBreakAFMode : uint32_t
+    inline constexpr TimControllerBreakPolarity TimControllerBreakPolarity::kLow = TimControllerBreakPolarity::from_ll<LL_TIM_BREAK_POLARITY_LOW>();
+    inline constexpr TimControllerBreakPolarity TimControllerBreakPolarity::kHigh = TimControllerBreakPolarity::from_ll<LL_TIM_BREAK_POLARITY_HIGH>();
+
+
+    struct TimControllerBreakAFMode : public LLDriverEnumValue<TimControllerBreakAFMode>
     {
-        kInput         = LL_TIM_BREAK_AFMODE_INPUT,
-        kBidirectional = LL_TIM_BREAK_AFMODE_BIdIRECTIONAL
+        static const TimControllerBreakAFMode kInput;
+        static const TimControllerBreakAFMode kBidirectional;
     };
 
-    enum class TimControllerOffState : uint32_t
+    inline constexpr TimControllerBreakAFMode TimControllerBreakAFMode::kInput = TimControllerBreakAFMode::from_ll<LL_TIM_BREAK_AFMODE_INPUT>();
+    inline constexpr TimControllerBreakAFMode TimControllerBreakAFMode::kBidirectional = TimControllerBreakAFMode::from_ll<LL_TIM_BREAK_AFMODE_BIdIRECTIONAL>();
+
+
+    struct TimControllerOffState : public LLDriverEnumValue<TimControllerOffState>
     {
-        kRun  = LL_TIM_OSSR_ENABLE,
-        kIdle = LL_TIM_OSSI_ENABLE
+        static const TimControllerOffState kRun;
+        static const TimControllerOffState kIdle;
     };
 
-    enum class TimControllerLockLevel : uint32_t
+    inline constexpr TimControllerOffState TimControllerOffState::kRun = TimControllerOffState::from_ll<LL_TIM_OSSR_ENABLE>();
+    inline constexpr TimControllerOffState TimControllerOffState::kIdle = TimControllerOffState::from_ll<LL_TIM_OSSI_ENABLE>();
+
+
+    struct TimControllerLockLevel : public LLDriverEnumValue<TimControllerLockLevel>
     {
-        kOff = LL_TIM_LOCKLEVEL_OFF,
-        k1   = LL_TIM_LOCKLEVEL_1,
-        k2   = LL_TIM_LOCKLEVEL_2,
-        k3   = LL_TIM_LOCKLEVEL_3
+        static const TimControllerLockLevel kOff;
+        static const TimControllerLockLevel k1;
+        static const TimControllerLockLevel k2;
+        static const TimControllerLockLevel k3;
     };
 
-    enum class TimControllerBreakInput : uint32_t
+    inline constexpr TimControllerLockLevel TimControllerLockLevel::kOff = TimControllerLockLevel::from_ll<LL_TIM_LOCKLEVEL_OFF>();
+    inline constexpr TimControllerLockLevel TimControllerLockLevel::k1 = TimControllerLockLevel::from_ll<LL_TIM_LOCKLEVEL_1>();
+    inline constexpr TimControllerLockLevel TimControllerLockLevel::k2 = TimControllerLockLevel::from_ll<LL_TIM_LOCKLEVEL_2>();
+    inline constexpr TimControllerLockLevel TimControllerLockLevel::k3 = TimControllerLockLevel::from_ll<LL_TIM_LOCKLEVEL_3>();
+
+
+    struct TimControllerBreakInput : public LLDriverEnumValue<TimControllerBreakInput>
     {
-        kBreakInput  = LL_TIM_BREAK_INPUT_BKIN,
-        kBreakInput2 = LL_TIM_BREAK_INPUT_BKIN2
+        static const TimControllerBreakInput kBreakInput;
+        static const TimControllerBreakInput kBreakInput2;
     };
 
-    enum class TimControllerBreakSource : uint32_t
+    inline constexpr TimControllerBreakInput TimControllerBreakInput::kBreakInput = TimControllerBreakInput::from_ll<LL_TIM_BREAK_INPUT_BKIN>();
+    inline constexpr TimControllerBreakInput TimControllerBreakInput::kBreakInput2 = TimControllerBreakInput::from_ll<LL_TIM_BREAK_INPUT_BKIN2>();
+
+
+    struct TimControllerBreakSource : public LLDriverEnumValue<TimControllerBreakSource>
     {
-        kBreakInput  = LL_TIM_BKIN_SOURCE_BKIN,
-        kComparator1 = LL_TIM_BKIN_SOURCE_BKCOMP1,
-        kComparator2 = LL_TIM_BKIN_SOURCE_BKCOMP2,
-        kComparator3 = LL_TIM_BKIN_SOURCE_BKCOMP3,
-        kComparator4 = LL_TIM_BKIN_SOURCE_BKCOMP4,
-        kComparator5 = LL_TIM_BKIN_SOURCE_BKCOMP5,
-        kComparator6 = LL_TIM_BKIN_SOURCE_BKCOMP6,
-        kComparator7 = LL_TIM_BKIN_SOURCE_BKCOMP7
+        static const TimControllerBreakSource kBreakInput;
+        static const TimControllerBreakSource kComparator1;
+        static const TimControllerBreakSource kComparator2;
+        static const TimControllerBreakSource kComparator3;
+        static const TimControllerBreakSource kComparator4;
+        static const TimControllerBreakSource kComparator5;
+        static const TimControllerBreakSource kComparator6;
+        static const TimControllerBreakSource kComparator7;
     };
+
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kBreakInput = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKIN>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator1 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP1>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator2 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP2>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator3 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP3>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator4 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP4>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator5 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP5>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator6 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP6>();
+    inline constexpr TimControllerBreakSource TimControllerBreakSource::kComparator7 = TimControllerBreakSource::from_ll<LL_TIM_BKIN_SOURCE_BKCOMP7>();
+
 
     // =========================================================================
     // TRAITS

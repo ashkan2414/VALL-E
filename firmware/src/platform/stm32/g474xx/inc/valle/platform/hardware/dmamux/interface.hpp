@@ -9,191 +9,367 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class DmaMuxRequestId : uint32_t
+    struct DmaMuxRequestId : public LLDriverEnumValue<DmaMuxRequestId>
     {
-        kMem2Mem     = LL_DMAMUX_REQ_MEM2MEM,
-        kGenerator0  = LL_DMAMUX_REQ_GENERATOR0,
-        kGenerator1  = LL_DMAMUX_REQ_GENERATOR1,
-        kGenerator2  = LL_DMAMUX_REQ_GENERATOR2,
-        kGenerator3  = LL_DMAMUX_REQ_GENERATOR3,
-        kAdc1        = LL_DMAMUX_REQ_ADC1,
-        kDAC1Ch1     = LL_DMAMUX_REQ_DAC1_CH1,
-        kDAC1Ch2     = LL_DMAMUX_REQ_DAC1_CH2,
-        kTim6Up      = LL_DMAMUX_REQ_TIM6_UP,
-        kTim7Up      = LL_DMAMUX_REQ_TIM7_UP,
-        kSpi1Rx      = LL_DMAMUX_REQ_SPI1_RX,
-        kSpi1Tx      = LL_DMAMUX_REQ_SPI1_TX,
-        kSpi2Rx      = LL_DMAMUX_REQ_SPI2_RX,
-        kSpi2Tx      = LL_DMAMUX_REQ_SPI2_TX,
-        kSpi3Rx      = LL_DMAMUX_REQ_SPI3_RX,
-        kSpi3Tx      = LL_DMAMUX_REQ_SPI3_TX,
-        kI2c1Rx      = LL_DMAMUX_REQ_I2C1_RX,
-        kI2c1Tx      = LL_DMAMUX_REQ_I2C1_TX,
-        kI2c2Rx      = LL_DMAMUX_REQ_I2C2_RX,
-        kI2c2Tx      = LL_DMAMUX_REQ_I2C2_TX,
-        kI2c3Rx      = LL_DMAMUX_REQ_I2C3_RX,
-        kI2c3Tx      = LL_DMAMUX_REQ_I2C3_TX,
-        kI2c4Rx      = LL_DMAMUX_REQ_I2C4_RX,
-        kI2c4Tx      = LL_DMAMUX_REQ_I2C4_TX,
-        kUSART1Rx    = LL_DMAMUX_REQ_USART1_RX,
-        kUSART1Tx    = LL_DMAMUX_REQ_USART1_TX,
-        kUSART2Rx    = LL_DMAMUX_REQ_USART2_RX,
-        kUSART2Tx    = LL_DMAMUX_REQ_USART2_TX,
-        kUSART3Rx    = LL_DMAMUX_REQ_USART3_RX,
-        kUSART3Tx    = LL_DMAMUX_REQ_USART3_TX,
-        kUart4Rx     = LL_DMAMUX_REQ_UART4_RX,
-        kUart4Tx     = LL_DMAMUX_REQ_UART4_TX,
-        kUart5Rx     = LL_DMAMUX_REQ_UART5_RX,
-        kUart5Tx     = LL_DMAMUX_REQ_UART5_TX,
-        kLPUart1Rx   = LL_DMAMUX_REQ_LPUART1_RX,
-        kLPUart1Tx   = LL_DMAMUX_REQ_LPUART1_TX,
-        kAdc2        = LL_DMAMUX_REQ_ADC2,
-        kAdc3        = LL_DMAMUX_REQ_ADC3,
-        kAdc4        = LL_DMAMUX_REQ_ADC4,
-        kAdc5        = LL_DMAMUX_REQ_ADC5,
-        kQSPI        = LL_DMAMUX_REQ_QSPI,
-        kDAC2Ch1     = LL_DMAMUX_REQ_DAC2_CH1,
-        kTim1Ch1     = LL_DMAMUX_REQ_TIM1_CH1,
-        kTim1Ch2     = LL_DMAMUX_REQ_TIM1_CH2,
-        kTim1Ch3     = LL_DMAMUX_REQ_TIM1_CH3,
-        kTim1Ch4     = LL_DMAMUX_REQ_TIM1_CH4,
-        kTim1Up      = LL_DMAMUX_REQ_TIM1_UP,
-        kTim1Trig    = LL_DMAMUX_REQ_TIM1_TRIG,
-        kTim1Com     = LL_DMAMUX_REQ_TIM1_COM,
-        kTim8Ch1     = LL_DMAMUX_REQ_TIM8_CH1,
-        kTim8Ch2     = LL_DMAMUX_REQ_TIM8_CH2,
-        kTim8Ch3     = LL_DMAMUX_REQ_TIM8_CH3,
-        kTim8Ch4     = LL_DMAMUX_REQ_TIM8_CH4,
-        kTim8Up      = LL_DMAMUX_REQ_TIM8_UP,
-        kTim8Trig    = LL_DMAMUX_REQ_TIM8_TRIG,
-        kTim8Com     = LL_DMAMUX_REQ_TIM8_COM,
-        kTim2Ch1     = LL_DMAMUX_REQ_TIM2_CH1,
-        kTim2Ch2     = LL_DMAMUX_REQ_TIM2_CH2,
-        kTim2Ch3     = LL_DMAMUX_REQ_TIM2_CH3,
-        kTim2Ch4     = LL_DMAMUX_REQ_TIM2_CH4,
-        kTim2Up      = LL_DMAMUX_REQ_TIM2_UP,
-        kTim3Ch1     = LL_DMAMUX_REQ_TIM3_CH1,
-        kTim3Ch2     = LL_DMAMUX_REQ_TIM3_CH2,
-        kTim3Ch3     = LL_DMAMUX_REQ_TIM3_CH3,
-        kTim3Ch4     = LL_DMAMUX_REQ_TIM3_CH4,
-        kTim3Up      = LL_DMAMUX_REQ_TIM3_UP,
-        kTim3Trig    = LL_DMAMUX_REQ_TIM3_TRIG,
-        kTim4Ch1     = LL_DMAMUX_REQ_TIM4_CH1,
-        kTim4Ch2     = LL_DMAMUX_REQ_TIM4_CH2,
-        kTim4Ch3     = LL_DMAMUX_REQ_TIM4_CH3,
-        kTim4Ch4     = LL_DMAMUX_REQ_TIM4_CH4,
-        kTim4Up      = LL_DMAMUX_REQ_TIM4_UP,
-        kTim5Ch1     = LL_DMAMUX_REQ_TIM5_CH1,
-        kTim5Ch2     = LL_DMAMUX_REQ_TIM5_CH2,
-        kTim5Ch3     = LL_DMAMUX_REQ_TIM5_CH3,
-        kTim5Ch4     = LL_DMAMUX_REQ_TIM5_CH4,
-        kTim5Up      = LL_DMAMUX_REQ_TIM5_UP,
-        kTim5Trig    = LL_DMAMUX_REQ_TIM5_TRIG,
-        kTim15Ch1    = LL_DMAMUX_REQ_TIM15_CH1,
-        kTim15Up     = LL_DMAMUX_REQ_TIM15_UP,
-        kTim15Trig   = LL_DMAMUX_REQ_TIM15_TRIG,
-        kTim15Com    = LL_DMAMUX_REQ_TIM15_COM,
-        kTim16Ch1    = LL_DMAMUX_REQ_TIM16_CH1,
-        kTim16Up     = LL_DMAMUX_REQ_TIM16_UP,
-        kTim17Ch1    = LL_DMAMUX_REQ_TIM17_CH1,
-        kTim17Up     = LL_DMAMUX_REQ_TIM17_UP,
-        kTim20Ch1    = LL_DMAMUX_REQ_TIM20_CH1,
-        kTim20Ch2    = LL_DMAMUX_REQ_TIM20_CH2,
-        kTim20Ch3    = LL_DMAMUX_REQ_TIM20_CH3,
-        kTim20Ch4    = LL_DMAMUX_REQ_TIM20_CH4,
-        kTim20Up     = LL_DMAMUX_REQ_TIM20_UP,
-        kAESIn       = LL_DMAMUX_REQ_AES_IN,
-        kAESOut      = LL_DMAMUX_REQ_AES_OUT,
-        kTim20Trig   = LL_DMAMUX_REQ_TIM20_TRIG,
-        kTim20Com    = LL_DMAMUX_REQ_TIM20_COM,
-        kHrtim1M     = LL_DMAMUX_REQ_HRTIM1_M,
-        kHrtim1A     = LL_DMAMUX_REQ_HRTIM1_A,
-        kHrtim1B     = LL_DMAMUX_REQ_HRTIM1_B,
-        kHrtim1C     = LL_DMAMUX_REQ_HRTIM1_C,
-        kHrtim1D     = LL_DMAMUX_REQ_HRTIM1_D,
-        kHrtim1E     = LL_DMAMUX_REQ_HRTIM1_E,
-        kHrtim1F     = LL_DMAMUX_REQ_HRTIM1_F,
-        kDAC3Ch1     = LL_DMAMUX_REQ_DAC3_CH1,
-        kDAC3Ch2     = LL_DMAMUX_REQ_DAC3_CH2,
-        kDAC4Ch1     = LL_DMAMUX_REQ_DAC4_CH1,
-        kDAC4Ch2     = LL_DMAMUX_REQ_DAC4_CH2,
-        kSpi4Rx      = LL_DMAMUX_REQ_SPI4_RX,
-        kSpi4Tx      = LL_DMAMUX_REQ_SPI4_TX,
-        kSAI1A       = LL_DMAMUX_REQ_SAI1_A,
-        kSAI1B       = LL_DMAMUX_REQ_SAI1_B,
-        kFMACRead    = LL_DMAMUX_REQ_FMAC_READ,
-        kFMACWrite   = LL_DMAMUX_REQ_FMAC_WRITE,
-        kCORDICRead  = LL_DMAMUX_REQ_CORDIC_READ,
-        kCORDICWrite = LL_DMAMUX_REQ_CORDIC_WRITE,
-        kUCPD1Rx     = LL_DMAMUX_REQ_UCPD1_RX,
-        kUCPD1Tx     = LL_DMAMUX_REQ_UCPD1_TX,
+        static const DmaMuxRequestId kMem2Mem;
+        static const DmaMuxRequestId kGenerator0;
+        static const DmaMuxRequestId kGenerator1;
+        static const DmaMuxRequestId kGenerator2;
+        static const DmaMuxRequestId kGenerator3;
+        static const DmaMuxRequestId kAdc1;
+        static const DmaMuxRequestId kDAC1Ch1;
+        static const DmaMuxRequestId kDAC1Ch2;
+        static const DmaMuxRequestId kTim6Up;
+        static const DmaMuxRequestId kTim7Up;
+        static const DmaMuxRequestId kSpi1Rx;
+        static const DmaMuxRequestId kSpi1Tx;
+        static const DmaMuxRequestId kSpi2Rx;
+        static const DmaMuxRequestId kSpi2Tx;
+        static const DmaMuxRequestId kSpi3Rx;
+        static const DmaMuxRequestId kSpi3Tx;
+        static const DmaMuxRequestId kI2c1Rx;
+        static const DmaMuxRequestId kI2c1Tx;
+        static const DmaMuxRequestId kI2c2Rx;
+        static const DmaMuxRequestId kI2c2Tx;
+        static const DmaMuxRequestId kI2c3Rx;
+        static const DmaMuxRequestId kI2c3Tx;
+        static const DmaMuxRequestId kI2c4Rx;
+        static const DmaMuxRequestId kI2c4Tx;
+        static const DmaMuxRequestId kUSART1Rx;
+        static const DmaMuxRequestId kUSART1Tx;
+        static const DmaMuxRequestId kUSART2Rx;
+        static const DmaMuxRequestId kUSART2Tx;
+        static const DmaMuxRequestId kUSART3Rx;
+        static const DmaMuxRequestId kUSART3Tx;
+        static const DmaMuxRequestId kUart4Rx;
+        static const DmaMuxRequestId kUart4Tx;
+        static const DmaMuxRequestId kUart5Rx;
+        static const DmaMuxRequestId kUart5Tx;
+        static const DmaMuxRequestId kLPUart1Rx;
+        static const DmaMuxRequestId kLPUart1Tx;
+        static const DmaMuxRequestId kAdc2;
+        static const DmaMuxRequestId kAdc3;
+        static const DmaMuxRequestId kAdc4;
+        static const DmaMuxRequestId kAdc5;
+        static const DmaMuxRequestId kQSPI;
+        static const DmaMuxRequestId kDAC2Ch1;
+        static const DmaMuxRequestId kTim1Ch1;
+        static const DmaMuxRequestId kTim1Ch2;
+        static const DmaMuxRequestId kTim1Ch3;
+        static const DmaMuxRequestId kTim1Ch4;
+        static const DmaMuxRequestId kTim1Up;
+        static const DmaMuxRequestId kTim1Trig;
+        static const DmaMuxRequestId kTim1Com;
+        static const DmaMuxRequestId kTim8Ch1;
+        static const DmaMuxRequestId kTim8Ch2;
+        static const DmaMuxRequestId kTim8Ch3;
+        static const DmaMuxRequestId kTim8Ch4;
+        static const DmaMuxRequestId kTim8Up;
+        static const DmaMuxRequestId kTim8Trig;
+        static const DmaMuxRequestId kTim8Com;
+        static const DmaMuxRequestId kTim2Ch1;
+        static const DmaMuxRequestId kTim2Ch2;
+        static const DmaMuxRequestId kTim2Ch3;
+        static const DmaMuxRequestId kTim2Ch4;
+        static const DmaMuxRequestId kTim2Up;
+        static const DmaMuxRequestId kTim3Ch1;
+        static const DmaMuxRequestId kTim3Ch2;
+        static const DmaMuxRequestId kTim3Ch3;
+        static const DmaMuxRequestId kTim3Ch4;
+        static const DmaMuxRequestId kTim3Up;
+        static const DmaMuxRequestId kTim3Trig;
+        static const DmaMuxRequestId kTim4Ch1;
+        static const DmaMuxRequestId kTim4Ch2;
+        static const DmaMuxRequestId kTim4Ch3;
+        static const DmaMuxRequestId kTim4Ch4;
+        static const DmaMuxRequestId kTim4Up;
+        static const DmaMuxRequestId kTim5Ch1;
+        static const DmaMuxRequestId kTim5Ch2;
+        static const DmaMuxRequestId kTim5Ch3;
+        static const DmaMuxRequestId kTim5Ch4;
+        static const DmaMuxRequestId kTim5Up;
+        static const DmaMuxRequestId kTim5Trig;
+        static const DmaMuxRequestId kTim15Ch1;
+        static const DmaMuxRequestId kTim15Up;
+        static const DmaMuxRequestId kTim15Trig;
+        static const DmaMuxRequestId kTim15Com;
+        static const DmaMuxRequestId kTim16Ch1;
+        static const DmaMuxRequestId kTim16Up;
+        static const DmaMuxRequestId kTim17Ch1;
+        static const DmaMuxRequestId kTim17Up;
+        static const DmaMuxRequestId kTim20Ch1;
+        static const DmaMuxRequestId kTim20Ch2;
+        static const DmaMuxRequestId kTim20Ch3;
+        static const DmaMuxRequestId kTim20Ch4;
+        static const DmaMuxRequestId kTim20Up;
+        static const DmaMuxRequestId kAESIn;
+        static const DmaMuxRequestId kAESOut;
+        static const DmaMuxRequestId kTim20Trig;
+        static const DmaMuxRequestId kTim20Com;
+        static const DmaMuxRequestId kHrtim1M;
+        static const DmaMuxRequestId kHrtim1A;
+        static const DmaMuxRequestId kHrtim1B;
+        static const DmaMuxRequestId kHrtim1C;
+        static const DmaMuxRequestId kHrtim1D;
+        static const DmaMuxRequestId kHrtim1E;
+        static const DmaMuxRequestId kHrtim1F;
+        static const DmaMuxRequestId kDAC3Ch1;
+        static const DmaMuxRequestId kDAC3Ch2;
+        static const DmaMuxRequestId kDAC4Ch1;
+        static const DmaMuxRequestId kDAC4Ch2;
+        static const DmaMuxRequestId kSpi4Rx;
+        static const DmaMuxRequestId kSpi4Tx;
+        static const DmaMuxRequestId kSAI1A;
+        static const DmaMuxRequestId kSAI1B;
+        static const DmaMuxRequestId kFMACRead;
+        static const DmaMuxRequestId kFMACWrite;
+        static const DmaMuxRequestId kCORDICRead;
+        static const DmaMuxRequestId kCORDICWrite;
+        static const DmaMuxRequestId kUCPD1Rx;
+        static const DmaMuxRequestId kUCPD1Tx;
     };
 
-    enum class DmaMuxSyncPolarity : uint32_t
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kMem2Mem = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_MEM2MEM>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kGenerator0 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_GENERATOR0>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kGenerator1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_GENERATOR1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kGenerator2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_GENERATOR2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kGenerator3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_GENERATOR3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAdc1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_ADC1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC1Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC1_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC1Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC1_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim6Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM6_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim7Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM7_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi1Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI1_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi1Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI1_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi2Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI2_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi2Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI2_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi3Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI3_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi3Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI3_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c1Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C1_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c1Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C1_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c2Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C2_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c2Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C2_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c3Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C3_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c3Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C3_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c4Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C4_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kI2c4Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_I2C4_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUSART1Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_USART1_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUSART1Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_USART1_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUSART2Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_USART2_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUSART2Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_USART2_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUSART3Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_USART3_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUSART3Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_USART3_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUart4Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_UART4_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUart4Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_UART4_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUart5Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_UART5_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUart5Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_UART5_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kLPUart1Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_LPUART1_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kLPUart1Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_LPUART1_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAdc2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_ADC2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAdc3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_ADC3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAdc4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_ADC4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAdc5 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_ADC5>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kQSPI = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_QSPI>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC2Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC2_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Trig = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_TRIG>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim1Com = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM1_COM>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Trig = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_TRIG>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim8Com = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM8_COM>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim2Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM2_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim2Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM2_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim2Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM2_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim2Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM2_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim2Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM2_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim3Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM3_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim3Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM3_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim3Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM3_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim3Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM3_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim3Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM3_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim3Trig = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM3_TRIG>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim4Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM4_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim4Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM4_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim4Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM4_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim4Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM4_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim4Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM4_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim5Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM5_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim5Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM5_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim5Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM5_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim5Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM5_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim5Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM5_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim5Trig = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM5_TRIG>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim15Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM15_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim15Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM15_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim15Trig = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM15_TRIG>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim15Com = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM15_COM>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim16Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM16_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim16Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM16_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim17Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM17_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim17Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM17_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Ch3 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_CH3>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Ch4 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_CH4>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Up = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_UP>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAESIn = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_AES_IN>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kAESOut = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_AES_OUT>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Trig = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_TRIG>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kTim20Com = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_TIM20_COM>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1M = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_M>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1A = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_A>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1B = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_B>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1C = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_C>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1D = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_D>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1E = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_E>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kHrtim1F = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_HRTIM1_F>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC3Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC3_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC3Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC3_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC4Ch1 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC4_CH1>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kDAC4Ch2 = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_DAC4_CH2>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi4Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI4_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSpi4Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SPI4_TX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSAI1A = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SAI1_A>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kSAI1B = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_SAI1_B>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kFMACRead = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_FMAC_READ>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kFMACWrite = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_FMAC_WRITE>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kCORDICRead = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_CORDIC_READ>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kCORDICWrite = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_CORDIC_WRITE>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUCPD1Rx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_UCPD1_RX>();
+    inline constexpr DmaMuxRequestId DmaMuxRequestId::kUCPD1Tx = DmaMuxRequestId::from_ll<LL_DMAMUX_REQ_UCPD1_TX>();
+
+
+    struct DmaMuxSyncPolarity : public LLDriverEnumValue<DmaMuxSyncPolarity>
     {
-        kNoEvent = LL_DMAMUX_SYNC_NO_EVENT,
-        kRising  = LL_DMAMUX_SYNC_POL_RISING,
-        kFalling = LL_DMAMUX_SYNC_POL_FALLING,
-        kBoth    = LL_DMAMUX_SYNC_POL_RISING_FALLING,
+        static const DmaMuxSyncPolarity kNoEvent;
+        static const DmaMuxSyncPolarity kRising;
+        static const DmaMuxSyncPolarity kFalling;
+        static const DmaMuxSyncPolarity kBoth;
     };
 
-    enum class DmaMuxSyncId : uint32_t
+    inline constexpr DmaMuxSyncPolarity DmaMuxSyncPolarity::kNoEvent = DmaMuxSyncPolarity::from_ll<LL_DMAMUX_SYNC_NO_EVENT>();
+    inline constexpr DmaMuxSyncPolarity DmaMuxSyncPolarity::kRising = DmaMuxSyncPolarity::from_ll<LL_DMAMUX_SYNC_POL_RISING>();
+    inline constexpr DmaMuxSyncPolarity DmaMuxSyncPolarity::kFalling = DmaMuxSyncPolarity::from_ll<LL_DMAMUX_SYNC_POL_FALLING>();
+    inline constexpr DmaMuxSyncPolarity DmaMuxSyncPolarity::kBoth = DmaMuxSyncPolarity::from_ll<LL_DMAMUX_SYNC_POL_RISING_FALLING>();
+
+
+    struct DmaMuxSyncId : public LLDriverEnumValue<DmaMuxSyncId>
     {
-        kExtiLine0  = LL_DMAMUX_SYNC_EXTI_LINE0,
-        kExtiLine1  = LL_DMAMUX_SYNC_EXTI_LINE1,
-        kExtiLine2  = LL_DMAMUX_SYNC_EXTI_LINE2,
-        kExtiLine3  = LL_DMAMUX_SYNC_EXTI_LINE3,
-        kExtiLine4  = LL_DMAMUX_SYNC_EXTI_LINE4,
-        kExtiLine5  = LL_DMAMUX_SYNC_EXTI_LINE5,
-        kExtiLine6  = LL_DMAMUX_SYNC_EXTI_LINE6,
-        kExtiLine7  = LL_DMAMUX_SYNC_EXTI_LINE7,
-        kExtiLine8  = LL_DMAMUX_SYNC_EXTI_LINE8,
-        kExtiLine9  = LL_DMAMUX_SYNC_EXTI_LINE9,
-        kExtiLine10 = LL_DMAMUX_SYNC_EXTI_LINE10,
-        kExtiLine11 = LL_DMAMUX_SYNC_EXTI_LINE11,
-        kExtiLine12 = LL_DMAMUX_SYNC_EXTI_LINE12,
-        kExtiLine13 = LL_DMAMUX_SYNC_EXTI_LINE13,
-        kExtiLine14 = LL_DMAMUX_SYNC_EXTI_LINE14,
-        kExtiLine15 = LL_DMAMUX_SYNC_EXTI_LINE15,
-        kDmaMuxCh0  = LL_DMAMUX_SYNC_DMAMUX_CH0,
-        kDmaMuxCh1  = LL_DMAMUX_SYNC_DMAMUX_CH1,
-        kDmaMuxCh2  = LL_DMAMUX_SYNC_DMAMUX_CH2,
-        kDmaMuxCh3  = LL_DMAMUX_SYNC_DMAMUX_CH3,
-        kLptim1Out  = LL_DMAMUX_SYNC_LPTIM1_OUT,
+        static const DmaMuxSyncId kExtiLine0;
+        static const DmaMuxSyncId kExtiLine1;
+        static const DmaMuxSyncId kExtiLine2;
+        static const DmaMuxSyncId kExtiLine3;
+        static const DmaMuxSyncId kExtiLine4;
+        static const DmaMuxSyncId kExtiLine5;
+        static const DmaMuxSyncId kExtiLine6;
+        static const DmaMuxSyncId kExtiLine7;
+        static const DmaMuxSyncId kExtiLine8;
+        static const DmaMuxSyncId kExtiLine9;
+        static const DmaMuxSyncId kExtiLine10;
+        static const DmaMuxSyncId kExtiLine11;
+        static const DmaMuxSyncId kExtiLine12;
+        static const DmaMuxSyncId kExtiLine13;
+        static const DmaMuxSyncId kExtiLine14;
+        static const DmaMuxSyncId kExtiLine15;
+        static const DmaMuxSyncId kDmaMuxCh0;
+        static const DmaMuxSyncId kDmaMuxCh1;
+        static const DmaMuxSyncId kDmaMuxCh2;
+        static const DmaMuxSyncId kDmaMuxCh3;
+        static const DmaMuxSyncId kLptim1Out;
     };
 
-    enum class DmaMuxRequestGenPolarity : uint32_t
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine0 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE0>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine1 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE1>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine2 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE2>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine3 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE3>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine4 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE4>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine5 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE5>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine6 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE6>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine7 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE7>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine8 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE8>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine9 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE9>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine10 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE10>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine11 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE11>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine12 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE12>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine13 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE13>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine14 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE14>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kExtiLine15 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_EXTI_LINE15>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kDmaMuxCh0 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_DMAMUX_CH0>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kDmaMuxCh1 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_DMAMUX_CH1>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kDmaMuxCh2 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_DMAMUX_CH2>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kDmaMuxCh3 = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_DMAMUX_CH3>();
+    inline constexpr DmaMuxSyncId DmaMuxSyncId::kLptim1Out = DmaMuxSyncId::from_ll<LL_DMAMUX_SYNC_LPTIM1_OUT>();
+
+
+    struct DmaMuxRequestGenPolarity : public LLDriverEnumValue<DmaMuxRequestGenPolarity>
     {
-        kNoEvent = LL_DMAMUX_REQ_GEN_NO_EVENT,
-        kRising  = LL_DMAMUX_REQ_GEN_POL_RISING,
-        kFalling = LL_DMAMUX_REQ_GEN_POL_FALLING,
-        kBoth    = LL_DMAMUX_REQ_GEN_POL_RISING_FALLING
+        static const DmaMuxRequestGenPolarity kNoEvent;
+        static const DmaMuxRequestGenPolarity kRising;
+        static const DmaMuxRequestGenPolarity kFalling;
+        static const DmaMuxRequestGenPolarity kBoth;
     };
 
-    enum class DmaRequestGenSignalId : uint32_t
+    inline constexpr DmaMuxRequestGenPolarity DmaMuxRequestGenPolarity::kNoEvent = DmaMuxRequestGenPolarity::from_ll<LL_DMAMUX_REQ_GEN_NO_EVENT>();
+    inline constexpr DmaMuxRequestGenPolarity DmaMuxRequestGenPolarity::kRising = DmaMuxRequestGenPolarity::from_ll<LL_DMAMUX_REQ_GEN_POL_RISING>();
+    inline constexpr DmaMuxRequestGenPolarity DmaMuxRequestGenPolarity::kFalling = DmaMuxRequestGenPolarity::from_ll<LL_DMAMUX_REQ_GEN_POL_FALLING>();
+    inline constexpr DmaMuxRequestGenPolarity DmaMuxRequestGenPolarity::kBoth = DmaMuxRequestGenPolarity::from_ll<LL_DMAMUX_REQ_GEN_POL_RISING_FALLING>();
+
+
+    struct DmaRequestGenSignalId : public LLDriverEnumValue<DmaRequestGenSignalId>
     {
-        kExtiLine0  = LL_DMAMUX_REQ_GEN_EXTI_LINE0,
-        kExtiLine1  = LL_DMAMUX_REQ_GEN_EXTI_LINE1,
-        kExtiLine2  = LL_DMAMUX_REQ_GEN_EXTI_LINE2,
-        kExtiLine3  = LL_DMAMUX_REQ_GEN_EXTI_LINE3,
-        kExtiLine4  = LL_DMAMUX_REQ_GEN_EXTI_LINE4,
-        kExtiLine5  = LL_DMAMUX_REQ_GEN_EXTI_LINE5,
-        kExtiLine6  = LL_DMAMUX_REQ_GEN_EXTI_LINE6,
-        kExtiLine7  = LL_DMAMUX_REQ_GEN_EXTI_LINE7,
-        kExtiLine8  = LL_DMAMUX_REQ_GEN_EXTI_LINE8,
-        kExtiLine9  = LL_DMAMUX_REQ_GEN_EXTI_LINE9,
-        kExtiLine10 = LL_DMAMUX_REQ_GEN_EXTI_LINE10,
-        kExtiLine11 = LL_DMAMUX_REQ_GEN_EXTI_LINE11,
-        kExtiLine12 = LL_DMAMUX_REQ_GEN_EXTI_LINE12,
-        kExtiLine13 = LL_DMAMUX_REQ_GEN_EXTI_LINE13,
-        kExtiLine14 = LL_DMAMUX_REQ_GEN_EXTI_LINE14,
-        kExtiLine15 = LL_DMAMUX_REQ_GEN_EXTI_LINE15,
-        kDmaMuxCh0  = LL_DMAMUX_REQ_GEN_DMAMUX_CH0,
-        kDmaMuxCh1  = LL_DMAMUX_REQ_GEN_DMAMUX_CH1,
-        kDmaMuxCh2  = LL_DMAMUX_REQ_GEN_DMAMUX_CH2,
-        kDmaMuxCh3  = LL_DMAMUX_REQ_GEN_DMAMUX_CH3,
-        kLptim1Out  = LL_DMAMUX_REQ_GEN_LPTIM1_OUT,
+        static const DmaRequestGenSignalId kExtiLine0;
+        static const DmaRequestGenSignalId kExtiLine1;
+        static const DmaRequestGenSignalId kExtiLine2;
+        static const DmaRequestGenSignalId kExtiLine3;
+        static const DmaRequestGenSignalId kExtiLine4;
+        static const DmaRequestGenSignalId kExtiLine5;
+        static const DmaRequestGenSignalId kExtiLine6;
+        static const DmaRequestGenSignalId kExtiLine7;
+        static const DmaRequestGenSignalId kExtiLine8;
+        static const DmaRequestGenSignalId kExtiLine9;
+        static const DmaRequestGenSignalId kExtiLine10;
+        static const DmaRequestGenSignalId kExtiLine11;
+        static const DmaRequestGenSignalId kExtiLine12;
+        static const DmaRequestGenSignalId kExtiLine13;
+        static const DmaRequestGenSignalId kExtiLine14;
+        static const DmaRequestGenSignalId kExtiLine15;
+        static const DmaRequestGenSignalId kDmaMuxCh0;
+        static const DmaRequestGenSignalId kDmaMuxCh1;
+        static const DmaRequestGenSignalId kDmaMuxCh2;
+        static const DmaRequestGenSignalId kDmaMuxCh3;
+        static const DmaRequestGenSignalId kLptim1Out;
     };
+
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine0 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE0>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine1 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE1>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine2 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE2>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine3 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE3>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine4 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE4>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine5 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE5>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine6 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE6>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine7 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE7>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine8 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE8>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine9 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE9>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine10 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE10>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine11 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE11>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine12 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE12>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine13 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE13>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine14 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE14>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kExtiLine15 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_EXTI_LINE15>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kDmaMuxCh0 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_DMAMUX_CH0>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kDmaMuxCh1 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_DMAMUX_CH1>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kDmaMuxCh2 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_DMAMUX_CH2>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kDmaMuxCh3 = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_DMAMUX_CH3>();
+    inline constexpr DmaRequestGenSignalId DmaRequestGenSignalId::kLptim1Out = DmaRequestGenSignalId::from_ll<LL_DMAMUX_REQ_GEN_LPTIM1_OUT>();
+
 
     // =============================================================================
     // ROOT TRAITS

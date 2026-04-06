@@ -3,6 +3,46 @@
 namespace valle::platform
 {
 
+    template <typename TInterface, auto tkIntSource, bool tkShouldClear = true>
+    struct InterruptSourceInterfaceBase
+    {
+    private:
+        static constexpr TInterface skInterface{};
+
+    public:
+        static constexpr bool skShouldClear = tkShouldClear;
+
+        static void enable()
+        {
+            skInterface.enable_interrupt(tkIntSource);
+        }
+
+        static void disable()
+        {
+            skInterface.disable_interrupt(tkIntSource);
+        }
+
+        static void clear()
+        {
+            skInterface.clear_interrupt_flag(tkIntSource);
+        }
+
+        static bool is_enabled()
+        {
+            return skInterface.is_interrupt_enabled(tkIntSource);
+        }
+
+        static bool is_flag_active()
+        {
+            return skInterface.is_interrupt_flag_active(tkIntSource);
+        }
+
+        static bool is_pending()
+        {
+            return is_flag_active() && is_enabled();
+        }
+    };
+
     template <typename T>
     concept CUnboundIsrRouter = requires { typename T::UnboundIsrHandlerTag; };
 
@@ -34,25 +74,25 @@ namespace valle::platform
     template <typename T>
     static constexpr bool kIsrRouterConfigAck = kIsrRouterConfig<T>.skAck;
 
-    template <typename TSpec,
+    template <typename TIrqSpec,
               typename TInterruptSource,
-              template <TSpec, TInterruptSource> typename TInterruptSourceInterface,
-              template <TSpec, TInterruptSource> typename TInterruptSourceRouter>
-    struct InterruptSourceIsrRouterContext
+              template <TIrqSpec, TInterruptSource> typename TInterruptSourceInterface,
+              template <TIrqSpec, TInterruptSource> typename TInterruptSourceRouter>
+    struct IrqInterruptSourceIsrRouterContext
     {
-        using SpecT            = TSpec;
+        using IrqSpecT         = TIrqSpec;
         using InterruptSourceT = TInterruptSource;
 
-        template <SpecT tkSpec, InterruptSourceT tkIntSource>
+        template <IrqSpecT tkSpec, InterruptSourceT tkIntSource>
         using InterfaceT = TInterruptSourceInterface<tkSpec, tkIntSource>;
 
-        template <TSpec Spec, InterruptSourceT Source>
-        using RouterT = TInterruptSourceRouter<Spec, Source>;
+        template <IrqSpecT tkSpec, InterruptSourceT Source>
+        using RouterT = TInterruptSourceRouter<tkSpec, Source>;
 
-        template <SpecT tkSpec>
+        template <IrqSpecT tkSpec>
         [[nodiscard]] consteval bool has_registered_handlers()
         {
-            constexpr auto values = magic_enum::enum_values<InterruptSourceT>();
+            constexpr auto values = InterruptSourceT.values();
 
             return [values]<std::size_t... Is>(std::index_sequence<Is...>)
             {
@@ -60,7 +100,7 @@ namespace valle::platform
             }(std::make_index_sequence<values.size()>{});
         }
 
-        template <SpecT tkSpec, InterruptSourceT tkIntSource>
+        template <IrqSpecT tkSpec, InterruptSourceT tkIntSource>
         static void dispatch_handler()
         {
             using IntRouterT    = RouterT<tkSpec, tkIntSource>;
@@ -88,51 +128,53 @@ namespace valle::platform
             }
         }
 
-        template <SpecT tkSpec>
+        template <IrqSpecT tkSpec>
         static void dispatch_all_handlers()
         {
-            constexpr auto values = magic_enum::enum_values<InterruptSourceT>();
+            constexpr auto values = InterruptSourceT.values();
 
             [values]<std::size_t... Is>(std::index_sequence<Is...>)
             { (dispatch_handler<tkSpec, values[Is]>(), ...); }(std::make_index_sequence<values.size()>{});
         }
     };
 
-    template <typename TSpec,
+    template <typename TIrqSpec,
               typename TInterruptSource,
-              template <TSpec, TInterruptSource> typename TInterruptSourceInterface,
-              template <TSpec> typename TIrqRouter,
-              template <TSpec, TInterruptSource> typename TInterruptSourceRouter>
-    struct InterruptIrqRouterContext
+              template <TIrqSpec, TInterruptSource> typename TInterruptSourceInterface,
+              template <TIrqSpec> typename TIrqRouter,
+              template <TIrqSpec, TInterruptSource> typename TInterruptSourceRouter>
+    struct IrqRouterContext
     {
-        using SpecT            = TSpec;
+        using IrqSpecT         = TIrqSpec;
         using InterruptSourceT = TInterruptSource;
 
-        template <SpecT tkSpec, InterruptSourceT tkIntSource>
+        template <IrqSpecT tkSpec, InterruptSourceT tkIntSource>
         using SourceRouterT = TSourceRouter<tkSpec, tkIntSource>;
 
-        template <SpecT tkSpec>
+        template <IrqSpecT tkSpec>
         using IrqRouterT = TIrqRouter<tkSpec>;
 
-        template <SpecT tkSpec, InterruptSourceT tkIntSource>
+        template <IrqSpecT tkSpec, InterruptSourceT tkIntSource>
         using InterruptSourceRouterT = TInterruptSourceRouter<tkSpec, tkIntSource>;
 
-        using InterruptSourceIsrRouterContextT =
-            InterruptSourceIsrRouterContext<TSpec, TInterruptSource, TInterruptSourceInterface, TInterruptSourceRouter>;
+        using IrqInterruptSourceIsrRouterContextT = IrqInterruptSourceIsrRouterContext<TIrqSpec,
+                                                                                       TInterruptSource,
+                                                                                       TInterruptSourceInterface,
+                                                                                       TInterruptSourceRouter>;
 
-        template <SpecT tkSpec>
+        template <IrqSpecT tkSpec>
         [[nodiscard]] consteval bool has_registered_interrupt_source_handlers()
         {
-            return InterruptSourceIsrRouterContextT::has_registered_handlers<tkSpec>();
+            return IrqInterruptSourceIsrRouterContextT::has_registered_handlers<tkSpec>();
         }
 
-        template <SpecT tkSpec>
+        template <IrqSpecT tkSpec>
         [[nodiscard]] consteval bool has_registered_irq_handler()
         {
             return CBoundIsrRouter<IrqRouterT<tkSpec>>;
         }
 
-        template <SpecT tkSpec>
+        template <IrqSpecT tkSpec>
         static void dispatch()
         {
             constexpr bool has_irq_handler     = has_registered_irq_handler<tkSpec>();
@@ -146,7 +188,7 @@ namespace valle::platform
                 return;
             }
 
-            InterruptSourceIsrRouterContextT::dispatch_all_handlers<tkSpec>();
+            IrqInterruptSourceIsrRouterContextT::dispatch_all_handlers<tkSpec>();
         }
     };
 

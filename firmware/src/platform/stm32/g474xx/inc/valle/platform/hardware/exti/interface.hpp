@@ -10,16 +10,25 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // =============================================================================
-    enum class ExtiLineSource : uint32_t
+    struct ExtiLineSource : public LLDriverEnumValue<ExtiLineSource>
     {
-        kPortA = LL_SYSCFG_EXTI_PORTA,
-        kPortB = LL_SYSCFG_EXTI_PORTB,
-        kPortC = LL_SYSCFG_EXTI_PORTC,
-        kPortD = LL_SYSCFG_EXTI_PORTD,
-        kPortE = LL_SYSCFG_EXTI_PORTE,
-        kPortF = LL_SYSCFG_EXTI_PORTF,
-        kPortG = LL_SYSCFG_EXTI_PORTG,
+        static const ExtiLineSource kPortA;
+        static const ExtiLineSource kPortB;
+        static const ExtiLineSource kPortC;
+        static const ExtiLineSource kPortD;
+        static const ExtiLineSource kPortE;
+        static const ExtiLineSource kPortF;
+        static const ExtiLineSource kPortG;
     };
+
+    inline constexpr ExtiLineSource ExtiLineSource::kPortA = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTA>();
+    inline constexpr ExtiLineSource ExtiLineSource::kPortB = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTB>();
+    inline constexpr ExtiLineSource ExtiLineSource::kPortC = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTC>();
+    inline constexpr ExtiLineSource ExtiLineSource::kPortD = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTD>();
+    inline constexpr ExtiLineSource ExtiLineSource::kPortE = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTE>();
+    inline constexpr ExtiLineSource ExtiLineSource::kPortF = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTF>();
+    inline constexpr ExtiLineSource ExtiLineSource::kPortG = ExtiLineSource::from_ll<LL_SYSCFG_EXTI_PORTG>();
+
 
     // ============================================================================
     // HARDWARE TRAITS

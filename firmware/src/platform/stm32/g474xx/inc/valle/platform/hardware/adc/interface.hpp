@@ -9,510 +9,1330 @@
 #include "valle/platform/hardware/dma.hpp"
 #include "valle/utils/timing.hpp"
 
+VALLE_OPTIMIZE_PUSH
+
 namespace valle::platform
 {
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
 
-    enum class AdcResolution : uint32_t
+    inline constexpr auto kAdcResolutionNumberMapping =
+        LLDriverEnumValueNumberMapping<4>{.mapping = {
+                                              {LL_ADC_RESOLUTION_12B, 12},
+                                              {LL_ADC_RESOLUTION_10B, 10},
+                                              {LL_ADC_RESOLUTION_8B, 8},
+                                              {LL_ADC_RESOLUTION_6B, 6},
+                                          }};
+    struct AdcResolution : public NumberedLLDriverEnumValue<AdcResolution, kAdcResolutionNumberMapping>
     {
-        k12Bit = LL_ADC_RESOLUTION_12B,
-        k10Bit = LL_ADC_RESOLUTION_10B,
-        k8Bit  = LL_ADC_RESOLUTION_8B,
-        k6Bit  = LL_ADC_RESOLUTION_6B,
+        static const AdcResolution k12Bit;
+        static const AdcResolution k10Bit;
+        static const AdcResolution k8Bit;
+        static const AdcResolution k6Bit;
     };
 
-    enum class AdcDataAlignment : uint32_t
+    inline constexpr AdcResolution AdcResolution::k12Bit = AdcResolution::from_number<12>();
+    inline constexpr AdcResolution AdcResolution::k10Bit = AdcResolution::from_number<10>();
+    inline constexpr AdcResolution AdcResolution::k8Bit  = AdcResolution::from_number<8>();
+    inline constexpr AdcResolution AdcResolution::k6Bit  = AdcResolution::from_number<6>();
+
+    struct AdcDataAlignment : public LLDriverEnumValue<AdcDataAlignment>
     {
-        kRight = LL_ADC_DATA_ALIGN_RIGHT,
-        kLeft  = LL_ADC_DATA_ALIGN_LEFT,
+        static const AdcDataAlignment kRight;
+        static const AdcDataAlignment kLeft;
     };
 
-    enum class AdcLowPowerMode : uint32_t
+    inline constexpr AdcDataAlignment AdcDataAlignment::kRight = AdcDataAlignment::from_ll<LL_ADC_DATA_ALIGN_RIGHT>();
+    inline constexpr AdcDataAlignment AdcDataAlignment::kLeft  = AdcDataAlignment::from_ll<LL_ADC_DATA_ALIGN_LEFT>();
+
+    struct AdcLowPowerMode : public LLDriverEnumValue<AdcLowPowerMode>
     {
-        kNone     = LL_ADC_LP_MODE_NONE,  /// No low power
-        kAutoWait = LL_ADC_LP_AUTOWAIT,   /// Auto wait between conversions
+        static const AdcLowPowerMode kNone;
+        static const AdcLowPowerMode kAutoWait;
     };
 
-    enum class AdcCommonSamplingTime : uint32_t
+    inline constexpr AdcLowPowerMode AdcLowPowerMode::kNone     = AdcLowPowerMode::from_ll<LL_ADC_LP_MODE_NONE>();
+    inline constexpr AdcLowPowerMode AdcLowPowerMode::kAutoWait = AdcLowPowerMode::from_ll<LL_ADC_LP_AUTOWAIT>();
+
+    struct AdcCommonSamplingTime : public LLDriverEnumValue<AdcCommonSamplingTime>
     {
-        kDefault                   = LL_ADC_SAMPLINGTIME_COMMON_DEFAULT,
-        k3P5CyclesReplace2P5Cycles = LL_ADC_SAMPLINGTIME_COMMON_3C5_REPL_2C5,
+        static const AdcCommonSamplingTime kDefault;
+        static const AdcCommonSamplingTime k3P5CyclesReplace2P5Cycles;
     };
 
-    enum class AdcInjectGroupQueueMode : uint32_t
+    inline constexpr AdcCommonSamplingTime AdcCommonSamplingTime::kDefault =
+        AdcCommonSamplingTime::from_ll<LL_ADC_SAMPLINGTIME_COMMON_DEFAULT>();
+    inline constexpr AdcCommonSamplingTime AdcCommonSamplingTime::k3P5CyclesReplace2P5Cycles =
+        AdcCommonSamplingTime::from_ll<LL_ADC_SAMPLINGTIME_COMMON_3C5_REPL_2C5>();
+
+    inline constexpr auto kInjectGroupScanModeNumberMapping =
+        LLDriverEnumValueSequentialNumberMapping4>{.start_number = 1,
+                                                   .ll_id_table  = {
+                                                       LL_ADC_INJ_SEQ_SCAN_DISABLE,
+                                                       LL_ADC_INJ_SEQ_SCAN_ENABLE_2RANKS,
+                                                       LL_ADC_INJ_SEQ_SCAN_ENABLE_3RANKS,
+                                                       LL_ADC_INJ_SEQ_SCAN_ENABLE_4RANKS,
+                                                   }};
+
+    struct AdcInjectGroupSequenceScanMode
+        : public NumberedLLDriverEnumValue<AdcInjectGroupSequenceScanMode, kInjectGroupScanModeNumberMapping>
     {
-        kDisable             = LL_ADC_INJ_QUEUE_DISABLE,
-        k2ContextsLastActive = LL_ADC_INJ_QUEUE_2CONTEXTS_LAST_ACTIVE,
-        k2ContextsEndEmpty   = LL_ADC_INJ_QUEUE_2CONTEXTS_END_EMPTY
+        static const AdcInjectGroupSequenceScanMode kDisable;
+        static const AdcInjectGroupSequenceScanMode k2Ranks;
+        static const AdcInjectGroupSequenceScanMode k3Ranks;
+        static const AdcInjectGroupSequenceScanMode k4Ranks;
     };
 
-    enum class AdcInjectGroupTriggerMode : uint32_t
+    inline constexpr AdcInjectGroupSequenceScanMode AdcInjectGroupSequenceScanMode::kDisable =
+        AdcInjectGroupSequenceScanMode::from_number<1>();
+    inline constexpr AdcInjectGroupSequenceScanMode AdcInjectGroupSequenceScanMode::k2Ranks =
+        AdcInjectGroupSequenceScanMode::from_number<2>();
+    inline constexpr AdcInjectGroupSequenceScanMode AdcInjectGroupSequenceScanMode::k3Ranks =
+        AdcInjectGroupSequenceScanMode::from_number<3>();
+    inline constexpr AdcInjectGroupSequenceScanMode AdcInjectGroupSequenceScanMode::k4Ranks =
+        AdcInjectGroupSequenceScanMode::from_number<4>();
+
+    struct AdcInjectGroupQueueMode : public LLDriverEnumValue<AdcInjectGroupQueueMode>
     {
-        kIndependent      = LL_ADC_INJ_TRIG_INDEPENDENT,
-        kFromRegularGroup = LL_ADC_INJ_TRIG_FROM_GRP_REGULAR
+        static const AdcInjectGroupQueueMode kDisable;
+        static const AdcInjectGroupQueueMode k2ContextsLastActive;
+        static const AdcInjectGroupQueueMode k2ContextsEndEmpty;
     };
 
-    enum class AdcInjectGroupSequencerDiscontinuityMode : uint32_t
+    inline constexpr AdcInjectGroupQueueMode AdcInjectGroupQueueMode::kDisable =
+        AdcInjectGroupQueueMode::from_ll<LL_ADC_INJ_QUEUE_DISABLE>();
+    inline constexpr AdcInjectGroupQueueMode AdcInjectGroupQueueMode::k2ContextsLastActive =
+        AdcInjectGroupQueueMode::from_ll<LL_ADC_INJ_QUEUE_2CONTEXTS_LAST_ACTIVE>();
+    inline constexpr AdcInjectGroupQueueMode AdcInjectGroupQueueMode::k2ContextsEndEmpty =
+        AdcInjectGroupQueueMode::from_ll<LL_ADC_INJ_QUEUE_2CONTEXTS_END_EMPTY>();
+
+    struct AdcInjectGroupTriggerMode : public LLDriverEnumValue<AdcInjectGroupTriggerMode>
     {
-        kDisable = LL_ADC_INJ_SEQ_DISCONT_DISABLE,
-        k1Rank   = LL_ADC_INJ_SEQ_DISCONT_1RANK
+        static const AdcInjectGroupTriggerMode kIndependent;
+        static const AdcInjectGroupTriggerMode kFromRegularGroup;
     };
 
-    enum class AdcInjectGroupTriggerSource : uint32_t
+    inline constexpr AdcInjectGroupTriggerMode AdcInjectGroupTriggerMode::kIndependent =
+        AdcInjectGroupTriggerMode::from_ll<LL_ADC_INJ_TRIG_INDEPENDENT>();
+    inline constexpr AdcInjectGroupTriggerMode AdcInjectGroupTriggerMode::kFromRegularGroup =
+        AdcInjectGroupTriggerMode::from_ll<LL_ADC_INJ_TRIG_FROM_GRP_REGULAR>();
+
+    struct AdcInjectGroupSequencerDiscontinuityMode : public LLDriverEnumValue<AdcInjectGroupSequencerDiscontinuityMode>
     {
-        kSoftware      = LL_ADC_INJ_TRIG_SOFTWARE,
-        kExtTim1TRGO   = LL_ADC_INJ_TRIG_EXT_TIM1_TRGO,
-        kExtTim1TRGO2  = LL_ADC_INJ_TRIG_EXT_TIM1_TRGO2,
-        kExtTim1CH3    = LL_ADC_INJ_TRIG_EXT_TIM1_CH3,
-        kExtTim1CH4    = LL_ADC_INJ_TRIG_EXT_TIM1_CH4,
-        kExtTim2TRGO   = LL_ADC_INJ_TRIG_EXT_TIM2_TRGO,
-        kExtTim2CH1    = LL_ADC_INJ_TRIG_EXT_TIM2_CH1,
-        kExtTim3TRGO   = LL_ADC_INJ_TRIG_EXT_TIM3_TRGO,
-        kExtTim3CH1    = LL_ADC_INJ_TRIG_EXT_TIM3_CH1,
-        kExtTim3CH3    = LL_ADC_INJ_TRIG_EXT_TIM3_CH3,
-        kExtTim3CH4    = LL_ADC_INJ_TRIG_EXT_TIM3_CH4,
-        kExtTim4TRGO   = LL_ADC_INJ_TRIG_EXT_TIM4_TRGO,
-        kExtTim4CH3    = LL_ADC_INJ_TRIG_EXT_TIM4_CH3,
-        kExtTim4CH4    = LL_ADC_INJ_TRIG_EXT_TIM4_CH4,
-        kExtTim6TRGO   = LL_ADC_INJ_TRIG_EXT_TIM6_TRGO,
-        kExtTim7TRGO   = LL_ADC_INJ_TRIG_EXT_TIM7_TRGO,
-        kExtTim8TRGO   = LL_ADC_INJ_TRIG_EXT_TIM8_TRGO,
-        kExtTim8TRGO2  = LL_ADC_INJ_TRIG_EXT_TIM8_TRGO2,
-        kExtTim8CH2    = LL_ADC_INJ_TRIG_EXT_TIM8_CH2,
-        kExtTim8CH4    = LL_ADC_INJ_TRIG_EXT_TIM8_CH4,
-        kExtTim15TRGO  = LL_ADC_INJ_TRIG_EXT_TIM15_TRGO,
-        kExtTim16CH1   = LL_ADC_INJ_TRIG_EXT_TIM16_CH1,
-        kExtTim20TRGO  = LL_ADC_INJ_TRIG_EXT_TIM20_TRGO,
-        kExtTim20TRGO2 = LL_ADC_INJ_TRIG_EXT_TIM20_TRGO2,
-        kExtTim20CH2   = LL_ADC_INJ_TRIG_EXT_TIM20_CH2,
-        kExtTim20CH4   = LL_ADC_INJ_TRIG_EXT_TIM20_CH4,
-        kExtHrtimTRG1  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG1,
-        kExtHrtimTRG2  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG2,
-        kExtHrtimTRG3  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG3,
-        kExtHrtimTRG4  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG4,
-        kExtHrtimTRG5  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG5,
-        kExtHrtimTRG6  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG6,
-        kExtHrtimTRG7  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG7,
-        kExtHrtimTRG8  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG8,
-        kExtHrtimTRG9  = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG9,
-        kExtHrtimTRG10 = LL_ADC_INJ_TRIG_EXT_HRTIM_TRG10,
-        kExtExtiLine3  = LL_ADC_INJ_TRIG_EXT_EXTI_LINE3,
-        kExtExtiLine15 = LL_ADC_INJ_TRIG_EXT_EXTI_LINE15,
-        kExtLptimOut   = LL_ADC_INJ_TRIG_EXT_LPTIM_OUT,
+        static const AdcInjectGroupSequencerDiscontinuityMode kDisable;
+        static const AdcInjectGroupSequencerDiscontinuityMode k1Rank;
     };
 
-    enum class AdcInjectGroupTriggerEdge : uint32_t
+    inline constexpr AdcInjectGroupSequencerDiscontinuityMode AdcInjectGroupSequencerDiscontinuityMode::kDisable =
+        AdcInjectGroupSequencerDiscontinuityMode::from_ll<LL_ADC_INJ_SEQ_DISCONT_DISABLE>();
+    inline constexpr AdcInjectGroupSequencerDiscontinuityMode AdcInjectGroupSequencerDiscontinuityMode::k1Rank =
+        AdcInjectGroupSequencerDiscontinuityMode::from_ll<LL_ADC_INJ_SEQ_DISCONT_1RANK>();
+
+    struct AdcInjectGroupTriggerSource : public LLDriverEnumValue<AdcInjectGroupTriggerSource>
     {
-        kRising        = LL_ADC_INJ_TRIG_EXT_RISING,
-        kFalling       = LL_ADC_INJ_TRIG_EXT_FALLING,
-        kRisingFalling = LL_ADC_INJ_TRIG_EXT_RISINGFALLING
+        static const AdcInjectGroupTriggerSource kSoftware;
+        static const AdcInjectGroupTriggerSource kExtTim1TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim1TRGO2;
+        static const AdcInjectGroupTriggerSource kExtTim1CH3;
+        static const AdcInjectGroupTriggerSource kExtTim1CH4;
+        static const AdcInjectGroupTriggerSource kExtTim2TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim2CH1;
+        static const AdcInjectGroupTriggerSource kExtTim3TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim3CH1;
+        static const AdcInjectGroupTriggerSource kExtTim3CH3;
+        static const AdcInjectGroupTriggerSource kExtTim3CH4;
+        static const AdcInjectGroupTriggerSource kExtTim4TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim4CH3;
+        static const AdcInjectGroupTriggerSource kExtTim4CH4;
+        static const AdcInjectGroupTriggerSource kExtTim6TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim7TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim8TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim8TRGO2;
+        static const AdcInjectGroupTriggerSource kExtTim8CH2;
+        static const AdcInjectGroupTriggerSource kExtTim8CH4;
+        static const AdcInjectGroupTriggerSource kExtTim15TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim16CH1;
+        static const AdcInjectGroupTriggerSource kExtTim20TRGO;
+        static const AdcInjectGroupTriggerSource kExtTim20TRGO2;
+        static const AdcInjectGroupTriggerSource kExtTim20CH2;
+        static const AdcInjectGroupTriggerSource kExtTim20CH4;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG1;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG2;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG3;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG4;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG5;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG6;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG7;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG8;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG9;
+        static const AdcInjectGroupTriggerSource kExtHrtimTRG10;
+        static const AdcInjectGroupTriggerSource kExtExtiLine3;
+        static const AdcInjectGroupTriggerSource kExtExtiLine15;
+        static const AdcInjectGroupTriggerSource kExtLptimOut;
     };
 
-    enum class AdcRegularGroupTriggerSource : uint32_t
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kSoftware =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_SOFTWARE>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim1TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM1_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim1TRGO2 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM1_TRGO2>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim1CH3 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM1_CH3>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim1CH4 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM1_CH4>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim2TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM2_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim2CH1 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM2_CH1>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim3TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM3_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim3CH1 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM3_CH1>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim3CH3 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM3_CH3>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim3CH4 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM3_CH4>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim4TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM4_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim4CH3 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM4_CH3>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim4CH4 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM4_CH4>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim6TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM6_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim7TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM7_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim8TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM8_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim8TRGO2 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM8_TRGO2>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim8CH2 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM8_CH2>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim8CH4 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM8_CH4>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim15TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM15_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim16CH1 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM16_CH1>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim20TRGO =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM20_TRGO>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim20TRGO2 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM20_TRGO2>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim20CH2 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM20_CH2>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtTim20CH4 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_TIM20_CH4>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG1 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG1>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG2 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG2>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG3 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG3>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG4 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG4>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG5 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG5>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG6 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG6>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG7 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG7>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG8 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG8>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG9 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG9>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtHrtimTRG10 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_HRTIM_TRG10>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtExtiLine3 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_EXTI_LINE3>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtExtiLine15 =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_EXTI_LINE15>();
+    inline constexpr AdcInjectGroupTriggerSource AdcInjectGroupTriggerSource::kExtLptimOut =
+        AdcInjectGroupTriggerSource::from_ll<LL_ADC_INJ_TRIG_EXT_LPTIM_OUT>();
+
+    struct AdcInjectGroupTriggerEdge : public LLDriverEnumValue<AdcInjectGroupTriggerEdge>
     {
-        kSoftware      = LL_ADC_REG_TRIG_SOFTWARE,
-        kExtTim1TRGO   = LL_ADC_REG_TRIG_EXT_TIM1_TRGO,
-        kExtTim1TRGO2  = LL_ADC_REG_TRIG_EXT_TIM1_TRGO2,
-        kExtTim1CH1    = LL_ADC_REG_TRIG_EXT_TIM1_CH1,
-        kExtTim1CH2    = LL_ADC_REG_TRIG_EXT_TIM1_CH2,
-        kExtTim1CH3    = LL_ADC_REG_TRIG_EXT_TIM1_CH3,
-        kExtTim2TRGO   = LL_ADC_REG_TRIG_EXT_TIM2_TRGO,
-        kExtTim2CH1    = LL_ADC_REG_TRIG_EXT_TIM2_CH1,
-        kExtTim2CH2    = LL_ADC_REG_TRIG_EXT_TIM2_CH2,
-        kExtTim2CH3    = LL_ADC_REG_TRIG_EXT_TIM2_CH3,
-        kExtTim3TRGO   = LL_ADC_REG_TRIG_EXT_TIM3_TRGO,
-        kExtTim3CH1    = LL_ADC_REG_TRIG_EXT_TIM3_CH1,
-        kExtTim3CH4    = LL_ADC_REG_TRIG_EXT_TIM3_CH4,
-        kExtTim4TRGO   = LL_ADC_REG_TRIG_EXT_TIM4_TRGO,
-        kExtTim4CH1    = LL_ADC_REG_TRIG_EXT_TIM4_CH1,
-        kExtTim4CH4    = LL_ADC_REG_TRIG_EXT_TIM4_CH4,
-        kExtTim6TRGO   = LL_ADC_REG_TRIG_EXT_TIM6_TRGO,
-        kExtTim7TRGO   = LL_ADC_REG_TRIG_EXT_TIM7_TRGO,
-        kExtTim8TRGO   = LL_ADC_REG_TRIG_EXT_TIM8_TRGO,
-        kExtTim8TRGO2  = LL_ADC_REG_TRIG_EXT_TIM8_TRGO2,
-        kExtTim8CH1    = LL_ADC_REG_TRIG_EXT_TIM8_CH1,
-        kExtTim15TRGO  = LL_ADC_REG_TRIG_EXT_TIM15_TRGO,
-        kExtTim20TRGO  = LL_ADC_REG_TRIG_EXT_TIM20_TRGO,
-        kExtTim20TRGO2 = LL_ADC_REG_TRIG_EXT_TIM20_TRGO2,
-        kExtTim20CH1   = LL_ADC_REG_TRIG_EXT_TIM20_CH1,
-        kExtTim20CH2   = LL_ADC_REG_TRIG_EXT_TIM20_CH2,
-        kExtTim20CH3   = LL_ADC_REG_TRIG_EXT_TIM20_CH3,
-        kExtHrtimTRG1  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG1,
-        kExtHrtimTRG2  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG2,
-        kExtHrtimTRG3  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG3,
-        kExtHrtimTRG4  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG4,
-        kExtHrtimTRG5  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG5,
-        kExtHrtimTRG6  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG6,
-        kExtHrtimTRG7  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG7,
-        kExtHrtimTRG8  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG8,
-        kExtHrtimTRG9  = LL_ADC_REG_TRIG_EXT_HRTIM_TRG9,
-        kExtHrtimTRG10 = LL_ADC_REG_TRIG_EXT_HRTIM_TRG10,
-        kExtExtiLine11 = LL_ADC_REG_TRIG_EXT_EXTI_LINE11,
-        kExtExtiLine2  = LL_ADC_REG_TRIG_EXT_EXTI_LINE2,
-        kExtLptimOut   = LL_ADC_REG_TRIG_EXT_LPTIM_OUT,
+        static const AdcInjectGroupTriggerEdge kRising;
+        static const AdcInjectGroupTriggerEdge kFalling;
+        static const AdcInjectGroupTriggerEdge kRisingFalling;
     };
 
-    enum class AdcRegularGroupTriggerEdge : uint32_t
+    inline constexpr AdcInjectGroupTriggerEdge AdcInjectGroupTriggerEdge::kRising =
+        AdcInjectGroupTriggerEdge::from_ll<LL_ADC_INJ_TRIG_EXT_RISING>();
+    inline constexpr AdcInjectGroupTriggerEdge AdcInjectGroupTriggerEdge::kFalling =
+        AdcInjectGroupTriggerEdge::from_ll<LL_ADC_INJ_TRIG_EXT_FALLING>();
+    inline constexpr AdcInjectGroupTriggerEdge AdcInjectGroupTriggerEdge::kRisingFalling =
+        AdcInjectGroupTriggerEdge::from_ll<LL_ADC_INJ_TRIG_EXT_RISINGFALLING>();
+
+    struct AdcRegularGroupTriggerSource : public LLDriverEnumValue<AdcRegularGroupTriggerSource>
     {
-        kRising        = LL_ADC_REG_TRIG_EXT_RISING,
-        kFalling       = LL_ADC_REG_TRIG_EXT_FALLING,
-        kRisingFalling = LL_ADC_REG_TRIG_EXT_RISINGFALLING
+        static const AdcRegularGroupTriggerSource kSoftware;
+        static const AdcRegularGroupTriggerSource kExtTim1TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim1TRGO2;
+        static const AdcRegularGroupTriggerSource kExtTim1CH1;
+        static const AdcRegularGroupTriggerSource kExtTim1CH2;
+        static const AdcRegularGroupTriggerSource kExtTim1CH3;
+        static const AdcRegularGroupTriggerSource kExtTim2TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim2CH1;
+        static const AdcRegularGroupTriggerSource kExtTim2CH2;
+        static const AdcRegularGroupTriggerSource kExtTim2CH3;
+        static const AdcRegularGroupTriggerSource kExtTim3TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim3CH1;
+        static const AdcRegularGroupTriggerSource kExtTim3CH4;
+        static const AdcRegularGroupTriggerSource kExtTim4TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim4CH1;
+        static const AdcRegularGroupTriggerSource kExtTim4CH4;
+        static const AdcRegularGroupTriggerSource kExtTim6TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim7TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim8TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim8TRGO2;
+        static const AdcRegularGroupTriggerSource kExtTim8CH1;
+        static const AdcRegularGroupTriggerSource kExtTim15TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim20TRGO;
+        static const AdcRegularGroupTriggerSource kExtTim20TRGO2;
+        static const AdcRegularGroupTriggerSource kExtTim20CH1;
+        static const AdcRegularGroupTriggerSource kExtTim20CH2;
+        static const AdcRegularGroupTriggerSource kExtTim20CH3;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG1;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG2;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG3;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG4;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG5;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG6;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG7;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG8;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG9;
+        static const AdcRegularGroupTriggerSource kExtHrtimTRG10;
+        static const AdcRegularGroupTriggerSource kExtExtiLine11;
+        static const AdcRegularGroupTriggerSource kExtExtiLine2;
+        static const AdcRegularGroupTriggerSource kExtLptimOut;
     };
 
-    enum class AdcRegularGroupSequencerDiscontinuity : uint32_t
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kSoftware =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_SOFTWARE>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim1TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM1_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim1TRGO2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM1_TRGO2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim1CH1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM1_CH1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim1CH2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM1_CH2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim1CH3 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM1_CH3>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim2TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM2_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim2CH1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM2_CH1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim2CH2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM2_CH2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim2CH3 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM2_CH3>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim3TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM3_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim3CH1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM3_CH1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim3CH4 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM3_CH4>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim4TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM4_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim4CH1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM4_CH1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim4CH4 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM4_CH4>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim6TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM6_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim7TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM7_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim8TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM8_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim8TRGO2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM8_TRGO2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim8CH1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM8_CH1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim15TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM15_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim20TRGO =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM20_TRGO>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim20TRGO2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM20_TRGO2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim20CH1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM20_CH1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim20CH2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM20_CH2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtTim20CH3 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_TIM20_CH3>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG1 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG1>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG3 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG3>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG4 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG4>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG5 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG5>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG6 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG6>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG7 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG7>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG8 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG8>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG9 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG9>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtHrtimTRG10 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_HRTIM_TRG10>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtExtiLine11 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_EXTI_LINE11>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtExtiLine2 =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_EXTI_LINE2>();
+    inline constexpr AdcRegularGroupTriggerSource AdcRegularGroupTriggerSource::kExtLptimOut =
+        AdcRegularGroupTriggerSource::from_ll<LL_ADC_REG_TRIG_EXT_LPTIM_OUT>();
+
+    struct AdcRegularGroupTriggerEdge : public LLDriverEnumValue<AdcRegularGroupTriggerEdge>
     {
-        kDisable = LL_ADC_REG_SEQ_DISCONT_DISABLE,
-        k1Rank   = LL_ADC_REG_SEQ_DISCONT_1RANK,
-        k2Ranks  = LL_ADC_REG_SEQ_DISCONT_2RANKS,
-        k3Ranks  = LL_ADC_REG_SEQ_DISCONT_3RANKS,
-        k4Ranks  = LL_ADC_REG_SEQ_DISCONT_4RANKS,
-        k5Ranks  = LL_ADC_REG_SEQ_DISCONT_5RANKS,
-        k6Ranks  = LL_ADC_REG_SEQ_DISCONT_6RANKS,
-        k7Ranks  = LL_ADC_REG_SEQ_DISCONT_7RANKS,
-        k8Ranks  = LL_ADC_REG_SEQ_DISCONT_8RANKS,
+        static const AdcRegularGroupTriggerEdge kRising;
+        static const AdcRegularGroupTriggerEdge kFalling;
+        static const AdcRegularGroupTriggerEdge kRisingFalling;
     };
 
-    enum class AdcRegularGroupDmaTransfer : uint32_t
+    inline constexpr AdcRegularGroupTriggerEdge AdcRegularGroupTriggerEdge::kRising =
+        AdcRegularGroupTriggerEdge::from_ll<LL_ADC_REG_TRIG_EXT_RISING>();
+    inline constexpr AdcRegularGroupTriggerEdge AdcRegularGroupTriggerEdge::kFalling =
+        AdcRegularGroupTriggerEdge::from_ll<LL_ADC_REG_TRIG_EXT_FALLING>();
+    inline constexpr AdcRegularGroupTriggerEdge AdcRegularGroupTriggerEdge::kRisingFalling =
+        AdcRegularGroupTriggerEdge::from_ll<LL_ADC_REG_TRIG_EXT_RISINGFALLING>();
+
+    inline constexpr auto kRegularGroupScanModeNumberMapping =
+        LLDriverEnumValueSequentialNumberMapping<16>{.start_number = 1,
+                                                     .ll_id_table  = {
+                                                         LL_ADC_REG_SEQ_SCAN_DISABLE,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_8RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_9RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_10RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_11RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_12RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_13RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_14RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_15RANKS,
+                                                         LL_ADC_REG_SEQ_SCAN_ENABLE_16RANKS,
+                                                     }};
+
+    struct AdcRegularGroupSequenceScanMode
+        : public NumberedLLDriverEnumValue<AdcRegularGroupSequenceScanMode, kRegularGroupScanModeNumberMapping>
     {
-        kNone      = LL_ADC_REG_DMA_TRANSFER_NONE,
-        kUnlimited = LL_ADC_REG_DMA_TRANSFER_UNLIMITED,
-        kLimited   = LL_ADC_REG_DMA_TRANSFER_LIMITED
+        static const AdcRegularGroupSequenceScanMode kDisable;
+        static const AdcRegularGroupSequenceScanMode k2Ranks;
+        static const AdcRegularGroupSequenceScanMode k3Ranks;
+        static const AdcRegularGroupSequenceScanMode k4Ranks;
+        static const AdcRegularGroupSequenceScanMode k5Ranks;
+        static const AdcRegularGroupSequenceScanMode k6Ranks;
+        static const AdcRegularGroupSequenceScanMode k7Ranks;
+        static const AdcRegularGroupSequenceScanMode k8Ranks;
+        static const AdcRegularGroupSequenceScanMode k9Ranks;
+        static const AdcRegularGroupSequenceScanMode k10Ranks;
+        static const AdcRegularGroupSequenceScanMode k11Ranks;
+        static const AdcRegularGroupSequenceScanMode k12Ranks;
+        static const AdcRegularGroupSequenceScanMode k13Ranks;
+        static const AdcRegularGroupSequenceScanMode k14Ranks;
+        static const AdcRegularGroupSequenceScanMode k15Ranks;
+        static const AdcRegularGroupSequenceScanMode k16Ranks;
     };
 
-    enum class AdcRegularGroupOverrunBehavior : uint32_t
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::kDisable =
+        AdcRegularGroupSequenceScanMode::from_number<1>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k2Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<2>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k3Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<3>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k4Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<4>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k5Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<5>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k6Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<6>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k7Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<7>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k8Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<8>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k9Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<9>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k10Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<10>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k11Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<11>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k12Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<12>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k13Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<13>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k14Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<14>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k15Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<15>();
+    inline constexpr AdcRegularGroupSequenceScanMode AdcRegularGroupSequenceScanMode::k16Ranks =
+        AdcRegularGroupSequenceScanMode::from_number<16>();
+
+    inline constexpr auto kRegularGroupSequencerDiscontinuityNumberMapping =
+        LLDriverEnumValueSequentialNumberMapping<9>{.start_number = 0,
+                                                    .ll_id_table  = {
+                                                        LL_ADC_REG_SEQ_DISCONT_DISABLE,
+                                                        LL_ADC_REG_SEQ_DISCONT_1RANK,
+                                                        LL_ADC_REG_SEQ_DISCONT_2RANKS,
+                                                        LL_ADC_REG_SEQ_DISCONT_3RANKS,
+                                                        LL_ADC_REG_SEQ_DISCONT_4RANKS,
+                                                        LL_ADC_REG_SEQ_DISCONT_5RANKS,
+                                                        LL_ADC_REG_SEQ_DISCONT_6RANKS,
+                                                        LL_ADC_REG_SEQ_DISCONT_7RANKS,
+                                                        LL_ADC_REG_SEQ_DISCONT_8RANKS,
+                                                    }};
+
+    struct AdcRegularGroupSequencerDiscontinuity
+        : public NumberedLLDriverEnumValue<AdcRegularGroupSequencerDiscontinuity,
+                                           kRegularGroupSequencerDiscontinuityNumberMapping>
     {
-        kPreserve  = LL_ADC_REG_OVR_DATA_PRESERVED,
-        kOverwrite = LL_ADC_REG_OVR_DATA_OVERWRITTEN,
+        static const AdcRegularGroupSequencerDiscontinuity kDisable;
+        static const AdcRegularGroupSequencerDiscontinuity k1Rank;
+        static const AdcRegularGroupSequencerDiscontinuity k2Ranks;
+        static const AdcRegularGroupSequencerDiscontinuity k3Ranks;
+        static const AdcRegularGroupSequencerDiscontinuity k4Ranks;
+        static const AdcRegularGroupSequencerDiscontinuity k5Ranks;
+        static const AdcRegularGroupSequencerDiscontinuity k6Ranks;
+        static const AdcRegularGroupSequencerDiscontinuity k7Ranks;
+        static const AdcRegularGroupSequencerDiscontinuity k8Ranks;
     };
 
-    enum class AdcRegularGroupConversionMode : uint32_t
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::kDisable =
+        AdcRegularGroupSequencerDiscontinuity::from_number<0>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k1Rank =
+        AdcRegularGroupSequencerDiscontinuity::from_number<1>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k2Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<2>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k3Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<3>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k4Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<4>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k5Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<5>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k6Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<6>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k7Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<7>();
+    inline constexpr AdcRegularGroupSequencerDiscontinuity AdcRegularGroupSequencerDiscontinuity::k8Ranks =
+        AdcRegularGroupSequencerDiscontinuity::from_number<8>();
+
+    struct AdcRegularGroupDmaTransfer : public LLDriverEnumValue<AdcRegularGroupDmaTransfer>
     {
-        kSingleShot = LL_ADC_REG_CONV_SINGLE,
-        kContinuous = LL_ADC_REG_CONV_CONTINUOUS
+        static const AdcRegularGroupDmaTransfer kNone;
+        static const AdcRegularGroupDmaTransfer kUnlimited;
+        static const AdcRegularGroupDmaTransfer kLimited;
     };
 
-    enum class AdcRegularGroupOversamplingMode : uint32_t
+    inline constexpr AdcRegularGroupDmaTransfer AdcRegularGroupDmaTransfer::kNone =
+        AdcRegularGroupDmaTransfer::from_ll<LL_ADC_REG_DMA_TRANSFER_NONE>();
+    inline constexpr AdcRegularGroupDmaTransfer AdcRegularGroupDmaTransfer::kUnlimited =
+        AdcRegularGroupDmaTransfer::from_ll<LL_ADC_REG_DMA_TRANSFER_UNLIMITED>();
+    inline constexpr AdcRegularGroupDmaTransfer AdcRegularGroupDmaTransfer::kLimited =
+        AdcRegularGroupDmaTransfer::from_ll<LL_ADC_REG_DMA_TRANSFER_LIMITED>();
+
+    struct AdcRegularGroupOverrunBehavior : public LLDriverEnumValue<AdcRegularGroupOverrunBehavior>
     {
-        kDiscontinuous = LL_ADC_OVS_REG_DISCONT,
-        kContinuous    = LL_ADC_OVS_REG_CONT
+        static const AdcRegularGroupOverrunBehavior kPreserve;
+        static const AdcRegularGroupOverrunBehavior kOverwrite;
     };
 
-    enum class AdcRegularGroupSamplingMode : uint32_t
+    inline constexpr AdcRegularGroupOverrunBehavior AdcRegularGroupOverrunBehavior::kPreserve =
+        AdcRegularGroupOverrunBehavior::from_ll<LL_ADC_REG_OVR_DATA_PRESERVED>();
+    inline constexpr AdcRegularGroupOverrunBehavior AdcRegularGroupOverrunBehavior::kOverwrite =
+        AdcRegularGroupOverrunBehavior::from_ll<LL_ADC_REG_OVR_DATA_OVERWRITTEN>();
+
+    struct AdcRegularGroupConversionMode : public LLDriverEnumValue<AdcRegularGroupConversionMode>
     {
-        kNormal            = LL_ADC_REG_SAMPLING_MODE_NORMAL,
-        kBulb              = LL_ADC_REG_SAMPLING_MODE_BULB,
-        kTriggerControlled = LL_ADC_REG_SAMPLING_MODE_TRIGGER_CONTROLED,
+        static const AdcRegularGroupConversionMode kSingleShot;
+        static const AdcRegularGroupConversionMode kContinuous;
     };
 
-    enum class AdcOversamplingRatio : uint32_t
+    inline constexpr AdcRegularGroupConversionMode AdcRegularGroupConversionMode::kSingleShot =
+        AdcRegularGroupConversionMode::from_ll<LL_ADC_REG_CONV_SINGLE>();
+    inline constexpr AdcRegularGroupConversionMode AdcRegularGroupConversionMode::kContinuous =
+        AdcRegularGroupConversionMode::from_ll<LL_ADC_REG_CONV_CONTINUOUS>();
+
+    struct AdcRegularGroupOversamplingMode : public LLDriverEnumValue<AdcRegularGroupOversamplingMode>
     {
-        k2x   = LL_ADC_OVS_RATIO_2,
-        k4x   = LL_ADC_OVS_RATIO_4,
-        k8x   = LL_ADC_OVS_RATIO_8,
-        k16x  = LL_ADC_OVS_RATIO_16,
-        k32x  = LL_ADC_OVS_RATIO_32,
-        k64x  = LL_ADC_OVS_RATIO_64,
-        k128x = LL_ADC_OVS_RATIO_128,
-        k256x = LL_ADC_OVS_RATIO_256
+        static const AdcRegularGroupOversamplingMode kDiscontinuous;
+        static const AdcRegularGroupOversamplingMode kContinuous;
     };
 
-    enum class AdcOversamplingShift : uint32_t
+    inline constexpr AdcRegularGroupOversamplingMode AdcRegularGroupOversamplingMode::kDiscontinuous =
+        AdcRegularGroupOversamplingMode::from_ll<LL_ADC_OVS_REG_DISCONT>();
+    inline constexpr AdcRegularGroupOversamplingMode AdcRegularGroupOversamplingMode::kContinuous =
+        AdcRegularGroupOversamplingMode::from_ll<LL_ADC_OVS_REG_CONT>();
+
+    struct AdcRegularGroupSamplingMode : public LLDriverEnumValue<AdcRegularGroupSamplingMode>
     {
-        kNone   = LL_ADC_OVS_SHIFT_NONE,
-        kDiv2   = LL_ADC_OVS_SHIFT_RIGHT_1,
-        kDiv4   = LL_ADC_OVS_SHIFT_RIGHT_2,
-        kDiv8   = LL_ADC_OVS_SHIFT_RIGHT_3,
-        kDiv16  = LL_ADC_OVS_SHIFT_RIGHT_4,
-        kDiv32  = LL_ADC_OVS_SHIFT_RIGHT_5,
-        kDiv64  = LL_ADC_OVS_SHIFT_RIGHT_6,
-        kDiv128 = LL_ADC_OVS_SHIFT_RIGHT_7,
-        kDiv256 = LL_ADC_OVS_SHIFT_RIGHT_8
+        static const AdcRegularGroupSamplingMode kNormal;
+        static const AdcRegularGroupSamplingMode kBulb;
+        static const AdcRegularGroupSamplingMode kTriggerControlled;
     };
 
-    enum class AdcOversamplingScope : uint32_t
+    inline constexpr AdcRegularGroupSamplingMode AdcRegularGroupSamplingMode::kNormal =
+        AdcRegularGroupSamplingMode::from_ll<LL_ADC_REG_SAMPLING_MODE_NORMAL>();
+    inline constexpr AdcRegularGroupSamplingMode AdcRegularGroupSamplingMode::kBulb =
+        AdcRegularGroupSamplingMode::from_ll<LL_ADC_REG_SAMPLING_MODE_BULB>();
+    inline constexpr AdcRegularGroupSamplingMode AdcRegularGroupSamplingMode::kTriggerControlled =
+        AdcRegularGroupSamplingMode::from_ll<LL_ADC_REG_SAMPLING_MODE_TRIGGER_CONTROLED>();
+
+    inline constexpr auto kAdcOversamplingRatioNumberMapping =
+        LLDriverEnumValueNumberMapping<8>{.mapping = {
+                                              std::make_pair(LL_ADC_OVS_RATIO_2, 2),
+                                              std::make_pair(LL_ADC_OVS_RATIO_4, 4),
+                                              std::make_pair(LL_ADC_OVS_RATIO_8, 8),
+                                              std::make_pair(LL_ADC_OVS_RATIO_16, 16),
+                                              std::make_pair(LL_ADC_OVS_RATIO_32, 32),
+                                              std::make_pair(LL_ADC_OVS_RATIO_64, 64),
+                                              std::make_pair(LL_ADC_OVS_RATIO_128, 128),
+                                              std::make_pair(LL_ADC_OVS_RATIO_256, 256),
+                                          }};
+
+    struct AdcOversamplingRatio
+        : public NumberedLLDriverEnumValue<AdcOversamplingRatio, kAdcOversamplingRatioNumberMapping>
     {
-        kDisable              = LL_ADC_OVS_DISABLE,
-        kRegularContinued     = LL_ADC_OVS_GRP_REGULAR_CONTINUED,
-        kRegularResumed       = LL_ADC_OVS_GRP_REGULAR_RESUMED,
-        kInject               = LL_ADC_OVS_GRP_INJECTED,
-        kInjectRegularResumed = LL_ADC_OVS_GRP_INJ_REG_RESUMED
+        static const AdcOversamplingRatio k2x;
+        static const AdcOversamplingRatio k4x;
+        static const AdcOversamplingRatio k8x;
+        static const AdcOversamplingRatio k16x;
+        static const AdcOversamplingRatio k32x;
+        static const AdcOversamplingRatio k64x;
+        static const AdcOversamplingRatio k128x;
+        static const AdcOversamplingRatio k256x;
     };
 
-    enum class AdcChannelGroup
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k2x   = AdcOversamplingRatio::from_number<2>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k4x   = AdcOversamplingRatio::from_number<4>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k8x   = AdcOversamplingRatio::from_number<8>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k16x  = AdcOversamplingRatio::from_number<16>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k32x  = AdcOversamplingRatio::from_number<32>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k64x  = AdcOversamplingRatio::from_number<64>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k128x = AdcOversamplingRatio::from_number<128>();
+    inline constexpr AdcOversamplingRatio AdcOversamplingRatio::k256x = AdcOversamplingRatio::from_number<256>();
+
+    inline constexpr auto kAdcOversamplingShiftNumberMapping =
+        LLDriverEnumValueNumberMapping<9>{.mapping = {
+                                              std::make_pair(LL_ADC_OVS_SHIFT_NONE, 0U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_1, 1U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_2, 2U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_3, 3U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_4, 4U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_5, 5U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_6, 6U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_7, 7U),
+                                              std::make_pair(LL_ADC_OVS_SHIFT_RIGHT_8, 8U),
+                                          }};
+
+    struct AdcOversamplingShift
+        : public NumberedLLDriverEnumValue<AdcOversamplingShift, kAdcOversamplingShiftNumberMapping>
     {
-        kRegular,
-        kInject
+        static const AdcOversamplingShift kNone;
+        static const AdcOversamplingShift kDiv2;
+        static const AdcOversamplingShift kDiv4;
+        static const AdcOversamplingShift kDiv8;
+        static const AdcOversamplingShift kDiv16;
+        static const AdcOversamplingShift kDiv32;
+        static const AdcOversamplingShift kDiv64;
+        static const AdcOversamplingShift kDiv128;
+        static const AdcOversamplingShift kDiv256;
     };
 
-    enum class AdcChannelSampleTime
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kNone   = AdcOversamplingShift::from_number<0>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv2   = AdcOversamplingShift::from_number<1>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv4   = AdcOversamplingShift::from_number<2>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv8   = AdcOversamplingShift::from_number<3>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv16  = AdcOversamplingShift::from_number<4>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv32  = AdcOversamplingShift::from_number<5>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv64  = AdcOversamplingShift::from_number<6>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv128 = AdcOversamplingShift::from_number<7>();
+    inline constexpr AdcOversamplingShift AdcOversamplingShift::kDiv256 = AdcOversamplingShift::from_number<8>();
+
+    struct AdcOversamplingScope : public LLDriverEnumValue<AdcOversamplingScope>
     {
-        k2Cycles5   = LL_ADC_SAMPLINGTIME_2CYCLES_5,    /// 2.5 ADC clock cycles
-        k6Cycles5   = LL_ADC_SAMPLINGTIME_6CYCLES_5,    /// 6.5 ADC clock cycles
-        k12Cycles5  = LL_ADC_SAMPLINGTIME_12CYCLES_5,   /// 12.5 ADC clock cycles
-        k24Cycles5  = LL_ADC_SAMPLINGTIME_24CYCLES_5,   /// 24.5 ADC clock cycles
-        k47Cycles5  = LL_ADC_SAMPLINGTIME_47CYCLES_5,   /// 47.5 ADC clock cycles
-        k92Cycles5  = LL_ADC_SAMPLINGTIME_92CYCLES_5,   /// 92.5 ADC clock cycles
-        k247Cycles5 = LL_ADC_SAMPLINGTIME_247CYCLES_5,  /// 247.5 ADC clock cycles
-        k640Cycles5 = LL_ADC_SAMPLINGTIME_640CYCLES_5   /// 640.5 ADC clock cycles
+        static const AdcOversamplingScope kDisable;
+        static const AdcOversamplingScope kRegularContinued;
+        static const AdcOversamplingScope kRegularResumed;
+        static const AdcOversamplingScope kInject;
+        static const AdcOversamplingScope kInjectRegularResumed;
     };
 
-    enum class AdcChannelInputMode
+    inline constexpr AdcOversamplingScope AdcOversamplingScope::kDisable =
+        AdcOversamplingScope::from_ll<LL_ADC_OVS_DISABLE>();
+    inline constexpr AdcOversamplingScope AdcOversamplingScope::kRegularContinued =
+        AdcOversamplingScope::from_ll<LL_ADC_OVS_GRP_REGULAR_CONTINUED>();
+    inline constexpr AdcOversamplingScope AdcOversamplingScope::kRegularResumed =
+        AdcOversamplingScope::from_ll<LL_ADC_OVS_GRP_REGULAR_RESUMED>();
+    inline constexpr AdcOversamplingScope AdcOversamplingScope::kInject =
+        AdcOversamplingScope::from_ll<LL_ADC_OVS_GRP_INJECTED>();
+    inline constexpr AdcOversamplingScope AdcOversamplingScope::kInjectRegularResumed =
+        AdcOversamplingScope::from_ll<LL_ADC_OVS_GRP_INJ_REG_RESUMED>();
+
+    struct AdcChannelGroup : public LLDriverEnumValue<AdcChannelGroup>
     {
-        kSingleEnded  = LL_ADC_SINGLE_ENDED,       /// Single Ended Input
-        kDifferential = LL_ADC_DIFFERENTIAL_ENDED  /// Differential Input
+        static const AdcChannelGroup kRegular;
+        static const AdcChannelGroup kInject;
     };
 
-    enum class AdcControllerInterruptSource : uint8_t
+    inline constexpr AdcChannelGroup AdcChannelGroup::kRegular = AdcChannelGroup::from_ll<0>();
+    inline constexpr AdcChannelGroup AdcChannelGroup::kInject  = AdcChannelGroup::from_ll<0>();
+
+    struct AdcChannelSampleTime : public LLDriverEnumValue<AdcChannelSampleTime>
     {
-        kReady = 0,
-        kRegularEndOfConversion,
-        kRegularEndOfSequence,
-        kRegularEndOfSampling,
-        kInjectEndOfConversion,
-        kInjectEndOfSequence,
-        kInjectContextQueueOverflow,
-        kOverrun,
-        kAnalogWatchdog1,
-        kAnalogWatchdog2,
-        kAnalogWatchdog3,
+        static const AdcChannelSampleTime k2Cycles5;
+        static const AdcChannelSampleTime k6Cycles5;
+        static const AdcChannelSampleTime k12Cycles5;
+        static const AdcChannelSampleTime k24Cycles5;
+        static const AdcChannelSampleTime k47Cycles5;
+        static const AdcChannelSampleTime k92Cycles5;
+        static const AdcChannelSampleTime k247Cycles5;
+        static const AdcChannelSampleTime k640Cycles5;
+
+        [[nodiscard]] constexpr float to_cyles() const
+        {
+            // NOLINTBEGIN(readability-magic-numbers)
+            switch (to_ll())
+            {
+                case k2Cycles5.to_ll():
+                    return 2.5F;
+                case k6Cycles5.to_ll():
+                    return 6.5F;
+                case k12Cycles5.to_ll():
+                    return 12.5F;
+                case k24Cycles5.to_ll():
+                    return 24.5F;
+                case k47Cycles5.to_ll():
+                    return 47.5F;
+                case k92Cycles5.to_ll():
+                    return 92.5F;
+                case k247Cycles5.to_ll():
+                    return 247.5F;
+                case k640Cycles5.to_ll():
+                    return 640.5F;
+                default:
+                    expect(false, "Invalid sample time");  // Invalid sample time
+                    return 0.0F;
+            }
+            // NOLINTEND(readability-magic-numbers)
+        }
     };
 
-    enum class AdcDmaRegister : uint32_t
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k2Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_2CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k6Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_6CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k12Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_12CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k24Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_24CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k47Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_47CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k92Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_92CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k247Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_247CYCLES_5>();
+    inline constexpr AdcChannelSampleTime AdcChannelSampleTime::k640Cycles5 =
+        AdcChannelSampleTime::from_ll<LL_ADC_SAMPLINGTIME_640CYCLES_5>();
+
+    struct AdcChannelInputMode : public LLDriverEnumValue<AdcChannelInputMode>
     {
-        kRegularData      = LL_ADC_DMA_REG_REGULAR_DATA,
-        kRegularDataMulti = LL_ADC_DMA_REG_REGULAR_DATA_MULTI,
+        static const AdcChannelInputMode kSingleEnded;
+        static const AdcChannelInputMode kDifferential;
     };
 
-    enum class AdcDifferentialMode : uint32_t
+    inline constexpr AdcChannelInputMode AdcChannelInputMode::kSingleEnded =
+        AdcChannelInputMode::from_ll<LL_ADC_SINGLE_ENDED>();
+    inline constexpr AdcChannelInputMode AdcChannelInputMode::kDifferential =
+        AdcChannelInputMode::from_ll<LL_ADC_DIFFERENTIAL_ENDED>();
+
+    struct AdcControllerInterruptSource : public LLDriverEnumValue<AdcControllerInterruptSource>
     {
-        kSingleEnded        = LL_ADC_SINGLE_ENDED,
-        kDifferential       = LL_ADC_DIFFERENTIAL_ENDED,
-        kSingleDifferential = LL_ADC_BOTH_SINGLE_DIFF_ENDED,
+        static const AdcControllerInterruptSource kReady;
+        static const AdcControllerInterruptSource kRegularEndOfConversion;
+        static const AdcControllerInterruptSource kRegularEndOfSequence;
+        static const AdcControllerInterruptSource kRegularEndOfSampling;
+        static const AdcControllerInterruptSource kInjectEndOfConversion;
+        static const AdcControllerInterruptSource kInjectEndOfSequence;
+        static const AdcControllerInterruptSource kInjectContextQueueOverflow;
+        static const AdcControllerInterruptSource kOverrun;
+        static const AdcControllerInterruptSource kAnalogWatchdog1;
+        static const AdcControllerInterruptSource kAnalogWatchdog2;
+        static const AdcControllerInterruptSource kAnalogWatchdog3;
+    };
+
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kReady =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kRegularEndOfConversion =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kRegularEndOfSequence =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kRegularEndOfSampling =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kInjectEndOfConversion =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kInjectEndOfSequence =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kInjectContextQueueOverflow =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kOverrun =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kAnalogWatchdog1 =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kAnalogWatchdog2 =
+        AdcControllerInterruptSource::from_ll<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kAnalogWatchdog3 =
+        AdcControllerInterruptSource::from_ll<0>();
+
+    struct AdcDmaRegister : public LLDriverEnumValue<AdcDmaRegister>
+    {
+        static const AdcDmaRegister kRegularData;
+        static const AdcDmaRegister kRegularDataMulti;
+    };
+
+    inline constexpr AdcDmaRegister AdcDmaRegister::kRegularData =
+        AdcDmaRegister::from_ll<LL_ADC_DMA_REG_REGULAR_DATA>();
+    inline constexpr AdcDmaRegister AdcDmaRegister::kRegularDataMulti =
+        AdcDmaRegister::from_ll<LL_ADC_DMA_REG_REGULAR_DATA_MULTI>();
+
+    struct AdcDifferentialMode : public LLDriverEnumValue<AdcDifferentialMode>
+    {
+        static const AdcDifferentialMode kSingleEnded;
+        static const AdcDifferentialMode kDifferential;
+        static const AdcDifferentialMode kSingleDifferential;
+    };
+
+    inline constexpr AdcDifferentialMode AdcDifferentialMode::kSingleEnded =
+        AdcDifferentialMode::from_ll<LL_ADC_SINGLE_ENDED>();
+    inline constexpr AdcDifferentialMode AdcDifferentialMode::kDifferential =
+        AdcDifferentialMode::from_ll<LL_ADC_DIFFERENTIAL_ENDED>();
+    inline constexpr AdcDifferentialMode AdcDifferentialMode::kSingleDifferential =
+        AdcDifferentialMode::from_ll<LL_ADC_BOTH_SINGLE_DIFF_ENDED>();
+
+    struct AdcAnalogWatchdogChannelGroup : public LLDriverEnumValue<AdcAnalogWatchdogChannelGroup>
+    {
+        static const AdcAnalogWatchdogChannelGroup kDisable;
+        static const AdcAnalogWatchdogChannelGroup kAllRegularChannels;
+        static const AdcAnalogWatchdogChannelGroup kAllInjectedChannels;
+        static const AdcAnalogWatchdogChannelGroup kAllRegularAndInjectedChannels;
+        static const AdcAnalogWatchdogChannelGroup kChannel0Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel0Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel0RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel1Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel1Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel1RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel2Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel2Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel2RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel3Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel3Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel3RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel4Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel4Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel4RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel5Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel5Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel5RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel6Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel6Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel6RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel7Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel7Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel7RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel8Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel8Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel8RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel9Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel9Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel9RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel10Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel10Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel10RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel11Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel11Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel11RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel12Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel12Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel12RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel13Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel13Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel13RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel14Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel14Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel14RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel15Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel15Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel15RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel16Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel16Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel16RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel17Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel17Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel17RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannel18Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannel18Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannel18RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVrefintRegular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVrefintInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVrefintRegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelTempsensorAdc1Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelTempsensorAdc1Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelTempsensorAdc1RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelTempsensorAdc5Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelTempsensorAdc5Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelTempsensorAdc5RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVbatRegular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVbatInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVbatRegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp1Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp1Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp1RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp2Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp2Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp2RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp3Adc2Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp3Adc2Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp3Adc2RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp3Adc3Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp3Adc3Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp3Adc3RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp4Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp4Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp4RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp5Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp5Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp5RegularAndInjected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp6Regular;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp6Injected;
+        static const AdcAnalogWatchdogChannelGroup kChannelVopamp6RegularAndInjected;
+
+        [[nodiscard]] static AdcAnalogWatchdogChannelGroup from_channel(const AdcChannelId channel,
+                                                                        const bool         regular,
+                                                                        const bool         injected)
+        {
+#define CHANNEL_CASE(channel_name)                   \
+    case AdcChannelId::##channel_name.to_ll():       \
+        if (regular && injected)                     \
+        {                                            \
+            return channel_name##RegularAndInjected; \
+        }                                            \
+        else if (regular)                            \
+        {                                            \
+            return channel_name##Regular;            \
+        }                                            \
+        else if (injected)                           \
+        {                                            \
+            return channel_name##Injected;           \
+        }                                            \
+        break;
+
+            switch (channel.to_ll())
+            {
+                CHANNEL_CASE(kChannel0);
+                CHANNEL_CASE(kChannel1);
+                CHANNEL_CASE(kChannel2);
+                CHANNEL_CASE(kChannel3);
+                CHANNEL_CASE(kChannel4);
+                CHANNEL_CASE(kChannel5);
+                CHANNEL_CASE(kChannel6);
+                CHANNEL_CASE(kChannel7);
+                CHANNEL_CASE(kChannel8);
+                CHANNEL_CASE(kChannel9);
+                CHANNEL_CASE(kChannel10);
+                CHANNEL_CASE(kChannel11);
+                CHANNEL_CASE(kChannel12);
+                CHANNEL_CASE(kChannel13);
+                CHANNEL_CASE(kChannel14);
+                CHANNEL_CASE(kChannel15);
+                CHANNEL_CASE(kChannel16);
+                CHANNEL_CASE(kChannel17);
+                CHANNEL_CASE(kChannel18);
+                CHANNEL_CASE(kVrefint);
+                CHANNEL_CASE(kTempsensorAdc1);
+                CHANNEL_CASE(kTempsensorAdc5);
+                CHANNEL_CASE(kVbat);
+                CHANNEL_CASE(kVopamp1);
+                CHANNEL_CASE(kVopamp2);
+                CHANNEL_CASE(kVopamp3Adc2);
+                CHANNEL_CASE(kVopamp3Adc3);
+                CHANNEL_CASE(kVopamp4);
+                CHANNEL_CASE(kVopamp5);
+                CHANNEL_CASE(kVopamp6);
+                default:
+                    expect(false, "Invalid channel for watchdog group");  // Invalid channel for watchdog group
+                    return kDisable;
+            }
+
+#undef CHANNEL_CASE
+        }
+    };
+
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kDisable =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_DISABLE>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kAllRegularChannels =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_ALL_CHANNELS_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kAllInjectedChannels =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_ALL_CHANNELS_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kAllRegularAndInjectedChannels =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_ALL_CHANNELS_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel0Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_0_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel0Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_0_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel0RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_0_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel1Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_1_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel1Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_1_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel1RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_1_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel2Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_2_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel2Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_2_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel2RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_2_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel3Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_3_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel3Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_3_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel3RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_3_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel4Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_4_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel4Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_4_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel4RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_4_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel5Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_5_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel5Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_5_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel5RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_5_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel6Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_6_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel6Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_6_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel6RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_6_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel7Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_7_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel7Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_7_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel7RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_7_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel8Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_8_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel8Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_8_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel8RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_8_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel9Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_9_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel9Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_9_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel9RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_9_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel10Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_10_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel10Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_10_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel10RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_10_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel11Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_11_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel11Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_11_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel11RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_11_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel12Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_12_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel12Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_12_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel12RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_12_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel13Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_13_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel13Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_13_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel13RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_13_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel14Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_14_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel14Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_14_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel14RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_14_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel15Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_15_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel15Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_15_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel15RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_15_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel16Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_16_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel16Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_16_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel16RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_16_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel17Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_17_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel17Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_17_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel17RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_17_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel18Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_18_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel18Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_18_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannel18RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CHANNEL_18_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVrefintRegular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VREFINT_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVrefintInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VREFINT_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVrefintRegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VREFINT_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelTempsensorAdc1Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_TEMPSENSOR_ADC1_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelTempsensorAdc1Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_TEMPSENSOR_ADC1_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup
+        AdcAnalogWatchdogChannelGroup::kChannelTempsensorAdc1RegularAndInjected =
+            AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_TEMPSENSOR_ADC1_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelTempsensorAdc5Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_TEMPSENSOR_ADC5_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelTempsensorAdc5Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_TEMPSENSOR_ADC5_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup
+        AdcAnalogWatchdogChannelGroup::kChannelTempsensorAdc5RegularAndInjected =
+            AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_TEMPSENSOR_ADC5_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVbatRegular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VBAT_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVbatInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VBAT_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVbatRegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VBAT_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp1Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP1_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp1Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP1_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp1RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP1_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp2Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP2_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp2Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP2_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp2RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP2_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp3Adc2Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP3_ADC2_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVopamp3Adc2Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP3_ADC2_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp3Adc2RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP3_ADC2_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp3Adc3Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP3_ADC3_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp3Adc3Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP3_ADC3_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp3Adc3RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP3_ADC3_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp4Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP4_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp4Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP4_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp4RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP4_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp5Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP5_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp5Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP5_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp5RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP5_REG_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp6Regular =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP6_REG>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp6Injected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP6_INJ>();
+    inline constexpr AdcAnalogWatchdogChannelGroup AdcAnalogWatchdogChannelGroup::kChannelVoamp6RegularAndInjected =
+        AdcAnalogWatchdogChannelGroup::from_ll<LL_ADC_AWD_CH_VOPAMP6_REG_INJ>();
+
+    inline constexpr auto kAdcAnalogWatchdogFilteringMapping =
+        LLDriverEnumValueSequentialNumberMapping<8>{.start_number = 1,
+                                                    .ll_id_table  = {LL_ADC_AWD_FILTERING_NONE,
+                                                                     LL_ADC_AWD_FILTERING_2SAMPLES,
+                                                                     LL_ADC_AWD_FILTERING_3SAMPLES,
+                                                                     LL_ADC_AWD_FILTERING_4SAMPLES,
+                                                                     LL_ADC_AWD_FILTERING_5SAMPLES,
+                                                                     LL_ADC_AWD_FILTERING_6SAMPLES,
+                                                                     LL_ADC_AWD_FILTERING_7SAMPLES,
+                                                                     LL_ADC_AWD_FILTERING_8SAMPLES}};
+
+    struct AdcAnalogWatchdogFiltering
+        : NumberedLLDriverEnumValue<AdcAnalogWatchdogFiltering, kAdcAnalogWatchdogFilteringMapping>
+    {
+        static const AdcAnalogWatchdogFiltering kNone;
+        static const AdcAnalogWatchdogFiltering k2Samples;
+        static const AdcAnalogWatchdogFiltering k3Samples;
+        static const AdcAnalogWatchdogFiltering k4Samples;
+        static const AdcAnalogWatchdogFiltering k5Samples;
+        static const AdcAnalogWatchdogFiltering k6Samples;
+        static const AdcAnalogWatchdogFiltering k7Samples;
+        static const AdcAnalogWatchdogFiltering k8Samples;
+    };
+
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::kNone =
+        AdcAnalogWatchdogFiltering::from_number<1>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k2Samples =
+        AdcAnalogWatchdogFiltering::from_number<2>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k3Samples =
+        AdcAnalogWatchdogFiltering::from_number<3>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k4Samples =
+        AdcAnalogWatchdogFiltering::from_number<4>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k5Samples =
+        AdcAnalogWatchdogFiltering::from_number<5>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k6Samples =
+        AdcAnalogWatchdogFiltering::from_number<6>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k7Samples =
+        AdcAnalogWatchdogFiltering::from_number<7>();
+    inline constexpr AdcAnalogWatchdogFiltering AdcAnalogWatchdogFiltering::k8Samples =
+        AdcAnalogWatchdogFiltering::from_number<8>();
+
+    struct AdcControllerInterruptSource : public EnumValue<AdcControllerInterruptSource, uint8_t>
+    {
+        static const AdcControllerInterruptSource kReady;
+        static const AdcControllerInterruptSource kRegularEndOfConversion;
+        static const AdcControllerInterruptSource kRegularEndOfSequence;
+        static const AdcControllerInterruptSource kRegularEndOfSampling;
+        static const AdcControllerInterruptSource kInjectEndOfConversion;
+        static const AdcControllerInterruptSource kInjectEndOfSequence;
+        static const AdcControllerInterruptSource kInjectContextQueueOverflow;
+        static const AdcControllerInterruptSource kOverrun;
+        static const AdcControllerInterruptSource kAnalogWatchdog1;
+        static const AdcControllerInterruptSource kAnalogWatchdog2;
+        static const AdcControllerInterruptSource kAnalogWatchdog3;
+
+        [[nodiscard]] static constexpr std::array<AdcControllerInterruptSource, 11> values()
+        {
+            return {kReady,
+                    kRegularEndOfConversion,
+                    kRegularEndOfSequence,
+                    kRegularEndOfSampling,
+                    kInjectEndOfConversion,
+                    kInjectEndOfSequence,
+                    kInjectContextQueueOverflow,
+                    kOverrun,
+                    kAnalogWatchdog1,
+                    kAnalogWatchdog2,
+                    kAnalogWatchdog3};
+        }
+    };
+
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kReady =
+        AdcControllerInterruptSource::from_number<0>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kRegularEndOfConversion =
+        AdcControllerInterruptSource::from_number<1>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kRegularEndOfSequence =
+        AdcControllerInterruptSource::from_number<2>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kRegularEndOfSampling =
+        AdcControllerInterruptSource::from_number<3>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kInjectEndOfConversion =
+        AdcControllerInterruptSource::from_number<4>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kInjectEndOfSequence =
+        AdcControllerInterruptSource::from_number<5>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kInjectContextQueueOverflow =
+        AdcControllerInterruptSource::from_number<6>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kOverrun =
+        AdcControllerInterruptSource::from_number<7>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kAnalogWatchdog1 =
+        AdcControllerInterruptSource::from_number<8>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kAnalogWatchdog2 =
+        AdcControllerInterruptSource::from_number<9>();
+    inline constexpr AdcControllerInterruptSource AdcControllerInterruptSource::kAnalogWatchdog3 =
+        AdcControllerInterruptSource::from_number<10>();
+
+    // ============================================================================
+    // HARDWARE TRAITS
+    // ============================================================================
+    template <AdcControllerSpec tkControllerSpec>
+    struct AdcControllerTraits;
+
+    template <>
+    struct AdcControllerTraits<kAdc1ControllerSpec>
+    {
+        static constexpr AdcControllerSpec       skControllerSpec = kAdc1ControllerSpec;
+        static constexpr AdcControllerId         skControllerId   = skControllerSpec.controller_id;
+        static inline ADC_TypeDef *const         skInstance       = ADC1;
+        static constexpr IRQn_Type               skIRQn           = ADC1_2_IRQn;
+        static constexpr DmaMuxRequestId         skDmaMuxRequest  = DmaMuxRequestId::kAdc1;
+        static constexpr AdcCommonControllerSpec skCommonSpec     = kAdc12CommonControllerSpec;
+    };
+    template <>
+    struct AdcControllerTraits<kAdc2ControllerSpec>
+    {
+        static constexpr AdcControllerSpec       skControllerSpec = kAdc2ControllerSpec;
+        static constexpr AdcControllerId         skControllerId   = skControllerSpec.controller_id;
+        static inline ADC_TypeDef *const         skInstance       = ADC2;
+        static constexpr IRQn_Type               skIRQn           = ADC1_2_IRQn;
+        static constexpr DmaMuxRequestId         skDmaMuxRequest  = DmaMuxRequestId::kAdc2;
+        static constexpr AdcCommonControllerSpec skCommonSpec     = kAdc12CommonControllerSpec;
+    };
+
+    template <>
+    struct AdcControllerTraits<kAdc3ControllerSpec>
+    {
+        static constexpr AdcControllerSpec       skControllerSpec = kAdc3ControllerSpec;
+        static constexpr AdcControllerId         skControllerId   = skControllerSpec.controller_id;
+        static inline ADC_TypeDef *const         skInstance       = ADC3;
+        static constexpr IRQn_Type               skIRQn           = ADC3_IRQn;
+        static constexpr DmaMuxRequestId         skDmaMuxRequest  = DmaMuxRequestId::kAdc3;
+        static constexpr AdcCommonControllerSpec skCommonSpec     = kAdc345CommonControllerSpec;
+    };
+
+    template <>
+    struct AdcControllerTraits<kAdc4ControllerSpec>
+    {
+        static constexpr AdcControllerSpec       skControllerSpec = kAdc4ControllerSpec;
+        static constexpr AdcControllerId         skControllerId   = skControllerSpec.controller_id;
+        static inline ADC_TypeDef *const         skInstance       = ADC4;
+        static constexpr IRQn_Type               skIRQn           = ADC4_IRQn;
+        static constexpr DmaMuxRequestId         skDmaMuxRequest  = DmaMuxRequestId::kAdc4;
+        static constexpr AdcCommonControllerSpec skCommonSpec     = kAdc345CommonControllerSpec;
+    };
+
+    template <>
+    struct AdcControllerTraits<kAdc5ControllerSpec>
+    {
+        static constexpr AdcControllerSpec       skControllerSpec = kAdc5ControllerSpec;
+        static constexpr AdcControllerId         skControllerId   = skControllerSpec.controller_id;
+        static inline ADC_TypeDef *const         skInstance       = ADC5;
+        static constexpr IRQn_Type               skIRQn           = ADC5_IRQn;
+        static constexpr DmaMuxRequestId         skDmaMuxRequest  = DmaMuxRequestId::kAdc5;
+        static constexpr AdcCommonControllerSpec skCommonSpec     = kAdc345CommonControllerSpec;
     };
 
     // ============================================================================
-    // ROOT INTERFACE
+    // INTERFACE
     // ============================================================================
+
     struct AdcTraits
     {
-        static constexpr size_t skNumChannels     = magic_enum::enum_count<AdcChannelId>();
+        using AdcValue                            = uint16_t;
+        static constexpr size_t skNumChannels     = 19;
         static constexpr size_t skNumInjChannels  = 4;
         static constexpr size_t skNumRegChannels  = 16;
         static constexpr size_t skNumOffsetBlocks = 4;
-
-
-
-        static constexpr std::array<uint32_t, skNumInjChannels> skInjectRankLLIdTable = {
-            LL_ADC_INJ_RANK_1, LL_ADC_INJ_RANK_2, LL_ADC_INJ_RANK_3, LL_ADC_INJ_RANK_4};
-
-        static constexpr std::array<uint32_t, skNumRegChannels> skRegularRankLLIdTable = {LL_ADC_REG_RANK_1,
-                                                                                          LL_ADC_REG_RANK_2,
-                                                                                          LL_ADC_REG_RANK_3,
-                                                                                          LL_ADC_REG_RANK_4,
-                                                                                          LL_ADC_REG_RANK_5,
-                                                                                          LL_ADC_REG_RANK_6,
-                                                                                          LL_ADC_REG_RANK_7,
-                                                                                          LL_ADC_REG_RANK_8,
-                                                                                          LL_ADC_REG_RANK_9,
-                                                                                          LL_ADC_REG_RANK_10,
-                                                                                          LL_ADC_REG_RANK_11,
-                                                                                          LL_ADC_REG_RANK_12,
-                                                                                          LL_ADC_REG_RANK_13,
-                                                                                          LL_ADC_REG_RANK_14,
-                                                                                          LL_ADC_REG_RANK_15,
-                                                                                          LL_ADC_REG_RANK_16};
-
-        static constexpr std::array<uint32_t, skNumOffsetBlocks> skOffsetBlockLLIdTable = {
-            LL_ADC_OFFSET_1, LL_ADC_OFFSET_2, LL_ADC_OFFSET_3, LL_ADC_OFFSET_4};
-
-        [[nodiscard]] static constexpr uint8_t controller_id_to_index(const AdcControllerId controller_id)
-        {
-            static_assert(static_cast<uint8_t>(AdcControllerId::kAdc1) == 1,
-                          "AdcControllerId enum values must start at 1");
-            return static_cast<uint8_t>(controller_id) - 1;
-        }
-
-        [[nodiscard]] static constexpr uint8_t controller_id_to_number(const AdcControllerId controller_id)
-        {
-            static_assert(static_cast<uint8_t>(AdcControllerId::kAdc1) == 1,
-                          "AdcControllerId enum values must start at 1");
-            return static_cast<uint8_t>(controller_id);
-        }
-
-        [[nodiscard]] static constexpr uint8_t channel_id_to_index(const AdcChannelId channel_id)
-        {
-            static_assert(static_cast<uint32_t>(AdcChannelId::kChannel0) == 0,
-                          "AdcChannelId enum values must start at 0");
-            return static_cast<uint8_t>(channel_id);
-        }
-
-        [[nodiscard]] static constexpr std::optional<uint8_t> channel_id_to_number(const AdcChannelId channel_id)
-        {
-            switch (channel_id)
-            {
-                case AdcChannelId::kChannel0:
-                case AdcChannelId::kChannel1:
-                case AdcChannelId::kChannel2:
-                case AdcChannelId::kChannel3:
-                case AdcChannelId::kChannel4:
-                case AdcChannelId::kChannel5:
-                case AdcChannelId::kChannel6:
-                case AdcChannelId::kChannel7:
-                case AdcChannelId::kChannel8:
-                case AdcChannelId::kChannel9:
-                case AdcChannelId::kChannel10:
-                case AdcChannelId::kChannel11:
-                case AdcChannelId::kChannel12:
-                case AdcChannelId::kChannel13:
-                case AdcChannelId::kChannel14:
-                case AdcChannelId::kChannel15:
-                case AdcChannelId::kChannel16:
-                case AdcChannelId::kChannel17:
-                case AdcChannelId::kChannel18:
-                    return static_cast<uint8_t>(static_cast<uint32_t>(channel_id) & 0xFF);
-                default:
-                    return std::nullopt;  // Invalid channel number
-            }
-        }
-
-        [[nodiscard]] static constexpr uint32_t channel_id_to_ll_id(const AdcChannelId channel_id)
-        {
-            return skChannelLLIdTable[AdcTraits::channel_id_to_index(channel_id)];
-        }
-
-        [[nodiscard]] static constexpr std::optional<AdcChannelId> channel_ll_id_to_id(const uint32_t ll_channel_id)
-        {
-            for (size_t i = 0; i < skNumChannels; ++i)
-            {
-                if (skChannelLLIdTable[i] == ll_channel_id)
-                {
-                    return static_cast<AdcChannelId>(i);
-                }
-            }
-            return std::nullopt;  // Invalid LL channel ID
-        }
-
-        [[nodiscard]] static constexpr uint8_t inject_group_rank_to_index(const AdcInjectChannelRank rank)
-        {
-            static_assert(static_cast<uint8_t>(AdcInjectChannelRank::kRank1) == 1,
-                          "AdcInjectChannelRank enum values must start at 1");
-            return static_cast<uint8_t>(rank) - 1;
-        }
-
-        [[nodiscard]] static constexpr uint8_t inject_group_rank_to_number(const AdcInjectChannelRank rank)
-        {
-            static_assert(static_cast<uint8_t>(AdcInjectChannelRank::kRank1) == 1,
-                          "AdcInjectChannelRank enum values must start at 1");
-            return static_cast<uint8_t>(rank);
-        }
-
-        [[nodiscard]] static constexpr uint32_t inject_group_rank_to_ll_id(const AdcInjectChannelRank rank)
-        {
-            return skInjectRankLLIdTable[inject_group_rank_to_index(rank)];
-        }
-
-        [[nodiscard]] static constexpr std::optional<AdcInjectChannelRank> inject_group_ll_id_to_rank(
-            const uint32_t rank_reg)
-        {
-            switch (rank_reg)
-            {
-                case LL_ADC_INJ_RANK_1:
-                    return AdcInjectChannelRank::kRank1;
-                case LL_ADC_INJ_RANK_2:
-                    return AdcInjectChannelRank::kRank2;
-                case LL_ADC_INJ_RANK_3:
-                    return AdcInjectChannelRank::kRank3;
-                case LL_ADC_INJ_RANK_4:
-                    return AdcInjectChannelRank::kRank4;
-                default:
-                    return std::nullopt;  // Invalid rank
-            }
-        }
-
-        [[nodiscard]] static constexpr uint8_t regular_group_rank_to_index(const AdcRegularChannelRank rank)
-        {
-            static_assert(static_cast<uint8_t>(AdcRegularChannelRank::kRank1) == 1,
-                          "AdcRegularChannelRank enum values must start at 1");
-            return static_cast<uint8_t>(rank) - 1;
-        }
-
-        [[nodiscard]] static constexpr uint8_t regular_group_rank_to_number(const AdcRegularChannelRank rank)
-        {
-            static_assert(static_cast<uint8_t>(AdcRegularChannelRank::kRank1) == 1,
-                          "AdcRegularChannelRank enum values must start at 1");
-            return static_cast<uint8_t>(rank);
-        }
-
-        [[nodiscard]] static constexpr uint32_t regular_group_rank_to_ll_id(const AdcRegularChannelRank rank)
-        {
-            return skRegularRankLLIdTable[regular_group_rank_to_index(rank)];
-        }
-
-        [[nodiscard]] static constexpr std::optional<AdcRegularChannelRank> regular_group_ll_id_to_rank(
-            const uint32_t rank)
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (rank)
-            {
-                case LL_ADC_REG_RANK_1:
-                    return AdcRegularChannelRank::kRank1;
-                case LL_ADC_REG_RANK_2:
-                    return AdcRegularChannelRank::kRank2;
-                case LL_ADC_REG_RANK_3:
-                    return AdcRegularChannelRank::kRank3;
-                case LL_ADC_REG_RANK_4:
-                    return AdcRegularChannelRank::kRank4;
-                case LL_ADC_REG_RANK_5:
-                    return AdcRegularChannelRank::kRank5;
-                case LL_ADC_REG_RANK_6:
-                    return AdcRegularChannelRank::kRank6;
-                case LL_ADC_REG_RANK_7:
-                    return AdcRegularChannelRank::kRank7;
-                case LL_ADC_REG_RANK_8:
-                    return AdcRegularChannelRank::kRank8;
-                case LL_ADC_REG_RANK_9:
-                    return AdcRegularChannelRank::kRank9;
-                case LL_ADC_REG_RANK_10:
-                    return AdcRegularChannelRank::kRank10;
-                case LL_ADC_REG_RANK_11:
-                    return AdcRegularChannelRank::kRank11;
-                case LL_ADC_REG_RANK_12:
-                    return AdcRegularChannelRank::kRank12;
-                case LL_ADC_REG_RANK_13:
-                    return AdcRegularChannelRank::kRank13;
-                case LL_ADC_REG_RANK_14:
-                    return AdcRegularChannelRank::kRank14;
-                case LL_ADC_REG_RANK_15:
-                    return AdcRegularChannelRank::kRank15;
-                case LL_ADC_REG_RANK_16:
-                    return AdcRegularChannelRank::kRank16;
-                default:
-                    return std::nullopt;  // Invalid rank
-            }
-
-            // NOLINTEND(readability-magic-numbers)
-        }
-
-        [[nodiscard]] static constexpr uint8_t offset_block_id_to_number(const AdcOffsetBlockId block)
-        {
-            static_assert(static_cast<uint8_t>(AdcOffsetBlockId::kOffset1) == 1,
-                          "AdcOffsetBlockId enum values must start at 1");
-            return static_cast<uint8_t>(block);
-        }
-
-        [[nodiscard]] static constexpr uint8_t offset_block_id_to_index(const AdcOffsetBlockId block)
-        {
-            static_assert(static_cast<uint8_t>(AdcOffsetBlockId::kOffset1) == 1,
-                          "AdcOffsetBlockId enum values must start at 1");
-            return static_cast<uint8_t>(block) - 1;
-        }
-
-        [[nodiscard]] static constexpr uint32_t offset_block_id_to_ll_id(const AdcOffsetBlockId block)
-        {
-            return skOffsetBlockLLIdTable[offset_block_id_to_index(block)];
-        }
 
         static constexpr uint32_t calculate_async_clock_freq_hz(const uint32_t                     async_clock_freq_hz,
                                                                 const AdcCommonAsyncClockPrescaler prescaler)
@@ -526,316 +1346,18 @@ namespace valle::platform
             return AdcCommonRootTraits::calculate_sync_clock_freq_hz(sync_clock_freq_hz, prescaler);
         }
 
-        static constexpr float get_channel_sample_time_cycles(const AdcChannelSampleTime sample_time)
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (sample_time)
-            {
-                case AdcChannelSampleTime::k2Cycles5:
-                    return 2.5F;
-                case AdcChannelSampleTime::k6Cycles5:
-                    return 6.5F;
-                case AdcChannelSampleTime::k12Cycles5:
-                    return 12.5F;
-                case AdcChannelSampleTime::k24Cycles5:
-                    return 24.5F;
-                case AdcChannelSampleTime::k47Cycles5:
-                    return 47.5F;
-                case AdcChannelSampleTime::k92Cycles5:
-                    return 92.5F;
-                case AdcChannelSampleTime::k247Cycles5:
-                    return 247.5F;
-                case AdcChannelSampleTime::k640Cycles5:
-                    return 640.5F;
-                default:
-                    expect(false, "Invalid sample time");  // Invalid sample time
-                    return 0.0F;
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
-
-        static constexpr uint32_t get_oversampling_ratio_factor(const AdcOversamplingRatio oversampling_ratio)
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (oversampling_ratio)
-            {
-                case AdcOversamplingRatio::k2x:
-                    return 2;
-                case AdcOversamplingRatio::k4x:
-                    return 4;
-                case AdcOversamplingRatio::k8x:
-                    return 8;
-                case AdcOversamplingRatio::k16x:
-                    return 16;
-                case AdcOversamplingRatio::k32x:
-                    return 32;
-                case AdcOversamplingRatio::k64x:
-                    return 64;
-                case AdcOversamplingRatio::k128x:
-                    return 128;
-                case AdcOversamplingRatio::k256x:
-                    return 256;
-                default:
-                    expect(false, "Invalid oversampling ratio");  // Invalid oversampling ratio
-                    return 1;
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
-
         static constexpr DurationSecondsF calculate_channel_sample_time(
             const uint32_t                            clock_freq_hz,
             const AdcChannelSampleTime                sample_time,
             const std::optional<AdcOversamplingRatio> oversampling_ratio)
         {
-            const float    cycles = get_channel_sample_time_cycles(sample_time);
             const uint32_t oversampling_factor =
-                oversampling_ratio.has_value() ? get_oversampling_ratio_factor(oversampling_ratio.value()) : 1;
+                oversampling_ratio.has_value() ? oversampling_ratio.value().to_number() : 1;
             const float duration_s =
-                (cycles * static_cast<float>(oversampling_factor)) / static_cast<float>(clock_freq_hz);
+                (sample_time.to_cycles() * static_cast<float>(oversampling_factor)) / static_cast<float>(clock_freq_hz);
             return DurationSecondsF(duration_s);
         }
-
-        static constexpr uint32_t inject_group_count_to_count_ll_id(const uint32_t count)
-        {
-            switch (count)
-            {
-                case 1:  // NOLINT(bugprone-branch-clone)
-                    return LL_ADC_INJ_SEQ_SCAN_DISABLE;
-                case 2:
-                    return LL_ADC_INJ_SEQ_SCAN_ENABLE_2RANKS;
-                case 3:
-                    return LL_ADC_INJ_SEQ_SCAN_ENABLE_3RANKS;
-                case 4:
-                    return LL_ADC_INJ_SEQ_SCAN_ENABLE_4RANKS;
-                default:
-                    expect(false, "Invalid inject group count");
-                    return LL_ADC_INJ_SEQ_SCAN_DISABLE;
-            }
-        }
-
-        static constexpr uint32_t inject_group_count_ll_id_to_count(const uint32_t count_ll_id)
-        {
-            switch (count_ll_id)
-            {
-                case LL_ADC_INJ_SEQ_SCAN_DISABLE:
-                    return 1;
-                case LL_ADC_INJ_SEQ_SCAN_ENABLE_2RANKS:
-                    return 2;
-                case LL_ADC_INJ_SEQ_SCAN_ENABLE_3RANKS:
-                    return 3;
-                case LL_ADC_INJ_SEQ_SCAN_ENABLE_4RANKS:
-                    return 4;
-                default:
-                    expect(false, "Invalid inject group sequence length");
-                    return 1;
-            }
-        }
-
-        static constexpr uint32_t regular_group_count_to_count_ll_id(const uint32_t count)
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (count)
-            {
-                case 1:  // NOLINT(bugprone-branch-clone)
-                    return LL_ADC_REG_SEQ_SCAN_DISABLE;
-                case 2:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS;
-                case 3:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS;
-                case 4:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS;
-                case 5:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS;
-                case 6:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS;
-                case 7:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS;
-                case 8:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_8RANKS;
-                case 9:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_9RANKS;
-                case 10:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_10RANKS;
-                case 11:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_11RANKS;
-                case 12:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_12RANKS;
-                case 13:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_13RANKS;
-                case 14:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_14RANKS;
-                case 15:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_15RANKS;
-                case 16:
-                    return LL_ADC_REG_SEQ_SCAN_ENABLE_16RANKS;
-                default:
-                    expect(false, "Invalid regular group count");
-                    return LL_ADC_REG_SEQ_SCAN_DISABLE;
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
-
-        static constexpr uint32_t regular_group_count_ll_id_to_count(const uint32_t count_ll_id)
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (count_ll_id)
-            {
-                case LL_ADC_REG_SEQ_SCAN_DISABLE:
-                    return 1;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS:
-                    return 2;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_3RANKS:
-                    return 3;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_4RANKS:
-                    return 4;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_5RANKS:
-                    return 5;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_6RANKS:
-                    return 6;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_7RANKS:
-                    return 7;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_8RANKS:
-                    return 8;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_9RANKS:
-                    return 9;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_10RANKS:
-                    return 10;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_11RANKS:
-                    return 11;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_12RANKS:
-                    return 12;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_13RANKS:
-                    return 13;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_14RANKS:
-                    return 14;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_15RANKS:
-                    return 15;
-                case LL_ADC_REG_SEQ_SCAN_ENABLE_16RANKS:
-                    return 16;
-                default:
-                    expect(false, "Invalid regular group sequence length");
-                    return 1;
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
     };
-
-    // ============================================================================
-    // HARDWARE TRAITS
-    // ============================================================================
-    template <AdcControllerSpec tkControllerSpec>
-    struct AdcControllerTraits;
-
-    template <>
-    struct AdcControllerTraits<kAdc1ControllerSpec>
-    {
-        static constexpr AdcControllerSpec skControllerSpec   = kAdc1ControllerSpec;
-        static constexpr AdcControllerId   skControllerId     = skControllerSpec.controller_id;
-        static constexpr uint8_t           skControllerNumber = AdcTraits::controller_id_to_number(skControllerId);
-        static inline ADC_TypeDef *const   skInstance         = ADC1;
-        static constexpr IRQn_Type         skIRQn             = ADC1_2_IRQn;
-        static constexpr DmaMuxRequestId   skDmaMuxRequest    = DmaMuxRequestId::kAdc1;
-        static constexpr AdcCommonControllerSpec skCommonSpec = kAdc12CommonControllerSpec;
-    };
-    template <>
-    struct AdcControllerTraits<kAdc2ControllerSpec>
-    {
-        static constexpr AdcControllerSpec skControllerSpec   = kAdc2ControllerSpec;
-        static constexpr AdcControllerId   skControllerId     = skControllerSpec.controller_id;
-        static constexpr uint8_t           skControllerNumber = AdcTraits::controller_id_to_number(skControllerId);
-        static inline ADC_TypeDef *const   skInstance         = ADC2;
-        static constexpr IRQn_Type         skIRQn             = ADC1_2_IRQn;
-        static constexpr DmaMuxRequestId   skDmaMuxRequest    = DmaMuxRequestId::kAdc2;
-        static constexpr AdcCommonControllerSpec skCommonSpec = kAdc12CommonControllerSpec;
-    };
-
-    template <>
-    struct AdcControllerTraits<kAdc3ControllerSpec>
-    {
-        static constexpr AdcControllerSpec skControllerSpec   = kAdc3ControllerSpec;
-        static constexpr AdcControllerId   skControllerId     = skControllerSpec.controller_id;
-        static constexpr uint8_t           skControllerNumber = AdcTraits::controller_id_to_number(skControllerId);
-        static inline ADC_TypeDef *const   skInstance         = ADC3;
-        static constexpr IRQn_Type         skIRQn             = ADC3_IRQn;
-        static constexpr DmaMuxRequestId   skDmaMuxRequest    = DmaMuxRequestId::kAdc3;
-        static constexpr AdcCommonControllerSpec skCommonSpec = kAdc345CommonControllerSpec;
-    };
-
-    template <>
-    struct AdcControllerTraits<kAdc4ControllerSpec>
-    {
-        static constexpr AdcControllerSpec skControllerSpec   = kAdc4ControllerSpec;
-        static constexpr AdcControllerId   skControllerId     = skControllerSpec.controller_id;
-        static constexpr uint8_t           skControllerNumber = AdcTraits::controller_id_to_number(skControllerId);
-        static inline ADC_TypeDef *const   skInstance         = ADC4;
-        static constexpr IRQn_Type         skIRQn             = ADC4_IRQn;
-        static constexpr DmaMuxRequestId   skDmaMuxRequest    = DmaMuxRequestId::kAdc4;
-        static constexpr AdcCommonControllerSpec skCommonSpec = kAdc345CommonControllerSpec;
-    };
-
-    template <>
-    struct AdcControllerTraits<kAdc5ControllerSpec>
-    {
-        static constexpr AdcControllerSpec skControllerSpec   = kAdc5ControllerSpec;
-        static constexpr AdcControllerId   skControllerId     = skControllerSpec.controller_id;
-        static constexpr uint8_t           skControllerNumber = AdcTraits::controller_id_to_number(skControllerId);
-        static inline ADC_TypeDef *const   skInstance         = ADC5;
-        static constexpr IRQn_Type         skIRQn             = ADC5_IRQn;
-        static constexpr DmaMuxRequestId   skDmaMuxRequest    = DmaMuxRequestId::kAdc5;
-        static constexpr AdcCommonControllerSpec skCommonSpec = kAdc345CommonControllerSpec;
-    };
-
-    // -------------------------------------------------------------------------
-    // Channel Traits
-    // -------------------------------------------------------------------------
-    template <AdcChannelSpec tkChannelSpec>
-    struct AdcChannelTraits
-    {
-        static constexpr AdcChannelSpec         skChannelSpec   = tkChannelSpec;
-        static constexpr AdcControllerId        skControllerId  = tkChannelSpec.controller_id;
-        static constexpr AdcChannelId           skChannelId     = tkChannelSpec.channel_id;
-        static constexpr uint8_t                skChannelIdx    = AdcTraits::channel_id_to_index(skChannelId);
-        static constexpr std::optional<uint8_t> skChannelNumber = AdcTraits::channel_id_to_number(skChannelId);
-        static constexpr uint32_t               skLLChannelId   = AdcTraits::channel_id_to_ll_id(skChannelId);
-    };
-
-    // ---------------------------------------------------------------------------
-    // RANK TRAITS
-    // ---------------------------------------------------------------------------
-    template <AdcInjectChannelRankSpec tkRankSpec>
-    struct AdcInjectRankTraits
-    {
-        static constexpr AdcInjectChannelRankSpec skRankSpec   = tkRankSpec;
-        static constexpr AdcInjectChannelRank     skRank       = tkRankSpec.rank;
-        static constexpr uint8_t                  skRankNumber = AdcTraits::inject_group_rank_to_number(skRank);
-        static constexpr uint32_t                 skRankLLId   = AdcTraits::inject_group_rank_to_ll_id(skRank);
-    };
-
-    template <AdcRegularChannelRankSpec tkRankSpec>
-    struct AdcRegularRankTraits
-    {
-        static constexpr AdcRegularChannelRankSpec skRankSpec   = tkRankSpec;
-        static constexpr AdcRegularChannelRank     skRank       = tkRankSpec.rank;
-        static constexpr uint8_t                   skRankNumber = AdcTraits::regular_group_rank_to_number(skRank);
-        static constexpr uint32_t                  skRankLLId   = AdcTraits::regular_group_rank_to_ll_id(skRank);
-    };
-
-    // ---------------------------------------------------------------------------
-    // OFFSET BLOCK TRAITS
-    // ---------------------------------------------------------------------------
-    template <AdcOffsetBlockSpec tkOffsetBlockSpec>
-    struct AdcOffsetBlockTraits
-    {
-        static constexpr AdcOffsetBlockSpec skOffsetBlockSpec = tkOffsetBlockSpec;
-        static constexpr AdcOffsetBlockId   skBlockId         = tkOffsetBlockSpec.block_id;
-        static constexpr uint8_t            skBlockNumber     = AdcTraits::offset_block_id_to_number(skBlockId);
-        static constexpr uint32_t           skBlockLLId       = AdcTraits::offset_block_id_to_ll_id(skBlockId);
-    };
-
-    // ============================================================================
-    // INTERFACE
-    // ============================================================================
-    using AdcValue = uint16_t;
 
     template <AdcControllerSpec tkControllerSpec>
     struct AdcControllerInterface : public AdcTraits
@@ -845,122 +1367,145 @@ namespace valle::platform
         // ----------------------------------------------------------------------------
         // CORE
         // ----------------------------------------------------------------------------
-        void disable() const
-        {
-            LL_ADC_Disable(ControllerTraitsT::skInstance);
-        }
-
-        void enable() const
+        VALLE_LL_WRAPPER void enable() const
         {
             LL_ADC_Enable(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_enabled() const
         {
             return LL_ADC_IsEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        [[nodiscard]] bool deep_power_down_enabled() const
+        VALLE_LL_WRAPPER void disable() const
         {
-            return LL_ADC_IsDeepPowerDownEnabled(ControllerTraitsT::skInstance) == 1UL;
+            LL_ADC_Disable(ControllerTraitsT::skInstance);
         }
 
-        void disable_deep_power_down() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_disable_ongoing() const
+        {
+            return LL_ADC_IsDisableOngoing(ControllerTraitsT::skInstance) != 0;
+        }
+
+        VALLE_LL_WRAPPER void enable_deep_power_down() const
+        {
+            LL_ADC_EnableDeepPowerDown(ControllerTraitsT::skInstance);
+        }
+
+        VALLE_LL_WRAPPER void disable_deep_power_down() const
         {
             LL_ADC_DisableDeepPowerDown(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool internal_regulator_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool deep_power_down_enabled() const
         {
-            return LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 1UL;
+            return LL_ADC_IsDeepPowerDownEnabled(ControllerTraitsT::skInstance) == 1UL;
         }
 
-        void enable_internal_regulator() const
+        VALLE_LL_WRAPPER void enable_internal_regulator() const
         {
             LL_ADC_EnableInternalRegulator(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_calibration_ongoing() const
+        VALLE_LL_WRAPPER void disable_internal_regulator() const
         {
-            return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) != 0;
+            LL_ADC_DisableInternalRegulator(ControllerTraitsT::skInstance);
         }
 
-        void start_calibration() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool internal_regulator_enabled() const
+        {
+            return LL_ADC_IsInternalRegulatorEnabled(ControllerTraitsT::skInstance) == 1UL;
+        }
+
+        VALLE_LL_WRAPPER void start_calibration() const
         {
             LL_ADC_StartCalibration(ControllerTraitsT::skInstance, LL_ADC_SINGLE_ENDED);
         }
 
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_calibration_ongoing() const
+        {
+            return LL_ADC_IsCalibrationOnGoing(ControllerTraitsT::skInstance) != 0;
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_dma_reg_addr(const AdcDmaRegister dma_register) const
+        {
+            return LL_ADC_DMA_GetRegAddr(ControllerTraitsT::skInstance, dma_register.to_ll());
+        }
         // -----------------------------------------------------------------------------
         // CONFIGURATION
         // -----------------------------------------------------------------------------
-        void set_resolution(const AdcResolution resolution) const
+        VALLE_LL_WRAPPER void set_resolution(const AdcResolution resolution) const
         {
-            LL_ADC_SetResolution(ControllerTraitsT::skInstance, static_cast<uint32_t>(resolution));
+            LL_ADC_SetResolution(ControllerTraitsT::skInstance, resolution.to_ll());
         }
 
-        void set_data_alignment(const AdcDataAlignment data_alignment) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcResolution get_resolution() const
         {
-            LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, static_cast<uint32_t>(data_alignment));
+            return AdcResolution::from_ll(LL_ADC_GetResolution(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] AdcDataAlignment get_data_alignment() const
+        VALLE_LL_WRAPPER void set_data_alignment(const AdcDataAlignment data_alignment) const
         {
-            return static_cast<AdcDataAlignment>(LL_ADC_GetDataAlignment(ControllerTraitsT::skInstance));
+            LL_ADC_SetDataAlignment(ControllerTraitsT::skInstance, data_alignment.to_ll());
         }
 
-        void set_low_power_mode(const AdcLowPowerMode low_power_mode) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcDataAlignment get_data_alignment() const
         {
-            LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(low_power_mode));
+            return AdcDataAlignment::from_ll(LL_ADC_GetDataAlignment(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] AdcLowPowerMode get_low_power_mode() const
+        VALLE_LL_WRAPPER void set_low_power_mode(const AdcLowPowerMode low_power_mode) const
         {
-            return static_cast<AdcLowPowerMode>(LL_ADC_GetLowPowerMode(ControllerTraitsT::skInstance));
+            LL_ADC_SetLowPowerMode(ControllerTraitsT::skInstance, low_power_mode.to_ll());
         }
 
-        void set_calibration_factor(const AdcDifferentialMode single_diff, const uint32_t calibration_factor) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcLowPowerMode get_low_power_mode() const
         {
-            LL_ADC_SetCalibrationFactor(
-                ControllerTraitsT::skInstance, static_cast<uint32_t>(single_diff), calibration_factor);
+            return AdcLowPowerMode::from_ll(LL_ADC_GetLowPowerMode(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] uint32_t get_calibration_factor(const AdcDifferentialMode single_diff) const
+        VALLE_LL_WRAPPER void set_calibration_factor(const AdcDifferentialMode single_diff,
+                                                     const uint32_t            calibration_factor) const
         {
-            return LL_ADC_GetCalibrationFactor(ControllerTraitsT::skInstance, static_cast<uint32_t>(single_diff));
+            LL_ADC_SetCalibrationFactor(ControllerTraitsT::skInstance, single_diff.to_ll(), calibration_factor);
         }
 
-        void set_gain_compensation(const uint16_t gain_compensation) const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_calibration_factor(const AdcDifferentialMode single_diff) const
         {
-            LL_ADC_SetGainCompensation(ControllerTraitsT::skInstance, static_cast<uint32_t>(gain_compensation));
+            return LL_ADC_GetCalibrationFactor(ControllerTraitsT::skInstance, single_diff.to_ll());
         }
 
-        [[nodiscard]] uint32_t get_gain_compensation() const
+        VALLE_LL_WRAPPER void set_gain_compensation(const uint16_t gain_compensation) const
+        {
+            LL_ADC_SetGainCompensation(ControllerTraitsT::skInstance, gain_compensation.to_ll());
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_gain_compensation() const
         {
             return LL_ADC_GetGainCompensation(ControllerTraitsT::skInstance);
         }
 
-        void set_common_sample_time(const AdcCommonSamplingTime sampling_time) const
+        VALLE_LL_WRAPPER void set_common_sample_time(const AdcCommonSamplingTime sampling_time) const
         {
-            LL_ADC_SetSamplingTimeCommonConfig(ControllerTraitsT::skInstance, static_cast<uint32_t>(sampling_time));
+            LL_ADC_SetSamplingTimeCommonConfig(ControllerTraitsT::skInstance, sampling_time.to_ll());
         }
 
-        [[nodiscard]] AdcCommonSamplingTime get_sampling_time_common_config() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcCommonSamplingTime get_sampling_time_common_config() const
         {
-            return static_cast<AdcCommonSamplingTime>(
-                LL_ADC_GetSamplingTimeCommonConfig(ControllerTraitsT::skInstance));
+            return AdcCommonSamplingTime::from_ll(LL_ADC_GetSamplingTimeCommonConfig(ControllerTraitsT::skInstance));
         }
 
-        void set_oversampling_scope(const AdcOversamplingScope scope) const
+        VALLE_LL_WRAPPER void set_oversampling_scope(const AdcOversamplingScope scope) const
         {
-            LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, static_cast<uint32_t>(scope));
+            LL_ADC_SetOverSamplingScope(ControllerTraitsT::skInstance, scope.to_ll());
         }
 
-        [[nodiscard]] AdcOversamplingScope get_oversampling_scope() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcOversamplingScope get_oversampling_scope() const
         {
-            return static_cast<AdcOversamplingScope>(LL_ADC_GetOverSamplingScope(ControllerTraitsT::skInstance));
+            return AdcOversamplingScope::from_ll(LL_ADC_GetOverSamplingScope(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] bool inject_group_oversampling_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool inject_group_oversampling_enabled() const
         {
             switch (get_oversampling_scope())
             {
@@ -972,7 +1517,7 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] bool regular_group_oversampling_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool regular_group_oversampling_enabled() const
         {
             switch (get_oversampling_scope())
             {
@@ -985,10 +1530,20 @@ namespace valle::platform
             }
         }
 
-        void set_oversampling_ratio_shift(const AdcOversamplingRatio ratio, const AdcOversamplingShift shift) const
+        VALLE_LL_WRAPPER void set_oversampling_ratio_shift(const AdcOversamplingRatio ratio,
+                                                           const AdcOversamplingShift shift) const
         {
-            LL_ADC_ConfigOverSamplingRatioShift(
-                ControllerTraitsT::skInstance, static_cast<uint32_t>(ratio), static_cast<uint32_t>(shift));
+            LL_ADC_ConfigOverSamplingRatioShift(ControllerTraitsT::skInstance, ratio.to_ll(), shift.to_ll());
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER AdcOversamplingRatio get_oversampling_ratio() const
+        {
+            return AdcOversamplingRatio::from_ll(LL_ADC_GetOverSamplingRatio(ControllerTraitsT::skInstance));
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER AdcOversamplingShift get_oversampling_shift() const
+        {
+            return AdcOversamplingShift::from_ll(LL_ADC_GetOverSamplingShift(ControllerTraitsT::skInstance));
         }
 
         // ----------------------------------------------------------------------------
@@ -999,12 +1554,12 @@ namespace valle::platform
          * If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
          * If Trigger is Software: ADC converts immediately.
          */
-        void start_inject() const
+        VALLE_LL_WRAPPER void start_inject() const
         {
             LL_ADC_INJ_StartConversion(ControllerTraitsT::skInstance);
         }
 
-        void stop_inject() const
+        VALLE_LL_WRAPPER void stop_inject() const
         {
             LL_ADC_INJ_StopConversion(ControllerTraitsT::skInstance);
         }
@@ -1014,12 +1569,12 @@ namespace valle::platform
          * If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
          * If Trigger is Software: ADC converts immediately.
          */
-        void start_regular() const
+        VALLE_LL_WRAPPER void start_regular() const
         {
             LL_ADC_REG_StartConversion(ControllerTraitsT::skInstance);
         }
 
-        void stop_regular() const
+        VALLE_LL_WRAPPER void stop_regular() const
         {
             LL_ADC_REG_StopConversion(ControllerTraitsT::skInstance);
         }
@@ -1027,104 +1582,30 @@ namespace valle::platform
         // ----------------------------------------------------------------------------
         // RESOLUTION INFO
         // ----------------------------------------------------------------------------
-        [[nodiscard]] uint8_t get_resolution_bits() const
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (LL_ADC_GetResolution(ControllerTraitsT::skInstance))
-            {
-                case LL_ADC_RESOLUTION_12B:
-                    return 12;
-                case LL_ADC_RESOLUTION_10B:
-                    return 10;
-                case LL_ADC_RESOLUTION_8B:
-                    return 8;
-                case LL_ADC_RESOLUTION_6B:
-                    return 6;
-                default:
-                    return 12;
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
 
-        [[nodiscard]] uint32_t get_resolution_range() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_resolution_range() const
         {
-            const uint8_t res_bits = get_resolution_bits();
+            const uint8_t res_bits = get_resolution().to_number();
             return (1UL << res_bits) - 1UL;
         }
 
-        [[nodiscard]] uint8_t get_oversampling_ratio_factor() const
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (LL_ADC_GetOverSamplingRatio(ControllerTraitsT::skInstance))
-            {
-                case LL_ADC_OVS_RATIO_2:
-                    return 2;
-                case LL_ADC_OVS_RATIO_4:
-                    return 4;
-                case LL_ADC_OVS_RATIO_8:
-                    return 8;
-                case LL_ADC_OVS_RATIO_16:
-                    return 16;
-                case LL_ADC_OVS_RATIO_32:
-                    return 32;
-                case LL_ADC_OVS_RATIO_64:
-                    return 64;
-                case LL_ADC_OVS_RATIO_128:
-                    return 128;
-                case LL_ADC_OVS_RATIO_256:
-                    return 256;
-                default:
-                    return 1;  // No oversampling
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
-
-        [[nodiscard]] uint8_t get_oversampling_shift_bits() const
-        {
-            // NOLINTBEGIN(readability-magic-numbers)
-            switch (LL_ADC_GetOverSamplingShift(ControllerTraitsT::skInstance))
-            {
-                case LL_ADC_OVS_SHIFT_NONE:
-                    return 0;
-                case LL_ADC_OVS_SHIFT_RIGHT_1:
-                    return 1;
-                case LL_ADC_OVS_SHIFT_RIGHT_2:
-                    return 2;
-                case LL_ADC_OVS_SHIFT_RIGHT_3:
-                    return 3;
-                case LL_ADC_OVS_SHIFT_RIGHT_4:
-                    return 4;
-                case LL_ADC_OVS_SHIFT_RIGHT_5:
-                    return 5;
-                case LL_ADC_OVS_SHIFT_RIGHT_6:
-                    return 6;
-                case LL_ADC_OVS_SHIFT_RIGHT_7:
-                    return 7;
-                case LL_ADC_OVS_SHIFT_RIGHT_8:
-                    return 8;
-                default:
-                    return 0;  // No shift
-            }
-            // NOLINTEND(readability-magic-numbers)
-        }
-
-        [[nodiscard]] uint32_t get_effective_resolution_range() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_effective_resolution_range() const
         {
             // Max value of a single ADC conversion
             const uint32_t max_single_sample = get_resolution_range();
 
             // Max value when 'ovs_ratio' samples are accumulated
-            const uint32_t max_accumulated = max_single_sample * get_oversampling_ratio_factor();
+            const uint32_t max_accumulated = max_single_sample * get_oversampling_ratio().to_number();
 
             // Hardware shifts the accumulated sum right
-            const uint32_t effective_max = max_accumulated >> get_oversampling_shift_bits();
+            const uint32_t effective_max = max_accumulated >> get_oversampling_shift().to_number();
 
             // The ADC Data Register is 16 bits.
             // If the math results in > 65535, the hardware truncates the top bits!
             return std::min(effective_max, static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()));
         }
 
-        [[nodiscard]] uint32_t get_inject_group_effective_resolution_range() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_inject_group_effective_resolution_range() const
         {
             if (inject_group_oversampling_enabled())
             {
@@ -1134,7 +1615,7 @@ namespace valle::platform
             return get_resolution_range();
         }
 
-        [[nodiscard]] uint32_t get_regular_group_effective_resolution_range() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_regular_group_effective_resolution_range() const
         {
             if (regular_group_oversampling_enabled())
             {
@@ -1144,33 +1625,33 @@ namespace valle::platform
             return get_resolution_range();
         }
 
-        [[nodiscard]] AdcInjectGroupTriggerSource inject_group_get_trigger_source() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcInjectGroupTriggerSource inject_group_get_trigger_source() const
         {
-            return static_cast<AdcInjectGroupTriggerSource>(LL_ADC_INJ_GetTriggerSource(ControllerTraitsT::skInstance));
+            return AdcInjectGroupTriggerSource::from_ll(LL_ADC_INJ_GetTriggerSource(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] bool inject_group_is_trigger_source_sw_start() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool inject_group_is_trigger_source_sw_start() const
         {
             return LL_ADC_INJ_IsTriggerSourceSWStart(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] AdcInjectGroupTriggerEdge inject_group_get_trigger_edge() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcInjectGroupTriggerEdge inject_group_get_trigger_edge() const
         {
-            return static_cast<AdcInjectGroupTriggerEdge>(LL_ADC_INJ_GetTriggerEdge(ControllerTraitsT::skInstance));
+            return AdcInjectGroupTriggerEdge::from_ll(LL_ADC_INJ_GetTriggerEdge(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] uint32_t inject_group_get_sequencer_discontinuity_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t inject_group_get_sequencer_discontinuity_mode() const
         {
             return LL_ADC_INJ_GetSequencerDiscont(ControllerTraitsT::skInstance);
         }
 
-        void inject_group_config_queue_context(const uint32_t channel,
-                                               const uint32_t rank,
-                                               const uint32_t sample_time,
-                                               const uint32_t single_diff,
-                                               const uint32_t trigger_source,
-                                               const uint32_t trigger_edge,
-                                               const uint32_t queue_mode) const
+        VALLE_LL_WRAPPER void inject_group_config_queue_context(const uint32_t channel,
+                                                                const uint32_t rank,
+                                                                const uint32_t sample_time,
+                                                                const uint32_t single_diff,
+                                                                const uint32_t trigger_source,
+                                                                const uint32_t trigger_edge,
+                                                                const uint32_t queue_mode) const
         {
             LL_ADC_INJ_ConfigQueueContext(ControllerTraitsT::skInstance,
                                           channel,
@@ -1185,44 +1666,44 @@ namespace valle::platform
         // -----------------------------------------------------------------------------
         // Inject Group Control
         // -----------------------------------------------------------------------------
-        void inject_group_set_queue_mode(const AdcInjectGroupQueueMode queue_mode) const
+        VALLE_LL_WRAPPER void inject_group_set_queue_mode(const AdcInjectGroupQueueMode queue_mode) const
         {
-            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(queue_mode));
+            LL_ADC_INJ_SetQueueMode(ControllerTraitsT::skInstance, queue_mode.to_ll());
         }
 
-        [[nodiscard]] AdcInjectGroupQueueMode inject_group_get_queue_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcInjectGroupQueueMode inject_group_get_queue_mode() const
         {
-            return static_cast<AdcInjectGroupQueueMode>(LL_ADC_INJ_GetQueueMode(ControllerTraitsT::skInstance));
+            return AdcInjectGroupQueueMode::from_ll(LL_ADC_INJ_GetQueueMode(ControllerTraitsT::skInstance));
         }
 
-        void inject_group_set_trigger_mode(const AdcInjectGroupTriggerMode trigger_mode) const
+        VALLE_LL_WRAPPER void inject_group_set_trigger_mode(const AdcInjectGroupTriggerMode trigger_mode) const
         {
-            LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_mode));
+            LL_ADC_INJ_SetTrigAuto(ControllerTraitsT::skInstance, trigger_mode.to_ll());
         }
 
-        [[nodiscard]] AdcInjectGroupTriggerMode inject_group_get_trigger_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcInjectGroupTriggerMode inject_group_get_trigger_mode() const
         {
-            return static_cast<AdcInjectGroupTriggerMode>(LL_ADC_INJ_GetTrigAuto(ControllerTraitsT::skInstance));
+            return AdcInjectGroupTriggerMode::from_ll(LL_ADC_INJ_GetTrigAuto(ControllerTraitsT::skInstance));
         }
 
-        void inject_group_set_sequencer_discontinuity_mode(
+        VALLE_LL_WRAPPER void inject_group_set_sequencer_discontinuity_mode(
             const AdcInjectGroupSequencerDiscontinuityMode discontinuity_mode) const
         {
-            LL_ADC_INJ_SetSequencerDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(discontinuity_mode));
+            LL_ADC_INJ_SetSequencerDiscont(ControllerTraitsT::skInstance, discontinuity_mode.to_ll());
         }
 
-        void inject_group_set_trigger_source(const AdcInjectGroupTriggerSource trigger_source) const
+        VALLE_LL_WRAPPER void inject_group_set_trigger_source(const AdcInjectGroupTriggerSource trigger_source) const
         {
-            LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
+            LL_ADC_INJ_SetTriggerSource(ControllerTraitsT::skInstance, trigger_source.to_ll());
         }
 
-        void inject_group_set_trigger_edge(const AdcInjectGroupTriggerEdge trigger_edge) const
+        VALLE_LL_WRAPPER void inject_group_set_trigger_edge(const AdcInjectGroupTriggerEdge trigger_edge) const
         {
-            LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
+            LL_ADC_INJ_SetTriggerEdge(ControllerTraitsT::skInstance, trigger_edge.to_ll());
         }
 
-        static void inject_group_config_trigger(const AdcInjectGroupTriggerSource trigger_source,
-                                                const AdcInjectGroupTriggerEdge   trigger_edge)
+        static VALLE_LL_WRAPPER void inject_group_config_trigger(const AdcInjectGroupTriggerSource trigger_source,
+                                                                 const AdcInjectGroupTriggerEdge   trigger_edge)
         {
             set_trigger_source(trigger_source);
             if (trigger_source != AdcInjectGroupTriggerSource::kSoftware)
@@ -1232,70 +1713,82 @@ namespace valle::platform
         }
 
         // Sequence Config
-        void inject_group_set_sequencer_length(const uint32_t inj_count) const
+        VALLE_LL_WRAPPER void inject_group_set_sequencer_length(const uint32_t inj_count) const
         {
             LL_ADC_INJ_SetSequencerLength(ControllerTraitsT::skInstance,
-                                          AdcTraits::inject_group_count_to_count_ll_id(inj_count));
+                                          AdcInjectGroupSequenceScanMode::from_number(inj_count).to_ll());
         }
 
-        [[nodiscard]] uint32_t inject_group_get_sequencer_length() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t inject_group_get_sequencer_length() const
         {
-            return AdcTraits::inject_group_count_ll_id_to_count(
-                LL_ADC_INJ_GetSequencerLength(ControllerTraitsT::skInstance));
+            return AdcInjectGroupSequenceScanMode::from_ll(LL_ADC_INJ_GetSequencerLength(ControllerTraitsT::skInstance))
+                .to_number();
         }
 
         template <AdcChannelId tkChannelId>
-        void inject_group_set_sequencer_ranks(const AdcInjectChannelRank rank) const
+        VALLE_LL_WRAPPER void inject_group_set_sequencer_ranks(const AdcInjectChannelRank rank) const
         {
-            using ChannelTraitsT = AdcChannelTraits<tkControllerId, tkChannelId>;
-            LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                         AdcTraits::inject_group_rank_to_ll_id(rank),
-                                         ChannelTraitsT::skLLChannelId);
+            LL_ADC_INJ_SetSequencerRanks(ControllerTraitsT::skInstance, rank.to_ll(), tkChannelId.to_ll());
         }
 
-        [[nodiscard]] AdcChannelId inject_group_get_sequencer_ranks(const AdcInjectChannelRank rank) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcChannelId
+        inject_group_get_sequencer_ranks(const AdcInjectChannelRank rank) const
         {
-            return AdcTraits::channel_ll_id_to_id(LL_ADC_INJ_GetSequencerRanks(
-                ControllerTraitsT::skInstance, AdcTraits::inject_group_rank_to_ll_id(rank)));
+            return AdcChannelId::from_ll(LL_ADC_INJ_GetSequencerRanks(ControllerTraitsT::skInstance, rank.to_ll()));
         }
 
-        [[nodiscard]] uint32_t inject_group_read(const AdcInjectChannelRank rank) const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t inject_group_read(const AdcInjectChannelRank rank) const
         {
-            return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance,
-                                                   AdcTraits::inject_group_rank_to_ll_id(rank));
+            return LL_ADC_INJ_ReadConversionData32(ControllerTraitsT::skInstance, rank.to_ll());
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool inject_group_is_conversion_ongoing() const
+        {
+            return LL_ADC_INJ_IsConversionOngoing(ControllerTraitsT::skInstance) != 0;
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool inject_group_is_stop_conversion_ongoing() const
+        {
+            return LL_ADC_INJ_IsStopConversionOngoing(ControllerTraitsT::skInstance) != 0;
         }
 
         // -----------------------------------------------------------------------------
         // Regular Group Control
         // -----------------------------------------------------------------------------
-        void regular_group_set_oversampling_mode(const AdcRegularGroupOversamplingMode oversampling_mode) const
+        VALLE_LL_WRAPPER void regular_group_set_oversampling_mode(
+            const AdcRegularGroupOversamplingMode oversampling_mode) const
         {
-            LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(oversampling_mode));
+            LL_ADC_SetOverSamplingDiscont(ControllerTraitsT::skInstance, oversampling_mode.to_ll());
         }
 
-        void regular_group_set_trigger_source(const AdcRegularGroupTriggerSource trigger_source) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupOversamplingMode get_oversampling_discont() const
         {
-            LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_source));
+            return AdcRegularGroupOversamplingMode::from_ll(
+                LL_ADC_GetOverSamplingDiscont(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] AdcRegularGroupTriggerSource regular_group_get_trigger_source() const
+        VALLE_LL_WRAPPER void regular_group_set_trigger_source(const AdcRegularGroupTriggerSource trigger_source) const
         {
-            return static_cast<AdcRegularGroupTriggerSource>(
-                LL_ADC_REG_GetTriggerSource(ControllerTraitsT::skInstance));
+            LL_ADC_REG_SetTriggerSource(ControllerTraitsT::skInstance, trigger_source.to_ll());
         }
 
-        void regular_group_set_trigger_edge(const AdcRegularGroupTriggerEdge trigger_edge) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupTriggerSource regular_group_get_trigger_source() const
         {
-            LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance, static_cast<uint32_t>(trigger_edge));
+            return AdcRegularGroupTriggerSource::from_ll(LL_ADC_REG_GetTriggerSource(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] AdcRegularGroupTriggerEdge regular_group_get_trigger_edge() const
+        VALLE_LL_WRAPPER void regular_group_set_trigger_edge(const AdcRegularGroupTriggerEdge trigger_edge) const
         {
-            return static_cast<AdcRegularGroupTriggerEdge>(LL_ADC_REG_GetTriggerEdge(ControllerTraitsT::skInstance));
+            LL_ADC_REG_SetTriggerEdge(ControllerTraitsT::skInstance, trigger_edge.to_ll());
         }
 
-        static void regular_group_config_trigger(const AdcRegularGroupTriggerSource trigger_source,
-                                                 const AdcRegularGroupTriggerEdge   trigger_edge)
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupTriggerEdge regular_group_get_trigger_edge() const
+        {
+            return AdcRegularGroupTriggerEdge::from_ll(LL_ADC_REG_GetTriggerEdge(ControllerTraitsT::skInstance));
+        }
+
+        VALLE_LL_WRAPPER void regular_group_config_trigger(const AdcRegularGroupTriggerSource trigger_source,
+                                                           const AdcRegularGroupTriggerEdge   trigger_edge) const
         {
             regular_group_set_trigger_source(trigger_source);
             if (trigger_source != AdcRegularGroupTriggerSource::kSoftware)
@@ -1304,627 +1797,769 @@ namespace valle::platform
             }
         }
 
-        void regular_group_set_overrun_behavior(const AdcRegularGroupOverrunBehavior overrun_behavior) const
+        VALLE_LL_WRAPPER void regular_group_set_overrun_behavior(
+            const AdcRegularGroupOverrunBehavior overrun_behavior) const
         {
-            LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, static_cast<uint32_t>(overrun_behavior));
+            LL_ADC_REG_SetOverrun(ControllerTraitsT::skInstance, overrun_behavior.to_ll());
         }
 
-        [[nodiscard]] AdcRegularGroupOverrunBehavior regular_group_get_overrun_behavior() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupOverrunBehavior regular_group_get_overrun_behavior() const
         {
-            return static_cast<AdcRegularGroupOverrunBehavior>(LL_ADC_REG_GetOverrun(ControllerTraitsT::skInstance));
+            return AdcRegularGroupOverrunBehavior::from_ll(LL_ADC_REG_GetOverrun(ControllerTraitsT::skInstance));
         }
 
-        void regular_group_set_conversion_mode(const AdcRegularGroupConversionMode conversion_mode) const
+        VALLE_LL_WRAPPER void regular_group_set_conversion_mode(
+            const AdcRegularGroupConversionMode conversion_mode) const
         {
-            LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(conversion_mode));
+            LL_ADC_REG_SetContinuousMode(ControllerTraitsT::skInstance, conversion_mode.to_ll());
         }
 
-        [[nodiscard]] AdcRegularGroupConversionMode regular_group_get_continuous_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupConversionMode regular_group_get_continuous_mode() const
         {
-            return static_cast<AdcRegularGroupConversionMode>(
-                LL_ADC_REG_GetContinuousMode(ControllerTraitsT::skInstance));
+            return AdcRegularGroupConversionMode::from_ll(LL_ADC_REG_GetContinuousMode(ControllerTraitsT::skInstance));
         }
 
-        void regular_group_set_sequencer_discontinuity_mode(
+        VALLE_LL_WRAPPER void regular_group_set_sequencer_discontinuity_mode(
             const AdcRegularGroupSequencerDiscontinuity seq_discont) const
         {
-            LL_ADC_REG_SetSequencerDiscont(ControllerTraitsT::skInstance, static_cast<uint32_t>(seq_discont));
+            LL_ADC_REG_SetSequencerDiscont(ControllerTraitsT::skInstance, seq_discont.to_ll());
         }
 
-        [[nodiscard]] AdcRegularGroupSequencerDiscontinuity regular_group_get_sequencer_discontinuity_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupSequencerDiscontinuity
+        regular_group_get_sequencer_discontinuity_mode() const
         {
-            return static_cast<AdcRegularGroupSequencerDiscontinuity>(
+            return AdcRegularGroupSequencerDiscontinuity::from_ll(
                 LL_ADC_REG_GetSequencerDiscont(ControllerTraitsT::skInstance));
         }
 
-        void regular_group_set_sampling_mode(const AdcRegularGroupSamplingMode sampling_mode) const
+        VALLE_LL_WRAPPER void regular_group_set_sampling_mode(const AdcRegularGroupSamplingMode sampling_mode) const
         {
-            LL_ADC_REG_SetSamplingMode(ControllerTraitsT::skInstance, static_cast<uint32_t>(sampling_mode));
+            LL_ADC_REG_SetSamplingMode(ControllerTraitsT::skInstance, sampling_mode.to_ll());
         }
 
-        [[nodiscard]] AdcRegularGroupSamplingMode regular_group_get_sampling_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupSamplingMode regular_group_get_sampling_mode() const
         {
-            return static_cast<AdcRegularGroupSamplingMode>(LL_ADC_REG_GetSamplingMode(ControllerTraitsT::skInstance));
+            return AdcRegularGroupSamplingMode::from_ll(LL_ADC_REG_GetSamplingMode(ControllerTraitsT::skInstance));
         }
 
-        [[nodiscard]] bool regular_group_is_trigger_source_sw_start() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool regular_group_is_trigger_source_sw_start() const
         {
             return LL_ADC_REG_IsTriggerSourceSWStart(ControllerTraitsT::skInstance) != 0;
         }
 
         // Sequence Config
-        void regular_group_set_sequencer_length(const uint32_t reg_count) const
+        VALLE_LL_WRAPPER void regular_group_set_sequencer_length(const uint32_t reg_count) const
         {
             LL_ADC_REG_SetSequencerLength(ControllerTraitsT::skInstance,
-                                          AdcTraits::regular_group_count_to_count_ll_id(reg_count));
+                                          AdcRegularGroupCountToSequenceScanMode::from_number(reg_count).to_ll());
         }
 
-        [[nodiscard]] uint32_t regular_group_get_sequencer_length() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t regular_group_get_sequencer_length() const
         {
-            return AdcTraits::regular_group_count_ll_id_to_count(
-                LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance));
+            return AdcRegularGroupCountToSequenceScanMode::from_ll(
+                       LL_ADC_REG_GetSequencerLength(ControllerTraitsT::skInstance))
+                .to_number();
         }
 
         template <AdcChannelId tkChannelId>
-        void regular_group_set_sequencer_ranks(const AdcRegularChannelRank rank) const
+        VALLE_LL_WRAPPER void regular_group_set_sequencer_ranks(const AdcRegularChannelRank rank) const
         {
-            using ChannelTraitsT = AdcChannelTraits<tkControllerId, tkChannelId>;
-            LL_ADC_REG_SetSequencerRanks(ControllerTraitsT::skInstance,
-                                         AdcTraits::regular_group_rank_to_ll_id(rank),
-                                         ChannelTraitsT::skLLChannelId);
+            LL_ADC_REG_SetSequencerRanks(ControllerTraitsT::skInstance, rank.to_ll(), tkChannelId.to_ll());
         }
 
-        [[nodiscard]] AdcChannelId regular_group_get_sequencer_ranks(const AdcRegularChannelRank rank) const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcChannelId
+        regular_group_get_sequencer_ranks(const AdcRegularChannelRank rank) const
         {
-            return AdcTraits::channel_ll_id_to_id(LL_ADC_REG_GetSequencerRanks(
-                ControllerTraitsT::skInstance, AdcTraits::regular_group_rank_to_ll_id(rank)));
+            return AdcChannelId::from_ll(LL_ADC_REG_GetSequencerRanks(ControllerTraitsT::skInstance, rank.to_ll()));
         }
 
-        void regular_group_set_dma_transfer(const AdcRegularGroupDmaTransfer dma_transfer) const
+        VALLE_LL_WRAPPER void regular_group_set_dma_transfer(const AdcRegularGroupDmaTransfer dma_transfer) const
         {
-            LL_ADC_REG_SetDmaTransfer(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_transfer));
+            LL_ADC_REG_SetDmaTransfer(ControllerTraitsT::skInstance, dma_transfer.to_ll());
         }
 
-        [[nodiscard]] AdcRegularGroupDmaTransfer regular_group_get_dma_transfer() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcRegularGroupDmaTransfer regular_group_get_dma_transfer() const
         {
-            return static_cast<AdcRegularGroupDmaTransfer>(LL_ADC_REG_GetDMATransfer(ControllerTraitsT::skInstance));
+            return AdcRegularGroupDmaTransfer::from_ll(LL_ADC_REG_GetDMATransfer(ControllerTraitsT::skInstance));
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t regular_group_read(const AdcRegularChannelRank rank) const
+        {
+            return LL_ADC_REG_ReadConversionData32(ControllerTraitsT::skInstance, rank.to_ll());
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool regular_group_is_conversion_ongoing() const
+        {
+            return LL_ADC_REG_IsConversionOngoing(ControllerTraitsT::skInstance) != 0;
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool regular_group_is_stop_conversion_ongoing() const
+        {
+            return LL_ADC_REG_IsStopConversionOngoing(ControllerTraitsT::skInstance) != 0;
+        }
+
+        VALLE_LL_WRAPPER void regular_group_start_sampling_phase() const
+        {
+            LL_ADC_REG_StartSamplingPhase(ControllerTraitsT::skInstance);
+        }
+
+        VALLE_LL_WRAPPER void regular_group_stop_sampling_phase() const
+        {
+            LL_ADC_REG_StopSamplingPhase(ControllerTraitsT::skInstance);
         }
 
         // -----------------------------------------------------------------------------
         // Interrupts and Flags
         // -----------------------------------------------------------------------------
-        [[nodiscard]] bool is_active_flag_ready() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_ready_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_ADRDY(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_ready_flag() const
+        VALLE_LL_WRAPPER void clear_ready_interrupt_flag() const
         {
             LL_ADC_ClearFlag_ADRDY(ControllerTraitsT::skInstance);
         }
 
-        void enable_ready_interrupt() const
+        VALLE_LL_WRAPPER void enable_ready_interrupt() const
         {
             LL_ADC_EnableIT_ADRDY(ControllerTraitsT::skInstance);
         }
 
-        void disable_ready_interrupt() const
+        VALLE_LL_WRAPPER void disable_ready_interrupt() const
         {
             LL_ADC_DisableIT_ADRDY(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_ready_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_ready_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_ADRDY(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_eoc() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_regular_group_end_of_conversion_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_EOC(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_eoc_flag() const
+        VALLE_LL_WRAPPER void clear_regular_group_end_of_conversion_interrupt_flag() const
         {
             LL_ADC_ClearFlag_EOC(ControllerTraitsT::skInstance);
         }
 
-        void enable_eoc_interrupt() const
+        VALLE_LL_WRAPPER void enable_regular_group_end_of_conversion_interrupt() const
         {
             LL_ADC_EnableIT_EOC(ControllerTraitsT::skInstance);
         }
 
-        void disable_eoc_interrupt() const
+        VALLE_LL_WRAPPER void disable_regular_group_end_of_conversion_interrupt() const
         {
             LL_ADC_DisableIT_EOC(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_eoc_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_regular_group_end_of_conversion_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_EOC(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_eos() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_regular_group_end_of_sequence_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_EOS(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_eos_flag() const
+        VALLE_LL_WRAPPER void clear_regular_group_end_of_sequence_interrupt_flag() const
         {
             LL_ADC_ClearFlag_EOS(ControllerTraitsT::skInstance);
         }
 
-        void enable_eos_interrupt() const
+        VALLE_LL_WRAPPER void enable_regular_group_end_of_sequence_interrupt() const
         {
             LL_ADC_EnableIT_EOS(ControllerTraitsT::skInstance);
         }
 
-        void disable_eos_interrupt() const
+        VALLE_LL_WRAPPER void disable_regular_group_end_of_sequence_interrupt() const
         {
             LL_ADC_DisableIT_EOS(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_eos_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_regular_group_end_of_sequence_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_EOS(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_ovr() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_overrun_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_OVR(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_ovr_flag() const
+        VALLE_LL_WRAPPER void clear_overrun_interrupt_flag() const
         {
             LL_ADC_ClearFlag_OVR(ControllerTraitsT::skInstance);
         }
 
-        void enable_ovr_interrupt() const
+        VALLE_LL_WRAPPER void enable_overrun_interrupt() const
         {
             LL_ADC_EnableIT_OVR(ControllerTraitsT::skInstance);
         }
 
-        void disable_ovr_interrupt() const
+        VALLE_LL_WRAPPER void disable_overrun_interrupt() const
         {
             LL_ADC_DisableIT_OVR(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_ovr_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_overrun_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_OVR(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_eosmp() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_regular_group_end_of_sampling_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_EOSMP(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_eosmp_flag() const
+        VALLE_LL_WRAPPER void clear_regular_group_end_of_sampling_interrupt_flag() const
         {
             LL_ADC_ClearFlag_EOSMP(ControllerTraitsT::skInstance);
         }
 
-        void enable_eosmp_interrupt() const
+        VALLE_LL_WRAPPER void enable_regular_group_end_of_sampling_interrupt() const
         {
             LL_ADC_EnableIT_EOSMP(ControllerTraitsT::skInstance);
         }
 
-        void disable_eosmp_interrupt() const
+        VALLE_LL_WRAPPER void disable_regular_group_end_of_sampling_interrupt() const
         {
             LL_ADC_DisableIT_EOSMP(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_eosmp_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_regular_group_end_of_sampling_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_EOSMP(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_jeoc() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_inject_group_end_of_conversion_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_JEOC(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_jeoc_flag() const
+        VALLE_LL_WRAPPER void clear_inject_group_end_of_conversion_interrupt_flag() const
         {
             LL_ADC_ClearFlag_JEOC(ControllerTraitsT::skInstance);
         }
 
-        void enable_jeoc_interrupt() const
+        VALLE_LL_WRAPPER void enable_inject_group_end_of_conversion_interrupt() const
         {
             LL_ADC_EnableIT_JEOC(ControllerTraitsT::skInstance);
         }
 
-        void disable_jeoc_interrupt() const
+        VALLE_LL_WRAPPER void disable_inject_group_end_of_conversion_interrupt() const
         {
             LL_ADC_DisableIT_JEOC(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_jeoc_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_inject_group_end_of_conversion_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_JEOC(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_jeos() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_inject_group_end_of_sequence_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_JEOS(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_jeos_flag() const
+        VALLE_LL_WRAPPER void clear_inject_group_end_of_sequence_interrupt_flag() const
         {
             LL_ADC_ClearFlag_JEOS(ControllerTraitsT::skInstance);
         }
 
-        void enable_jeos_interrupt() const
+        VALLE_LL_WRAPPER void enable_inject_group_end_of_sequence_interrupt() const
         {
             LL_ADC_EnableIT_JEOS(ControllerTraitsT::skInstance);
         }
 
-        void disable_jeos_interrupt() const
+        VALLE_LL_WRAPPER void disable_inject_group_end_of_sequence_interrupt() const
         {
             LL_ADC_DisableIT_JEOS(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_jeos_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_inject_group_end_of_sequence_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_JEOS(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_jqovf() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_inject_group_queue_overflow_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_JQOVF(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_jqovf_flag() const
+        VALLE_LL_WRAPPER void clear_inject_group_queue_overflow_interrupt_flag() const
         {
             LL_ADC_ClearFlag_JQOVF(ControllerTraitsT::skInstance);
         }
 
-        void enable_jqovf_interrupt() const
+        VALLE_LL_WRAPPER void enable_inject_group_queue_overflow_interrupt() const
         {
             LL_ADC_EnableIT_JQOVF(ControllerTraitsT::skInstance);
         }
 
-        void disable_jqovf_interrupt() const
+        VALLE_LL_WRAPPER void disable_inject_group_queue_overflow_interrupt() const
         {
             LL_ADC_DisableIT_JQOVF(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_jqovf_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_inject_group_queue_overflow_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_JQOVF(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_awd1() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_analog_watchdog_1_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_AWD1(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_awd1_flag() const
+        VALLE_LL_WRAPPER void clear_analog_watchdog_1_interrupt_flag() const
         {
             LL_ADC_ClearFlag_AWD1(ControllerTraitsT::skInstance);
         }
 
-        void enable_awd1_interrupt() const
+        VALLE_LL_WRAPPER void enable_analog_watchdog_1_interrupt() const
         {
             LL_ADC_EnableIT_AWD1(ControllerTraitsT::skInstance);
         }
 
-        void disable_awd1_interrupt() const
+        VALLE_LL_WRAPPER void disable_analog_watchdog_1_interrupt() const
         {
             LL_ADC_DisableIT_AWD1(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_awd1_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_analog_watchdog_1_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_AWD1(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_awd2() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_analog_watchdog_2_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_AWD2(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_awd2_flag() const
+        VALLE_LL_WRAPPER void clear_analog_watchdog_2_interrupt_flag() const
         {
             LL_ADC_ClearFlag_AWD2(ControllerTraitsT::skInstance);
         }
 
-        void enable_awd2_interrupt() const
+        VALLE_LL_WRAPPER void enable_analog_watchdog_2_interrupt() const
         {
             LL_ADC_EnableIT_AWD2(ControllerTraitsT::skInstance);
         }
 
-        void disable_awd2_interrupt() const
+        VALLE_LL_WRAPPER void disable_analog_watchdog_2_interrupt() const
         {
             LL_ADC_DisableIT_AWD2(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_awd2_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_analog_watchdog_2_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_AWD2(ControllerTraitsT::skInstance) != 0;
         }
 
-        [[nodiscard]] bool is_active_flag_awd3() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_analog_watchdog_3_interrupt_flag_active() const
         {
             return LL_ADC_IsActiveFlag_AWD3(ControllerTraitsT::skInstance) != 0;
         }
 
-        void clear_awd3_flag() const
+        VALLE_LL_WRAPPER void clear_analog_watchdog_3_interrupt_flag() const
         {
             LL_ADC_ClearFlag_AWD3(ControllerTraitsT::skInstance);
         }
 
-        void enable_awd3_interrupt() const
+        VALLE_LL_WRAPPER void enable_analog_watchdog_3_interrupt() const
         {
             LL_ADC_EnableIT_AWD3(ControllerTraitsT::skInstance);
         }
 
-        void disable_awd3_interrupt() const
+        VALLE_LL_WRAPPER void disable_analog_watchdog_3_interrupt() const
         {
             LL_ADC_DisableIT_AWD3(ControllerTraitsT::skInstance);
         }
 
-        [[nodiscard]] bool is_awd3_interrupt_enabled() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool is_analog_watchdog_3_interrupt_enabled() const
         {
             return LL_ADC_IsEnabledIT_AWD3(ControllerTraitsT::skInstance) != 0;
         }
 
-        // -----------------------------------------------------------------------------
-        // MISC
-        // -----------------------------------------------------------------------------
-        [[nodiscard]] uint32_t get_dma_reg_addr(const AdcDmaRegister dma_register) const
+        void enable_interrupt(const AdcControllerInterruptSource interrupt_source) const
         {
-            return LL_ADC_DMA_GetRegAddr(ControllerTraitsT::skInstance, static_cast<uint32_t>(dma_register));
+            switch (interrupt_source.to_number())
+            {
+                case AdcControllerInterruptSource::kReady.to_number():
+                    enable_ready_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfConversion.to_number():
+                    enable_regular_group_end_of_conversion_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSequence.to_number():
+                    enable_regular_group_end_of_sequence_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSampling.to_number():
+                    enable_regular_group_end_of_sampling_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfConversion.to_number():
+                    enable_inject_group_end_of_conversion_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfSequence.to_number():
+                    enable_inject_group_end_of_sequence_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kInjectContextQueueOverflow.to_number():
+                    enable_inject_group_queue_overflow_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kOverrun.to_number():
+                    enable_overrun_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog1.to_number():
+                    enable_analog_watchdog_1_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog2.to_number():
+                    enable_analog_watchdog_2_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog3.to_number():
+                    enable_analog_watchdog_3_interrupt();
+                    break;
+                default:
+                    expect(false, "Invalid ADC interrupt type");
+            }
         }
 
-        void set_analog_wd_monit_channels(const uint32_t awdy, const uint32_t awd_channel_group) const
+        void disable_interrupt(const AdcControllerInterruptSource interrupt_source) const
         {
-            LL_ADC_SetAnalogWDMonitChannels(ControllerTraitsT::skInstance, awdy, awd_channel_group);
+            switch (interrupt_source.to_number())
+            {
+                case AdcControllerInterruptSource::kReady.to_number():
+                    disable_ready_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfConversion.to_number():
+                    disable_regular_group_end_of_conversion_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSequence.to_number():
+                    disable_regular_group_end_of_sequence_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSampling.to_number():
+                    disable_regular_group_end_of_sampling_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfConversion.to_number():
+                    disable_inject_group_end_of_conversion_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfSequence.to_number():
+                    disable_inject_group_end_of_sequence_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kInjectContextQueueOverflow.to_number():
+                    disable_inject_group_queue_overflow_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kOverrun.to_number():
+                    disable_overrun_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog1.to_number():
+                    disable_analog_watchdog_1_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog2.to_number():
+                    disable_analog_watchdog_2_interrupt();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog3.to_number():
+                    disable_analog_watchdog_3_interrupt();
+                    break;
+                default:
+                    expect(false, "Invalid ADC interrupt type");
+            }
         }
 
-        [[nodiscard]] uint32_t get_analog_wd_monit_channels(const uint32_t awdy) const
+        void clear_interrupt_flag(const AdcControllerInterruptSource interrupt_source) const
         {
-            return LL_ADC_GetAnalogWDMonitChannels(ControllerTraitsT::skInstance, awdy);
+            switch (interrupt_source.to_number())
+            {
+                case AdcControllerInterruptSource::kReady.to_number():
+                    clear_ready_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfConversion.to_number():
+                    clear_regular_group_end_of_conversion_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSequence.to_number():
+                    clear_regular_group_end_of_sequence_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSampling.to_number():
+                    clear_regular_group_end_of_sampling_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfConversion.to_number():
+                    clear_inject_group_end_of_conversion_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfSequence.to_number():
+                    clear_inject_group_end_of_sequence_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kInjectContextQueueOverflow.to_number():
+                    clear_inject_group_queue_overflow_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kOverrun.to_number():
+                    clear_overrun_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog1.to_number():
+                    clear_analog_watchdog_1_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog2.to_number():
+                    clear_analog_watchdog_2_interrupt_flag();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog3.to_number():
+                    clear_analog_watchdog_3_interrupt_flag();
+                    break;
+                default:
+                    expect(false, "Invalid ADC interrupt type");
+            }
         }
 
-        void config_analog_wd_thresholds(const uint32_t awdy,
-                                         const uint32_t awd_threshold_high_value,
-                                         const uint32_t awd_threshold_low_value) const
+        [[nodiscard]] bool is_interrupt_flag_active(const AdcControllerInterruptSource interrupt_source) const
         {
-            LL_ADC_ConfigAnalogWDThresholds(
-                ControllerTraitsT::skInstance, awdy, awd_threshold_high_value, awd_threshold_low_value);
-        }
-
-        void set_analog_wd_thresholds(const uint32_t awdy, const uint32_t awd_thresholds_high_low) const
-        {
-            LL_ADC_SetAnalogWDThresholds(ControllerTraitsT::skInstance, awdy, awd_thresholds_high_low);
-        }
-
-        [[nodiscard]] uint32_t get_analog_wd_thresholds(const uint32_t awdy) const
-        {
-            return LL_ADC_GetAnalogWDThresholds(ControllerTraitsT::skInstance, awdy);
-        }
-
-        void set_awd_filtering_configuration(const uint32_t awdy, const uint32_t filtering_config) const
-        {
-            LL_ADC_SetAWDFilteringConfiguration(ControllerTraitsT::skInstance, awdy, filtering_config);
-        }
-
-        [[nodiscard]] uint32_t get_awd_filtering_configuration(const uint32_t awdy) const
-        {
-            return LL_ADC_GetAWDFilteringConfiguration(ControllerTraitsT::skInstance, awdy);
-        }
-
-        [[nodiscard]] uint32_t get_oversampling_discont() const
-        {
-            return LL_ADC_GetOverSamplingDiscont(ControllerTraitsT::skInstance);
-        }
-
-        void enable_deep_power_down() const
-        {
-            LL_ADC_EnableDeepPowerDown(ControllerTraitsT::skInstance);
-        }
-
-        void disable_internal_regulator() const
-        {
-            LL_ADC_DisableInternalRegulator(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] bool is_disable_ongoing() const
-        {
-            return LL_ADC_IsDisableOngoing(ControllerTraitsT::skInstance) != 0;
-        }
-
-        [[nodiscard]] bool regular_group_is_conversion_ongoing() const
-        {
-            return LL_ADC_REG_IsConversionOngoing(ControllerTraitsT::skInstance) != 0;
-        }
-
-        [[nodiscard]] bool regular_group_is_stop_conversion_ongoing() const
-        {
-            return LL_ADC_REG_IsStopConversionOngoing(ControllerTraitsT::skInstance) != 0;
-        }
-
-        void regular_group_start_sampling_phase() const
-        {
-            LL_ADC_REG_StartSamplingPhase(ControllerTraitsT::skInstance);
-        }
-
-        void regular_group_stop_sampling_phase() const
-        {
-            LL_ADC_REG_StopSamplingPhase(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] uint32_t regular_group_read_conversion_data32() const
-        {
-            return LL_ADC_REG_ReadConversionData32(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] uint16_t regular_group_read_conversion_data12() const
-        {
-            return LL_ADC_REG_ReadConversionData12(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] uint16_t regular_group_read_conversion_data10() const
-        {
-            return LL_ADC_REG_ReadConversionData10(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] uint8_t regular_group_read_conversion_data8() const
-        {
-            return LL_ADC_REG_ReadConversionData8(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] uint8_t regular_group_read_conversion_data6() const
-        {
-            return LL_ADC_REG_ReadConversionData6(ControllerTraitsT::skInstance);
-        }
-
-        [[nodiscard]] bool inject_group_is_conversion_ongoing() const
-        {
-            return LL_ADC_INJ_IsConversionOngoing(ControllerTraitsT::skInstance) != 0;
-        }
-
-        [[nodiscard]] bool inject_group_is_stop_conversion_ongoing() const
-        {
-            return LL_ADC_INJ_IsStopConversionOngoing(ControllerTraitsT::skInstance) != 0;
-        }
-
-        [[nodiscard]] uint16_t inject_group_read_conversion_data12(const uint32_t rank) const
-        {
-            return LL_ADC_INJ_ReadConversionData12(ControllerTraitsT::skInstance, rank);
-        }
-
-        [[nodiscard]] uint16_t inject_group_read_conversion_data10(const uint32_t rank) const
-        {
-            return LL_ADC_INJ_ReadConversionData10(ControllerTraitsT::skInstance, rank);
-        }
-
-        [[nodiscard]] uint8_t inject_group_read_conversion_data8(const uint32_t rank) const
-        {
-            return LL_ADC_INJ_ReadConversionData8(ControllerTraitsT::skInstance, rank);
-        }
-
-        [[nodiscard]] uint8_t inject_group_read_conversion_data6(const uint32_t rank) const
-        {
-            return LL_ADC_INJ_ReadConversionData6(ControllerTraitsT::skInstance, rank);
+            switch (interrupt_source.to_number())
+            {
+                case AdcControllerInterruptSource::kReady.to_number():
+                    return is_ready_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfConversion.to_number():
+                    return is_regular_group_end_of_conversion_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSequence.to_number():
+                    return is_regular_group_end_of_sequence_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kRegularEndOfSampling.to_number():
+                    return is_regular_group_end_of_sampling_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfConversion.to_number():
+                    return is_inject_group_end_of_conversion_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kInjectEndOfSequence.to_number():
+                    return is_inject_group_end_of_sequence_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kInjectContextQueueOverflow.to_number():
+                    return is_inject_group_queue_overflow_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kOverrun.to_number():
+                    return is_overrun_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog1.to_number():
+                    return is_analog_watchdog_1_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog2.to_number():
+                    return is_analog_watchdog_2_interrupt_flag_active();
+                    break;
+                case AdcControllerInterruptSource::kAnalogWatchdog3.to_number():
+                    return is_analog_watchdog_3_interrupt_flag_active();
+                    break;
+                default:
+                    expect(false, "Invalid ADC interrupt type");
+            }
         }
     };
 
     template <AdcChannelSpec tkChannelSpec>
     struct AdcChannelInterface
     {
-        static constexpr AdcChannelSpec skChannelSpec = tkChannelSpec;
-        using ControllerTraitsT                       = AdcControllerTraits<tkChannelSpec.controller_spec()>;
-        using ChannelTraitsT                          = AdcChannelTraits<tkChannelSpec>;
+        static constexpr AdcChannelSpec  skChannelSpec  = tkChannelSpec;
+        static constexpr AdcControllerId skControllerId = tkChannelSpec.controller_id;
+        using ControllerTraitsT                         = AdcControllerTraits<tkChannelSpec.controller_spec()>;
 
-        void set_sampling_time(const AdcChannelSampleTime sample_time) const
+        VALLE_LL_WRAPPER void set_sampling_time(const AdcChannelSampleTime sample_time) const
         {
-            LL_ADC_SetChannelSamplingTime(
-                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(sample_time));
+            LL_ADC_SetChannelSamplingTime(ControllerTraitsT::skInstance, skChannelId.to_ll(), sample_time.to_ll());
         }
 
-        [[nodiscard]] AdcChannelSampleTime get_sampling_time() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcChannelSampleTime get_sampling_time() const
         {
-            return static_cast<AdcChannelSampleTime>(
-                LL_ADC_GetChannelSamplingTime(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId));
+            return AdcChannelSampleTime::from_ll(
+                LL_ADC_GetChannelSamplingTime(ControllerTraitsT::skInstance, skChannelId.to_ll()));
         }
 
-        void set_input_mode(const AdcChannelInputMode input_mode) const
+        VALLE_LL_WRAPPER void set_input_mode(const AdcChannelInputMode input_mode) const
         {
-            LL_ADC_SetChannelSingleDiff(
-                ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId, static_cast<uint32_t>(input_mode));
+            LL_ADC_SetChannelSingleDiff(ControllerTraitsT::skInstance, skChannelId.to_ll(), input_mode.to_ll());
         }
 
-        [[nodiscard]] AdcChannelInputMode get_input_mode() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcChannelInputMode get_input_mode() const
         {
-            return static_cast<AdcChannelInputMode>(
-                LL_ADC_GetChannelSingleDiff(ControllerTraitsT::skInstance, ChannelTraitsT::skLLChannelId));
+            return AdcChannelInputMode::from_ll(
+                LL_ADC_GetChannelSingleDiff(ControllerTraitsT::skInstance, skChannelId.to_ll()));
         }
     };
+
+    // ==============================================================================
+    // INJECT CHANNEL INTERFACE
+    // =============================================================================
 
     template <AdcInjectChannelRankSpec tkRankSpec>
     struct AdcInjectChannelInterface
     {
-        static constexpr AdcInjectChannelRankSpec skRankSpec = tkRankSpec;
-        using ControllerTraitsT                              = AdcControllerTraits<tkRankSpec.controller_spec()>;
-        using RankTraitsT                                    = AdcInjectRankTraits<tkRankSpec>;
+        static constexpr AdcInjectChannelRankSpec skRankSpec     = tkRankSpec;
+        static constexpr AdcControllerId          skControllerId = skRankSpec.controller_id;
+        static constexpr AdcInjectChannelRank     skRank         = skRankSpec.rank;
+        using ControllerTraitsT                                  = AdcControllerTraits<skRankSpec.controller_spec()>;
     };
+
+    // ============================================================================
+    // REGULAR CHANNEL INTERFACE
+    // ============================================================================
 
     template <AdcRegularChannelRankSpec tkRankSpec>
     struct AdcRegularChannelInterface
     {
+        static constexpr AdcRegularChannelRankSpec skRankSpec     = tkRankSpec;
+        static constexpr AdcControllerId           skControllerId = skRankSpec.controller_id;
+        static constexpr AdcRegularChannelRank     skRank         = skRankSpec.rank;
+        using ControllerTraitsT                                   = AdcControllerTraits<skRankSpec.controller_spec()>;
     };
+
+    // ==============================================================================
+    // OFFSET BLOCK INTERFACE
+    // ==============================================================================
 
     template <AdcOffsetBlockSpec tkOffsetBlockSpec>
     struct AdcOffsetBlockInterface
     {
         static constexpr AdcOffsetBlockSpec skOffsetBlockSpec = tkOffsetBlockSpec;
-        using ControllerTraitsT  = AdcControllerTraits<tkOffsetBlockSpec.controller_spec()>;
-        using OffsetBlockTraitsT = AdcOffsetBlockTraits<tkOffsetBlockSpec>;
+        static constexpr AdcOffsetBlockId   skOffsetBlockId   = tkOffsetBlockSpec.block_id;
+        using ControllerTraitsT = AdcControllerTraits<tkOffsetBlockSpec.controller_spec()>;
 
-        void set_offset(const AdcChannelId channel_id, const uint32_t offset_value) const
+        VALLE_LL_WRAPPER void set_offset(const AdcChannelId channel_id, const uint32_t offset_value) const
         {
-            LL_ADC_SetOffset(ControllerTraitsT::skInstance,
-                             OffsetBlockTraitsT::skLLBlockId,
-                             AdcTraits::channel_id_to_ll_id(channel_id),
-                             offset_value);
+            LL_ADC_SetOffset(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), channel_id.to_ll(), offset_value);
         }
 
-        [[nodiscard]] AdcChannelId get_offset_channel() const
+        [[nodiscard]] VALLE_LL_WRAPPER AdcChannelId get_channel() const
         {
-            return AdcTraits::channel_ll_id_to_id(
-                LL_ADC_GetOffsetChannel(ControllerTraitsT::skInstance, OffsetBlockTraitsT::skLLBlockId));
+            return AdcChannelId::from_ll(
+                LL_ADC_GetOffsetChannel(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll()));
         }
 
-        [[nodiscard]] uint32_t get_offset_level() const
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_level() const
         {
-            return LL_ADC_GetOffsetLevel(ControllerTraitsT::skInstance, OffsetBlockTraitsT::skLLBlockId);
+            return LL_ADC_GetOffsetLevel(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll());
         }
 
-        void set_offset_state(const bool enabled) const
+        VALLE_LL_WRAPPER void enable()
         {
-            LL_ADC_SetOffsetState(ControllerTraitsT::skInstance,
-                                  OffsetBlockTraitsT::skLLBlockId,
-                                  enabled ? LL_ADC_OFFSET_ENABLE : LL_ADC_OFFSET_DISABLE);
+            LL_ADC_SetOffsetState(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), LL_ADC_OFFSET_ENABLE);
         }
 
-        [[nodiscard]] bool get_offset_state() const
+        VALLE_LL_WRAPPER void disable()
         {
-            return LL_ADC_GetOffsetState(ControllerTraitsT::skInstance, OffsetBlockTraitsT::skLLBlockId) ==
+            LL_ADC_SetOffsetState(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), LL_ADC_OFFSET_DISABLE);
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool get_enabled() const
+        {
+            return LL_ADC_GetOffsetState(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll()) ==
                    LL_ADC_OFFSET_ENABLE;
         }
 
-        void set_offset_sign(const bool positive) const
+        VALLE_LL_WRAPPER void set_sign_positive() const
         {
-            LL_ADC_SetOffsetSign(ControllerTraitsT::skInstance,
-                                 OffsetBlockTraitsT::skLLBlockId,
-                                 positive ? LL_ADC_OFFSET_SIGN_POSITIVE : LL_ADC_OFFSET_SIGN_NEGATIVE);
+            LL_ADC_SetOffsetSign(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), LL_ADC_OFFSET_SIGN_POSITIVE);
         }
 
-        [[nodiscard]] bool get_offset_sign_positive() const
+        VALLE_LL_WRAPPER void set_sign_negative() const
         {
-            return LL_ADC_GetOffsetSign(ControllerTraitsT::skInstance, OffsetBlockTraitsT::skLLBlockId) ==
+            LL_ADC_SetOffsetSign(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), LL_ADC_OFFSET_SIGN_NEGATIVE);
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool get_offset_sign_positive() const
+        {
+            return LL_ADC_GetOffsetSign(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll()) ==
                    LL_ADC_OFFSET_SIGN_POSITIVE;
         }
 
-        [[nodiscard]] bool get_offset_sign_negative() const
+        [[nodiscard]] VALLE_LL_WRAPPER bool get_sign_negative() const
         {
-            return LL_ADC_GetOffsetSign(ControllerTraitsT::skInstance, OffsetBlockTraitsT::skLLBlockId) ==
+            return LL_ADC_GetOffsetSign(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll()) ==
                    LL_ADC_OFFSET_SIGN_NEGATIVE;
         }
 
-        void set_offset_saturation(const bool enabled) const
+        VALLE_LL_WRAPPER void enable_saturation() const
         {
-            LL_ADC_SetOffsetSaturation(ControllerTraitsT::skInstance,
-                                       OffsetBlockTraitsT::skLLBlockId,
-                                       enabled ? LL_ADC_OFFSET_SATURATION_ENABLE : LL_ADC_OFFSET_SATURATION_DISABLE);
+            LL_ADC_SetOffsetSaturation(
+                ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), LL_ADC_OFFSET_SATURATION_ENABLE);
         }
 
-        [[nodiscard]] bool get_offset_saturation_enabled() const
+        VALLE_LL_WRAPPER void disable_saturation() const
         {
-            return LL_ADC_GetOffsetSaturation(ControllerTraitsT::skInstance, OffsetBlockTraitsT::skLLBlockId) ==
+            LL_ADC_SetOffsetSaturation(
+                ControllerTraitsT::skInstance, skOffsetBlockId.to_ll(), LL_ADC_OFFSET_SATURATION_DISABLE);
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER bool get_saturation_enabled() const
+        {
+            return LL_ADC_GetOffsetSaturation(ControllerTraitsT::skInstance, skOffsetBlockId.to_ll()) ==
                    LL_ADC_OFFSET_SATURATION_ENABLE;
         }
     };
 
+    // ==============================================================================
+    // ANALOG WATCHDOG INTERFACE
+    // ==============================================================================
+    template <AdcAnalogWatchdogSpec tkAnalogWatchdogSpec>
+    struct AdcAnalogWatchdogInterface
+    {
+        static constexpr AdcAnalogWatchdogSpec skAnalogWatchdogSpec = tkAnalogWatchdogSpec;
+        static constexpr AdcAnalogWatchdogId   skWatchdogId         = tkAnalogWatchdogSpec.watchdog_id;
+        using ControllerTraitsT = AdcControllerTraits<tkAnalogWatchdogSpec.controller_spec()>;
+
+        VALLE_LL_WRAPPER void set_monitor_channels(const AdcAnalogWatchdogChannelGroup awd_channel_group) const
+        {
+            LL_ADC_SetAnalogWDMonitChannels(
+                ControllerTraitsT::skInstance, skWatchdogId.to_ll(), awd_channel_group.to_ll());
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER AdcAnalogWatchdogChannelGroup get_monitor_channels() const
+        {
+            return AdcAnalogWatchdogChannelGroup::from_ll(
+                LL_ADC_GetAnalogWDMonitChannels(ControllerTraitsT::skInstance, skWatchdogId.to_ll()));
+        }
+
+        VALLE_LL_WRAPPER void config_thresholds(const uint32_t awd_threshold_high_value,
+                                                const uint32_t awd_threshold_low_value) const
+        {
+            LL_ADC_ConfigAnalogWDThresholds(
+                ControllerTraitsT::skInstance, skWatchdogId.to_ll(), awd_threshold_high_value, awd_threshold_low_value);
+        }
+
+        VALLE_LL_WRAPPER void set_low_threshold(const uint32_t awd_thresholds_low) const
+        {
+            LL_ADC_SetAnalogWDThresholds(
+                ControllerTraitsT::skInstance, skWatchdogId.to_ll(), LL_ADC_AWD_THRESHOLD_LOW, awd_thresholds_low);
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_low_threshold() const
+        {
+            return LL_ADC_GetAnalogWDThresholds(
+                ControllerTraitsT::skInstance, skWatchdogId.to_ll(), LL_ADC_AWD_THRESHOLD_LOW);
+        }
+
+        VALLE_LL_WRAPPER void set_high_threshold(const uint32_t awd_thresholds_high) const
+        {
+            LL_ADC_SetAnalogWDThresholds(
+                ControllerTraitsT::skInstance, skWatchdogId.to_ll(), LL_ADC_AWD_THRESHOLD_HIGH, awd_thresholds_high);
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER uint32_t get_high_threshold() const
+        {
+            return LL_ADC_GetAnalogWDThresholds(
+                ControllerTraitsT::skInstance, skWatchdogId.to_ll(), LL_ADC_AWD_THRESHOLD_HIGH);
+        }
+
+        VALLE_LL_WRAPPER void set_filtering(const AdcAnalogWatchdogFiltering filtering) const
+        {
+            LL_ADC_SetAWDFilteringConfiguration(ControllerTraitsT::skInstance, skWatchdogId.to_ll(), filtering.to_ll());
+        }
+
+        [[nodiscard]] VALLE_LL_WRAPPER AdcAnalogWatchdogFiltering get_filtering() const
+        {
+            return AdcAnalogWatchdogFiltering::from_ll(
+                LL_ADC_GetAWDFilteringConfiguration(ControllerTraitsT::skInstance, skWatchdogId.to_ll()));
+        }
+    };
+
 }  // namespace valle::platform
+
+VALLE_OPTIMIZE_POP

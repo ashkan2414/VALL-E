@@ -5,7 +5,7 @@ namespace valle::platform
 
     template <>
     struct AdcIsrRouter<valle::app::VCACurrentLoopDriverT::skCurrentSensorAdcControllerId,
-                        AdcInterruptSource::kInjectEndOfSequence>
+                        AdcControllerInterruptSource::kInjectEndOfSequence>
     {
         static void handle()
         {

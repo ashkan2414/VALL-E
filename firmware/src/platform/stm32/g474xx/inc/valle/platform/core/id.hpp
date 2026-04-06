@@ -5,6 +5,8 @@
 #include "valle/base/panic.hpp"
 #include "valle/utils/compiler.hpp"
 
+VALLE_OPTIMIZE_PUSH
+
 namespace valle::platform
 {
     // ============================================================================
@@ -26,18 +28,18 @@ namespace valle::platform
         }
 
     public:
-        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_value(const uint32_t value)
+        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_number(const uint32_t value)
         {
             return make_derived(value);
         }
 
         template <uint32_t tkValue>
-        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_value()
+        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_number()
         {
             return make_derived(tkValue);
         }
 
-        [[nodiscard]] constexpr uint32_t to_value() const
+        [[nodiscard]] constexpr uint32_t to_number() const
         {
             return m_value;
         }
@@ -153,13 +155,13 @@ namespace valle::platform
         }
 
     public:
-        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll_id(const uint32_t ll_id)
+        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll(const uint32_t ll_id)
         {
             return make_derived(ll_id);
         }
 
         template <uint32_t tkLLId>
-        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll_id()
+        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll()
         {
             return make_derived(tkLLId);
         }
@@ -284,13 +286,13 @@ namespace valle::platform
         }
 
     public:
-        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll_id(const uint32_t ll_id)
+        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll(const uint32_t ll_id)
         {
             return make_derived(ll_id);
         }
 
         template <uint32_t tkLLId>
-        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll_id()
+        [[nodiscard]] static constexpr VALLE_FORCE_INLINE TDerived from_ll()
         {
             return make_derived(tkLLId);
         }
@@ -345,3 +347,5 @@ namespace valle::platform
     };
 
 }  // namespace valle::platform
+
+VALLE_OPTIMIZE_POP

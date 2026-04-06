@@ -10,42 +10,8 @@ namespace valle::platform
 
     template <DmaChannelSpec tkChannelSpec, DmaChannelInterruptSource tkIntSource>
     struct DmaChannelInterruptSourceInterface
+        : InterruptSourceInterfaceBase<DmaChannelInterface<tkChannelSpec>, tkIntSource>
     {
-    private:
-        static constexpr DmaChannelInterface<tkChannelSpec> skInterface{};
-
-    public:
-        static constexpr bool skShouldClear = true;
-
-        static void enable()
-        {
-            skInterface.enable_interrupt(tkIntSource);
-        }
-
-        static void disable()
-        {
-            skInterface.disable_interrupt(tkIntSource);
-        }
-
-        static void clear()
-        {
-            skInterface.clear_interrupt_flag(tkIntSource);
-        }
-
-        static bool is_enabled()
-        {
-            return skInterface.is_interrupt_enabled(tkIntSource);
-        }
-
-        static bool is_flag_active()
-        {
-            return skInterface.is_interrupt_flag_active(tkIntSource);
-        }
-
-        static bool is_pending()
-        {
-            return is_flag_active() && is_enabled();
-        }
     };
 
     // ===========================================================================
@@ -177,10 +143,10 @@ namespace valle::platform
         }
     };
 
-    using DmaChannelInterruptIrqRouterContext = InterruptIrqRouterContext<DmaChannelSpec,
-                                                                          DmaChannelInterruptSource,
-                                                                          DmaChannelInterruptSourceInterface,
-                                                                          DmaIrqRouter,
-                                                                          DmaIsrRouter>;
+    using DmaChannelIrqRouterContext = IrqRouterContext<DmaChannelSpec,
+                                                        DmaChannelInterruptSource,
+                                                        DmaChannelInterruptSourceInterface,
+                                                        DmaIrqRouter,
+                                                        DmaIsrRouter>;
 
 }  // namespace valle::platform

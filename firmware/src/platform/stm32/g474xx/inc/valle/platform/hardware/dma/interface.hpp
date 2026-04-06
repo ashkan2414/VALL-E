@@ -11,59 +11,111 @@ namespace valle::platform
     // ENUMERATIONS
     // ============================================================================
 
-    enum class DmaTransferDirection : uint32_t
+    struct DmaTransferDirection : public LLDriverEnumValue<DmaTransferDirection>
     {
-        kPeriphToMem = LL_DMA_DIRECTION_PERIPH_TO_MEMORY,
-        kMemToPeriph = LL_DMA_DIRECTION_MEMORY_TO_PERIPH,
-        kMemToMem    = LL_DMA_DIRECTION_MEMORY_TO_MEMORY
+        static const DmaTransferDirection kPeriphToMem;
+        static const DmaTransferDirection kMemToPeriph;
+        static const DmaTransferDirection kMemToMem;
     };
 
-    enum class DmaChannelPriority : uint32_t
+    inline constexpr DmaTransferDirection DmaTransferDirection::kPeriphToMem =
+        DmaTransferDirection::from_ll<LL_DMA_DIRECTION_PERIPH_TO_MEMORY>();
+    inline constexpr DmaTransferDirection DmaTransferDirection::kMemToPeriph =
+        DmaTransferDirection::from_ll<LL_DMA_DIRECTION_MEMORY_TO_PERIPH>();
+    inline constexpr DmaTransferDirection DmaTransferDirection::kMemToMem =
+        DmaTransferDirection::from_ll<LL_DMA_DIRECTION_MEMORY_TO_MEMORY>();
+
+    struct DmaChannelPriority : public LLDriverEnumValue<DmaChannelPriority>
     {
-        kLow      = LL_DMA_PRIORITY_LOW,
-        kMedium   = LL_DMA_PRIORITY_MEDIUM,
-        kHigh     = LL_DMA_PRIORITY_HIGH,
-        kVeryHigh = LL_DMA_PRIORITY_VERYHIGH
+        static const DmaChannelPriority kLow;
+        static const DmaChannelPriority kMedium;
+        static const DmaChannelPriority kHigh;
+        static const DmaChannelPriority kVeryHigh;
     };
 
-    enum class DmaMode : uint32_t
+    inline constexpr DmaChannelPriority DmaChannelPriority::kLow = DmaChannelPriority::from_ll<LL_DMA_PRIORITY_LOW>();
+    inline constexpr DmaChannelPriority DmaChannelPriority::kMedium =
+        DmaChannelPriority::from_ll<LL_DMA_PRIORITY_MEDIUM>();
+    inline constexpr DmaChannelPriority DmaChannelPriority::kHigh = DmaChannelPriority::from_ll<LL_DMA_PRIORITY_HIGH>();
+    inline constexpr DmaChannelPriority DmaChannelPriority::kVeryHigh =
+        DmaChannelPriority::from_ll<LL_DMA_PRIORITY_VERYHIGH>();
+
+    struct DmaMode : public LLDriverEnumValue<DmaMode>
     {
-        kNormal   = LL_DMA_MODE_NORMAL,
-        kCircular = LL_DMA_MODE_CIRCULAR
+        static const DmaMode kNormal;
+        static const DmaMode kCircular;
     };
 
-    enum class DmaPeripheralDataWidth : uint32_t
+    inline constexpr DmaMode DmaMode::kNormal   = DmaMode::from_ll<LL_DMA_MODE_NORMAL>();
+    inline constexpr DmaMode DmaMode::kCircular = DmaMode::from_ll<LL_DMA_MODE_CIRCULAR>();
+
+    struct DmaPeripheralDataWidth : public LLDriverEnumValue<DmaPeripheralDataWidth>
     {
-        kByte     = LL_DMA_PDATAALIGN_BYTE,
-        kHalfWord = LL_DMA_PDATAALIGN_HALFWORD,
-        kWord     = LL_DMA_PDATAALIGN_WORD
+        static const DmaPeripheralDataWidth kByte;
+        static const DmaPeripheralDataWidth kHalfWord;
+        static const DmaPeripheralDataWidth kWord;
     };
 
-    enum class DmaMemoryDataWidth : uint32_t
+    inline constexpr DmaPeripheralDataWidth DmaPeripheralDataWidth::kByte =
+        DmaPeripheralDataWidth::from_ll<LL_DMA_PDATAALIGN_BYTE>();
+    inline constexpr DmaPeripheralDataWidth DmaPeripheralDataWidth::kHalfWord =
+        DmaPeripheralDataWidth::from_ll<LL_DMA_PDATAALIGN_HALFWORD>();
+    inline constexpr DmaPeripheralDataWidth DmaPeripheralDataWidth::kWord =
+        DmaPeripheralDataWidth::from_ll<LL_DMA_PDATAALIGN_WORD>();
+
+    struct DmaMemoryDataWidth : public LLDriverEnumValue<DmaMemoryDataWidth>
     {
-        kByte     = LL_DMA_MDATAALIGN_BYTE,
-        kHalfWord = LL_DMA_MDATAALIGN_HALFWORD,
-        kWord     = LL_DMA_MDATAALIGN_WORD
+        static const DmaMemoryDataWidth kByte;
+        static const DmaMemoryDataWidth kHalfWord;
+        static const DmaMemoryDataWidth kWord;
     };
 
-    enum class DmaPeripheralIncMode : uint32_t
+    inline constexpr DmaMemoryDataWidth DmaMemoryDataWidth::kByte =
+        DmaMemoryDataWidth::from_ll<LL_DMA_MDATAALIGN_BYTE>();
+    inline constexpr DmaMemoryDataWidth DmaMemoryDataWidth::kHalfWord =
+        DmaMemoryDataWidth::from_ll<LL_DMA_MDATAALIGN_HALFWORD>();
+    inline constexpr DmaMemoryDataWidth DmaMemoryDataWidth::kWord =
+        DmaMemoryDataWidth::from_ll<LL_DMA_MDATAALIGN_WORD>();
+
+    struct DmaPeripheralIncMode : public LLDriverEnumValue<DmaPeripheralIncMode>
     {
-        kFixed     = LL_DMA_PERIPH_NOINCREMENT,
-        kIncrement = LL_DMA_PERIPH_INCREMENT
+        static const DmaPeripheralIncMode kFixed;
+        static const DmaPeripheralIncMode kIncrement;
     };
 
-    enum class DmaMemoryIncMode : uint32_t
+    inline constexpr DmaPeripheralIncMode DmaPeripheralIncMode::kFixed =
+        DmaPeripheralIncMode::from_ll<LL_DMA_PERIPH_NOINCREMENT>();
+    inline constexpr DmaPeripheralIncMode DmaPeripheralIncMode::kIncrement =
+        DmaPeripheralIncMode::from_ll<LL_DMA_PERIPH_INCREMENT>();
+
+    struct DmaMemoryIncMode : public LLDriverEnumValue<DmaMemoryIncMode>
     {
-        kFixed     = LL_DMA_MEMORY_NOINCREMENT,
-        kIncrement = LL_DMA_MEMORY_INCREMENT
+        static const DmaMemoryIncMode kFixed;
+        static const DmaMemoryIncMode kIncrement;
     };
 
-    enum class DmaChannelInterruptSource : uint8_t
+    inline constexpr DmaMemoryIncMode DmaMemoryIncMode::kFixed = DmaMemoryIncMode::from_ll<LL_DMA_MEMORY_NOINCREMENT>();
+    inline constexpr DmaMemoryIncMode DmaMemoryIncMode::kIncrement =
+        DmaMemoryIncMode::from_ll<LL_DMA_MEMORY_INCREMENT>();
+
+    struct DmaChannelInterruptSource : public EnumValue<DmaChannelInterruptSource>
     {
-        kTransferComplete,
-        kHalfTransfer,
-        kTransferError
+        static const DmaChannelInterruptSource kTransferComplete;
+        static const DmaChannelInterruptSource kHalfTransfer;
+        static const DmaChannelInterruptSource kTransferError;
+
+        [[nodiscard]] static constexpr std::array<DmaChannelInterruptSource, 3> values()
+        {
+            return {kTransferComplete, kHalfTransfer, kTransferError};
+        }
     };
+
+    inline constexpr DmaChannelInterruptSource DmaChannelInterruptSource::kTransferComplete =
+        DmaChannelInterruptSource::from_number<0>();
+    inline constexpr DmaChannelInterruptSource DmaChannelInterruptSource::kHalfTransfer =
+        DmaChannelInterruptSource::from_number<1>();
+    inline constexpr DmaChannelInterruptSource DmaChannelInterruptSource::kTransferError =
+        DmaChannelInterruptSource::from_number<2>();
 
     // ============================================================================
     // ROOT TRAITS
@@ -456,7 +508,7 @@ namespace valle::platform
         // Flag Management
         // -----------------------------------------------------------------------------
 
-        void clear_global_interrupt_flag() const
+        void clear_global_interrupt_interrupt_flag() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -496,7 +548,7 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] bool is_global_interrupt_flag_active() const
+        [[nodiscard]] bool is_global_interrupt_interrupt_flag_active() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -546,7 +598,7 @@ namespace valle::platform
             LL_DMA_DisableIT_TC(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
         }
 
-        void clear_transfer_complete_flag() const
+        void clear_transfer_complete_interrupt_flag() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -586,7 +638,7 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] bool is_transfer_complete_flag_active() const
+        [[nodiscard]] bool is_transfer_complete_interrupt_flag_active() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -636,7 +688,7 @@ namespace valle::platform
             LL_DMA_DisableIT_HT(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
         }
 
-        void clear_half_transfer_flag() const
+        void clear_half_transfer_interrupt_flag() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -676,7 +728,7 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] bool is_half_transfer_flag_active() const
+        [[nodiscard]] bool is_half_transfer_interrupt_flag_active() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -726,7 +778,7 @@ namespace valle::platform
             LL_DMA_DisableIT_TE(ControllerTraitsT::skInstance, ChannelTraitsT::skChannelLLId);
         }
 
-        void clear_transfer_error_flag() const
+        void clear_transfer_error_interrupt_flag() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -766,7 +818,7 @@ namespace valle::platform
             }
         }
 
-        [[nodiscard]] bool is_transfer_error_flag_active() const
+        [[nodiscard]] bool is_transfer_error_interrupt_flag_active() const
         {
             if constexpr (tkChannelSpec.channel_id == DmaChannelId::kChannel1)
             {
@@ -806,75 +858,75 @@ namespace valle::platform
             }
         }
 
-        void enable_interrupt(const DmaInterruptSource interrupt_type) const
+        void enable_interrupt(const DmaChannelInterruptSource interrupt_type) const
         {
             switch (interrupt_type)
             {
-                case DmaInterruptSource::kTransferComplete:
+                case DmaChannelInterruptSource::kTransferComplete:
                     enable_transfer_complete_interrupt();
                     break;
-                case DmaInterruptSource::kHalfTransfer:
+                case DmaChannelInterruptSource::kHalfTransfer:
                     enable_half_transfer_interrupt();
                     break;
-                case DmaInterruptSource::kTransferError:
+                case DmaChannelInterruptSource::kTransferError:
                     enable_transfer_error_interrupt();
                     break;
                 default:
-                    expect(false, "Invalid DMA interrupt type");
+                    expect(false, "Invalid DMA channel interrupt type");
                     break;
             }
         }
 
-        void disable_interrupt(const DmaInterruptSource interrupt_type) const
+        void disable_interrupt(const DmaChannelInterruptSource interrupt_type) const
         {
             switch (interrupt_type)
             {
-                case DmaInterruptSource::kTransferComplete:
+                case DmaChannelInterruptSource::kTransferComplete:
                     disable_transfer_complete_interrupt();
                     break;
-                case DmaInterruptSource::kHalfTransfer:
+                case DmaChannelInterruptSource::kHalfTransfer:
                     disable_half_transfer_interrupt();
                     break;
-                case DmaInterruptSource::kTransferError:
+                case DmaChannelInterruptSource::kTransferError:
                     disable_transfer_error_interrupt();
                     break;
                 default:
-                    expect(false, "Invalid DMA interrupt type");
+                    expect(false, "Invalid DMA channel interrupt type");
                     break;
             }
         }
 
-        void clear_interrupt_flag(const DmaInterruptSource interrupt_type) const
+        void clear_interrupt_flag(const DmaChannelInterruptSource interrupt_type) const
         {
             switch (interrupt_type)
             {
-                case DmaInterruptSource::kTransferComplete:
-                    clear_transfer_complete_flag();
+                case DmaChannelInterruptSource::kTransferComplete:
+                    clear_transfer_complete_interrupt_flag();
                     break;
-                case DmaInterruptSource::kHalfTransfer:
-                    clear_half_transfer_flag();
+                case DmaChannelInterruptSource::kHalfTransfer:
+                    clear_half_transfer_interrupt_flag();
                     break;
-                case DmaInterruptSource::kTransferError:
-                    clear_transfer_error_flag();
+                case DmaChannelInterruptSource::kTransferError:
+                    clear_transfer_error_interrupt_flag();
                     break;
                 default:
-                    expect(false, "Invalid DMA interrupt type");
+                    expect(false, "Invalid DMA channel interrupt type");
                     break;
             }
         }
 
-        [[nodiscard]] bool is_interrupt_flag_active(const DmaInterruptSource interrupt_type) const
+        [[nodiscard]] bool is_interrupt_flag_active(const DmaChannelInterruptSource interrupt_type) const
         {
             switch (interrupt_type)
             {
-                case DmaInterruptSource::kTransferComplete:
-                    return is_transfer_complete_flag_active();
-                case DmaInterruptSource::kHalfTransfer:
-                    return is_half_transfer_flag_active();
-                case DmaInterruptSource::kTransferError:
-                    return is_transfer_error_flag_active();
+                case DmaChannelInterruptSource::kTransferComplete:
+                    return is_transfer_complete_interrupt_flag_active();
+                case DmaChannelInterruptSource::kHalfTransfer:
+                    return is_half_transfer_interrupt_flag_active();
+                case DmaChannelInterruptSource::kTransferError:
+                    return is_transfer_error_interrupt_flag_active();
                 default:
-                    expect(false, "Invalid DMA interrupt type");
+                    expect(false, "Invalid DMA channel interrupt type");
                     return false;
             }
         }

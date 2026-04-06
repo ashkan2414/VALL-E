@@ -11,54 +11,93 @@ namespace valle::platform
     // ENUMERATIONS
     // =============================================================================
 
-    enum class GpioPinMode
+    struct GpioPinMode : public LLDriverEnumValue<GpioPinMode>
     {
-        kInput             = LL_GPIO_MODE_INPUT,
-        kOutput            = LL_GPIO_MODE_OUTPUT,
-        kAlternateFunction = LL_GPIO_MODE_ALTERNATE,
-        kAnalog            = LL_GPIO_MODE_ANALOG,
+        static const GpioPinMode kInput;
+        static const GpioPinMode kOutput;
+        static const GpioPinMode kAlternateFunction;
+        static const GpioPinMode kAnalog;
     };
 
-    enum class GpioPinPullMode
+    inline constexpr GpioPinMode GpioPinMode::kInput = GpioPinMode::from_ll<LL_GPIO_MODE_INPUT>();
+    inline constexpr GpioPinMode GpioPinMode::kOutput = GpioPinMode::from_ll<LL_GPIO_MODE_OUTPUT>();
+    inline constexpr GpioPinMode GpioPinMode::kAlternateFunction = GpioPinMode::from_ll<LL_GPIO_MODE_ALTERNATE>();
+    inline constexpr GpioPinMode GpioPinMode::kAnalog = GpioPinMode::from_ll<LL_GPIO_MODE_ANALOG>();
+
+
+    struct GpioPinPullMode : public LLDriverEnumValue<GpioPinPullMode>
     {
-        kNoPull   = LL_GPIO_PULL_NO,
-        kPullUp   = LL_GPIO_PULL_UP,
-        kPullDown = LL_GPIO_PULL_DOWN,
+        static const GpioPinPullMode kNoPull;
+        static const GpioPinPullMode kPullUp;
+        static const GpioPinPullMode kPullDown;
     };
 
-    enum class GpioPinSpeedMode
+    inline constexpr GpioPinPullMode GpioPinPullMode::kNoPull = GpioPinPullMode::from_ll<LL_GPIO_PULL_NO>();
+    inline constexpr GpioPinPullMode GpioPinPullMode::kPullUp = GpioPinPullMode::from_ll<LL_GPIO_PULL_UP>();
+    inline constexpr GpioPinPullMode GpioPinPullMode::kPullDown = GpioPinPullMode::from_ll<LL_GPIO_PULL_DOWN>();
+
+
+    struct GpioPinSpeedMode : public LLDriverEnumValue<GpioPinSpeedMode>
     {
-        kLow      = LL_GPIO_SPEED_FREQ_LOW,        // range up to 5 MHz
-        kMedium   = LL_GPIO_SPEED_FREQ_MEDIUM,     // range  5 MHz to 25 MHz
-        kHigh     = LL_GPIO_SPEED_FREQ_HIGH,       // range 25 MHz to 50 MHz
-        kVeryHigh = LL_GPIO_SPEED_FREQ_VERY_HIGH,  // range 50 MHz to 120 MHz
+        static const GpioPinSpeedMode kLow;
+        static const GpioPinSpeedMode kMedium;
+        static const GpioPinSpeedMode kHigh;
+        static const GpioPinSpeedMode kVeryHigh;
     };
 
-    enum class GpioPinOutputMode
+    inline constexpr GpioPinSpeedMode GpioPinSpeedMode::kLow = GpioPinSpeedMode::from_ll<LL_GPIO_SPEED_FREQ_LOW>();
+    inline constexpr GpioPinSpeedMode GpioPinSpeedMode::kMedium = GpioPinSpeedMode::from_ll<LL_GPIO_SPEED_FREQ_MEDIUM>();
+    inline constexpr GpioPinSpeedMode GpioPinSpeedMode::kHigh = GpioPinSpeedMode::from_ll<LL_GPIO_SPEED_FREQ_HIGH>();
+    inline constexpr GpioPinSpeedMode GpioPinSpeedMode::kVeryHigh = GpioPinSpeedMode::from_ll<LL_GPIO_SPEED_FREQ_VERY_HIGH>();
+
+
+    struct GpioPinOutputMode : public LLDriverEnumValue<GpioPinOutputMode>
     {
-        kPushPull  = LL_GPIO_OUTPUT_PUSHPULL,
-        kOpenDrain = LL_GPIO_OUTPUT_OPENDRAIN,
+        static const GpioPinOutputMode kPushPull;
+        static const GpioPinOutputMode kOpenDrain;
     };
 
-    enum class GpioAlternativeFunction
+    inline constexpr GpioPinOutputMode GpioPinOutputMode::kPushPull = GpioPinOutputMode::from_ll<LL_GPIO_OUTPUT_PUSHPULL>();
+    inline constexpr GpioPinOutputMode GpioPinOutputMode::kOpenDrain = GpioPinOutputMode::from_ll<LL_GPIO_OUTPUT_OPENDRAIN>();
+
+
+    struct GpioAlternativeFunction : public LLDriverEnumValue<GpioAlternativeFunction>
     {
-        kAF0  = LL_GPIO_AF_0,
-        kAF1  = LL_GPIO_AF_1,
-        kAF2  = LL_GPIO_AF_2,
-        kAF3  = LL_GPIO_AF_3,
-        kAF4  = LL_GPIO_AF_4,
-        kAF5  = LL_GPIO_AF_5,
-        kAF6  = LL_GPIO_AF_6,
-        kAF7  = LL_GPIO_AF_7,
-        kAF8  = LL_GPIO_AF_8,
-        kAF9  = LL_GPIO_AF_9,
-        kAF10 = LL_GPIO_AF_10,
-        kAF11 = LL_GPIO_AF_11,
-        kAF12 = LL_GPIO_AF_12,
-        kAF13 = LL_GPIO_AF_13,
-        kAF14 = LL_GPIO_AF_14,
-        kAF15 = LL_GPIO_AF_15,
+        static const GpioAlternativeFunction kAF0;
+        static const GpioAlternativeFunction kAF1;
+        static const GpioAlternativeFunction kAF2;
+        static const GpioAlternativeFunction kAF3;
+        static const GpioAlternativeFunction kAF4;
+        static const GpioAlternativeFunction kAF5;
+        static const GpioAlternativeFunction kAF6;
+        static const GpioAlternativeFunction kAF7;
+        static const GpioAlternativeFunction kAF8;
+        static const GpioAlternativeFunction kAF9;
+        static const GpioAlternativeFunction kAF10;
+        static const GpioAlternativeFunction kAF11;
+        static const GpioAlternativeFunction kAF12;
+        static const GpioAlternativeFunction kAF13;
+        static const GpioAlternativeFunction kAF14;
+        static const GpioAlternativeFunction kAF15;
     };
+
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF0 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_0>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF1 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_1>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF2 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_2>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF3 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_3>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF4 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_4>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF5 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_5>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF6 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_6>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF7 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_7>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF8 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_8>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF9 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_9>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF10 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_10>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF11 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_11>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF12 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_12>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF13 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_13>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF14 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_14>();
+    inline constexpr GpioAlternativeFunction GpioAlternativeFunction::kAF15 = GpioAlternativeFunction::from_ll<LL_GPIO_AF_15>();
+
 
     // ============================================================================
     // HARDWARE TRAITS

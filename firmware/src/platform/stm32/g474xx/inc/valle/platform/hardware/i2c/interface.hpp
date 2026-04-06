@@ -10,24 +10,39 @@ namespace valle::platform
     // ============================================================================
     // ENUMERATIONS
     // ============================================================================
-    enum class I2cTransferEndMode : uint32_t
+    struct I2cTransferEndMode : public LLDriverEnumValue<I2cTransferEndMode>
     {
-        kReload              = LL_I2C_MODE_RELOAD,
-        kAutoEnd             = LL_I2C_MODE_AUTOEND,
-        kSoftEnd             = LL_I2C_MODE_SOFTEND,
-        kSMBusReload         = LL_I2C_MODE_SMBUS_RELOAD,
-        kSMBusAutoEndNoPec   = LL_I2C_MODE_SMBUS_AUTOEND_NO_PEC,
-        kSMBusSoftEndNoPec   = LL_I2C_MODE_SMBUS_SOFTEND_NO_PEC,
-        kSMBusAutoEndWithPec = LL_I2C_MODE_SMBUS_AUTOEND_WITH_PEC,
-        kSMBusSoftEndWithPec = LL_I2C_MODE_SMBUS_SOFTEND_WITH_PEC
+        static const I2cTransferEndMode kReload;
+        static const I2cTransferEndMode kAutoEnd;
+        static const I2cTransferEndMode kSoftEnd;
+        static const I2cTransferEndMode kSMBusReload;
+        static const I2cTransferEndMode kSMBusAutoEndNoPec;
+        static const I2cTransferEndMode kSMBusSoftEndNoPec;
+        static const I2cTransferEndMode kSMBusAutoEndWithPec;
+        static const I2cTransferEndMode kSMBusSoftEndWithPec;
     };
 
-    enum class I2cTransferRequest : uint32_t
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kReload = I2cTransferEndMode::from_ll<LL_I2C_MODE_RELOAD>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kAutoEnd = I2cTransferEndMode::from_ll<LL_I2C_MODE_AUTOEND>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kSoftEnd = I2cTransferEndMode::from_ll<LL_I2C_MODE_SOFTEND>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kSMBusReload = I2cTransferEndMode::from_ll<LL_I2C_MODE_SMBUS_RELOAD>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kSMBusAutoEndNoPec = I2cTransferEndMode::from_ll<LL_I2C_MODE_SMBUS_AUTOEND_NO_PEC>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kSMBusSoftEndNoPec = I2cTransferEndMode::from_ll<LL_I2C_MODE_SMBUS_SOFTEND_NO_PEC>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kSMBusAutoEndWithPec = I2cTransferEndMode::from_ll<LL_I2C_MODE_SMBUS_AUTOEND_WITH_PEC>();
+    inline constexpr I2cTransferEndMode I2cTransferEndMode::kSMBusSoftEndWithPec = I2cTransferEndMode::from_ll<LL_I2C_MODE_SMBUS_SOFTEND_WITH_PEC>();
+
+
+    struct I2cTransferRequest : public LLDriverEnumValue<I2cTransferRequest>
     {
-        kNoStart = 0,
-        kStart,
-        kRestart
+        static const I2cTransferRequest kNoStart;
+        static const I2cTransferRequest kStart;
+        static const I2cTransferRequest kRestart;
     };
+
+    inline constexpr I2cTransferRequest I2cTransferRequest::kNoStart = I2cTransferRequest::from_ll<0>();
+    inline constexpr I2cTransferRequest I2cTransferRequest::kStart = I2cTransferRequest::from_ll<0>();
+    inline constexpr I2cTransferRequest I2cTransferRequest::kRestart = I2cTransferRequest::from_ll<0>();
+
 
     // ============================================================================
     // HARDWARE TRAITS

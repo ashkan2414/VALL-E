@@ -368,7 +368,8 @@ namespace valle::platform
                 return;
             }
 
-            AdcControllerInterruptSourceInterface<tkControllerId, AdcInterruptSource::kInjectEndOfSequence>::clear();
+            AdcControllerInterruptSourceInterface<tkControllerId,
+                                                  AdcControllerInterruptSource::kInjectEndOfSequence>::clear();
 
             // ARM THE TRIGGER (The most important part)
             // If Trigger is Hardware (HRTIM): ADC goes into "Waiting for Trigger" state.
@@ -408,8 +409,9 @@ namespace valle::platform
 
             // Clear all relevant flags to avoid immediate false triggers
             // RM0440 Section 21.4.20: OVR flag must be cleared before starting
-            AdcControllerInterruptSourceInterface<tkControllerId, AdcInterruptSource::kRegularEndOfSequence>::clear();
-            AdcControllerInterruptSourceInterface<tkControllerId, AdcInterruptSource::kOverrun>::clear();
+            AdcControllerInterruptSourceInterface<tkControllerId,
+                                                  AdcControllerInterruptSource::kRegularEndOfSequence>::clear();
+            AdcControllerInterruptSourceInterface<tkControllerId, AdcControllerInterruptSource::kOverrun>::clear();
 
             if constexpr (skHasDMA)
             {

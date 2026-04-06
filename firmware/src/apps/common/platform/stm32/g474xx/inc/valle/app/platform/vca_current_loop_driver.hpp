@@ -442,7 +442,7 @@ namespace valle::platform::app
     {                                                                                                  \
         template <>                                                                                    \
         struct AdcIsrRouter<std::remove_cvref_t<decltype(instance)>::skCurrentSensorAdcControllerId,   \
-                            AdcInterruptSource::kInjectEndOfSequence>                                  \
+                            AdcControllerInterruptSource::kInjectEndOfSequence>                        \
         {                                                                                              \
             static void handle()                                                                       \
             {                                                                                          \
